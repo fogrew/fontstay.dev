@@ -114,7 +114,6 @@
   "audience_os_android": "Android",
   "audience_os_ios": "iOS and iPadOS",
   "audience_os_other": "Other or unknown",
-  "fit_system_label": "System",
   "plan_waiting": "Loading the audience…",
   "plan_shadowed": "On {system}, {winner} would be used instead of {font}.",
   "plan_no_kind": "{system}: no fonts of this type are preinstalled.",
@@ -159,7 +158,7 @@
   "matrix_partial_hint": "only size-adjust works; the Safari strategy in the CSS fixes the line height and the shift assumes it.",
   "matrix_none_hint": "the fallback font is used as it is.",
   "matrix_unknown_hint": "no data on the descriptors for this version.",
-  "systems_legend": "Systems that get their own fallback (share of your audience)",
+  "systems_legend": "Systems with their own fallback: open one to edit its fonts, tick it to include it.",
   "matrix_nodata": "No font data for this system yet",
   "matrix_scroll": "Support by browser version",
   "matrix_manual": "The support matrix needs a browser query; the manual system mode has no browser data.",
@@ -181,5 +180,6 @@
   "preview_not_installed": "{font} is not installed on this device, so the preview falls back to a generic font. The values and the support matrix are still calculated for it.",
   "plan_no_more": "{system}: no other fonts of this type are known yet.",
   "plan_reordered": "The fallback order was changed automatically so that every system gets its own font.",
-  "preview_phrase_placeholder": "Choose a sample"
+  "preview_phrase_placeholder": "Choose a sample",
+  "systems_include": "Include {system} in the stack"
 }

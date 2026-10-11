@@ -4,6 +4,7 @@ import {
   Accordion,
   Button,
   CodeBlock,
+  Collapsible,
   Disclosure,
   FitField,
   type FitValue,
@@ -117,6 +118,8 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
   const [optimized, setOptimized] = useState<Record<string, Partial<Overrides>>>({});
   const [spacingResult, setSpacingResult] = useState<{ key: string; value: SpacingEm }>();
   const [spacingOn, setSpacingOn] = useState(false);
+  const [openSystem, setOpenSystem] = useState<OsId | null | undefined>();
+  const [fontOpen, setFontOpen] = useState(true);
   const [fitting, setFitting] = useState(false);
   const [spacingValues, setSpacingValues] = useState<{ letter: FitValue; word: FitValue }>({
     letter: { mode: 'auto' },
@@ -493,6 +496,204 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
       item.latinOnly ? ` · ${t.fit_font_latin_only()}` : ''
     }`;
 
+  const fitBody =
+    selected && current ? (
+      <section
+        class="ff-generator__section ff-generator__section--plain"
+        aria-label={t.fit_heading()}
+      >
+        <Select
+          label={t.fit_type_label()}
+          value={kind}
+          options={[
+            { value: 'sans-serif', label: t.type_sans() },
+            { value: 'serif', label: t.type_serif() },
+            { value: 'monospace', label: t.type_mono() },
+          ]}
+          onChange={(value) => {
+            setKindChoice({ fontId: selected?.id, kind: value as Category });
+            setPicks({});
+            resetOptimization();
+            setEditId(undefined);
+          }}
+        />
+        {selected.metrics.style.category === null && kindChoice?.fontId !== selected.id && (
+          <p class="ff-muted">{t.font_type_unknown()}</p>
+        )}
+        <p class="ff-muted">{t.systems_legend()}</p>
+        {systems.map((os) => (
+          <Collapsible
+            key={os}
+            title={t.systems_share({ system: systemName(os), share: percent(shares?.[os] ?? 0) })}
+            open={(openSystem === undefined ? current : openSystem) === os}
+            onToggle={(next) => {
+              if (next) {
+                setActiveOs(os);
+                setEditId(undefined);
+                setOpenSystem(os);
+              } else {
+                setOpenSystem(null);
+              }
+            }}
+            before={
+              <input
+                type="checkbox"
+                aria-label={t.systems_include({ system: systemName(os) })}
+                checked={isEnabled(os)}
+                onChange={(event) => {
+                  const checked = event.currentTarget.checked;
+                  setEnabledSystems((all) => ({ ...all, [os]: checked }));
+                }}
+              />
+            }
+          >
+            {os === current && (
+              <>
+                {currentList.map((pick, index) => (
+                  <div class="ff-generator__row" key={`${current}-${index}`} data-slot={index}>
+                    <Select
+                      label={t.fallback_font_n({ n: index + 1 })}
+                      value={pick.id}
+                      options={currentCandidates
+                        .filter(
+                          (item) =>
+                            item.id === pick.id ||
+                            !currentList.some((other) => other.id === item.id),
+                        )
+                        .map((item) => ({ value: item.id, label: optionLabel(item) }))}
+                      onChange={(value) => {
+                        const replacement = currentCandidates.find((item) => item.id === value);
+                        if (replacement) {
+                          setList(
+                            current,
+                            currentList.map((item) => (item.id === pick.id ? replacement : item)),
+                          );
+                        }
+                      }}
+                    />
+                    <div class="ff-generator__buttons">
+                      {index === currentList.length - 1 && (
+                        <Button
+                          disabled={
+                            currentCandidates.length <= currentList.length ||
+                            (faceIds.size >= MAX_FACES &&
+                              !currentCandidates.every((item) => faceIds.has(item.id)))
+                          }
+                          onClick={() => {
+                            const next = currentCandidates.find(
+                              (item) => !currentList.some((other) => other.id === item.id),
+                            );
+                            if (!next) return;
+                            setList(current, [...currentList, next]);
+                            setPlanNote(t.plan_added());
+                            setFocusSlot(currentList.length);
+                          }}
+                        >
+                          {t.plan_add()}
+                        </Button>
+                      )}
+                      {currentList.length > 1 && (
+                        <Button
+                          aria-label={`${t.plan_remove()}: ${t.fallback_font_n({ n: index + 1 })}`}
+                          onClick={() => {
+                            setList(
+                              current,
+                              currentList.filter((item) => item.id !== pick.id),
+                            );
+                            setPlanNote(t.plan_removed());
+                            setFocusSlot(Math.max(0, index - 1));
+                          }}
+                        >
+                          {t.plan_remove()}
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                ))}
+                {currentCandidates.length <= currentList.length && (
+                  <p class="ff-muted">{t.plan_no_more({ system: systemName(current) })}</p>
+                )}
+                {currentList.length > 1 && currentPick && (
+                  <Select
+                    label={t.fit_edit_label()}
+                    value={currentPick.id}
+                    options={currentList.map((item) => ({ value: item.id, label: item.family }))}
+                    onChange={setEditId}
+                  />
+                )}
+                {currentPick ? (
+                  <>
+                    {currentPick.coverage < 0.95 && (
+                      <p class="ff-muted" role="status">
+                        {t.fit_font_partial({ percent: percent(currentPick.coverage * 100) })}
+                      </p>
+                    )}
+                    {FIELDS.map(({ key, label, min, max }) => (
+                      <FitField
+                        key={`${currentPick.id}-${key}`}
+                        compact
+                        locale={locale}
+                        label={t[label]()}
+                        unit={t.fit_percent_unit()}
+                        value={currentValues[key]}
+                        autoValue={baseOf(currentPick)[key] * 100}
+                        min={min}
+                        max={max}
+                        step={0.1}
+                        onChange={(next) =>
+                          setValues((all) => ({
+                            ...all,
+                            [valueKey(currentPick.id)]: {
+                              ...(all[valueKey(currentPick.id)] ?? AUTO),
+                              [key]: next,
+                            },
+                          }))
+                        }
+                      />
+                    ))}
+                    <Disclosure summary={t.spacing_heading()}>
+                      <p class="ff-muted">{t.spacing_note()}</p>
+                      <label>
+                        <input
+                          type="checkbox"
+                          checked={spacingOn}
+                          onChange={(event) => setSpacingOn(event.currentTarget.checked)}
+                        />{' '}
+                        {t.spacing_enable()}
+                      </label>
+                      {(spacingOn
+                        ? ([
+                            ['letter', t.spacing_letter_label(), -5, 5, 0.01],
+                            ['word', t.spacing_word_label(), -30, 30, 0.1],
+                          ] as const)
+                        : []
+                      ).map(([name, label, min, max, step]) => (
+                        <FitField
+                          key={name}
+                          compact
+                          locale={locale}
+                          label={label}
+                          unit={t.spacing_unit()}
+                          value={spacingValues[name]}
+                          autoValue={(optimizedSpacing?.[name] ?? 0) * 100}
+                          min={min}
+                          max={max}
+                          step={step}
+                          onChange={(next) => setSpacingValues((all) => ({ ...all, [name]: next }))}
+                        />
+                      ))}
+                    </Disclosure>
+                  </>
+                ) : (
+                  <p class="ff-muted">{t.plan_no_kind({ system: systemName(current) })}</p>
+                )}
+              </>
+            )}
+          </Collapsible>
+        ))}
+      </section>
+    ) : null;
+
   return (
     <div class="ff-generator">
       <div class="ff-generator__settings" id="ff-settings">
@@ -512,237 +713,48 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
             <h2 id="ff-fonts-heading" class="ff-sr-only">
               {t.upload_fonts_label()}
             </h2>
-            {fonts.length > 1 && (
-              <Select
-                label={t.upload_select_label()}
-                value={String(selected?.id ?? '')}
-                options={fonts.map((font) => ({
-                  value: String(font.id),
-                  label: `${font.metrics.names.fullName ?? font.fileName} (${font.fileName})`,
-                }))}
-                onChange={(value) => {
-                  setSelectedId(Number(value));
-                  setPicks({});
-                  resetOptimization();
-                }}
-              />
-            )}
-            <ul>
-              {fonts.map((font) => (
-                <li key={font.id}>
-                  <span>{font.fileName}</span>
-                  <Button
-                    onClick={() => {
-                      setFonts((list) => list.filter((item) => item.id !== font.id));
-                      setSelectedId((id) => (id === font.id ? undefined : id));
-                      setValues({});
+            {fonts.map((font) => {
+              const isSelected = font.id === selected?.id;
+              return (
+                <Collapsible
+                  key={font.id}
+                  title={font.metrics.names.fullName ?? font.fileName}
+                  open={isSelected && fontOpen}
+                  onToggle={(next) => {
+                    if (!isSelected) {
+                      setSelectedId(font.id);
+                      setPicks({});
+                      setOpenSystem(undefined);
                       resetOptimization();
-                    }}
-                    aria-label={`${t.upload_remove()}: ${font.fileName}`}
-                  >
-                    {t.upload_remove()}
-                  </Button>
-                </li>
-              ))}
-            </ul>
+                    }
+                    setFontOpen(next);
+                  }}
+                  after={
+                    <button
+                      type="button"
+                      class="ff-icon-button"
+                      aria-label={`${t.upload_remove()}: ${font.fileName}`}
+                      onClick={() => {
+                        setFonts((list) => list.filter((item) => item.id !== font.id));
+                        setSelectedId((id) => (id === font.id ? undefined : id));
+                        setValues({});
+                        resetOptimization();
+                      }}
+                    >
+                      <span aria-hidden="true">×</span>
+                    </button>
+                  }
+                >
+                  {isSelected && fitBody}
+                </Collapsible>
+              );
+            })}
           </section>
         )}
         {selected && rankings.noCoverage && Object.keys(rankings.result).length === 0 && (
           <p role="alert">{t.fit_no_coverage()}</p>
         )}
         {selected && !shares && <p class="ff-muted">{t.plan_waiting()}</p>}
-        {selected && current && (
-          <section class="ff-generator__section" aria-labelledby="ff-fit-heading">
-            <h2 id="ff-fit-heading" class="ff-sr-only">
-              {t.fit_heading()}
-            </h2>
-            <div class="ff-generator__pair">
-              <Select
-                label={t.fit_system_label()}
-                value={current}
-                options={systems.map((os) => ({
-                  value: os,
-                  label: systemName(os),
-                }))}
-                onChange={(value) => {
-                  setActiveOs(value as OsId);
-                  setEditId(undefined);
-                }}
-              />
-              <Select
-                label={t.fit_type_label()}
-                value={kind}
-                options={[
-                  { value: 'sans-serif', label: t.type_sans() },
-                  { value: 'serif', label: t.type_serif() },
-                  { value: 'monospace', label: t.type_mono() },
-                ]}
-                onChange={(value) => {
-                  setKindChoice({ fontId: selected?.id, kind: value as Category });
-                  setPicks({});
-                  resetOptimization();
-                  setEditId(undefined);
-                }}
-              />
-            </div>
-            {selected &&
-              selected.metrics.style.category === null &&
-              kindChoice?.fontId !== selected.id && <p class="ff-muted">{t.font_type_unknown()}</p>}
-            <fieldset class="ff-generator__systems">
-              <legend>{t.systems_legend()}</legend>
-              {systems.map((os) => (
-                <label key={os}>
-                  <input
-                    type="checkbox"
-                    checked={isEnabled(os)}
-                    onChange={(event) => {
-                      const checked = event.currentTarget.checked;
-                      setEnabledSystems((all) => ({ ...all, [os]: checked }));
-                    }}
-                  />{' '}
-                  {t.systems_share({ system: systemName(os), share: percent(shares?.[os] ?? 0) })}
-                </label>
-              ))}
-            </fieldset>
-            {currentList.map((pick, index) => (
-              <div class="ff-generator__row" key={`${current}-${index}`} data-slot={index}>
-                <Select
-                  label={t.fallback_font_n({ n: index + 1 })}
-                  value={pick.id}
-                  options={currentCandidates
-                    .filter(
-                      (item) =>
-                        item.id === pick.id || !currentList.some((other) => other.id === item.id),
-                    )
-                    .map((item) => ({ value: item.id, label: optionLabel(item) }))}
-                  onChange={(value) => {
-                    const replacement = currentCandidates.find((item) => item.id === value);
-                    if (replacement) {
-                      setList(
-                        current,
-                        currentList.map((item) => (item.id === pick.id ? replacement : item)),
-                      );
-                    }
-                  }}
-                />
-                <div class="ff-generator__buttons">
-                  {index === currentList.length - 1 && (
-                    <Button
-                      disabled={
-                        currentCandidates.length <= currentList.length ||
-                        (faceIds.size >= MAX_FACES &&
-                          !currentCandidates.every((item) => faceIds.has(item.id)))
-                      }
-                      onClick={() => {
-                        const next = currentCandidates.find(
-                          (item) => !currentList.some((other) => other.id === item.id),
-                        );
-                        if (!next) return;
-                        setList(current, [...currentList, next]);
-                        setPlanNote(t.plan_added());
-                        setFocusSlot(currentList.length);
-                      }}
-                    >
-                      {t.plan_add()}
-                    </Button>
-                  )}
-                  {currentList.length > 1 && (
-                    <Button
-                      aria-label={`${t.plan_remove()}: ${t.fallback_font_n({ n: index + 1 })}`}
-                      onClick={() => {
-                        setList(
-                          current,
-                          currentList.filter((item) => item.id !== pick.id),
-                        );
-                        setPlanNote(t.plan_removed());
-                        setFocusSlot(Math.max(0, index - 1));
-                      }}
-                    >
-                      {t.plan_remove()}
-                    </Button>
-                  )}
-                </div>
-              </div>
-            ))}
-            {currentCandidates.length <= currentList.length && (
-              <p class="ff-muted">{t.plan_no_more({ system: systemName(current) })}</p>
-            )}
-            {currentList.length > 1 && currentPick && (
-              <Select
-                label={t.fit_edit_label()}
-                value={currentPick.id}
-                options={currentList.map((item) => ({ value: item.id, label: item.family }))}
-                onChange={setEditId}
-              />
-            )}
-            {currentPick ? (
-              <>
-                {currentPick.coverage < 0.95 && (
-                  <p class="ff-muted" role="status">
-                    {t.fit_font_partial({ percent: percent(currentPick.coverage * 100) })}
-                  </p>
-                )}
-                {FIELDS.map(({ key, label, min, max }) => (
-                  <FitField
-                    key={`${currentPick.id}-${key}`}
-                    compact
-                    locale={locale}
-                    label={t[label]()}
-                    unit={t.fit_percent_unit()}
-                    value={currentValues[key]}
-                    autoValue={baseOf(currentPick)[key] * 100}
-                    min={min}
-                    max={max}
-                    step={0.1}
-                    onChange={(next) =>
-                      setValues((all) => ({
-                        ...all,
-                        [valueKey(currentPick.id)]: {
-                          ...(all[valueKey(currentPick.id)] ?? AUTO),
-                          [key]: next,
-                        },
-                      }))
-                    }
-                  />
-                ))}
-                <Disclosure summary={t.spacing_heading()}>
-                  <p class="ff-muted">{t.spacing_note()}</p>
-                  <label>
-                    <input
-                      type="checkbox"
-                      checked={spacingOn}
-                      onChange={(event) => setSpacingOn(event.currentTarget.checked)}
-                    />{' '}
-                    {t.spacing_enable()}
-                  </label>
-                  {(spacingOn
-                    ? ([
-                        ['letter', t.spacing_letter_label(), -5, 5, 0.01],
-                        ['word', t.spacing_word_label(), -30, 30, 0.1],
-                      ] as const)
-                    : []
-                  ).map(([name, label, min, max, step]) => (
-                    <FitField
-                      key={name}
-                      compact
-                      locale={locale}
-                      label={label}
-                      unit={t.spacing_unit()}
-                      value={spacingValues[name]}
-                      autoValue={(optimizedSpacing?.[name] ?? 0) * 100}
-                      min={min}
-                      max={max}
-                      step={step}
-                      onChange={(next) => setSpacingValues((all) => ({ ...all, [name]: next }))}
-                    />
-                  ))}
-                </Disclosure>
-              </>
-            ) : (
-              <p class="ff-muted">{t.plan_no_kind({ system: systemName(current) })}</p>
-            )}
-          </section>
-        )}
         <AudienceEditor
           locale={locale}
           onShares={handleShares}

@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { createViteServer } from 'vitest/node';
-import { expect, test } from './fixtures';
+import { expect, selectSystem, test } from './fixtures';
 
 const fonts = new URL('../fixtures/fonts/', import.meta.url).pathname.replace(
   /^\/([A-Za-z]:)/,
@@ -61,7 +61,7 @@ test('the layout model agrees with the browser measurement', async ({ page }) =>
   await page.goto('/en/');
   await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
   await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(sourceSans);
-  await page.getByLabel('System', { exact: true }).selectOption('windows');
+  await selectSystem(page, 'windows');
   await page.getByLabel('Fallback font 1', { exact: true }).selectOption('arial');
 
   const pin = async (sizeAdjust?: number) => {

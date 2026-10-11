@@ -1,4 +1,4 @@
-import { test as base, expect } from '@playwright/test';
+import { test as base, expect, type Page } from '@playwright/test';
 
 export const test = base.extend({
   page: async ({ page }, use) => {
@@ -17,3 +17,17 @@ export const test = base.extend({
 });
 
 export { expect };
+
+const SYSTEM_NAMES: Record<string, RegExp> = {
+  windows: /^Windows/,
+  macos: /^macOS/,
+  ios: /^iOS/,
+  android: /^Android/,
+  linux: /^Linux/,
+  chromeos: /^Chrome ?OS/,
+};
+
+export async function selectSystem(page: Page, os: string) {
+  const button = page.getByRole('button', { name: SYSTEM_NAMES[os] ?? os });
+  if ((await button.getAttribute('aria-expanded')) === 'false') await button.click();
+}

@@ -1,6 +1,6 @@
 import AxeBuilder from '@axe-core/playwright';
 import { buildFont } from '../../src/modules/font-metrics/lib/forged.test-util';
-import { expect, test } from './fixtures';
+import { expect, selectSystem, test } from './fixtures';
 
 const fonts = new URL('../fixtures/fonts/', import.meta.url).pathname.replace(
   /^\/([A-Za-z]:)/,
@@ -23,7 +23,7 @@ test('uploading a font produces per-system fallbacks, editable values and CSS', 
   await expect(code).toContainText('"Source Sans Pro Fallback');
   await expect(code).not.toContainText('font-family: font-family');
 
-  await page.getByLabel('System', { exact: true }).selectOption('windows');
+  await selectSystem(page, 'windows');
   const before = await code.textContent();
   await fallback.selectOption({ index: 2 });
   await expect(code).not.toHaveText(before ?? '');
@@ -45,7 +45,7 @@ test('serif and monospace fallbacks are available by font type', async ({ page }
   await page.goto('/en/');
   await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
   await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(sourceSans);
-  await page.getByLabel('System', { exact: true }).selectOption('windows');
+  await selectSystem(page, 'windows');
   await page.getByLabel('Font type').selectOption('serif');
   await expect(page.getByLabel('Fallback font 1', { exact: true })).toContainText(
     'Times New Roman',
@@ -59,21 +59,20 @@ test('the fallback list follows the selected system and reports shadowing with a
   await page.goto('/en/');
   await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
   await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(sourceSans);
-  const system = page.getByLabel('System', { exact: true });
   const fallback = page.getByLabel('Fallback font 1', { exact: true });
 
-  await system.selectOption('android');
+  await selectSystem(page, 'android');
   await expect(fallback).toContainText('Roboto');
   await expect(fallback).not.toContainText('Segoe UI');
-  await system.selectOption('windows');
+  await selectSystem(page, 'windows');
   await expect(fallback).toContainText('Segoe UI');
   await expect(fallback).not.toContainText('Roboto');
 
   await page.getByText('Audience (browsers)').click();
   await page.getByLabel('Browserslist query').fill('safari 17, chrome 120');
-  await system.selectOption('macos');
+  await selectSystem(page, 'macos');
   await fallback.selectOption('helvetica');
-  await system.selectOption('windows');
+  await selectSystem(page, 'windows');
   await fallback.selectOption('arial');
   await expect(page.getByText('The fallback order was changed automatically')).toBeVisible();
   await expect(page.locator('p.ff-error', { hasText: /would be used instead of/ })).toHaveCount(0);
@@ -83,7 +82,7 @@ test('the fit follows the page language for a font with Cyrillic', async ({ page
   await page.goto('/ru/');
   await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
   await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(sourceSans);
-  await page.getByLabel('Система', { exact: true }).selectOption('macos');
+  await selectSystem(page, 'macos');
   const fallback = page.getByLabel('Запасной шрифт 1', { exact: true });
   await expect(fallback).toBeVisible();
   await expect(fallback).not.toContainText('Только латиница');
@@ -309,7 +308,7 @@ test('a system can have several ordered fallbacks', async ({ page }) => {
   await page.goto('/en/');
   await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
   await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(sourceSans);
-  await page.getByLabel('System', { exact: true }).selectOption('windows');
+  await selectSystem(page, 'windows');
   const code = page.getByRole('region', { name: 'Generated CSS' });
   await page.getByLabel('Fallback font 1', { exact: true }).selectOption('segoe-ui');
   await expect(page.getByLabel('Fallback font 2', { exact: true })).toHaveCount(0);
@@ -370,10 +369,10 @@ test('a system can be switched off and then falls back to the generic family', a
   await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(sourceSans);
   const matrix = page.getByRole('region', { name: 'Browser support' });
   await expect(matrix).not.toContainText('Generic fallback');
-  await page.getByRole('checkbox', { name: /^Android/ }).uncheck();
+  await page.getByRole('checkbox', { name: 'Include Android in the stack' }).uncheck();
   await expect(matrix).toContainText('Generic fallback');
   await expect(matrix.locator('[data-state="none"]').first()).toBeVisible();
-  await page.getByRole('checkbox', { name: /^Android/ }).check();
+  await page.getByRole('checkbox', { name: 'Include Android in the stack' }).check();
   await expect(matrix).not.toContainText('Generic fallback');
 });
 
@@ -414,7 +413,7 @@ test('values are optimized automatically and pinned values stay', async ({ page 
   await page.goto('/en/');
   await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
   await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(sourceSans);
-  await page.getByLabel('System', { exact: true }).selectOption('windows');
+  await selectSystem(page, 'windows');
   await page.getByLabel('Fallback font 1', { exact: true }).selectOption('arial');
   await expect(page.getByRole('button', { name: 'Optimize for CLS' })).toHaveCount(0);
   const code = page.getByRole('region', { name: 'Generated CSS' });
@@ -490,7 +489,7 @@ test('a system with a single known font explains why no fallback can be added', 
   await page.goto('/en/');
   await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
   await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(sourceSans);
-  await page.getByLabel('System', { exact: true }).selectOption('android');
+  await selectSystem(page, 'android');
   await expect(page.getByRole('button', { name: 'Add fallback' })).toBeDisabled();
   await expect(page.getByText(/no other fonts of this type are known yet/)).toBeVisible();
 });

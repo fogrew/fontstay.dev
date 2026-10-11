@@ -1,4 +1,3 @@
-import type { JSX } from 'preact';
 import { useEffect, useRef, useState } from 'preact/hooks';
 import { type Locale, messagesFor } from '@/common/i18n';
 import type { Category } from '@/modules/os-fonts';
@@ -22,7 +21,7 @@ function EditableText({
   value: string;
   onChange: (text: string) => void;
   label: string;
-  style: JSX.CSSProperties;
+  style: Record<string, string | number>;
 }) {
   const element = useRef<HTMLDivElement>(null);
   useEffect(() => {
