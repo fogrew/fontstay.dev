@@ -495,3 +495,14 @@ test('the preview offers sample phrases the font can render and there is no text
   await phrase.selectOption({ label: 'German' });
   await expect(page.getByLabel('Sample text')).toHaveValue(/Zwölf Boxkämpfer/);
 });
+
+test('a system with a single known font explains why no fallback can be added', async ({
+  page,
+}) => {
+  await page.goto('/en/');
+  await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
+  await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(sourceSans);
+  await page.getByLabel('System', { exact: true }).selectOption('android');
+  await expect(page.getByRole('button', { name: 'Add fallback' })).toBeDisabled();
+  await expect(page.getByText(/no other fonts of this type are known yet/)).toBeVisible();
+});

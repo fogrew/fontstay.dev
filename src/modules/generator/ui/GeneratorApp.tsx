@@ -672,6 +672,9 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
                 </div>
               </div>
             ))}
+            {currentCandidates.length <= currentList.length && (
+              <p class="ff-muted">{t.plan_no_more({ system: systemName(current) })}</p>
+            )}
             {currentList.length > 1 && currentPick && (
               <Select
                 label={t.fit_edit_label()}

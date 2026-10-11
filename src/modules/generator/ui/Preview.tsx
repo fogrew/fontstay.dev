@@ -4,6 +4,7 @@ import { Select } from '@/common/ui';
 import type { Category } from '@/modules/os-fonts';
 import { covers } from '../lib/compute';
 import { buildCss, type Overrides } from '../lib/css';
+import { canvasMeasure, isInstalled } from '../lib/installed';
 
 const PHRASES = ['en', 'ru', 'de', 'fr', 'es', 'pl', 'el'] as const;
 const CUSTOM = 'custom';
@@ -34,6 +35,12 @@ export function Preview({
   const phrases = PHRASES.filter((id) => covers({ codePoints }, phraseText(id)));
   const phrase = phrases.find((id) => phraseText(id) === sample) ?? CUSTOM;
   const [loadFailed, setLoadFailed] = useState(false);
+  const [installed, setInstalled] = useState(true);
+  const localKey = fallback.localNames.join('|');
+  useEffect(() => {
+    const measure = canvasMeasure();
+    setInstalled(measure ? isInstalled(fallback.localNames, measure) : true);
+  }, [localKey]);
   const [mode, setMode] = useState<Mode>('overlay');
   const [size, setSize] = useState(28);
   const [lineHeight, setLineHeight] = useState(1.4);
@@ -142,6 +149,11 @@ export function Preview({
           onInput={(event) => setSample(event.currentTarget.value)}
         />
       </div>
+      {!installed && (
+        <p class="ff-muted" role="status">
+          {t.preview_not_installed({ font: fallback.family })}
+        </p>
+      )}
       <div class="ff-preview__stage">
         {(mode === 'side' || mode === 'web') && (
           <figure>
