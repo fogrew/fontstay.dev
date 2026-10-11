@@ -3,8 +3,7 @@
   gap: var(--ff-space-4);
   min-block-size: 0;
 }
-.ff-generator__settings,
-.ff-generator__results {
+.ff-generator__settings {
   display: grid;
   align-content: start;
   gap: var(--ff-space-3);
@@ -121,11 +120,9 @@
   .ff-generator {
     flex: 1;
     grid-template-columns: minmax(20rem, 27rem) minmax(0, 1fr);
-    grid-template-rows: minmax(0, 1fr);
     align-items: stretch;
   }
-  .ff-generator__settings,
-  .ff-generator__results {
+  .ff-generator__settings {
     position: relative;
     overflow-y: auto;
     padding-inline-end: var(--ff-space-1);
@@ -166,7 +163,7 @@
 }
 
 @media (min-width: 64rem) and (min-height: 40rem) {
-  .ff-generator__results .ff-code__body {
+  .ff-generator__main .ff-code__body {
     max-block-size: none;
   }
 }
@@ -211,4 +208,80 @@
   border: 1px solid var(--ff-border);
   border-radius: var(--ff-radius);
   font-size: 0.875rem;
+}
+
+.ff-generator__main {
+  display: grid;
+  gap: var(--ff-space-2);
+  align-content: start;
+  min-inline-size: 0;
+  min-block-size: 0;
+}
+.ff-generator__toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--ff-space-3);
+  align-items: center;
+}
+.ff-generator__toolbar p {
+  margin: 0;
+}
+.ff-generator__stage {
+  display: grid;
+  gap: var(--ff-space-3);
+  align-content: start;
+  min-inline-size: 0;
+}
+.ff-generator__dock {
+  display: grid;
+  gap: var(--ff-space-2);
+  padding: var(--ff-space-2) var(--ff-space-3);
+  border: 1px solid var(--ff-border);
+  border-radius: var(--ff-radius);
+}
+.ff-generator__notes {
+  display: grid;
+  gap: var(--ff-space-2);
+}
+.ff-generator__notes p {
+  margin: 0;
+}
+.ff-generator__settings[hidden],
+.ff-generator__dock [hidden] {
+  display: none;
+}
+
+@media (min-width: 64rem) and (min-height: 40rem) {
+  .ff-generator[data-settings="closed"] {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .ff-generator__main {
+    overflow: hidden;
+  }
+  .ff-generator__stage {
+    overflow-y: auto;
+    min-block-size: 0;
+  }
+  .ff-generator__dock {
+    max-block-size: 45vh;
+    overflow: auto;
+  }
+}
+
+.ff-generator__toolbar {
+  grid-column: 1 / -1;
+}
+.ff-generator .ff-tabs__panel:focus-visible {
+  outline-offset: -3px;
+}
+.ff-generator__notes:focus {
+  outline: none;
+}
+@media (min-width: 64rem) and (min-height: 40rem) {
+  .ff-generator {
+    grid-template-rows: auto minmax(0, 1fr);
+  }
+  .ff-generator__main {
+    grid-template-rows: minmax(0, 1fr) auto;
+  }
 }

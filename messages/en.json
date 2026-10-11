@@ -118,9 +118,7 @@
   "fit_language_label": "Text language",
   "language_en": "English",
   "language_ru": "Russian",
-  "plan_heading": "Fallbacks by system",
   "plan_waiting": "Loading the audience…",
-  "plan_system_font": "{system} ({share}%): {font}",
   "plan_shadowed": "On {system}, {winner} would be used instead of {font}.",
   "plan_no_kind": "{system}: no fonts of this type are preinstalled.",
   "plan_fix": "Reorder to fix",
@@ -176,5 +174,12 @@
   "systems_legend": "Systems with their own fallback",
   "matrix_nodata": "No font data for this system yet",
   "matrix_scroll": "Support by browser version",
-  "matrix_manual": "The support matrix needs a browser query; the manual system mode has no browser data."
+  "matrix_manual": "The support matrix needs a browser query; the manual system mode has no browser data.",
+  "shell_hide_settings": "Hide settings",
+  "shell_show_settings": "Show settings",
+  "shell_tabs_label": "Result",
+  "shell_tab_css": "CSS",
+  "shell_tab_shift": "Layout shift",
+  "shell_hide_support": "Hide browser support",
+  "shell_show_support": "Show browser support"
 }

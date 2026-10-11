@@ -64,7 +64,8 @@ main {
     display: flex;
     flex-direction: column;
     min-block-size: 0;
-    padding-block: var(--ff-space-3);
+    max-inline-size: none;
+    padding: var(--ff-space-3) var(--ff-space-3);
   }
 }
 header {

@@ -8,6 +8,7 @@ import {
   type FitValue,
   LiveRegion,
   Select,
+  Tabs,
 } from '@/common/ui';
 import {
   type AudienceData,
@@ -109,6 +110,8 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
   const [language, setLanguage] = useState<Language>('en');
   const [shares, setShares] = useState<OsShares>();
   const [manualSystems, setManualSystems] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(true);
+  const [dockOpen, setDockOpen] = useState(true);
   const [audience, setAudience] = useState<AudienceData>();
   const [enabledSystems, setEnabledSystems] = useState<Partial<Record<OsId, boolean>>>({});
   const [activeOs, setActiveOs] = useState<OsId>();
@@ -546,8 +549,22 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
     }`;
 
   return (
-    <div class="ff-generator">
-      <div class="ff-generator__settings">
+    <div class="ff-generator" data-settings={settingsOpen ? 'open' : 'closed'}>
+      <div class="ff-generator__toolbar" id="ff-toolbar" tabIndex={-1}>
+        <Button
+          aria-expanded={settingsOpen}
+          aria-controls="ff-settings"
+          onClick={() => setSettingsOpen((open) => !open)}
+        >
+          {settingsOpen ? t.shell_hide_settings() : t.shell_show_settings()}
+        </Button>
+        {output && selected && coverage < LOW_COVERAGE && (
+          <p class="ff-error" role="status">
+            {t.fit_low_coverage()} {Math.round(coverage * 100)}%
+          </p>
+        )}
+      </div>
+      <div class="ff-generator__settings" id="ff-settings" hidden={!settingsOpen}>
         <FontUpload locale={locale} busy={busy} compact={fonts.length > 0} onFiles={addFiles} />
         {error && (
           <p class="ff-error" role="alert">
@@ -798,43 +815,13 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
           active={fonts.length > 0}
         />
       </div>
-      <div class="ff-generator__results">
-        {output && selected && previewPick && adjustment ? (
-          <>
-            {coverage < LOW_COVERAGE && (
-              <p class="ff-error" role="status">
-                {t.fit_low_coverage()} {Math.round(coverage * 100)}%
-              </p>
-            )}
-            <Preview
-              key={selected.id}
-              defaultSample={sampleText(selected.metrics, t.preview_sample_default())}
-              locale={locale}
-              bytes={selected.bytes}
-              fallback={previewPick}
-              adjustment={adjustment}
-            />
-            {plan && (
-              <section class="ff-generator__section" aria-labelledby="ff-plan-heading">
-                <h2 id="ff-plan-heading" tabIndex={-1}>
-                  {t.plan_heading()}
-                </h2>
-                <ul>
-                  {[...new Set(chosen.map((item) => item.os))].map((os) => (
-                    <li key={os}>
-                      <span>
-                        {t.plan_system_font({
-                          system: systemName(os),
-                          share: percent(shares?.[os] ?? 0),
-                          font: chosen
-                            .filter((item) => item.os === os)
-                            .map((item) => item.candidate.family)
-                            .join(', '),
-                        })}
-                      </span>
-                    </li>
-                  ))}
-                </ul>
+      <div class="ff-generator__main">
+        <div class="ff-generator__stage">
+          {plan &&
+            (shadowed.length > 0 ||
+              plan.resolution.blockedBy === 'cycle' ||
+              uncovered.length > 0) && (
+              <div class="ff-generator__notes" id="ff-notes" tabIndex={-1}>
                 {shadowed.map((item) => (
                   <p key={item.platform} class="ff-error">
                     {t.plan_shadowed({
@@ -850,7 +837,7 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
                       const next = plan.resolution.suggestion?.order;
                       if (next) setSavedOrder({ key: orderKey, value: next });
                       setPlanNote(t.plan_fixed());
-                      document.getElementById('ff-plan-heading')?.focus();
+                      document.getElementById('ff-toolbar')?.focus();
                     }}
                   >
                     {t.plan_fix()}
@@ -867,48 +854,100 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
                     })}
                   </p>
                 )}
-              </section>
+              </div>
             )}
-            {manualSystems ? (
-              <p class="ff-muted">{t.matrix_manual()}</p>
-            ) : (
-              <SupportMatrix locale={locale} groups={matrixGroups} rating={ratingText} />
-            )}
-            <LayoutShiftPanel
-              locale={locale}
-              model={model}
-              verify={simulation}
-              optimizer={optimizer}
+          {output && selected && previewPick && adjustment ? (
+            <Tabs
+              label={t.shell_tabs_label()}
+              items={[
+                {
+                  id: 'preview',
+                  label: t.preview_tab(),
+                  content: (
+                    <Preview
+                      key={selected.id}
+                      defaultSample={sampleText(selected.metrics, t.preview_sample_default())}
+                      locale={locale}
+                      bytes={selected.bytes}
+                      fallback={previewPick}
+                      adjustment={adjustment}
+                    />
+                  ),
+                },
+                {
+                  id: 'css',
+                  label: t.shell_tab_css(),
+                  content: (
+                    <>
+                      <section class="ff-generator__section" aria-labelledby="ff-css-heading">
+                        <h2 id="ff-css-heading">{t.css_heading()}</h2>
+                        <p class="ff-muted">{t.fit_latin_note()}</p>
+                        <CodeBlock
+                          locale={locale}
+                          label={t.css_code_label()}
+                          code={[
+                            output.fontFaces,
+                            output.fontFamily,
+                            safariCss,
+                            loadingCss(spacingEm),
+                          ]
+                            .filter(Boolean)
+                            .join('\n\n')}
+                        />
+                      </section>
+                      {hasSpacing(spacingEm) && (
+                        <section class="ff-generator__section" aria-labelledby="ff-loading-heading">
+                          <h2 id="ff-loading-heading">{t.loading_heading()}</h2>
+                          <p class="ff-muted">{t.loading_note()}</p>
+                          <CodeBlock
+                            locale={locale}
+                            label={t.loading_code_label()}
+                            code={loadingScript(
+                              selected.metrics.names.family?.trim().slice(0, 200) || 'Custom font',
+                            )}
+                          />
+                        </section>
+                      )}
+                    </>
+                  ),
+                },
+                {
+                  id: 'shift',
+                  label: t.shell_tab_shift(),
+                  content: (
+                    <LayoutShiftPanel
+                      locale={locale}
+                      model={model}
+                      verify={simulation}
+                      optimizer={optimizer}
+                    />
+                  ),
+                },
+              ]}
             />
-            <section class="ff-generator__section" aria-labelledby="ff-css-heading">
-              <h2 id="ff-css-heading">{t.css_heading()}</h2>
-              <p class="ff-muted">{t.fit_latin_note()}</p>
-              <CodeBlock
-                locale={locale}
-                label={t.css_code_label()}
-                code={[output.fontFaces, output.fontFamily, safariCss, loadingCss(spacingEm)]
-                  .filter(Boolean)
-                  .join('\n\n')}
-              />
-            </section>
-            {hasSpacing(spacingEm) && (
-              <section class="ff-generator__section" aria-labelledby="ff-loading-heading">
-                <h2 id="ff-loading-heading">{t.loading_heading()}</h2>
-                <p class="ff-muted">{t.loading_note()}</p>
-                <CodeBlock
-                  locale={locale}
-                  label={t.loading_code_label()}
-                  code={loadingScript(
-                    selected.metrics.names.family?.trim().slice(0, 200) || 'Custom font',
-                  )}
-                />
-              </section>
-            )}
-          </>
-        ) : (
-          <p class="ff-generator__empty">{t.results_empty()}</p>
+          ) : (
+            <p class="ff-generator__empty">{t.results_empty()}</p>
+          )}
+          {plan && !output && selected && <p role="alert">{t.css_error()}</p>}
+        </div>
+        {output && selected && (
+          <div class="ff-generator__dock" data-open={dockOpen}>
+            <Button
+              aria-expanded={dockOpen}
+              aria-controls="ff-dock-body"
+              onClick={() => setDockOpen((open) => !open)}
+            >
+              {dockOpen ? t.shell_hide_support() : t.shell_show_support()}
+            </Button>
+            <div id="ff-dock-body" hidden={!dockOpen}>
+              {manualSystems ? (
+                <p class="ff-muted">{t.matrix_manual()}</p>
+              ) : (
+                <SupportMatrix locale={locale} groups={matrixGroups} rating={ratingText} />
+              )}
+            </div>
+          </div>
         )}
-        {plan && !output && selected && <p role="alert">{t.css_error()}</p>}
       </div>
     </div>
   );

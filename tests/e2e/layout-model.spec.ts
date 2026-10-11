@@ -66,6 +66,7 @@ test('the layout model agrees with the browser measurement', async ({ page }) =>
   const section = page.getByRole('region', { name: 'Layout shift' });
 
   const measure = async () => {
+    await page.getByRole('tab', { name: 'Layout shift' }).click();
     await section.getByRole('button', { name: 'Verify on this device' }).click();
     const message = section.getByText(/Measured in the browser/);
     await expect(message).toBeVisible({ timeout: 25_000 });
@@ -74,11 +75,6 @@ test('the layout model agrees with the browser measurement', async ({ page }) =>
   };
 
   const good = await measure();
-  console.log(
-    'GOOD',
-    JSON.stringify(good),
-    JSON.stringify(predict().map((item: { score: number }) => item.score)),
-  );
   for (const [index, item] of predict().entries()) {
     expect(Math.abs(item.score - (good[index] ?? Number.NaN))).toBeLessThan(0.02);
   }
