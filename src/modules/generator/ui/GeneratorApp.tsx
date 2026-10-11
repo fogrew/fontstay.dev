@@ -40,7 +40,13 @@ import {
 } from '@/modules/layout-shift';
 import type { Category, OsId } from '@/modules/os-fonts';
 import { isNoCoverage, LOW_COVERAGE, sampleText } from '../lib/compute';
-import { adjustmentOf, buildCss, fallbackFamilyName, type Overrides } from '../lib/css';
+import {
+  adjustmentOf,
+  buildCss,
+  fallbackFamilyName,
+  fallbackRule,
+  type Overrides,
+} from '../lib/css';
 import { hasSpacing, loadingCss, loadingScript, type SpacingEm } from '../lib/loading';
 import {
   type Candidate,
@@ -887,8 +893,7 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
                           label={t.css_code_label()}
                           code={[
                             output.fontFaces,
-                            output.fontFamily,
-                            safariCss,
+                            fallbackRule(output.fontFamily, safariCss),
                             loadingCss(spacingEm),
                           ]
                             .filter(Boolean)

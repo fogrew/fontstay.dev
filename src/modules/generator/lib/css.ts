@@ -32,6 +32,13 @@ export function fallbackFamilyName(
   return faceCount === 1 ? `${targetFamily} Fallback` : `${targetFamily} Fallback ${family}`;
 }
 
+export const RULE_SELECTOR = 'body';
+
+export function fallbackRule(fontFamily: string, strategy: string): string {
+  const lines = [fontFamily, strategy].filter(Boolean).flatMap((block) => block.split('\n'));
+  return [`${RULE_SELECTOR} {`, ...lines.map((line) => `  ${line}`), '}'].join('\n');
+}
+
 export function buildCss(targetFamily: string, faces: readonly CssFace[], generic: Category) {
   return generateFallbackCss({
     targetFamily,

@@ -15,7 +15,7 @@ export function safariStrategyCss(aspect: number, lineHeight: number): string {
   if (!Number.isFinite(aspect) || !Number.isFinite(lineHeight) || lineHeight <= 0) {
     throw new RangeError('Invalid Safari strategy values');
   }
-  return `/* Add next to font-family: Safari has no vertical overrides, so match the x-height and fix the line box */
+  return `/* Safari has no vertical overrides: match the x-height and fix the line box */
 font-size-adjust: ${trimmed(aspect)};
 line-height: ${trimmed(lineHeight)};`;
 }
