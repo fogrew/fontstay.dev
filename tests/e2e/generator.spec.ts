@@ -724,3 +724,55 @@ test('the impact report is built from the same state as the matrix and can be do
   await page.getByRole('button', { name: /^Download: Export: Impact report/ }).click();
   expect((await download).suggestedFilename()).toBe('impact-report.md');
 });
+
+test('fonts and settings survive a reload and the share link restores the settings', async ({
+  page,
+  context,
+}) => {
+  await context.grantPermissions(['clipboard-read', 'clipboard-write']);
+  await page.goto('/en/');
+  await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
+  await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(sourceSans);
+  await expect(page.getByRole('button', { name: /^Remove: SourceSansPro-Regular/ })).toBeVisible();
+  const android = page.getByRole('checkbox', { name: 'Include Android in the stack' });
+  await android.uncheck();
+  await page.getByRole('button', { name: 'Export', exact: true }).click();
+  await page.waitForTimeout(800);
+
+  await page.reload();
+  await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
+  await expect(page.getByRole('button', { name: /^Remove: SourceSansPro-Regular/ })).toBeVisible();
+  await expect(
+    page.getByRole('checkbox', { name: 'Include Android in the stack' }),
+  ).not.toBeChecked();
+
+  await page.getByText('Save and share').click();
+  await page.getByRole('button', { name: 'Copy share link' }).click();
+  await expect(page.getByText('The link was copied.')).toBeVisible();
+  const link = await page.evaluate(() => navigator.clipboard.readText());
+  expect(link).toMatch(/#s=[A-Za-z0-9_-]+$/);
+
+  const fresh = await context.browser()?.newContext();
+  if (!fresh) throw new Error('no browser');
+  const other = await fresh.newPage();
+  await other.goto(link);
+  await other.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
+  await other.locator('input[type="file"][accept*="woff2"]').setInputFiles(sourceSans);
+  await expect(
+    other.getByRole('checkbox', { name: 'Include Android in the stack' }),
+  ).not.toBeChecked();
+  await fresh.close();
+
+  await page.getByRole('button', { name: 'Forget saved data' }).click();
+  await expect(page.getByText(/were removed from this browser/)).toBeVisible();
+  await page.reload();
+  await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
+  await expect(page.getByRole('button', { name: /^Remove: / })).toHaveCount(0);
+});
+
+test('a corrupt share link is ignored', async ({ page }) => {
+  await page.goto('/en/#s=!!!not-a-state');
+  await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
+  await expect(page.getByRole('region', { name: 'Fonts to adapt' })).toHaveCount(0);
+  await expect(page.getByText('Your web font')).toBeVisible();
+});

@@ -439,3 +439,11 @@
   display: grid;
   gap: var(--ff-space-2);
 }
+
+.ff-share {
+  display: grid;
+  gap: var(--ff-space-2);
+}
+.ff-share p {
+  margin: 0;
+}

@@ -65,6 +65,22 @@ import {
 } from '../lib/predict-input';
 import { buildReport } from '../lib/report';
 import { aspectOf, safariStrategyCss } from '../lib/safari';
+import {
+  decodeShareState,
+  encodeShareState,
+  HASH_KEY,
+  payloadFromHash,
+  SHARE_VERSION,
+  type ShareState,
+} from '../lib/share';
+import {
+  clearStorage,
+  loadSettings,
+  loadStoredFonts,
+  removeStoredFont,
+  saveSettings,
+  storeFont,
+} from '../lib/storage';
 import { CoverageMap } from './CoverageMap';
 import { CssImport } from './CssImport';
 import { ExportPanel } from './ExportPanel';
@@ -141,6 +157,12 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
     letter: { mode: 'auto' },
     word: { mode: 'auto' },
   });
+  const [restoreKey, setRestoreKey] = useState(0);
+  const [initialQuery, setInitialQuery] = useState<string>();
+  const [query, setQuery] = useState<string>();
+  const [restored, setRestored] = useState(false);
+  const pending = useRef<ShareState | null>(null);
+  const [shareMessage, setShareMessage] = useState('');
   const handleShares = useCallback((next: OsShares, mode: 'browsers' | 'manual') => {
     setShares(next);
     setManualSystems(mode === 'manual');
@@ -160,7 +182,7 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
     setFocusSlot(undefined);
   }, [focusSlot]);
 
-  const addFiles = async (files: File[]) => {
+  const addFiles = async (files: File[], persist = true) => {
     if (files.length === 0 || busy) return;
     parser.current ??= createFontParser();
     setBusy(true);
@@ -220,6 +242,10 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
     }
     setError(failures.join(' '));
     if (added.length > 0) {
+      if (persist) {
+        for (const item of added)
+          void storeFont({ name: item.fileName, bytes: item.bytes.slice(0) });
+      }
       setFonts((current) => [...current, ...added]);
       setSelectedId((current) => current ?? added[0]?.id);
       setAnnouncement(`${t.upload_added()}: ${fonts.length + added.length}`);
@@ -227,6 +253,64 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
       setAnnouncement('');
     }
   };
+
+  useEffect(() => {
+    let current = true;
+    void (async () => {
+      const payload = payloadFromHash(location.hash);
+      let state = payload ? await decodeShareState(payload) : null;
+      state ??= loadSettings();
+      if (state && current) {
+        setInitialQuery(state.query);
+        setRestoreKey((key) => key + 1);
+        setEnabledSystems(Object.fromEntries((state.disabled ?? []).map((os) => [os, false])));
+        setPicks(state.picks ?? {});
+        setRangeOn(state.range ?? false);
+        if (state.spacing) {
+          setSpacingOn(state.spacing.on);
+          const value = (number: number | undefined): FitValue =>
+            number === undefined ? { mode: 'auto' } : { mode: 'manual', value: number };
+          setSpacingValues({
+            letter: value(state.spacing.letter),
+            word: value(state.spacing.word),
+          });
+        }
+        pending.current = state;
+      }
+      const stored = await loadStoredFonts();
+      if (stored.length > 0 && current) {
+        await addFiles(
+          stored.map((item) => new File([item.bytes], item.name)),
+          false,
+        );
+      }
+      if (current) setRestored(true);
+    })();
+    return () => {
+      current = false;
+    };
+  }, []);
+  useEffect(() => {
+    const state = pending.current;
+    if (!state || fonts.length === 0) return;
+    pending.current = null;
+    const target = fonts.find((font) => font.fileName === state.fontName) ?? fonts[0];
+    if (!target) return;
+    setSelectedId(target.id);
+    if (state.kind) setKindChoice({ fontId: target.id, kind: state.kind });
+    if (state.style) setStyleChoice({ fontId: target.id, key: state.style });
+    if (state.manual) {
+      const restoredValues: Record<string, Values> = {};
+      for (const [faceId, entry] of Object.entries(state.manual)) {
+        const next: Values = { ...AUTO };
+        for (const [key, value] of Object.entries(entry)) {
+          next[key as Field] = { mode: 'manual', value };
+        }
+        restoredValues[`${target.id}:${faceId}`] = next;
+      }
+      setValues(restoredValues);
+    }
+  }, [fonts]);
 
   const selected = fonts.find((font) => font.id === selectedId) ?? fonts[0];
   const descriptorsOf = (style: FontStyleKey) => ({
@@ -464,6 +548,57 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
     fallbacks: facesForExport,
   };
   const anyRanking = Object.values(rankings.result).find(Boolean);
+  const currentShareState = (): ShareState => {
+    const manual: NonNullable<ShareState['manual']> = {};
+    for (const [key, entry] of Object.entries(values)) {
+      if (!selected || !key.startsWith(`${selected.id}:`)) continue;
+      const faceId = key.slice(String(selected.id).length + 1);
+      const numbers: Partial<Record<Field, number>> = {};
+      for (const { key: field } of FIELDS) {
+        const item = entry[field];
+        if (item.mode === 'manual') numbers[field] = item.value;
+      }
+      if (Object.keys(numbers).length > 0) manual[faceId] = numbers;
+    }
+    const letter = spacingValues.letter;
+    const word = spacingValues.word;
+    return {
+      v: SHARE_VERSION,
+      ...(query ? { query } : {}),
+      ...(selected ? { fontName: selected.fileName } : {}),
+      ...(kindChoice && kindChoice.fontId === selected?.id ? { kind: kindChoice.kind } : {}),
+      ...(styleChoice && styleChoice.fontId === selected?.id ? { style: styleChoice.key } : {}),
+      disabled: ALL_SYSTEMS.filter((os) => enabledSystems[os] === false),
+      picks,
+      manual,
+      range: rangeOn,
+      spacing: {
+        on: spacingOn,
+        ...(letter.mode === 'manual' ? { letter: letter.value } : {}),
+        ...(word.mode === 'manual' ? { word: word.value } : {}),
+      },
+    };
+  };
+  const stateKey = restored ? JSON.stringify(currentShareState()) : '';
+  useEffect(() => {
+    if (!restored || stateKey === '') return;
+    const timer = setTimeout(() => saveSettings(JSON.parse(stateKey) as ShareState), 400);
+    return () => clearTimeout(timer);
+  }, [stateKey, restored]);
+  const copyLink = async () => {
+    try {
+      const payload = await encodeShareState(currentShareState());
+      const link = `${location.origin}${location.pathname}#${HASH_KEY}${payload}`;
+      await navigator.clipboard.writeText(link);
+      setShareMessage(t.share_copied());
+    } catch {
+      setShareMessage(t.share_failed());
+    }
+  };
+  const forget = async () => {
+    await clearStorage();
+    setShareMessage(t.share_forgotten());
+  };
   const winnerOf = (os: OsId) => {
     const winner = plan?.resolution.platforms.find((item) => item.platform === os)?.winner;
     return (
@@ -906,6 +1041,7 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
                         class="ff-icon-button"
                         aria-label={`${t.upload_remove()}: ${font.fileName}`}
                         onClick={() => {
+                          void removeStoredFont(font.fileName);
                           setFonts((list) => list.filter((item) => item.id !== font.id));
                           setSelectedId((id) => (id === font.id ? undefined : id));
                           setValues({});
@@ -927,7 +1063,22 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
           <p role="alert">{t.fit_no_coverage()}</p>
         )}
         {selected && !shares && <p class="ff-muted">{t.plan_waiting()}</p>}
+        <Disclosure summary={t.share_heading()}>
+          <div class="ff-share">
+            <p class="ff-muted">{t.share_note()}</p>
+            <div class="ff-generator__buttons">
+              <Button onClick={() => void copyLink()}>{t.share_copy()}</Button>
+              <Button onClick={() => void forget()}>{t.share_forget()}</Button>
+            </div>
+            <p class="ff-muted" role="status">
+              {shareMessage}
+            </p>
+          </div>
+        </Disclosure>
         <AudienceEditor
+          key={restoreKey}
+          initialQuery={initialQuery}
+          onQueryChange={setQuery}
           locale={locale}
           onShares={handleShares}
           onEntries={setAudience}

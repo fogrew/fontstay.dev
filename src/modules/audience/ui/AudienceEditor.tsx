@@ -35,9 +35,13 @@ export function AudienceEditor({
   locale,
   onShares,
   onEntries,
+  onQueryChange,
+  initialQuery,
   active = false,
 }: {
   locale: Locale;
+  initialQuery?: string | undefined;
+  onQueryChange?: ((query: string) => void) | undefined;
   active?: boolean;
   onEntries?: ((data: AudienceData | undefined) => void) | undefined;
   onShares?: ((shares: OsShares, mode: 'browsers' | 'manual') => void) | undefined;
@@ -48,8 +52,11 @@ export function AudienceEditor({
   const fileInput = useRef<HTMLInputElement>(null);
   const actions = useRef<HTMLDivElement>(null);
   const [opened, setOpened] = useState(false);
-  const [query, setQuery] = useState<string>(DEFAULT_QUERY);
+  const [query, setQuery] = useState<string>(initialQuery ?? DEFAULT_QUERY);
   const [state, setState] = useState<State>({ loading: true });
+  useEffect(() => {
+    onQueryChange?.(query);
+  }, [query, onQueryChange]);
   const [stats, setStats] = useState<StatsInfo>();
   const [statsError, setStatsError] = useState('');
   const userStats: UsageStats | undefined = stats?.stats;
