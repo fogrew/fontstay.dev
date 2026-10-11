@@ -311,7 +311,7 @@
   "report_loading_spacing": "Letter and word spacing apply only while the font loads; keep the Font Loading API script early in the page.",
   "export_report": "Impact report (Markdown)",
   "share_heading": "Save and share",
-  "share_note": "Your fonts and settings are saved in this browser only. The link contains the settings but not the font files: whoever opens it has to add the same fonts.",
+  "share_note": "Your fonts and settings are saved in this browser only. The link contains the settings and the name of the font file but not the file itself: whoever opens it has to add the same font.",
   "share_copy": "Copy share link",
   "share_forget": "Forget saved data",
   "share_copied": "The link was copied.",

@@ -94,6 +94,12 @@ describe('parseShareState', () => {
     });
   });
 
+  it('migrates older versions step by step', () => {
+    const migrations = { 0: (state: Record<string, unknown>) => ({ ...state, range: true }) };
+    expect(parseShareState({ v: 0 }, migrations)).toEqual({ v: 1, range: true });
+    expect(parseShareState({ v: 0 }, {})).toBeNull();
+  });
+
   it('rejects unknown versions and non-objects', () => {
     expect(parseShareState({ v: 2 })).toBeNull();
     expect(parseShareState(null)).toBeNull();

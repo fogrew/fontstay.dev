@@ -47,19 +47,25 @@ type Migration = (state: Record<string, unknown>) => Record<string, unknown>;
 
 export const MIGRATIONS: Readonly<Record<number, Migration>> = {};
 
-function migrate(input: Record<string, unknown>): Record<string, unknown> | null {
+function migrate(
+  input: Record<string, unknown>,
+  migrations: Readonly<Record<number, Migration>>,
+): Record<string, unknown> | null {
   let current = input;
   while (typeof current.v === 'number' && current.v < SHARE_VERSION) {
-    const step = MIGRATIONS[current.v];
+    const step = migrations[current.v];
     if (!step) return null;
     current = { ...step(current), v: current.v + 1 };
   }
   return current.v === SHARE_VERSION ? current : null;
 }
 
-export function parseShareState(raw: unknown): ShareState | null {
+export function parseShareState(
+  raw: unknown,
+  migrations: Readonly<Record<number, Migration>> = MIGRATIONS,
+): ShareState | null {
   if (!isRecord(raw)) return null;
-  const input = migrate(raw);
+  const input = migrate(raw, migrations);
   if (!input) return null;
   const state: ShareState = { v: SHARE_VERSION };
   if (typeof input.query === 'string' && input.query.length <= 500) state.query = input.query;

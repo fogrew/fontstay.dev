@@ -157,7 +157,7 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
     letter: { mode: 'auto' },
     word: { mode: 'auto' },
   });
-  const [restoreKey, setRestoreKey] = useState(0);
+  const [forgotten, setForgotten] = useState<string>();
   const [initialQuery, setInitialQuery] = useState<string>();
   const [query, setQuery] = useState<string>();
   const [restored, setRestored] = useState(false);
@@ -260,9 +260,9 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
       const payload = payloadFromHash(location.hash);
       let state = payload ? await decodeShareState(payload) : null;
       state ??= loadSettings();
+      if (payload && state) history.replaceState(null, '', location.pathname + location.search);
       if (state && current) {
         setInitialQuery(state.query);
-        setRestoreKey((key) => key + 1);
         setEnabledSystems(Object.fromEntries((state.disabled ?? []).map((os) => [os, false])));
         setPicks(state.picks ?? {});
         setRangeOn(state.range ?? false);
@@ -293,8 +293,12 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
   useEffect(() => {
     const state = pending.current;
     if (!state || fonts.length === 0) return;
+    if (!fonts.some((font) => font.fileName === state.fontName)) {
+      if (restored) pending.current = null;
+      return;
+    }
     pending.current = null;
-    const target = fonts.find((font) => font.fileName === state.fontName) ?? fonts[0];
+    const target = fonts.find((font) => font.fileName === state.fontName);
     if (!target) return;
     setSelectedId(target.id);
     if (state.kind) setKindChoice({ fontId: target.id, kind: state.kind });
@@ -310,7 +314,7 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
       }
       setValues(restoredValues);
     }
-  }, [fonts]);
+  }, [fonts, restored]);
 
   const selected = fonts.find((font) => font.id === selectedId) ?? fonts[0];
   const descriptorsOf = (style: FontStyleKey) => ({
@@ -581,10 +585,10 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
   };
   const stateKey = restored ? JSON.stringify(currentShareState()) : '';
   useEffect(() => {
-    if (!restored || stateKey === '') return;
+    if (!restored || stateKey === '' || pending.current || stateKey === forgotten) return;
     const timer = setTimeout(() => saveSettings(JSON.parse(stateKey) as ShareState), 400);
     return () => clearTimeout(timer);
-  }, [stateKey, restored]);
+  }, [stateKey, restored, forgotten]);
   const copyLink = async () => {
     try {
       const payload = await encodeShareState(currentShareState());
@@ -597,6 +601,7 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
   };
   const forget = async () => {
     await clearStorage();
+    setForgotten(stateKey);
     setShareMessage(t.share_forgotten());
   };
   const winnerOf = (os: OsId) => {
@@ -1075,15 +1080,16 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
             </p>
           </div>
         </Disclosure>
-        <AudienceEditor
-          key={restoreKey}
-          initialQuery={initialQuery}
-          onQueryChange={setQuery}
-          locale={locale}
-          onShares={handleShares}
-          onEntries={setAudience}
-          active={fonts.length > 0}
-        />
+        {restored && (
+          <AudienceEditor
+            initialQuery={initialQuery}
+            onQueryChange={setQuery}
+            locale={locale}
+            onShares={handleShares}
+            onEntries={setAudience}
+            active={fonts.length > 0}
+          />
+        )}
       </div>
       <div class="ff-generator__main">
         <div class="ff-generator__stage">
