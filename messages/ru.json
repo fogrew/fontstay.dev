@@ -3,7 +3,7 @@
   "app_title": "fontstay.dev",
   "home_heading": "fontstay.dev",
   "locale_switcher_label": "Язык",
-  "footer_source": "Исходный код на GitHub",
+  "header_github": "Исходный код на GitHub",
   "ui_auto": "Авто",
   "ui_slider_suffix": "ползунок",
   "ui_number_suffix": "числовое поле",

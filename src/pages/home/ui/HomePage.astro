@@ -9,5 +9,5 @@ interface Props {
 const t = messagesFor(Astro.props.locale);
 ---
 
-<h1>{t.home_heading()}</h1>
+<h1 class="ff-sr-only">{t.home_heading()}</h1>
 <GeneratorApp locale={Astro.props.locale} client:load />

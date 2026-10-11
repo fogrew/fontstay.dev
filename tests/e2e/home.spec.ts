@@ -7,12 +7,12 @@ for (const locale of ['en', 'ru']) {
   test(`${locale}: renders with the right language`, async ({ page }) => {
     await page.goto(`/${locale}/`);
     await expect(page.locator('html')).toHaveAttribute('lang', locale);
-    await expect(page.getByRole('heading', { level: 1, name: 'fontstay.dev' })).toBeVisible();
+    await expect(page.getByRole('heading', { level: 1, name: 'fontstay.dev' })).toBeAttached();
   });
 
-  test(`${locale}: footer links to the repository`, async ({ page }) => {
+  test(`${locale}: header links to the repository`, async ({ page }) => {
     await page.goto(`/${locale}/`);
-    await expect(page.getByRole('contentinfo').getByRole('link')).toHaveAttribute(
+    await expect(page.getByRole('banner').getByRole('link', { name: /GitHub/ })).toHaveAttribute(
       'href',
       'https://github.com/fogrew/fontstay.dev',
     );

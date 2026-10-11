@@ -490,7 +490,7 @@ test('the result tabs work with the arrow keys', async ({ page }) => {
   await expect(preview).toHaveAttribute('aria-selected', 'true');
 });
 
-test('reordering to fix a shadowing conflict keeps the focus on the toolbar', async ({ page }) => {
+test('reordering to fix a shadowing conflict keeps the focus on the page', async ({ page }) => {
   await page.goto('/en/');
   await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
   await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(sourceSans);
@@ -504,7 +504,7 @@ test('reordering to fix a shadowing conflict keeps the focus on the toolbar', as
   await page.getByRole('button', { name: 'Hide settings' }).click();
   await expect(page.locator('p.ff-error', { hasText: /would be used instead of/ })).toBeVisible();
   await page.getByRole('button', { name: 'Reorder to fix' }).click();
-  await expect(page.locator('#ff-toolbar')).toBeFocused();
+  await expect(page.locator('#main-content')).toBeFocused();
 });
 
 test('the page itself does not scroll on desktop', async ({ page }) => {

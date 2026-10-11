@@ -116,7 +116,6 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
   const [language, setLanguage] = useState<Language>('en');
   const [shares, setShares] = useState<OsShares>();
   const [manualSystems, setManualSystems] = useState(false);
-  const [settingsOpen, setSettingsOpen] = useState(true);
   const [dockOpen, setDockOpen] = useState(true);
   const [audience, setAudience] = useState<AudienceData>();
   const [enabledSystems, setEnabledSystems] = useState<Partial<Record<OsId, boolean>>>({});
@@ -558,22 +557,8 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
     }`;
 
   return (
-    <div class="ff-generator" data-settings={settingsOpen ? 'open' : 'closed'}>
-      <div class="ff-generator__toolbar" id="ff-toolbar" tabIndex={-1}>
-        <Button
-          aria-expanded={settingsOpen}
-          aria-controls="ff-settings"
-          onClick={() => setSettingsOpen((open) => !open)}
-        >
-          {settingsOpen ? t.shell_hide_settings() : t.shell_show_settings()}
-        </Button>
-        {output && selected && coverage < LOW_COVERAGE && (
-          <p class="ff-error" role="status">
-            {t.fit_low_coverage()} {Math.round(coverage * 100)}%
-          </p>
-        )}
-      </div>
-      <div class="ff-generator__settings" id="ff-settings" hidden={!settingsOpen}>
+    <div class="ff-generator">
+      <div class="ff-generator__settings" id="ff-settings">
         <FontUpload locale={locale} busy={busy} compact={fonts.length > 0} onFiles={addFiles} />
         {error && (
           <p class="ff-error" role="alert">
@@ -836,6 +821,11 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
       </div>
       <div class="ff-generator__main">
         <div class="ff-generator__stage">
+          {output && selected && coverage < LOW_COVERAGE && (
+            <p class="ff-error" role="status">
+              {t.fit_low_coverage()} {Math.round(coverage * 100)}%
+            </p>
+          )}
           {plan &&
             (shadowed.length > 0 ||
               plan.resolution.blockedBy === 'cycle' ||
@@ -856,7 +846,7 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
                       const next = plan.resolution.suggestion?.order;
                       if (next) setSavedOrder({ key: orderKey, value: next });
                       setPlanNote(t.plan_fixed());
-                      document.getElementById('ff-toolbar')?.focus();
+                      document.getElementById('main-content')?.focus();
                     }}
                   >
                     {t.plan_fix()}

@@ -42,8 +42,7 @@ body {
   margin: 0;
 }
 header,
-main,
-footer {
+main {
   padding: var(--ff-space-6);
 }
 main {
@@ -56,9 +55,8 @@ main {
   body {
     block-size: 100dvh;
   }
-  header,
-  footer {
-    padding: var(--ff-space-2) var(--ff-space-6);
+  header {
+    padding: var(--ff-space-1) var(--ff-space-3);
   }
   main {
     display: flex;
@@ -71,8 +69,37 @@ main {
 header {
   border-block-end: 1px solid var(--ff-border);
 }
-footer {
-  border-block-start: 1px solid var(--ff-border);
+.ff-header {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--ff-space-3);
+  align-items: center;
+}
+.ff-header__end {
+  display: flex;
+  gap: var(--ff-space-3);
+  align-items: center;
+  margin-inline-start: auto;
+}
+.ff-brand {
+  font-weight: 700;
+  text-decoration: none;
+}
+.ff-burger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-block-size: 2rem;
+  min-inline-size: 2rem;
+  padding: 0.25rem;
+  color: inherit;
+  background: transparent;
+  border: 1px solid var(--ff-border);
+  border-radius: var(--ff-radius);
+  cursor: pointer;
+}
+html[data-settings="closed"] .ff-generator__settings {
+  display: none;
 }
 a {
   color: var(--ff-accent);
