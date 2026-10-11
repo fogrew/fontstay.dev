@@ -564,7 +564,7 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
                 value={current}
                 options={systems.map((os) => ({
                   value: os,
-                  label: `${systemName(os)} (${percent(shares?.[os] ?? 0)}%)`,
+                  label: systemName(os),
                 }))}
                 onChange={(value) => {
                   setActiveOs(value as OsId);
@@ -608,7 +608,7 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
                       setEnabledSystems((all) => ({ ...all, [os]: checked }));
                     }}
                   />{' '}
-                  {systemName(os)} ({percent(shares?.[os] ?? 0)}%)
+                  {t.systems_share({ system: systemName(os), share: percent(shares?.[os] ?? 0) })}
                 </label>
               ))}
             </fieldset>

@@ -161,7 +161,7 @@
   "matrix_partial_hint": "работает только size-adjust; стратегия для Safari в CSS фиксирует межстрочный интервал, сдвиг оценён с её учётом.",
   "matrix_none_hint": "запасной шрифт используется как есть.",
   "matrix_unknown_hint": "нет данных о дескрипторах для этой версии.",
-  "systems_legend": "Системы с отдельным запасным шрифтом",
+  "systems_legend": "Системы с отдельным запасным шрифтом (доля вашей аудитории)",
   "matrix_nodata": "Для этой системы пока нет данных о шрифтах",
   "matrix_scroll": "Поддержка по версиям браузеров",
   "matrix_manual": "Матрице поддержки нужен запрос по браузерам; в ручном режиме систем данных о браузерах нет.",
@@ -181,5 +181,6 @@
   "preview_phrase_fr": "Portez ce vieux whisky au juge blond qui fume",
   "preview_phrase_es": "El veloz murciélago hindú comía feliz cardillo y kiwi",
   "preview_phrase_pl": "Pchnąć w tę łódź jeża lub ośm skrzyń fig",
-  "preview_phrase_el": "Ξεσκεπάζω την ψυχοφθόρα βδελυγμία"
+  "preview_phrase_el": "Ξεσκεπάζω την ψυχοφθόρα βδελυγμία",
+  "systems_share": "{system} · {share}% аудитории"
 }

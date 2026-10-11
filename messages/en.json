@@ -161,7 +161,7 @@
   "matrix_partial_hint": "only size-adjust works; the Safari strategy in the CSS fixes the line height and the shift assumes it.",
   "matrix_none_hint": "the fallback font is used as it is.",
   "matrix_unknown_hint": "no data on the descriptors for this version.",
-  "systems_legend": "Systems with their own fallback",
+  "systems_legend": "Systems that get their own fallback (share of your audience)",
   "matrix_nodata": "No font data for this system yet",
   "matrix_scroll": "Support by browser version",
   "matrix_manual": "The support matrix needs a browser query; the manual system mode has no browser data.",
@@ -181,5 +181,6 @@
   "preview_phrase_fr": "Portez ce vieux whisky au juge blond qui fume",
   "preview_phrase_es": "El veloz murciélago hindú comía feliz cardillo y kiwi",
   "preview_phrase_pl": "Pchnąć w tę łódź jeża lub ośm skrzyń fig",
-  "preview_phrase_el": "Ξεσκεπάζω την ψυχοφθόρα βδελυγμία"
+  "preview_phrase_el": "Ξεσκεπάζω την ψυχοφθόρα βδελυγμία",
+  "systems_share": "{system} · {share}% of the audience"
 }
