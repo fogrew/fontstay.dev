@@ -588,12 +588,6 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
             {selected &&
               selected.metrics.style.category === null &&
               kindChoice?.fontId !== selected.id && <p class="ff-muted">{t.font_type_unknown()}</p>}
-            {selected?.metrics.style.italic && <p class="ff-muted">{t.font_italic_note()}</p>}
-            {selected && selected.metrics.style.weight !== 400 && (
-              <p class="ff-muted">
-                {t.font_weight_note({ weight: selected.metrics.style.weight })}
-              </p>
-            )}
             <fieldset class="ff-generator__systems">
               <legend>{t.systems_legend()}</legend>
               {systems.map((os) => (
