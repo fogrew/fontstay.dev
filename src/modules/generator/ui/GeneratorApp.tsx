@@ -63,6 +63,7 @@ import {
   variantPredictFont,
   webPredictFont,
 } from '../lib/predict-input';
+import { buildReport } from '../lib/report';
 import { aspectOf, safariStrategyCss } from '../lib/safari';
 import { CoverageMap } from './CoverageMap';
 import { CssImport } from './CssImport';
@@ -341,6 +342,48 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
       }
     : { letter: 0, word: 0 };
   const systemName = (os: OsId) => t[`audience_os_${os}`]();
+  const reportText = () =>
+    buildReport({
+      locale,
+      family: exportFamily,
+      fileName: selected?.fileName ?? '',
+      audienceCount: audience?.entries.length,
+      matrix: matrixGroups,
+      support: audience ? descriptorSupport(audience.entries) : [],
+      fontCoverage: coverage,
+      systems: systems.map((os) => ({
+        os,
+        label: systemName(os),
+        enabled: isEnabled(os),
+        fonts: [
+          ...new Set(chosen.filter((item) => item.os === os).map((item) => item.candidate.family)),
+        ].join(', '),
+      })),
+      warnings: [
+        ...(coverage < LOW_COVERAGE
+          ? [`${t.fit_low_coverage()} ${Math.round(coverage * 100)}%`]
+          : []),
+        ...(reordered ? [t.plan_reordered()] : []),
+        ...shadowed.map((item) =>
+          t.plan_shadowed({
+            system: systemName(item.platform.split('#')[0] as OsId),
+            winner: familyOf(item.winner ?? ''),
+            font: familyOf(item.preferredFace),
+          }),
+        ),
+        ...(uncovered.length > 0 && shares
+          ? [
+              t.plan_uncovered({
+                systems: uncovered.map(systemName).join(', '),
+                share: percent(uncovered.reduce((sum, os) => sum + shares[os], 0)),
+              }),
+            ]
+          : []),
+      ],
+      strategy: safariCss !== '',
+      spacing: spacingOn && hasSpacing(spacingEm),
+      rating: (shift) => ratingText(shift).level,
+    });
   const coverageRanges = useMemo(
     () => (selected ? compactRanges(selected.metrics.codePoints) : []),
     [selected],
@@ -983,7 +1026,7 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
                   id: 'export',
                   label: t.export_heading(),
                   open: false,
-                  content: <ExportPanel locale={locale} input={exportInput} />,
+                  content: <ExportPanel locale={locale} input={exportInput} report={reportText} />,
                 },
                 {
                   id: 'coverage',

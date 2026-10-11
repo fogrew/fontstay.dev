@@ -706,3 +706,21 @@ test('every export format can be shown, copied and downloaded', async ({ page })
   await page.getByRole('button', { name: /^Download: Export: Font Loading API script/ }).click();
   expect((await download).suggestedFilename()).toBe('font-loading.js');
 });
+
+test('the impact report is built from the same state as the matrix and can be downloaded', async ({
+  page,
+}) => {
+  await page.goto('/en/');
+  await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
+  await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(sourceSans);
+  await page.getByRole('button', { name: 'Export', exact: true }).click();
+  await page.getByLabel('Format').selectOption({ label: 'Impact report (Markdown)' });
+  const report = page.getByRole('region', { name: 'Export: Impact report (Markdown)' });
+  await expect(report).toContainText('# Impact report: Source Sans Pro');
+  await expect(report).toContainText('## Layout shift');
+  await expect(report).toContainText('| Android |');
+  await expect(report).toContainText('`size-adjust`');
+  const download = page.waitForEvent('download');
+  await page.getByRole('button', { name: /^Download: Export: Impact report/ }).click();
+  expect((await download).suggestedFilename()).toBe('impact-report.md');
+});

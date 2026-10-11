@@ -3,10 +3,21 @@ import { type Locale, messagesFor } from '@/common/i18n';
 import { CodeBlock, Select } from '@/common/ui';
 import { buildExport, EXPORT_FORMATS, type ExportFormat, type ExportInput } from '@/modules/export';
 
-export function ExportPanel({ locale, input }: { locale: Locale; input: ExportInput }) {
+type Choice = ExportFormat | 'report';
+
+export function ExportPanel({
+  locale,
+  input,
+  report,
+}: {
+  locale: Locale;
+  input: ExportInput;
+  report: () => string;
+}) {
   const t = messagesFor(locale);
-  const [format, setFormat] = useState<ExportFormat>('css');
-  const labels: Record<ExportFormat, string> = {
+  const [format, setFormat] = useState<Choice>('css');
+  const labels: Record<Choice, string> = {
+    report: t.export_report(),
     css: t.export_css(),
     variables: t.export_variables(),
     tailwind: t.export_tailwind(),
@@ -17,14 +28,20 @@ export function ExportPanel({ locale, input }: { locale: Locale; input: ExportIn
     preload: t.export_preload(),
     loading: t.export_loading(),
   };
-  const file = buildExport(format, input);
+  const file =
+    format === 'report'
+      ? { text: report(), fileName: 'impact-report.md' }
+      : buildExport(format, input);
   return (
     <div class="ff-export">
       <Select
         label={t.export_format_label()}
         value={format}
-        options={EXPORT_FORMATS.map((value) => ({ value, label: labels[value] }))}
-        onChange={(value) => setFormat(value as ExportFormat)}
+        options={[...EXPORT_FORMATS, 'report' as const].map((value) => ({
+          value,
+          label: labels[value],
+        }))}
+        onChange={(value) => setFormat(value as Choice)}
       />
       <CodeBlock
         locale={locale}
