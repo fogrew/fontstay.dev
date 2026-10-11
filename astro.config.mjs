@@ -15,7 +15,7 @@ export default defineConfig({
         "worker-src 'self'",
         "frame-src 'self'",
         "font-src 'self' blob: data:",
-        "connect-src 'self'",
+        "connect-src 'self' https://fonts.googleapis.com https://fonts.gstatic.com",
         "img-src 'self' data: blob:",
         "object-src 'none'",
         "base-uri 'none'",

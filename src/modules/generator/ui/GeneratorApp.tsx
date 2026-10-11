@@ -34,6 +34,7 @@ import {
   isFontCollection,
   MAX_FONT_BYTES,
 } from '@/modules/font-metrics';
+import { GoogleFontsPicker } from '@/modules/google-fonts';
 import { LayoutShiftPanel, type PanelInput, ratingOf, worstShift } from '@/modules/layout-shift';
 import type { Category, OsId } from '@/modules/os-fonts';
 import { autoFit } from '../lib/auto-fit';
@@ -772,6 +773,7 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
     <div class="ff-generator">
       <div class="ff-generator__settings" id="ff-settings">
         <FontUpload locale={locale} busy={busy} compact={fonts.length > 0} onFiles={addFiles} />
+        <GoogleFontsPicker locale={locale} busy={busy} onFile={(file) => void addFiles([file])} />
         <CssImport locale={locale} busy={busy} onFiles={addFiles} />
         {error && (
           <p class="ff-error" role="alert">

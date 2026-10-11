@@ -16,7 +16,7 @@ The app reads font files that users choose and builds CSS and previews from them
 | `worker-src` | `'self'` | The font parser worker is a same-origin bundled module; no blob workers. |
 | `frame-src` | `'self'` | Same-origin frames only (planned CLS simulator). |
 | `font-src` | `'self' blob: data:` | Uploaded fonts are loaded from bytes in memory. |
-| `connect-src` | `'self'` | No network access to other origins. |
+| `connect-src` | `'self' https://fonts.googleapis.com https://fonts.gstatic.com` | Only the Google Fonts picker (stylesheet and font file downloads); fonts are then loaded from memory. |
 | `img-src` | `'self' data: blob:` | |
 | `object-src`, `base-uri` | `'none'` | |
 | `form-action` | `'self'` | |
@@ -36,7 +36,7 @@ The app reads font files that users choose and builds CSS and previews from them
 - No `eval`, no inline event handlers, no `dangerouslySetInnerHTML`.
 - New origins, `blob:` or `data:` sources, or any `'unsafe-*'` keyword must be justified in the PR and listed in the table above.
 - Same-origin iframes (CLS simulator) are allowed by `frame-ancestors 'self'`; framing by other origins is not.
-- Features that load external resources add their origin to the matching directive in the PR that introduces them (for example the Google Fonts picker adds `https://fonts.gstatic.com` to `font-src` and `connect-src`).
+- Features that load external resources add their origin to the matching directive in the PR that introduces them (the Google Fonts picker adds `https://fonts.googleapis.com` and `https://fonts.gstatic.com` to `connect-src`).
 - The service worker planned in #78 must be allowed by the policy and served with `Cache-Control: no-cache`.
 
 ## Testing

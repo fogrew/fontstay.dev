@@ -636,3 +636,48 @@ test('a font embedded in pasted CSS can be added and other sources are only link
   await list.getByRole('button', { name: 'Add to the fonts' }).click();
   await expect(page.getByRole('button', { name: /^Remove: Embedded/ })).toBeVisible();
 });
+
+test('a Google Fonts family can be searched and downloaded through the two allowed origins', async ({
+  page,
+}) => {
+  const cors = { 'access-control-allow-origin': '*' };
+  await page.route('https://fonts.googleapis.com/**', (route) =>
+    route.fulfill({
+      status: 200,
+      headers: { ...cors, 'content-type': 'text/css' },
+      body: '/* latin */\n@font-face { font-family: "Open Sans"; src: url(https://fonts.gstatic.com/s/opensans/latin.woff2) format("woff2"); }',
+    }),
+  );
+  await page.route('https://fonts.gstatic.com/**', (route) =>
+    route.fulfill({
+      status: 200,
+      headers: { ...cors, 'content-type': 'font/woff2' },
+      body: readFileSync(sourceSans),
+    }),
+  );
+  await page.goto('/en/');
+  await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
+  await page.getByText('Google Fonts', { exact: true }).click();
+  await page.getByLabel('Search families').fill('open sans');
+  await expect(page.getByText(/\d+ families shown/)).toBeVisible();
+  const list = page.getByRole('list', { name: 'Google Fonts families' });
+  await list.getByRole('button', { name: /^Open Sans/ }).click();
+  await expect(page.getByLabel('Script subset')).toHaveValue('latin');
+  await page.getByRole('button', { name: 'Add to the fonts' }).last().click();
+  await expect(page.getByText('Open Sans was added.')).toBeVisible();
+  await expect(page.getByRole('button', { name: /^Remove: Open-Sans-400-latin/ })).toBeVisible();
+});
+
+test('a failed Google Fonts download is explained', async ({ page }) => {
+  await page.route('https://fonts.googleapis.com/**', (route) => route.abort());
+  await page.goto('/en/');
+  await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
+  await page.getByText('Google Fonts', { exact: true }).click();
+  await page.getByLabel('Search families').fill('lora');
+  await page
+    .getByRole('list', { name: 'Google Fonts families' })
+    .getByRole('button', { name: /^Lora/ })
+    .click();
+  await page.getByRole('button', { name: 'Add to the fonts' }).last().click();
+  await expect(page.getByText(/Could not download the font/)).toBeVisible();
+});

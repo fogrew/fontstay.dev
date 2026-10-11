@@ -399,3 +399,38 @@
   display: grid;
   gap: var(--ff-space-1);
 }
+
+.ff-google,
+.ff-google__chosen {
+  display: grid;
+  gap: var(--ff-space-2);
+}
+.ff-google p {
+  margin: 0;
+}
+.ff-google__list {
+  display: grid;
+  gap: 1px;
+  max-block-size: 14rem;
+  overflow-y: auto;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.ff-google__item {
+  display: flex;
+  inline-size: 100%;
+  justify-content: space-between;
+  gap: var(--ff-space-2);
+  min-block-size: 2rem;
+  padding: var(--ff-space-1) var(--ff-space-2);
+  border: 1px solid var(--ff-border);
+  border-radius: var(--ff-radius);
+  background: transparent;
+  color: inherit;
+  text-align: start;
+  cursor: pointer;
+}
+.ff-google__item[aria-pressed="true"] {
+  background: var(--ff-state-full);
+}
