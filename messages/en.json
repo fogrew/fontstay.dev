@@ -256,7 +256,7 @@
   "cssimport_open_google": "Open on Google Fonts",
   "cssimport_too_large": "The CSS is too large to read here.",
   "google_heading": "Google Fonts",
-  "google_note": "Pick a family and download one style and one script subset from Google. This is the only feature that contacts another server (fonts.googleapis.com and fonts.gstatic.com).",
+  "google_note": "Pick a family and download one style and one script subset from Google. This is the only feature that contacts another server (fonts.googleapis.com and fonts.gstatic.com); Google sees your IP address and no referrer.",
   "google_search_label": "Search families",
   "google_category_label": "Category",
   "google_category_all": "All",
@@ -270,8 +270,8 @@
   "google_subset_label": "Script subset",
   "google_add": "Add to the fonts",
   "google_downloading": "Downloading…",
-  "google_added": "{name} was added.",
   "google_error_network": "Could not download the font. Check the connection and that fonts.googleapis.com is reachable.",
   "google_error_subset": "Google has no file for this script subset and style.",
-  "google_error_file": "The downloaded file was rejected."
+  "google_error_file": "The downloaded file was rejected.",
+  "google_downloaded": "Downloaded {name}."
 }

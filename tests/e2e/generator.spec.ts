@@ -664,7 +664,7 @@ test('a Google Fonts family can be searched and downloaded through the two allow
   await list.getByRole('button', { name: /^Open Sans/ }).click();
   await expect(page.getByLabel('Script subset')).toHaveValue('latin');
   await page.getByRole('button', { name: 'Add to the fonts' }).last().click();
-  await expect(page.getByText('Open Sans was added.')).toBeVisible();
+  await expect(page.getByText('Downloaded Open Sans.')).toBeVisible();
   await expect(page.getByRole('button', { name: /^Remove: Open-Sans-400-latin/ })).toBeVisible();
 });
 

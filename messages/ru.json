@@ -256,7 +256,7 @@
   "cssimport_open_google": "Открыть в Google Fonts",
   "cssimport_too_large": "CSS слишком большой, чтобы прочитать его здесь.",
   "google_heading": "Google Fonts",
-  "google_note": "Выберите семейство и скачайте одно начертание и один набор символов (subset) с серверов Google. Это единственная функция, которая обращается к другому серверу (fonts.googleapis.com и fonts.gstatic.com).",
+  "google_note": "Выберите семейство и скачайте одно начертание и один набор символов (subset) с серверов Google. Это единственная функция, которая обращается к другому серверу (fonts.googleapis.com и fonts.gstatic.com); Google видит ваш IP-адрес, но не адрес страницы.",
   "google_search_label": "Поиск семейства",
   "google_category_label": "Категория",
   "google_category_all": "Все",
@@ -270,8 +270,8 @@
   "google_subset_label": "Набор символов",
   "google_add": "Добавить в шрифты",
   "google_downloading": "Скачиваю…",
-  "google_added": "Шрифт {name} добавлен.",
   "google_error_network": "Не удалось скачать шрифт. Проверьте соединение и доступность fonts.googleapis.com.",
   "google_error_subset": "У Google нет файла для этого набора символов и начертания.",
-  "google_error_file": "Скачанный файл отклонён."
+  "google_error_file": "Скачанный файл отклонён.",
+  "google_downloaded": "Скачано: {name}."
 }

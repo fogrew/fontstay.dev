@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'preact/hooks';
 import { type Locale, messagesFor } from '@/common/i18n';
 import { Button, Disclosure, Select } from '@/common/ui';
 import {
+  CJK_SUBSETS,
   downloadFont,
   type GoogleFamily,
   GoogleFontsError,
@@ -66,7 +67,8 @@ export function GoogleFontsPicker({
   const choose = (family: GoogleFamily) => {
     setChosen(family);
     setStyle(family.styles.includes('400') ? '400' : (family.styles[0] ?? '400'));
-    setSubset(family.subsets.includes('latin') ? 'latin' : (family.subsets[0] ?? 'latin'));
+    const subsets = family.subsets.filter((name) => !CJK_SUBSETS.has(name));
+    setSubset(subsets.includes('latin') ? 'latin' : (subsets[0] ?? 'latin'));
     setMessage('');
   };
 
@@ -76,7 +78,7 @@ export function GoogleFontsPicker({
     setMessage(t.google_downloading());
     try {
       onFile(await downloadFont(chosen.name, style, subset));
-      setMessage(t.google_added({ name: chosen.name }));
+      setMessage(t.google_downloaded({ name: chosen.name }));
     } catch (failure) {
       const code = failure instanceof GoogleFontsError ? failure.code : 'network';
       setMessage(
@@ -154,7 +156,9 @@ export function GoogleFontsPicker({
             <Select
               label={t.google_subset_label()}
               value={subset}
-              options={chosen.subsets.map((name) => ({ value: name, label: name }))}
+              options={chosen.subsets
+                .filter((name) => !CJK_SUBSETS.has(name))
+                .map((name) => ({ value: name, label: name }))}
               onChange={setSubset}
             />
             <Button variant="primary" disabled={busy || downloading} onClick={() => void add()}>
