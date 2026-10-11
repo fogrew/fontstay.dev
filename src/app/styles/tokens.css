@@ -13,6 +13,12 @@
   --ff-state-partial: light-dark(#f3e1a6, #5a4710);
   --ff-state-none: light-dark(#f3c4bd, #5c2220);
   --ff-state-unknown: light-dark(#dedede, #3a3a3a);
+  --ff-rating-good: light-dark(#1b6e31, #8fdca4);
+  --ff-rating-good-text: light-dark(#ffffff, #0a2a12);
+  --ff-rating-needs: light-dark(#8a5a00, #f3c969);
+  --ff-rating-needs-text: light-dark(#ffffff, #2b1d00);
+  --ff-rating-poor: light-dark(#a8201a, #f4a6a0);
+  --ff-rating-poor-text: light-dark(#ffffff, #3a0a07);
   --ff-space-1: 0.25rem;
   --ff-space-2: 0.5rem;
   --ff-space-3: 0.75rem;
@@ -147,6 +153,12 @@ h3 {
     --ff-state-partial: Canvas;
     --ff-state-none: Canvas;
     --ff-state-unknown: Canvas;
+    --ff-rating-good: Canvas;
+    --ff-rating-good-text: CanvasText;
+    --ff-rating-needs: Canvas;
+    --ff-rating-needs-text: CanvasText;
+    --ff-rating-poor: Canvas;
+    --ff-rating-poor-text: CanvasText;
   }
 }
 main > h1 {

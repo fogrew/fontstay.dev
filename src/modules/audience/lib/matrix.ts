@@ -10,6 +10,7 @@ export interface MatrixCell {
   label: string;
   state: CellState;
   shift: number | null;
+  baseline: number | null;
 }
 
 export interface MatrixColumn {
@@ -108,7 +109,16 @@ export function buildMatrix(
       if (run.length === 0 || runState === undefined) return;
       const shift =
         system?.enabled && runState !== 'unknown' ? (system.shift(runState) ?? null) : null;
-      cells.push({ label: versionRanges(run, released).join(', '), state: runState, shift });
+      const baseline =
+        system?.enabled && (runState === 'full' || runState === 'partial')
+          ? (system.shift('none') ?? null)
+          : null;
+      cells.push({
+        label: versionRanges(run, released).join(', '),
+        state: runState,
+        shift,
+        baseline,
+      });
       run = [];
     };
     for (const item of items) {

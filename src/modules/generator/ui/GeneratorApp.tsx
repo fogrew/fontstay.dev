@@ -29,16 +29,9 @@ import {
   type FontParser,
   MAX_FONT_BYTES,
 } from '@/modules/font-metrics';
-import {
-  type Dimension,
-  LayoutShiftPanel,
-  type OptimizerSetup,
-  type PanelInput,
-  type PanelModel,
-  ratingOf,
-  scoreOf,
-} from '@/modules/layout-shift';
+import { LayoutShiftPanel, type PanelInput, ratingOf, worstShift } from '@/modules/layout-shift';
 import type { Category, OsId } from '@/modules/os-fonts';
+import { autoFit } from '../lib/auto-fit';
 import { isNoCoverage, LOW_COVERAGE, sampleText } from '../lib/compute';
 import {
   adjustmentOf,
@@ -57,7 +50,6 @@ import {
   systemsWithFonts,
 } from '../lib/per-os';
 import {
-  fallbackPredictFont,
   STRATEGY_LINE_HEIGHT,
   type Variant,
   variantPredictFont,
@@ -295,8 +287,6 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
     : { letter: 0, word: 0 };
   const systemName = (os: OsId) => t[`audience_os_${os}`]();
   let simulation: PanelInput | undefined;
-  let model: PanelModel | undefined;
-  let optimizer: OptimizerSetup | undefined;
   let output: ReturnType<typeof buildCss> | undefined;
   let adjustment: Overrides | undefined;
   if (selected && plan && previewPick) {
@@ -313,32 +303,6 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
         : [];
     });
     adjustment = adjustmentOf(baseOf(previewPick), manualOf(previewPick.id));
-    const anyRanking = Object.values(rankings.result).find(Boolean);
-    if (anyRanking) {
-      model = {
-        web: webPredictFont(selected.metrics, anyRanking),
-        language,
-        faces: plan.order.flatMap((id) => {
-          const candidate = chosen.find((item) => item.faceId === id)?.candidate;
-          if (!candidate) return [];
-          return [
-            {
-              id,
-              label: candidate.family,
-              systems: `(${chosen
-                .filter((item) => item.faceId === id)
-                .map((item) => systemName(item.os))
-                .join(', ')})`,
-              font: fallbackPredictFont(
-                candidate,
-                adjustmentOf(baseOf(candidate), manualOf(id)),
-                spacingEm,
-              ),
-            },
-          ];
-        }),
-      };
-    }
     try {
       const family = selected.metrics.names.family?.trim().slice(0, 200) || 'Custom font';
       output = buildCss(family, faces, kind);
@@ -353,107 +317,10 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
           language,
           spacing: { letterEm: spacingEm.letter, wordEm: spacingEm.word },
         };
-        optimizer = optimizerFor(previewPick);
       }
     } catch (failure) {
       if (!(failure instanceof CssExportError)) throw failure;
     }
-  }
-
-  function optimizerFor(pick: Candidate): OptimizerSetup {
-    const base = adjustmentOf(baseOf(pick), manualOf(pick.id));
-    const manual = manualOf(pick.id);
-    const dimension = (
-      key: string,
-      value: number,
-      min: number,
-      max: number,
-      step: number,
-      pinned: boolean,
-    ): Dimension => ({ key, value, min, max, step, pinned });
-    const letter = spacingValues.letter;
-    const word = spacingValues.word;
-    const dimensions = [
-      dimension(
-        'sizeAdjust',
-        base.sizeAdjust,
-        base.sizeAdjust * 0.8,
-        base.sizeAdjust * 1.2,
-        0.01,
-        manual.sizeAdjust !== undefined,
-      ),
-      dimension(
-        'ascentOverride',
-        base.ascentOverride,
-        Math.max(0, base.ascentOverride - 0.3),
-        base.ascentOverride + 0.3,
-        0.02,
-        manual.ascentOverride !== undefined,
-      ),
-      dimension(
-        'descentOverride',
-        base.descentOverride,
-        Math.max(0, base.descentOverride - 0.3),
-        base.descentOverride + 0.3,
-        0.02,
-        manual.descentOverride !== undefined,
-      ),
-      dimension(
-        'lineGapOverride',
-        base.lineGapOverride,
-        0,
-        base.lineGapOverride + 0.3,
-        0.02,
-        manual.lineGapOverride !== undefined,
-      ),
-      dimension(
-        'letterSpacing',
-        spacingEm.letter,
-        -0.03,
-        0.03,
-        0.002,
-        !spacingOn || letter.mode === 'manual',
-      ),
-      dimension(
-        'wordSpacing',
-        spacingEm.word,
-        -0.2,
-        0.2,
-        0.01,
-        !spacingOn || word.mode === 'manual',
-      ),
-    ];
-    return {
-      dimensions,
-      fontFor: (v) =>
-        fallbackPredictFont(
-          pick,
-          {
-            sizeAdjust: v.sizeAdjust ?? base.sizeAdjust,
-            ascentOverride: v.ascentOverride ?? base.ascentOverride,
-            descentOverride: v.descentOverride ?? base.descentOverride,
-            lineGapOverride: v.lineGapOverride ?? base.lineGapOverride,
-          },
-          { letter: v.letterSpacing ?? 0, word: v.wordSpacing ?? 0 },
-        ),
-      applied: Boolean(optimized[valueKey(pick.id)]) || optimizedSpacing !== undefined,
-      onApply: (v) => {
-        setOptimized((all) => ({
-          ...all,
-          [valueKey(pick.id)]: {
-            sizeAdjust: v.sizeAdjust ?? base.sizeAdjust,
-            ascentOverride: v.ascentOverride ?? base.ascentOverride,
-            descentOverride: v.descentOverride ?? base.descentOverride,
-            lineGapOverride: v.lineGapOverride ?? base.lineGapOverride,
-          },
-        }));
-        setSpacingResult({
-          key: spacingKey,
-          value: { letter: v.letterSpacing ?? 0, word: v.wordSpacing ?? 0 },
-        });
-      },
-      onReset: resetOptimization,
-    };
   }
 
   const vertical = audience ? lacksVerticalOverrides(descriptorSupport(audience.entries)) : 0;
@@ -494,7 +361,7 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
           variant,
         );
         if (font) {
-          value = Math.max(...scoreOf({ web, language }, font).map((result) => result.score));
+          value = worstShift({ web, language }, font);
         }
       }
       shiftCache.set(key, value);
@@ -526,10 +393,65 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
         : [],
     [audience, matrixKey],
   );
+
+  const fitFaces = [
+    ...new Map(
+      [...(previewPick ? [previewPick] : []), ...chosen.map((item) => item.candidate)].map(
+        (candidate) => [candidate.id, candidate],
+      ),
+    ).values(),
+  ];
+  const fitKey = JSON.stringify([
+    selected?.id,
+    language,
+    kind,
+    spacingOn,
+    spacingOn ? [spacingKey, spacingValues] : null,
+    fitFaces.map((candidate) => [candidate.id, manualOf(candidate.id)]),
+  ]);
+  useEffect(() => {
+    if (!selected || !anyRanking || fitFaces.length === 0) return;
+    const controller = new AbortController();
+    const model = { web: webPredictFont(selected.metrics, anyRanking), language };
+    const { letter: letterValue, word: wordValue } = spacingValues;
+    const letterManual = letterValue.mode === 'manual';
+    const wordManual = wordValue.mode === 'manual';
+    void (async () => {
+      let spacing = {
+        letter: spacingOn && letterValue.mode === 'manual' ? letterValue.value / 100 : 0,
+        word: spacingOn && wordValue.mode === 'manual' ? wordValue.value / 100 : 0,
+      };
+      const found: Record<string, Overrides> = {};
+      let spacingFound: SpacingEm | undefined;
+      for (const [index, candidate] of fitFaces.entries()) {
+        const free = spacingOn && index === 0;
+        const result = await autoFit({
+          candidate,
+          manual: manualOf(candidate.id),
+          spacing,
+          pinSpacing: { letter: !free || letterManual, word: !free || wordManual },
+          model,
+          signal: controller.signal,
+        });
+        if (controller.signal.aborted) return;
+        if (!result) continue;
+        found[valueKey(candidate.id)] = result.adjustment;
+        if (free) {
+          spacing = result.spacing;
+          spacingFound = result.spacing;
+        }
+      }
+      setOptimized((all) => ({ ...all, ...found }));
+      if (spacingFound) setSpacingResult({ key: spacingKey, value: spacingFound });
+    })();
+    return () => controller.abort();
+  }, [fitKey]);
   const ratingText = (shift: number) => {
     const rating = ratingOf(shift);
-    if (rating === 'good') return t.cls_rating_good();
-    return rating === 'needs-improvement' ? t.cls_rating_needs() : t.cls_rating_poor();
+    if (rating === 'good') return { level: 'good' as const, label: t.cls_rating_good() };
+    return rating === 'needs-improvement'
+      ? { level: 'needs' as const, label: t.cls_rating_needs() }
+      : { level: 'poor' as const, label: t.cls_rating_poor() };
   };
 
   const percent = (value: number) =>
@@ -919,23 +841,21 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
                 {
                   id: 'support',
                   label: t.matrix_heading(),
-                  content: manualSystems ? (
-                    <p class="ff-muted">{t.matrix_manual()}</p>
-                  ) : (
-                    <SupportMatrix locale={locale} groups={matrixGroups} rating={ratingText} />
-                  ),
-                },
-                {
-                  id: 'shift',
-                  label: t.shell_tab_shift(),
-                  open: false,
                   content: (
-                    <LayoutShiftPanel
-                      locale={locale}
-                      model={model}
-                      verify={simulation}
-                      optimizer={optimizer}
-                    />
+                    <>
+                      {manualSystems ? (
+                        <p class="ff-muted">{t.matrix_manual()}</p>
+                      ) : (
+                        <SupportMatrix locale={locale} groups={matrixGroups} rating={ratingText} />
+                      )}
+                      {simulation && (
+                        <LayoutShiftPanel
+                          locale={locale}
+                          verify={simulation}
+                          signature={output.fontFaces}
+                        />
+                      )}
+                    </>
                   ),
                 },
               ]}

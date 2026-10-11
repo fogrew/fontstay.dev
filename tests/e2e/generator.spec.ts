@@ -1,6 +1,6 @@
 import AxeBuilder from '@axe-core/playwright';
 import { buildFont } from '../../src/modules/font-metrics/lib/forged.test-util';
-import { expect, openSection, test } from './fixtures';
+import { expect, test } from './fixtures';
 
 const fonts = new URL('../fixtures/fonts/', import.meta.url).pathname.replace(
   /^\/([A-Za-z]:)/,
@@ -380,28 +380,19 @@ test('a system can be switched off and then falls back to the generic family', a
   await expect(matrix).not.toContainText('Generic fallback');
 });
 
-test('the layout shift estimate covers every fallback and viewport and can be verified', async ({
+test('the support matrix shows the shift with and without the CSS and the result can be verified', async ({
   page,
 }) => {
   await page.goto('/en/');
   await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
   await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(sourceSans);
-  await openSection(page, 'Layout shift');
-  const section = page.getByRole('region', { name: 'Layout shift' });
-  const table = section.getByRole('table');
-  for (const width of ['412px', '1350px']) {
-    await expect(table.getByRole('columnheader', { name: width })).toBeVisible();
-  }
-  await expect(table.getByRole('row').nth(1)).toContainText(/(Good|Needs improvement|Poor)/);
-  await expect(section.getByLabel('Extra viewport width (px)')).toHaveCount(0);
-  await expect(section.getByRole('alert')).toHaveCount(0);
+  const matrix = page.getByRole('region', { name: 'Browser support' });
+  await expect(matrix.locator('[data-rating]').first()).toBeVisible();
+  await expect(matrix.getByText(/without the CSS/).first()).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Layout shift', exact: true })).toHaveCount(0);
 
-  await page.getByLabel('System', { exact: true }).selectOption('windows');
-  await page.getByRole('button', { name: 'Add fallback' }).click();
-  await expect(table.getByRole('row').nth(2)).toBeVisible();
-
-  await section.getByRole('button', { name: 'Verify on this device' }).click();
-  await expect(section.getByText(/Measured in the browser/)).toBeVisible({ timeout: 25_000 });
+  await page.getByRole('button', { name: 'Verify on this device' }).click();
+  await expect(page.getByText(/Measured in the browser/)).toBeVisible({ timeout: 25_000 });
 });
 
 test('spacing adds the fonts-loading CSS and script', async ({ page }) => {
@@ -422,26 +413,21 @@ test('spacing adds the fonts-loading CSS and script', async ({ page }) => {
   await expect(script).toContainText('Source Sans Pro');
 });
 
-test('Optimize for CLS keeps pinned values and can be reset', async ({ page }) => {
+test('values are optimized automatically and pinned values stay', async ({ page }) => {
   await page.goto('/en/');
   await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
   await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(sourceSans);
   await page.getByLabel('System', { exact: true }).selectOption('windows');
   await page.getByLabel('Fallback font 1', { exact: true }).selectOption('arial');
+  await expect(page.getByRole('button', { name: 'Optimize for CLS' })).toHaveCount(0);
   const code = page.getByRole('region', { name: 'Generated CSS' });
   const size = page.getByRole('spinbutton', { name: /Size adjust/ });
   await size.fill('108');
   await size.press('Enter');
   await expect(code).toContainText('size-adjust: 108%');
-
-  await openSection(page, 'Layout shift');
-  const section = page.getByRole('region', { name: 'Layout shift' });
-  await section.getByRole('button', { name: 'Optimize for CLS' }).click();
-  await expect(section.getByText(/Layout shift on this device: |Nothing to improve/)).toBeVisible({
-    timeout: 25_000,
-  });
-  await expect(section.getByRole('alert')).toHaveCount(0);
+  await page.waitForTimeout(1500);
   await expect(code).toContainText('size-adjust: 108%');
+  await expect(page.getByRole('checkbox', { name: 'Auto' }).nth(1)).toBeChecked();
 });
 
 test('the settings and the support section can be hidden and shown', async ({ page }) => {

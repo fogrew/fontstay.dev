@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { createViteServer } from 'vitest/node';
-import { expect, openSection, test } from './fixtures';
+import { expect, test } from './fixtures';
 
 const fonts = new URL('../fixtures/fonts/', import.meta.url).pathname.replace(
   /^\/([A-Za-z]:)/,
@@ -63,25 +63,36 @@ test('the layout model agrees with the browser measurement', async ({ page }) =>
   await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(sourceSans);
   await page.getByLabel('System', { exact: true }).selectOption('windows');
   await page.getByLabel('Fallback font 1', { exact: true }).selectOption('arial');
-  const section = page.getByRole('region', { name: 'Layout shift' });
+
+  const pin = async (sizeAdjust?: number) => {
+    const values: [RegExp, number][] = [
+      [/Size adjust/, sizeAdjust ?? arial.adjustment.sizeAdjust],
+      [/Ascent override/, arial.adjustment.ascentOverride],
+      [/Descent override/, arial.adjustment.descentOverride],
+      [/Line gap override/, arial.adjustment.lineGapOverride],
+    ];
+    for (const [name, value] of values) {
+      const field = page.getByRole('spinbutton', { name });
+      await field.fill((value * 100).toFixed(4));
+      await field.press('Enter');
+    }
+  };
 
   const measure = async () => {
-    await openSection(page, 'Layout shift');
-    await section.getByRole('button', { name: 'Verify on this device' }).click();
-    const message = section.getByText(/Measured in the browser/);
+    await page.getByRole('button', { name: 'Verify on this device' }).click();
+    const message = page.getByText(/Measured in the browser/);
     await expect(message).toBeVisible({ timeout: 25_000 });
     const text = await message.innerText();
     return [...text.matchAll(/(\d+)px: (\d+(?:\.\d+)?)/g)].map((match) => Number(match[2]));
   };
 
+  await pin();
   const good = await measure();
   for (const [index, item] of predict().entries()) {
     expect(Math.abs(item.score - (good[index] ?? Number.NaN))).toBeLessThan(0.02);
   }
 
-  const size = page.getByRole('spinbutton', { name: /Size adjust/ });
-  await size.fill('140');
-  await size.press('Enter');
+  await pin(1.4);
   const bad = await measure();
   for (const [index, item] of predict(1.4).entries()) {
     expect(Math.abs(item.score - (bad[index] ?? Number.NaN))).toBeLessThan(0.05);

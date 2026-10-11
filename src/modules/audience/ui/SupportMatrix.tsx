@@ -11,7 +11,7 @@ export function SupportMatrix({
 }: {
   locale: Locale;
   groups: readonly MatrixGroup[];
-  rating: (shift: number) => string;
+  rating: (shift: number) => { level: 'good' | 'needs' | 'poor'; label: string };
 }) {
   const t = messagesFor(locale);
   const number = (value: number, digits: number) =>
@@ -67,11 +67,19 @@ export function SupportMatrix({
                           <span class="ff-sr-only">{stateLabel(cell.state)}: </span>
                           {cell.label}
                           {cell.shift !== null && (
-                            <span class="ff-matrix__shift">
-                              {t.matrix_shift({
-                                score: number(cell.shift, 3),
-                                rating: rating(cell.shift),
-                              })}
+                            <span class="ff-matrix__shift" data-rating={rating(cell.shift).level}>
+                              <span class="ff-sr-only">
+                                {t.matrix_shift({
+                                  score: number(cell.shift, 3),
+                                  rating: rating(cell.shift).label,
+                                })}
+                              </span>
+                              <span aria-hidden="true">{number(cell.shift, 3)}</span>
+                            </span>
+                          )}
+                          {cell.baseline !== null && (
+                            <span class="ff-matrix__baseline">
+                              {t.matrix_baseline({ score: number(cell.baseline, 3) })}
                             </span>
                           )}
                         </li>

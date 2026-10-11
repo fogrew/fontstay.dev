@@ -53,13 +53,15 @@ describe('buildMatrix', () => {
       .find((group) => group.os === 'macos')
       ?.columns.find((column) => column.browser === 'safari');
     expect(safari?.cells).toEqual([
-      { label: '16', state: 'none', shift: 0.2 },
-      { label: '17–18', state: 'partial', shift: 0.05 },
+      { label: '16', state: 'none', shift: 0.2, baseline: null },
+      { label: '17–18', state: 'partial', shift: 0.05, baseline: 0.2 },
     ]);
     const chrome = groups
       .find((group) => group.os === 'macos')
       ?.columns.find((column) => column.browser === 'chrome');
-    expect(chrome?.cells).toEqual([{ label: '120–121', state: 'full', shift: 0.01 }]);
+    expect(chrome?.cells).toEqual([
+      { label: '120–121', state: 'full', shift: 0.01, baseline: 0.2 },
+    ]);
   });
 
   it('turns every cell red without a shift for systems that are switched off', () => {
@@ -103,9 +105,13 @@ describe('buildMatrix', () => {
       { released: { chrome: ['119', '120', '121'], op_mini: ['all'] } },
     );
     const windows = groups.find((group) => group.os === 'windows');
-    expect(windows?.columns[0]?.cells).toEqual([{ label: '119–120', state: 'none', shift: null }]);
+    expect(windows?.columns[0]?.cells).toEqual([
+      { label: '119–120', state: 'none', shift: null, baseline: null },
+    ]);
     const other = groups.find((group) => group.os === 'other');
-    expect(other?.columns[0]?.cells).toEqual([{ label: 'all', state: 'unknown', shift: null }]);
+    expect(other?.columns[0]?.cells).toEqual([
+      { label: 'all', state: 'unknown', shift: null, baseline: null },
+    ]);
   });
 
   it('treats safari TP and versions missing from the release list as separate cells', () => {

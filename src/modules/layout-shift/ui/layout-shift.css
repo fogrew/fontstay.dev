@@ -1,19 +1,8 @@
-.ff-cls__table {
-  inline-size: 100%;
-  border-collapse: collapse;
-  font-size: 0.8125rem;
-}
-.ff-cls__table th,
-.ff-cls__table td {
-  padding: var(--ff-space-1) var(--ff-space-2);
-  border-block-end: 1px solid var(--ff-border);
-  text-align: start;
-  vertical-align: top;
-}
-.ff-generator .ff-cls p {
-  margin: 0;
-}
-.ff-cls__optimize {
+.ff-cls {
   display: grid;
   gap: var(--ff-space-1);
+  justify-items: start;
+}
+.ff-cls p {
+  margin: 0;
 }

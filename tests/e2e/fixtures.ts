@@ -1,4 +1,4 @@
-import { test as base, expect, type Page } from '@playwright/test';
+import { test as base, expect } from '@playwright/test';
 
 export const test = base.extend({
   page: async ({ page }, use) => {
@@ -17,8 +17,3 @@ export const test = base.extend({
 });
 
 export { expect };
-
-export async function openSection(page: Page, name: string) {
-  const button = page.getByRole('button', { name, exact: true });
-  if ((await button.getAttribute('aria-expanded')) === 'false') await button.click();
-}
