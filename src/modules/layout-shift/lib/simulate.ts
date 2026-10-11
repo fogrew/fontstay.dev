@@ -16,9 +16,8 @@ const MEASURED = 'h1,h2,h3,p,li,button,blockquote';
 const MAX_FRAME_PX = 4096;
 
 export const DEFAULT_VIEWPORTS: readonly Viewport[] = [
-  { width: 360, height: 640 },
-  { width: 768, height: 1024 },
-  { width: 1280, height: 800 },
+  { width: 412, height: 823 },
+  { width: 1350, height: 940 },
 ];
 
 export interface SimulationInput {

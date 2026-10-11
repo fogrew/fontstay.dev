@@ -53,7 +53,7 @@ Both modes:
 
 ### 1.6 Impact & diagnostics (shown live, included in export)
 - **Layout shift (CLS) simulation**, updated live while sliders move (debounced to animation frames):
-  - Preview document rendered in hidden same-origin iframes at preset viewports (360 / 768 / 1280 / custom).
+  - Preview document rendered in hidden same-origin iframes at preset viewports (412 / 1350, the Lighthouse mobile and desktop sizes).
   - Element boxes collected with fallback vs web font, layout shift score computed per the Layout Instability spec (impact fraction × distance fraction).
   - Shows score per viewport with Good / Needs improvement / Poor rating (0.1 / 0.25 thresholds), plus line-count delta, block height delta, width delta %, line-break mismatches.
   - If imported via bookmarklet, uses the site's real text and structure.

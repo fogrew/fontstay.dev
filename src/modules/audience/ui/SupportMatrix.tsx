@@ -21,14 +21,22 @@ export function SupportMatrix({
     if (state === 'partial') return t.matrix_partial();
     return state === 'none' ? t.matrix_none() : t.matrix_unknown();
   };
+  const stateHint = (state: CellState) => {
+    if (state === 'full') return t.matrix_full_hint();
+    if (state === 'partial') return t.matrix_partial_hint();
+    return state === 'none' ? t.matrix_none_hint() : t.matrix_unknown_hint();
+  };
   if (groups.length === 0) return <p class="ff-muted">{t.matrix_empty()}</p>;
   return (
     <section class="ff-matrix" aria-labelledby="ff-matrix-heading">
       <h2 id="ff-matrix-heading">{t.matrix_heading()}</h2>
       <ul class="ff-matrix__legend">
         {(['full', 'partial', 'none', 'unknown'] as const).map((state) => (
-          <li key={state} data-state={state}>
-            <span aria-hidden="true">{SYMBOLS[state]}</span> {stateLabel(state)}
+          <li key={state}>
+            <span class="ff-matrix__chip" data-state={state}>
+              <span aria-hidden="true">{SYMBOLS[state]}</span> {stateLabel(state)}
+            </span>
+            <span class="ff-muted">{stateHint(state)}</span>
           </li>
         ))}
       </ul>

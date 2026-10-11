@@ -77,15 +77,20 @@
   gap: var(--ff-space-2);
 }
 .ff-matrix__legend {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--ff-space-2);
+  display: grid;
+  gap: var(--ff-space-1);
   margin: 0;
   padding: 0;
   list-style: none;
   font-size: 0.8125rem;
 }
-.ff-matrix__legend li,
+.ff-matrix__legend li {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--ff-space-2);
+  align-items: baseline;
+}
+.ff-matrix__chip,
 .ff-matrix li[data-state] {
   padding: 0.125rem var(--ff-space-2);
   border: 1px solid var(--ff-border);
@@ -158,12 +163,6 @@
     color: CanvasText;
   }
 }
-.ff-generator .ff-matrix__legend li {
-  display: inline-block;
-}
 .ff-generator .ff-matrix__column li {
   display: block;
-}
-.ff-generator .ff-matrix__legend {
-  display: flex;
 }
