@@ -237,5 +237,10 @@
   "font_metrics_descent": "Спуск (descent)",
   "font_metrics_gap": "Межстрочный зазор",
   "font_metrics_glyphs": "Глифов в измеренных диапазонах",
-  "font_no_metrics": "Измеренных метрик для этого шрифта пока нет."
+  "font_no_metrics": "Измеренных метрик для этого шрифта пока нет.",
+  "missing_heading": "Символы, которых нет в шрифте",
+  "missing_label": "Шрифт для отсутствующих символов",
+  "missing_system": "Системный интерфейсный",
+  "missing_summary": "Символов, которых нет в этом шрифте: {count}. Они рисуются запасным шрифтом ({font}): {list}.",
+  "missing_more": "…и ещё {count}."
 }

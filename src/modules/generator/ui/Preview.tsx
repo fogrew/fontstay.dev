@@ -1,15 +1,20 @@
 import { useEffect, useRef, useState } from 'preact/hooks';
 import { type Locale, messagesFor } from '@/common/i18n';
+import { Select } from '@/common/ui';
 import type { Category } from '@/modules/os-fonts';
 import { covers } from '../lib/compute';
 import { buildCss, type Overrides } from '../lib/css';
 import { canvasMeasure, isInstalled } from '../lib/installed';
+import { codePointLabel, missingCharacters, textRuns } from '../lib/missing';
 
 const PHRASES = ['en', 'ru', 'de', 'fr', 'es', 'pl', 'el'] as const;
 
 const PREVIEW_FAMILY = 'ff-preview-web';
 
 type Mode = 'side' | 'overlay' | 'web' | 'fallback';
+type Substitute = 'sans-serif' | 'serif' | 'monospace' | 'system-ui';
+const SUBSTITUTES: readonly Substitute[] = ['sans-serif', 'serif', 'monospace', 'system-ui'];
+const MAX_LISTED = 12;
 const MODES: readonly Mode[] = ['overlay', 'side', 'web', 'fallback'];
 
 function EditableText({
@@ -77,6 +82,7 @@ export function Preview({
     setInstalled(measure ? isInstalled(fallback.localNames, measure) : true);
   }, [localKey]);
   const [mode, setMode] = useState<Mode>('overlay');
+  const [substitute, setSubstitute] = useState<Substitute>('sans-serif');
   const [size, setSize] = useState(28);
   const [lineHeight, setLineHeight] = useState(1.4);
   const languageName = new Intl.DisplayNames(locale, { type: 'language' });
@@ -133,8 +139,15 @@ export function Preview({
     };
   }, [css.fontFaces]);
   const shared = { fontSize: `${size}px`, lineHeight: String(lineHeight) };
-  const webStyle = { ...shared, fontFamily: `"${PREVIEW_FAMILY}", sans-serif` };
-  const fallbackStyle = { ...shared, fontFamily: `"${PREVIEW_FAMILY} Fallback", sans-serif` };
+  const webStyle = { ...shared, fontFamily: `"${PREVIEW_FAMILY}", ${substitute}` };
+  const fallbackStyle = { ...shared, fontFamily: `"${PREVIEW_FAMILY} Fallback", ${substitute}` };
+  const runs = textRuns(sample, codePoints);
+  const missing = missingCharacters(runs);
+  const substituteLabel = (value: Substitute) => {
+    if (value === 'serif') return t.type_serif();
+    if (value === 'monospace') return t.type_mono();
+    return value === 'system-ui' ? t.missing_system() : t.type_sans();
+  };
   const modeLabel = (value: Mode) => {
     if (value === 'side') return t.mode_side();
     if (value === 'overlay') return t.mode_overlay();
@@ -264,6 +277,39 @@ export function Preview({
           </figure>
         )}
       </div>
+      {missing.length > 0 && (
+        <section class="ff-preview__missing" aria-label={t.missing_heading()}>
+          <Select
+            label={t.missing_label()}
+            value={substitute}
+            options={SUBSTITUTES.map((value) => ({ value, label: substituteLabel(value) }))}
+            onChange={(value) => setSubstitute(value as Substitute)}
+          />
+          <p role="status">
+            {t.missing_summary({
+              count: missing.length,
+              list: missing
+                .slice(0, MAX_LISTED)
+                .map((char) => `${char} (${codePointLabel(char)})`)
+                .join(', '),
+              font: substituteLabel(substitute),
+            })}
+            {missing.length > MAX_LISTED &&
+              ` ${t.missing_more({ count: missing.length - MAX_LISTED })}`}
+          </p>
+          <p class="ff-preview__map" aria-hidden="true" style={{ ...webStyle, margin: 0 }}>
+            {runs.map((run, index) =>
+              run.covered ? (
+                <span key={index}>{run.text}</span>
+              ) : (
+                <mark key={index} class="ff-preview__missing-run">
+                  {run.text}
+                </mark>
+              ),
+            )}
+          </p>
+        </section>
+      )}
     </section>
   );
 }

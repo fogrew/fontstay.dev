@@ -237,5 +237,10 @@
   "font_metrics_descent": "Descent",
   "font_metrics_gap": "Line gap",
   "font_metrics_glyphs": "Glyphs in the measured ranges",
-  "font_no_metrics": "No measured metrics for this font yet."
+  "font_no_metrics": "No measured metrics for this font yet.",
+  "missing_heading": "Characters missing from the font",
+  "missing_label": "Font for the missing characters",
+  "missing_system": "System UI",
+  "missing_summary": "{count} characters are not in this font and are drawn with the {font} font instead: {list}.",
+  "missing_more": "…and {count} more."
 }

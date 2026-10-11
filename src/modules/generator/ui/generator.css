@@ -364,3 +364,26 @@
     forced-color-adjust: none;
   }
 }
+
+.ff-preview__missing {
+  display: grid;
+  gap: var(--ff-space-2);
+  padding: var(--ff-space-2) var(--ff-space-3);
+  border: 1px dashed var(--ff-border);
+  border-radius: var(--ff-radius);
+}
+.ff-preview__missing p {
+  margin: 0;
+}
+.ff-preview__missing-run {
+  background: var(--ff-state-none);
+  color: inherit;
+  text-decoration: underline wavy var(--ff-accent);
+}
+@media (forced-colors: active) {
+  .ff-preview__missing-run {
+    background: Mark;
+    color: MarkText;
+    forced-color-adjust: none;
+  }
+}

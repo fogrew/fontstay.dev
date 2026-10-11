@@ -592,3 +592,24 @@ test('a font collection is split into separate fonts', async ({ page }) => {
   await expect(page.getByRole('button', { name: 'Remove: pair.ttc #1' })).toBeVisible();
   await expect(page.getByRole('button', { name: 'Remove: pair.ttc #2' })).toBeVisible();
 });
+
+test('characters missing from the font are listed, marked and can use another font', async ({
+  page,
+}) => {
+  await page.goto('/en/');
+  await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
+  await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(sourceSans);
+  const preview = page.getByRole('region', { name: 'Preview' });
+  await expect(
+    preview.getByRole('region', { name: 'Characters missing from the font' }),
+  ).toHaveCount(0);
+  const text = preview.getByRole('textbox', { name: 'Sample text' });
+  await text.click();
+  await page.keyboard.press('End');
+  await page.keyboard.type('☃');
+  const missing = preview.getByRole('region', { name: 'Characters missing from the font' });
+  await expect(missing).toContainText('U+2603');
+  await expect(missing.locator('mark')).toHaveText('☃');
+  await missing.getByLabel('Font for the missing characters').selectOption('serif');
+  await expect(missing).toContainText('Serif');
+});
