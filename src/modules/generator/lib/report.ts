@@ -29,7 +29,8 @@ function stateLabel(t: Messages, state: string): string {
   return state === 'none' ? t.matrix_none() : t.matrix_unknown();
 }
 
-const escapeCell = (value: string) => value.replace(/\|/g, '\\|').replace(/\n/g, ' ');
+const escapeCell = (value: string) =>
+  value.replace(/\\/g, '\\\\').replace(/\|/g, '\\|').replace(/\n/g, ' ');
 
 export function buildReport(input: ReportInput): string {
   const t = messagesFor(input.locale);

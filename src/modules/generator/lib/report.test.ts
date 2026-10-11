@@ -84,3 +84,13 @@ describe('buildReport', () => {
     expect(report).not.toContain('font-size-adjust');
   });
 });
+
+describe('buildReport escaping', () => {
+  it('escapes backslashes before pipes so a cell cannot break out', () => {
+    const report = buildReport({
+      ...base,
+      systems: [{ os: 'windows', label: 'a|b', enabled: true, fonts: 'x' }],
+    });
+    expect(report).toContain('| a\\|b | x |');
+  });
+});
