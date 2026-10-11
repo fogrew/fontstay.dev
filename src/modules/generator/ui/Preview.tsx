@@ -54,6 +54,8 @@ export function Preview({
   defaultSample,
   codePoints,
   unicodeRange,
+  fontWeight,
+  fontStyle,
 }: {
   locale: Locale;
   bytes: ArrayBuffer;
@@ -62,6 +64,8 @@ export function Preview({
   defaultSample: string;
   codePoints: Uint32Array;
   unicodeRange?: string | undefined;
+  fontWeight?: number | undefined;
+  fontStyle?: 'italic' | undefined;
 }) {
   const t = messagesFor(locale);
   const [sample, setSample] = useState(defaultSample);
@@ -108,7 +112,16 @@ export function Preview({
   }, [bytes]);
   const css = buildCss(
     PREVIEW_FAMILY,
-    [{ family: fallback.family, localNames: fallback.localNames, adjustment, unicodeRange }],
+    [
+      {
+        family: fallback.family,
+        localNames: fallback.localNames,
+        adjustment,
+        unicodeRange,
+        fontWeight,
+        fontStyle,
+      },
+    ],
     fallback.category,
   );
   useEffect(() => {

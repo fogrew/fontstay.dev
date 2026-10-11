@@ -30,14 +30,19 @@ function slanted(font: { italicAngle: number }): boolean {
   }
 }
 
-export function parseFontBuffer(buffer: ArrayBuffer): FontMetrics {
+export interface ParseOptions {
+  variation?: Record<string, number>;
+}
+
+export function parseFontBuffer(buffer: ArrayBuffer, options: ParseOptions = {}): FontMetrics {
   validateFontBuffer(buffer);
   let created: unknown;
   try {
     // fontkitten accepts Uint8Array at runtime but declares the Node Buffer type.
-    const font = create(new Uint8Array(buffer) as Parameters<typeof create>[0]);
-    created = font;
-    if (font.isCollection) throw new FontParseError('unsupported-format');
+    const base = create(new Uint8Array(buffer) as Parameters<typeof create>[0]);
+    created = base;
+    if (base.isCollection) throw new FontParseError('unsupported-format');
+    const font = options.variation ? base.getVariation(options.variation) : base;
     const unitsPerEm = font.unitsPerEm;
     if (!Number.isInteger(unitsPerEm) || unitsPerEm < 16 || unitsPerEm > 16384) {
       throw new FontParseError('invalid-font');

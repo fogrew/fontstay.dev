@@ -201,5 +201,10 @@
   "coverage_col_block": "Block",
   "coverage_col_range": "Range",
   "coverage_col_covered": "Covered",
-  "coverage_col_percent": "Share"
+  "coverage_col_percent": "Share",
+  "style_label": "Font style",
+  "style_regular": "Regular",
+  "style_italic": "Italic",
+  "style_bold": "Bold",
+  "style_bold_italic": "Bold italic"
 }

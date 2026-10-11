@@ -17,9 +17,24 @@ import {
   osAvailability,
   osFontMetrics,
   osFontsDataset,
+  type StyleVariant,
 } from '@/modules/os-fonts';
 
 export type Language = 'en' | 'ru';
+export type FontStyleKey = 'regular' | StyleVariant;
+
+export function styleKeyOf(style: { weight: number; italic: boolean }): FontStyleKey {
+  const bold = style.weight >= 600;
+  if (bold && style.italic) return 'bold-italic';
+  if (bold) return 'bold';
+  return style.italic ? 'italic' : 'regular';
+}
+
+interface FaceInfo {
+  localNames: readonly string[];
+  fit: FitFont | null;
+  native: Vertical;
+}
 
 interface PoolFont {
   id: string;
@@ -30,6 +45,7 @@ interface PoolFont {
   latinWidthEm: number | null;
   native: Vertical;
   dataset: OsFont;
+  styles: Partial<Record<StyleVariant, FaceInfo>>;
 }
 
 export interface Vertical {
@@ -61,6 +77,7 @@ export interface Candidate {
   latinOnly: boolean;
   fit: FitFont | null;
   native: Vertical;
+  style: FontStyleKey;
 }
 
 export interface Ranking {
@@ -88,6 +105,16 @@ function fonts(): PoolFont[] {
       latinWidthEm: null,
       native: nativeOf(metrics),
       dataset,
+      styles: Object.fromEntries(
+        Object.entries(metrics.variants).map(([style, face]) => [
+          style,
+          {
+            localNames: face.localNames.length > 0 ? face.localNames : [dataset.family],
+            fit: face,
+            native: nativeOf(face),
+          },
+        ]),
+      ),
     });
   }
   for (const system of systemFonts) {
@@ -102,6 +129,7 @@ function fonts(): PoolFont[] {
       latinWidthEm: system.latinWidthEm,
       native: nativeOf(system.metrics),
       dataset,
+      styles: {},
     });
   }
   pool = result;
@@ -122,12 +150,19 @@ export function systemsWithFonts(): OsId[] {
   );
 }
 
-export function rankFor(web: FontMetrics, os: OsId, language: Language): Ranking {
+export function rankFor(
+  web: FontMetrics,
+  os: OsId,
+  language: Language,
+  style: FontStyleKey = 'regular',
+): Ranking {
   const weights = languageWeights(language);
   const own = fitFont(web, web, weights);
   const candidates: Candidate[] = [];
-  for (const font of fonts()) {
-    if (!preinstalledOn(font.dataset, os)) continue;
+  for (const base of fonts()) {
+    if (!preinstalledOn(base.dataset, os)) continue;
+    const variant = style === 'regular' ? undefined : base.styles[style];
+    const font = variant ? { ...base, ...variant } : base;
     try {
       if (font.fit) {
         const result = fitFont(web, font.fit, weights);
@@ -141,6 +176,7 @@ export function rankFor(web: FontMetrics, os: OsId, language: Language): Ranking
           latinOnly: false,
           fit: font.fit,
           native: font.native,
+          style: variant ? style : 'regular',
         });
       } else if (font.latinWidthEm !== null && language === 'en') {
         candidates.push({
@@ -153,6 +189,7 @@ export function rankFor(web: FontMetrics, os: OsId, language: Language): Ranking
           latinOnly: true,
           fit: null,
           native: font.native,
+          style: 'regular',
         });
       }
     } catch (failure) {

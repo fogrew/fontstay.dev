@@ -332,3 +332,8 @@
 .ff-accordion__item[data-open="false"] {
   flex: none;
 }
+.ff-style-select {
+  min-block-size: 2rem;
+  max-inline-size: 9rem;
+  padding-block: 0.125rem;
+}

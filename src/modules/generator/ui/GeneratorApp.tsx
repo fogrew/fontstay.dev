@@ -44,10 +44,12 @@ import {
 import { hasSpacing, loadingCss, loadingScript, type SpacingEm } from '../lib/loading';
 import {
   type Candidate,
+  type FontStyleKey,
   type Language,
   planStack,
   type Ranking,
   rankFor,
+  styleKeyOf,
   systemsWithFonts,
 } from '../lib/per-os';
 import {
@@ -107,6 +109,10 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
   const [fonts, setFonts] = useState<LoadedFont[]>([]);
   const [selectedId, setSelectedId] = useState<number>();
   const [kindChoice, setKindChoice] = useState<{ fontId: number | undefined; kind: Category }>();
+  const [styleChoice, setStyleChoice] = useState<{
+    fontId: number | undefined;
+    key: FontStyleKey;
+  }>();
   const [shares, setShares] = useState<OsShares>();
   const [manualSystems, setManualSystems] = useState(false);
   const [audience, setAudience] = useState<AudienceData>();
@@ -192,6 +198,12 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
 
   const selected = fonts.find((font) => font.id === selectedId) ?? fonts[0];
   const language: Language = fitLanguage(selected?.metrics, locale);
+  const styleKey: FontStyleKey =
+    styleChoice && styleChoice.fontId === selected?.id
+      ? styleChoice.key
+      : selected
+        ? styleKeyOf(selected.metrics.style)
+        : 'regular';
   const kind: Category =
     kindChoice && kindChoice.fontId === selected?.id
       ? kindChoice.kind
@@ -213,7 +225,7 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
     if (selected) {
       for (const os of systems) {
         try {
-          result[os] = rankFor(selected.metrics, os, language);
+          result[os] = rankFor(selected.metrics, os, language, styleKey);
         } catch (thrown) {
           if (!isNoCoverage(thrown)) throw thrown;
           noCoverage = true;
@@ -221,7 +233,7 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
       }
     }
     return { result, noCoverage };
-  }, [selected, systems, language]);
+  }, [selected, systems, language, styleKey]);
 
   const candidatesOf = (os: OsId): Candidate[] =>
     (rankings.result[os]?.candidates ?? []).filter((item) => item.category === kind);
@@ -312,6 +324,11 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
               localNames: candidate.localNames,
               adjustment: adjustmentOf(baseOf(candidate), manualOf(id)),
               unicodeRange: rangeOn ? coverageRange : undefined,
+              fontWeight: styleKey === 'bold' || styleKey === 'bold-italic' ? 700 : undefined,
+              fontStyle:
+                styleKey === 'italic' || styleKey === 'bold-italic'
+                  ? ('italic' as const)
+                  : undefined,
             },
           ]
         : [];
@@ -419,6 +436,7 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
     selected?.id,
     language,
     kind,
+    styleKey,
     spacingOn,
     spacingOn ? [spacingKey, spacingValues] : null,
     fitFaces.map((candidate) => [candidate.id, manualOf(candidate.id)]),
@@ -747,19 +765,40 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
                     setFontOpen(next);
                   }}
                   after={
-                    <button
-                      type="button"
-                      class="ff-icon-button"
-                      aria-label={`${t.upload_remove()}: ${font.fileName}`}
-                      onClick={() => {
-                        setFonts((list) => list.filter((item) => item.id !== font.id));
-                        setSelectedId((id) => (id === font.id ? undefined : id));
-                        setValues({});
-                        resetOptimization();
-                      }}
-                    >
-                      <span aria-hidden="true">×</span>
-                    </button>
+                    <>
+                      {isSelected && (
+                        <select
+                          class="ff-style-select"
+                          aria-label={t.style_label()}
+                          value={styleKey}
+                          onChange={(event) => {
+                            setStyleChoice({
+                              fontId: font.id,
+                              key: event.currentTarget.value as FontStyleKey,
+                            });
+                            resetOptimization();
+                          }}
+                        >
+                          <option value="regular">{t.style_regular()}</option>
+                          <option value="italic">{t.style_italic()}</option>
+                          <option value="bold">{t.style_bold()}</option>
+                          <option value="bold-italic">{t.style_bold_italic()}</option>
+                        </select>
+                      )}
+                      <button
+                        type="button"
+                        class="ff-icon-button"
+                        aria-label={`${t.upload_remove()}: ${font.fileName}`}
+                        onClick={() => {
+                          setFonts((list) => list.filter((item) => item.id !== font.id));
+                          setSelectedId((id) => (id === font.id ? undefined : id));
+                          setValues({});
+                          resetOptimization();
+                        }}
+                      >
+                        <span aria-hidden="true">×</span>
+                      </button>
+                    </>
                   }
                 >
                   {isSelected && fitBody}
@@ -833,6 +872,12 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
                       fallback={previewPick}
                       adjustment={adjustment}
                       unicodeRange={rangeOn ? coverageRange : undefined}
+                      fontWeight={
+                        styleKey === 'bold' || styleKey === 'bold-italic' ? 700 : undefined
+                      }
+                      fontStyle={
+                        styleKey === 'italic' || styleKey === 'bold-italic' ? 'italic' : undefined
+                      }
                     />
                   ),
                 },

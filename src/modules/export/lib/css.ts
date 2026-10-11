@@ -48,6 +48,14 @@ function unicodeRange(value: string | undefined): string[] {
   return [`  unicode-range: ${value};`];
 }
 
+function fontWeight(value: number | undefined): string[] {
+  if (value === undefined) return [];
+  if (!Number.isInteger(value) || value < 1 || value > 1000) {
+    throw new CssExportError('invalid-weight');
+  }
+  return [`  font-weight: ${value};`];
+}
+
 function percentage(ratio: number, positive = false): string {
   const percent = ratio * 100;
   if (!Number.isFinite(percent) || percent < 0 || percent > 1_000_000)
@@ -81,6 +89,8 @@ export function generateFallbackCss(input: FallbackCssInput): FallbackCss {
         `  ascent-override: ${percentage(adjustment.ascentOverride)};`,
         `  descent-override: ${percentage(adjustment.descentOverride)};`,
         `  line-gap-override: ${percentage(adjustment.lineGapOverride)};`,
+        ...fontWeight(face.fontWeight),
+        ...(face.fontStyle === 'italic' ? ['  font-style: italic;'] : []),
         ...unicodeRange(face.unicodeRange),
         '}',
       ].join('\n'),

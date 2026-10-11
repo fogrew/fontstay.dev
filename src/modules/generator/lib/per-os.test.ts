@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { font } from './font.test-util';
-import { planStack, rankFor, systemsWithFonts } from './per-os';
+import { planStack, rankFor, styleKeyOf, systemsWithFonts } from './per-os';
 
 const ascii = Array.from({ length: 95 }, (_, index) => 0x20 + index);
 const cyrillic = Array.from({ length: 64 }, (_, index) => 0x410 + index);
@@ -132,5 +132,30 @@ describe('planStack', () => {
   it('ignores an order that does not list the same faces', () => {
     const plan = planStack([{ os: 'android', share: 1, faceId: 'roboto' }], ['nope']);
     expect(plan.order).toEqual(['roboto']);
+  });
+});
+
+describe('rankFor with a style', () => {
+  it('classifies the web font style', () => {
+    expect(styleKeyOf({ weight: 400, italic: false })).toBe('regular');
+    expect(styleKeyOf({ weight: 700, italic: false })).toBe('bold');
+    expect(styleKeyOf({ weight: 300, italic: true })).toBe('italic');
+    expect(styleKeyOf({ weight: 800, italic: true })).toBe('bold-italic');
+  });
+
+  it('uses the bold face metrics and local names when the font has them', () => {
+    const web = font(ascii, 520);
+    const regular = rankFor(web, 'windows', 'en').candidates.find((item) => item.id === 'arial');
+    const bold = rankFor(web, 'windows', 'en', 'bold').candidates.find(
+      (item) => item.id === 'arial',
+    );
+    expect(bold?.style).toBe('bold');
+    expect(bold?.localNames).toContain('Arial Bold');
+    expect(bold?.adjustment.sizeAdjust).not.toBe(regular?.adjustment.sizeAdjust);
+  });
+
+  it('keeps the regular face where no bold metrics exist', () => {
+    const candidates = rankFor(font(ascii, 520), 'macos', 'en', 'bold').candidates;
+    expect(candidates.find((item) => item.id === 'helvetica')?.style).toBe('regular');
   });
 });

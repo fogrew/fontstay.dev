@@ -562,3 +562,20 @@ test('the coverage section shows a Unicode map and a per-block table', async ({ 
   await page.keyboard.press('ArrowUp');
   await expect(status).toContainText('U+0032');
 });
+
+test('the style select switches a system to the bold face and adds the descriptors', async ({
+  page,
+}) => {
+  await page.goto('/en/');
+  await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
+  await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(sourceSans);
+  await selectSystem(page, 'windows');
+  const code = page.getByRole('region', { name: 'Generated CSS' });
+  await expect(code).not.toContainText('font-weight');
+  await page.getByLabel('Font style').selectOption('bold');
+  await expect(code).toContainText('font-weight: 700;');
+  await expect(code).toContainText('Bold');
+  await page.getByLabel('Font style').selectOption('italic');
+  await expect(code).toContainText('font-style: italic;');
+  await expect(code).not.toContainText('font-weight');
+});

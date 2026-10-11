@@ -8,35 +8,45 @@ export interface MetricsSource {
   license?: string;
 }
 
-export interface OsFontMetrics {
-  id: string;
-  family: string;
+export type StyleVariant = 'bold' | 'italic' | 'bold-italic';
+
+export interface FaceMetrics {
   localNames: string[];
   unitsPerEm: number;
   hhea: { ascent: number; descent: number; lineGap: number };
   typo: { ascent: number; descent: number; lineGap: number; useTypoMetrics: boolean } | null;
   win: { ascent: number; descent: number } | null;
-  isVariable: boolean;
   codePoints: Uint32Array;
   advances: Float64Array;
   source: MetricsSource;
 }
 
-interface RawMetrics {
+export interface OsFontMetrics extends FaceMetrics {
   id: string;
   family: string;
+  isVariable: boolean;
+  variants: Partial<Record<StyleVariant, FaceMetrics>>;
+}
+
+interface RawFace {
   source: MetricsSource;
   localNames: string[];
   unitsPerEm: number;
-  hhea: OsFontMetrics['hhea'];
-  typo: OsFontMetrics['typo'];
-  win: OsFontMetrics['win'];
-  isVariable: boolean;
+  hhea: FaceMetrics['hhea'];
+  typo: FaceMetrics['typo'];
+  win: FaceMetrics['win'];
   codePoints: number[];
   advances: number[];
 }
 
-export function decodeMetrics(entry: RawMetrics): OsFontMetrics {
+interface RawMetrics extends RawFace {
+  id: string;
+  family: string;
+  isVariable: boolean;
+  variants?: Partial<Record<StyleVariant, RawFace>>;
+}
+
+function decodeFace(id: string, entry: RawFace): FaceMetrics {
   const points: number[] = [];
   for (let index = 0; index + 1 < entry.codePoints.length; index += 2) {
     const start = entry.codePoints[index] ?? 0;
@@ -44,20 +54,31 @@ export function decodeMetrics(entry: RawMetrics): OsFontMetrics {
     for (let offset = 0; offset < length; offset++) points.push(start + offset);
   }
   if (points.length !== entry.advances.length) {
-    throw new Error(`Metrics for ${entry.id}: code points and advances differ in length`);
+    throw new Error(`Metrics for ${id}: code points and advances differ in length`);
   }
   return {
-    id: entry.id,
-    family: entry.family,
     localNames: entry.localNames,
     unitsPerEm: entry.unitsPerEm,
     hhea: entry.hhea,
     typo: entry.typo,
     win: entry.win,
-    isVariable: entry.isVariable,
     codePoints: Uint32Array.from(points),
     advances: Float64Array.from(entry.advances),
     source: entry.source,
+  };
+}
+
+export function decodeMetrics(entry: RawMetrics): OsFontMetrics {
+  const variants: OsFontMetrics['variants'] = {};
+  for (const [style, face] of Object.entries(entry.variants ?? {}) as [StyleVariant, RawFace][]) {
+    variants[style] = decodeFace(`${entry.id} ${style}`, face);
+  }
+  return {
+    ...decodeFace(entry.id, entry),
+    id: entry.id,
+    family: entry.family,
+    isVariable: entry.isVariable,
+    variants,
   };
 }
 

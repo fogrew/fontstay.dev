@@ -42,6 +42,9 @@ try {
   const { collectionMember, isCollection } = await server.ssrLoadModule(
     '/scripts/os-fonts/sfnt.ts',
   );
+  const { VARIANT_SOURCES, STYLE_IDS } = await server.ssrLoadModule(
+    '/scripts/os-fonts/variant-sources.ts',
+  );
 
   const existing = existsSync(output) ? JSON.parse(readFileSync(output, 'utf8')) : { fonts: [] };
   const byId = new Map(existing.fonts.map((font) => [font.id, font]));
@@ -88,6 +91,42 @@ try {
     return result;
   };
 
+  const measure = (found, source, variation, localNamesOverride) => {
+    const bytes = isCollection(found.bytes) ? collectionMember(found.bytes, 0) : found.bytes;
+    const buffer = bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength);
+    const font = parseFontBuffer(buffer, variation ? { variation } : {});
+    const wanted = [];
+    const advances = [];
+    const covered = new Map();
+    for (const [index, cp] of font.codePoints.entries()) covered.set(cp, font.advances[index]);
+    for (const [from, to] of SCRIPT_RANGES) {
+      for (let cp = from; cp <= to; cp++) {
+        const advance = covered.get(cp);
+        if (advance !== undefined) {
+          wanted.push(cp);
+          advances.push(variation ? Math.round(advance * 100) / 100 : advance);
+        }
+      }
+    }
+    const localNames = localNamesOverride ?? [
+      ...new Set([font.names.fullName, font.names.postscript].filter((name) => Boolean(name))),
+    ];
+    return {
+      count: wanted.length,
+      isVariable: font.isVariable,
+      entry: {
+        source: { ...source, sha256: createHash('sha256').update(bytes).digest('hex') },
+        localNames,
+        unitsPerEm: font.unitsPerEm,
+        hhea: font.hhea,
+        typo: font.typo,
+        win: font.win,
+        codePoints: runs(wanted),
+        advances,
+      },
+    };
+  };
+
   for (const spec of METRICS_SOURCES) {
     let found = spec.files.length > 0 ? findLocal(spec.files) : null;
     let source = found ? { kind: 'local', file: found.file } : null;
@@ -106,39 +145,40 @@ try {
       );
       continue;
     }
-    const bytes = isCollection(found.bytes) ? collectionMember(found.bytes, 0) : found.bytes;
-    const buffer = bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength);
-    const font = parseFontBuffer(buffer);
-    const wanted = [];
-    const advances = [];
-    const covered = new Map();
-    for (const [index, cp] of font.codePoints.entries()) covered.set(cp, font.advances[index]);
-    for (const [from, to] of SCRIPT_RANGES) {
-      for (let cp = from; cp <= to; cp++) {
-        const advance = covered.get(cp);
-        if (advance !== undefined) {
-          wanted.push(cp);
-          advances.push(advance);
-        }
+    const base = measure(found, source, undefined, undefined);
+    const variants = {};
+    for (const style of STYLE_IDS) {
+      const variant = VARIANT_SOURCES[spec.id]?.[style];
+      if (!variant) continue;
+      let variantFound = variant.files?.length ? findLocal(variant.files) : null;
+      let variantSource = variantFound ? { kind: 'local', file: variantFound.file } : null;
+      if (!variantFound && variant.download) {
+        variantFound = await download(variant.download);
+        variantSource = {
+          kind: 'download',
+          file: variantFound.file,
+          url: variant.download.url,
+          license: variant.download.license,
+        };
       }
+      if (!variantFound || !variantSource) {
+        console.log(`skipped ${spec.id} ${style}: font file not found`);
+        continue;
+      }
+      const measured = measure(variantFound, variantSource, variant.variation, variant.localNames);
+      variants[style] = measured.entry;
     }
-    const localNames = [
-      ...new Set([font.names.fullName, font.names.postscript].filter((name) => Boolean(name))),
-    ];
+    const previous = byId.get(spec.id)?.variants ?? {};
     byId.set(spec.id, {
       id: spec.id,
       family: spec.family,
-      source: { ...source, sha256: createHash('sha256').update(bytes).digest('hex') },
-      localNames,
-      unitsPerEm: font.unitsPerEm,
-      hhea: font.hhea,
-      typo: font.typo,
-      win: font.win,
-      isVariable: font.isVariable,
-      codePoints: runs(wanted),
-      advances,
+      ...base.entry,
+      isVariable: base.isVariable,
+      variants: { ...previous, ...variants },
     });
-    console.log(`${spec.id}: ${wanted.length} code points from ${found.file}`);
+    console.log(
+      `${spec.id}: ${base.count} code points, variants: ${Object.keys(variants).join(', ') || 'none'}`,
+    );
   }
 
   const fonts = [...byId.values()].sort((a, b) => a.id.localeCompare(b.id));

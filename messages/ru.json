@@ -201,5 +201,10 @@
   "coverage_col_block": "Блок",
   "coverage_col_range": "Диапазон",
   "coverage_col_covered": "Покрыто",
-  "coverage_col_percent": "Доля"
+  "coverage_col_percent": "Доля",
+  "style_label": "Начертание шрифта",
+  "style_regular": "Обычный",
+  "style_italic": "Курсив",
+  "style_bold": "Жирный",
+  "style_bold_italic": "Жирный курсив"
 }

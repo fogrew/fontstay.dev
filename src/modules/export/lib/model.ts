@@ -25,6 +25,8 @@ export interface FallbackFace {
   localNames: readonly string[];
   adjustment: CssAdjustment;
   unicodeRange?: string | undefined;
+  fontWeight?: number | undefined;
+  fontStyle?: 'italic' | undefined;
 }
 
 export interface FallbackCssInput {
@@ -46,6 +48,7 @@ export class CssExportError extends Error {
       | 'invalid-generic'
       | 'invalid-adjustment'
       | 'invalid-unicode-range'
+      | 'invalid-weight'
       | 'too-many-faces',
   ) {
     super(code);

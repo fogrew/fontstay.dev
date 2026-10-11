@@ -14,6 +14,8 @@ export interface CssFace {
   localNames: readonly string[];
   adjustment: Overrides;
   unicodeRange?: string | undefined;
+  fontWeight?: number | undefined;
+  fontStyle?: 'italic' | undefined;
 }
 
 export function adjustmentOf(adjustment: FitAdjustment, overrides: Partial<Overrides>): Overrides {
@@ -48,6 +50,8 @@ export function buildCss(targetFamily: string, faces: readonly CssFace[], generi
       localNames: face.localNames,
       adjustment: face.adjustment,
       unicodeRange: face.unicodeRange,
+      fontWeight: face.fontWeight,
+      fontStyle: face.fontStyle,
     })),
     genericFamily: generic,
   });

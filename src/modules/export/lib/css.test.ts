@@ -87,6 +87,25 @@ describe('fallback CSS export', () => {
       ).toThrow();
     },
   );
+  it('emits the weight and style descriptors', () => {
+    const output = generateFallbackCss({
+      targetFamily: 'Inter',
+      fallbacks: [{ ...face, fontWeight: 700, fontStyle: 'italic' }],
+      genericFamily: 'sans-serif',
+    });
+    expect(output.fontFaces).toContain('  font-weight: 700;');
+    expect(output.fontFaces).toContain('  font-style: italic;');
+  });
+
+  it.each([0, 1001, 1.5, Number.NaN])('rejects the weight %s', (fontWeight) => {
+    expect(() =>
+      generateFallbackCss({
+        targetFamily: 'Inter',
+        fallbacks: [{ ...face, fontWeight }],
+        genericFamily: 'sans-serif',
+      }),
+    ).toThrow();
+  });
   it('supports a target-only family stack', () => {
     expect(
       generateFallbackCss({ targetFamily: 'serif', fallbacks: [], genericFamily: 'serif' }),

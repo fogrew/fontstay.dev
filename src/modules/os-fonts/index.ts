@@ -1,9 +1,11 @@
 export { osFontsDataset } from './lib/dataset';
 export {
   decodeMetrics,
+  type FaceMetrics,
   type MetricsSource,
   type OsFontMetrics,
   osFontMetrics,
+  type StyleVariant,
 } from './lib/metrics';
 export {
   type Availability,
