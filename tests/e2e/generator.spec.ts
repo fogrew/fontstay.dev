@@ -75,8 +75,7 @@ test('the fallback list follows the selected system and reports shadowing with a
   await fallback.selectOption('helvetica');
   await system.selectOption('windows');
   await fallback.selectOption('arial');
-  await expect(page.locator('p.ff-error', { hasText: /would be used instead of/ })).toBeVisible();
-  await page.getByRole('button', { name: 'Reorder to fix' }).click();
+  await expect(page.getByText('The fallback order was changed automatically')).toBeVisible();
   await expect(page.locator('p.ff-error', { hasText: /would be used instead of/ })).toHaveCount(0);
 });
 
@@ -448,23 +447,6 @@ test('the settings and the support section can be hidden and shown', async ({ pa
   await expect(page.getByRole('region', { name: 'Browser support' })).toBeHidden();
   await support.click();
   await expect(page.getByRole('region', { name: 'Browser support' })).toBeVisible();
-});
-
-test('reordering to fix a shadowing conflict keeps the focus on the page', async ({ page }) => {
-  await page.goto('/en/');
-  await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
-  await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(sourceSans);
-  const system = page.getByLabel('System', { exact: true });
-  await page.getByText('Audience (browsers)').click();
-  await page.getByLabel('Browserslist query').fill('safari 17, chrome 120');
-  await system.selectOption('macos');
-  await page.getByLabel('Fallback font 1', { exact: true }).selectOption('helvetica');
-  await system.selectOption('windows');
-  await page.getByLabel('Fallback font 1', { exact: true }).selectOption('arial');
-  await page.getByRole('button', { name: 'Hide settings' }).click();
-  await expect(page.locator('p.ff-error', { hasText: /would be used instead of/ })).toBeVisible();
-  await page.getByRole('button', { name: 'Reorder to fix' }).click();
-  await expect(page.locator('#main-content')).toBeFocused();
 });
 
 test('the page itself does not scroll on desktop', async ({ page }) => {

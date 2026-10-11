@@ -118,12 +118,10 @@
   "plan_waiting": "Loading the audience…",
   "plan_shadowed": "On {system}, {winner} would be used instead of {font}.",
   "plan_no_kind": "{system}: no fonts of this type are preinstalled.",
-  "plan_fix": "Reorder to fix",
   "plan_blocked": "Some systems need opposite font orders. Pick different fonts for them.",
   "plan_uncovered": "No font data yet for {systems} ({share}% of the audience).",
   "fit_font_latin_only": "Latin only",
   "fit_font_partial": "This font covers {percent}% of the glyphs in your font.",
-  "plan_fixed": "Fallback order updated.",
   "fallback_font_n": "Fallback font {n}",
   "plan_add": "Add fallback",
   "plan_remove": "Remove",
@@ -184,5 +182,6 @@
   "preview_phrase_el": "Ξεσκεπάζω την ψυχοφθόρα βδελυγμία",
   "systems_share": "{system} · {share}% of the audience",
   "preview_not_installed": "{font} is not installed on this device, so the preview falls back to a generic font. The values and the support matrix are still calculated for it.",
-  "plan_no_more": "{system}: no other fonts of this type are known yet."
+  "plan_no_more": "{system}: no other fonts of this type are known yet.",
+  "plan_reordered": "The fallback order was changed automatically so that every system gets its own font."
 }

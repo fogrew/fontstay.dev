@@ -130,7 +130,6 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
     setOptimized({});
     setSpacingResult(undefined);
   };
-  const [savedOrder, setSavedOrder] = useState<{ key: string; value: string[] }>();
   const [planNote, setPlanNote] = useState('');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
@@ -260,17 +259,16 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
         ? listFor(os).map((pick) => ({ os, share: shares[os], faceId: pick.id, candidate: pick }))
         : [],
     );
-  const orderKey = JSON.stringify([
-    selected?.id,
-    language,
-    kind,
-    chosen.map((item) => [item.os, item.faceId, item.share]),
-  ]);
-  const order = savedOrder?.key === orderKey ? savedOrder.value : undefined;
   const faceIds = new Set(chosen.map((item) => item.faceId));
   let plan: ReturnType<typeof planStack> | undefined;
+  let reordered = false;
   try {
-    plan = chosen.length > 0 ? planStack(chosen, order) : undefined;
+    plan = chosen.length > 0 ? planStack(chosen) : undefined;
+    const suggestion = plan?.resolution.suggestion?.order;
+    if (suggestion) {
+      plan = planStack(chosen, suggestion);
+      reordered = true;
+    }
   } catch (failure) {
     if (!(failure instanceof StackResolveError)) throw failure;
   }
@@ -767,6 +765,7 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
           )}
           <LiveRegion>{fitting ? t.fit_running() : ''}</LiveRegion>
           {fitting && <p class="ff-muted">{t.fit_running()}</p>}
+          {reordered && <p class="ff-muted">{t.plan_reordered()}</p>}
           {plan &&
             (shadowed.length > 0 ||
               plan.resolution.blockedBy === 'cycle' ||
@@ -781,18 +780,6 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
                     })}
                   </p>
                 ))}
-                {plan.resolution.suggestion && (
-                  <Button
-                    onClick={() => {
-                      const next = plan.resolution.suggestion?.order;
-                      if (next) setSavedOrder({ key: orderKey, value: next });
-                      setPlanNote(t.plan_fixed());
-                      document.getElementById('main-content')?.focus();
-                    }}
-                  >
-                    {t.plan_fix()}
-                  </Button>
-                )}
                 {plan.resolution.blockedBy === 'cycle' && (
                   <p class="ff-error">{t.plan_blocked()}</p>
                 )}
