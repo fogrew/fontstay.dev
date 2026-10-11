@@ -7,6 +7,19 @@ import {
 } from './model';
 import { validateFontBuffer } from './validate';
 
+const CATEGORIES = new Set(['sans-serif', 'serif', 'monospace']);
+
+function isStyleInfo(style: unknown): boolean {
+  if (typeof style !== 'object' || style === null) return false;
+  const { weight, italic, category } = style as Record<string, unknown>;
+  return (
+    typeof weight === 'number' &&
+    Number.isFinite(weight) &&
+    typeof italic === 'boolean' &&
+    (category === null || (typeof category === 'string' && CATEGORIES.has(category)))
+  );
+}
+
 function isFontParseResult(data: unknown): data is FontParseResult {
   if (typeof data !== 'object' || data === null || !('ok' in data)) return false;
   if (data.ok === true) {
@@ -19,8 +32,7 @@ function isFontParseResult(data: unknown): data is FontParseResult {
       font.codePoints.length === font.advances.length &&
       typeof font.unitsPerEm === 'number' &&
       typeof font.isVariable === 'boolean' &&
-      typeof font.style === 'object' &&
-      font.style !== null &&
+      isStyleInfo(font.style) &&
       typeof font.names === 'object' &&
       font.names !== null &&
       typeof font.hhea === 'object' &&

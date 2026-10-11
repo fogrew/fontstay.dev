@@ -115,9 +115,6 @@
   "audience_os_ios": "iOS and iPadOS",
   "audience_os_other": "Other or unknown",
   "fit_system_label": "System",
-  "fit_language_label": "Text language",
-  "language_en": "English",
-  "language_ru": "Russian",
   "plan_waiting": "Loading the audience…",
   "plan_shadowed": "On {system}, {winner} would be used instead of {font}.",
   "plan_no_kind": "{system}: no fonts of this type are preinstalled.",
@@ -174,5 +171,15 @@
   "matrix_baseline": "without the CSS {score}",
   "fit_running": "Optimizing the fallback fonts…",
   "font_italic_note": "This font is italic. The fallbacks are fitted on regular faces and the browser slants them itself.",
-  "font_weight_note": "This font is weight {weight}. The fallbacks are fitted on regular faces and the browser makes them bold itself, so widths can differ."
+  "font_weight_note": "This font is weight {weight}. The fallbacks are fitted on regular faces and the browser makes them bold itself, so widths can differ.",
+  "font_type_unknown": "The font type could not be detected. Check the Font type above.",
+  "preview_phrase_label": "Sample language",
+  "preview_phrase_custom": "Custom text",
+  "preview_phrase_en": "The quick brown fox jumps over the lazy dog",
+  "preview_phrase_ru": "Съешь же ещё этих мягких французских булок, да выпей чаю",
+  "preview_phrase_de": "Zwölf Boxkämpfer jagen Viktor quer über den großen Sylter Deich",
+  "preview_phrase_fr": "Portez ce vieux whisky au juge blond qui fume",
+  "preview_phrase_es": "El veloz murciélago hindú comía feliz cardillo y kiwi",
+  "preview_phrase_pl": "Pchnąć w tę łódź jeża lub ośm skrzyń fig",
+  "preview_phrase_el": "Ξεσκεπάζω την ψυχοφθόρα βδελυγμία"
 }

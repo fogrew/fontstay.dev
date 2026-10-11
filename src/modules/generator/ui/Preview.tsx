@@ -2,7 +2,11 @@ import { useEffect, useState } from 'preact/hooks';
 import { type Locale, messagesFor } from '@/common/i18n';
 import { Select } from '@/common/ui';
 import type { Category } from '@/modules/os-fonts';
+import { covers } from '../lib/compute';
 import { buildCss, type Overrides } from '../lib/css';
+
+const PHRASES = ['en', 'ru', 'de', 'fr', 'es', 'pl', 'el'] as const;
+const CUSTOM = 'custom';
 
 const PREVIEW_FAMILY = 'ff-preview-web';
 
@@ -14,15 +18,21 @@ export function Preview({
   fallback,
   adjustment,
   defaultSample,
+  codePoints,
 }: {
   locale: Locale;
   bytes: ArrayBuffer;
   fallback: { family: string; localNames: readonly string[]; category: Category };
   adjustment: Overrides;
   defaultSample: string;
+  codePoints: Uint32Array;
 }) {
   const t = messagesFor(locale);
   const [sample, setSample] = useState(defaultSample);
+  const phraseText = (id: (typeof PHRASES)[number]) => t[`preview_phrase_${id}`]();
+  const languageName = new Intl.DisplayNames(locale, { type: 'language' });
+  const phrases = PHRASES.filter((id) => covers({ codePoints }, phraseText(id)));
+  const phrase = phrases.find((id) => phraseText(id) === sample) ?? CUSTOM;
   const [loadFailed, setLoadFailed] = useState(false);
   const [mode, setMode] = useState<Mode>('overlay');
   const [size, setSize] = useState(28);
@@ -111,6 +121,17 @@ export function Preview({
           />
         </div>
       </div>
+      <Select
+        label={t.preview_phrase_label()}
+        value={phrase}
+        options={[
+          ...phrases.map((id) => ({ value: id, label: languageName.of(id) ?? id })),
+          { value: CUSTOM, label: t.preview_phrase_custom(), disabled: phrase !== CUSTOM },
+        ]}
+        onChange={(id) => {
+          if (id !== CUSTOM) setSample(phraseText(id as (typeof PHRASES)[number]));
+        }}
+      />
       <div class="ff-field">
         <label for="ff-preview-sample">{t.preview_sample_label()}</label>
         <input

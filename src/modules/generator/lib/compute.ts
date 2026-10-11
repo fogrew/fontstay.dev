@@ -7,11 +7,22 @@ export function isNoCoverage(error: unknown): boolean {
 
 export const LOW_COVERAGE = 0.9;
 
-export function sampleText(web: FontMetrics, preferred: string): string {
+const SAMPLE_COVERAGE = 0.8;
+const CYRILLIC_PROBE = 'абвгдежзийклмнопрстуфхцчшщъыьэюя';
+
+export function covers(web: Pick<FontMetrics, 'codePoints'>, text: string): boolean {
   const covered = new Set(web.codePoints);
-  const letters = [...preferred].filter((char) => char.trim() !== '');
+  const letters = [...text].filter((char) => char.trim() !== '');
   const present = letters.filter((char) => covered.has(char.codePointAt(0) ?? -1)).length;
-  if (letters.length === 0 || present / letters.length >= 0.8) return preferred;
+  return letters.length === 0 || present / letters.length >= SAMPLE_COVERAGE;
+}
+
+export function fitLanguage(web: Pick<FontMetrics, 'codePoints'> | undefined, locale: string) {
+  return locale === 'ru' && web && covers(web, CYRILLIC_PROBE) ? 'ru' : 'en';
+}
+
+export function sampleText(web: FontMetrics, preferred: string): string {
+  if (covers(web, preferred)) return preferred;
   const own = [...web.codePoints]
     .map((codePoint) => String.fromCodePoint(codePoint))
     .filter((char) => /\p{L}|\p{N}/u.test(char));

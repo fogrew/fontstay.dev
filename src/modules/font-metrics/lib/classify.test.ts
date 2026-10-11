@@ -17,6 +17,19 @@ describe('classifyFont', () => {
     expect(classifyFont({ panose: undefined, familyClass: 0x0a00, monospaced: false })).toBeNull();
   });
 
+  it.each([
+    [10, 'serif'],
+    [11, 'sans-serif'],
+    [14, 'sans-serif'],
+    [15, 'sans-serif'],
+  ] as const)('maps the PANOSE serif style %i to %s', (style, expected) => {
+    expect(classifyFont({ panose: [2, style], familyClass: 0, monospaced: false })).toBe(expected);
+  });
+
+  it('ignores an unspecified style and a negative family class', () => {
+    expect(classifyFont({ panose: [2, 1], familyClass: -0x0100, monospaced: false })).toBeNull();
+  });
+
   it('prefers monospace over the tables', () => {
     expect(classifyFont({ panose: [2, 11], familyClass: 0x0800, monospaced: true })).toBe(
       'monospace',

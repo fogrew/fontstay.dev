@@ -80,17 +80,14 @@ test('the fallback list follows the selected system and reports shadowing with a
   await expect(page.locator('p.ff-error', { hasText: /would be used instead of/ })).toHaveCount(0);
 });
 
-test('the text language changes the fit for Cyrillic', async ({ page }) => {
-  await page.goto('/en/');
+test('the fit follows the page language for a font with Cyrillic', async ({ page }) => {
+  await page.goto('/ru/');
   await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
   await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(sourceSans);
-  await page.getByLabel('System', { exact: true }).selectOption('windows');
-  const fallback = page.getByLabel('Fallback font 1', { exact: true });
-  await expect(fallback)
-    .toContainText('Latin only')
-    .catch(() => undefined);
-  await page.getByLabel('Text language').selectOption('ru');
-  await expect(fallback).not.toContainText('Latin only');
+  await page.getByLabel('Система', { exact: true }).selectOption('macos');
+  const fallback = page.getByLabel('Запасной шрифт 1', { exact: true });
+  await expect(fallback).toBeVisible();
+  await expect(fallback).not.toContainText('Только латиница');
 });
 
 test('an invalid file is rejected with an announced error', async ({ page }) => {
@@ -484,4 +481,17 @@ test('the page itself does not scroll on desktop', async ({ page }) => {
     };
   });
   expect(overflow).toEqual({ x: 0, y: 0 });
+});
+
+test('the preview offers sample phrases the font can render and there is no text language field', async ({
+  page,
+}) => {
+  await page.goto('/en/');
+  await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
+  await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(sourceSans);
+  await expect(page.getByLabel('Text language')).toHaveCount(0);
+  const phrase = page.getByLabel('Sample language');
+  await expect(phrase).toBeVisible();
+  await phrase.selectOption({ label: 'German' });
+  await expect(page.getByLabel('Sample text')).toHaveValue(/Zwölf Boxkämpfer/);
 });

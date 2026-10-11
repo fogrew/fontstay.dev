@@ -115,9 +115,6 @@
   "audience_os_ios": "iOS и iPadOS",
   "audience_os_other": "Другие или неизвестные",
   "fit_system_label": "Система",
-  "fit_language_label": "Язык текста",
-  "language_en": "Английский",
-  "language_ru": "Русский",
   "plan_waiting": "Загружаю аудиторию…",
   "plan_shadowed": "В системе {system} вместо {font} будет использован {winner}.",
   "plan_no_kind": "{system}: нет предустановленных шрифтов этого типа.",
@@ -174,5 +171,15 @@
   "matrix_baseline": "без CSS {score}",
   "fit_running": "Подбираю значения для запасных шрифтов…",
   "font_italic_note": "Шрифт курсивный. Запасные шрифты подбираются по обычному начертанию, наклон браузер делает сам.",
-  "font_weight_note": "У шрифта насыщенность {weight}. Запасные шрифты подбираются по обычному начертанию, жирность браузер делает сам, поэтому ширина может отличаться."
+  "font_weight_note": "У шрифта насыщенность {weight}. Запасные шрифты подбираются по обычному начертанию, жирность браузер делает сам, поэтому ширина может отличаться.",
+  "font_type_unknown": "Тип шрифта определить не удалось. Проверьте поле «Тип шрифта» выше.",
+  "preview_phrase_label": "Язык примера",
+  "preview_phrase_custom": "Свой текст",
+  "preview_phrase_en": "The quick brown fox jumps over the lazy dog",
+  "preview_phrase_ru": "Съешь же ещё этих мягких французских булок, да выпей чаю",
+  "preview_phrase_de": "Zwölf Boxkämpfer jagen Viktor quer über den großen Sylter Deich",
+  "preview_phrase_fr": "Portez ce vieux whisky au juge blond qui fume",
+  "preview_phrase_es": "El veloz murciélago hindú comía feliz cardillo y kiwi",
+  "preview_phrase_pl": "Pchnąć w tę łódź jeża lub ośm skrzyń fig",
+  "preview_phrase_el": "Ξεσκεπάζω την ψυχοφθόρα βδελυγμία"
 }

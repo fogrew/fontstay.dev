@@ -32,7 +32,7 @@ import {
 import { LayoutShiftPanel, type PanelInput, ratingOf, worstShift } from '@/modules/layout-shift';
 import type { Category, OsId } from '@/modules/os-fonts';
 import { autoFit } from '../lib/auto-fit';
-import { isNoCoverage, LOW_COVERAGE, sampleText } from '../lib/compute';
+import { fitLanguage, isNoCoverage, LOW_COVERAGE, sampleText } from '../lib/compute';
 import {
   adjustmentOf,
   buildCss,
@@ -105,7 +105,6 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
   const [fonts, setFonts] = useState<LoadedFont[]>([]);
   const [selectedId, setSelectedId] = useState<number>();
   const [kindChoice, setKindChoice] = useState<{ fontId: number | undefined; kind: Category }>();
-  const [language, setLanguage] = useState<Language>('en');
   const [shares, setShares] = useState<OsShares>();
   const [manualSystems, setManualSystems] = useState(false);
   const [audience, setAudience] = useState<AudienceData>();
@@ -188,6 +187,7 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
   };
 
   const selected = fonts.find((font) => font.id === selectedId) ?? fonts[0];
+  const language: Language = fitLanguage(selected?.metrics, locale);
   const kind: Category =
     kindChoice && kindChoice.fontId === selected?.id
       ? kindChoice.kind
@@ -524,6 +524,7 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
                 }))}
                 onChange={(value) => {
                   setSelectedId(Number(value));
+                  setPicks({});
                   resetOptimization();
                 }}
               />
@@ -571,19 +572,6 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
                 }}
               />
               <Select
-                label={t.fit_language_label()}
-                value={language}
-                options={[
-                  { value: 'en', label: t.language_en() },
-                  { value: 'ru', label: t.language_ru() },
-                ]}
-                onChange={(value) => {
-                  setLanguage(value as Language);
-                  setValues({});
-                  resetOptimization();
-                }}
-              />
-              <Select
                 label={t.fit_type_label()}
                 value={kind}
                 options={[
@@ -599,6 +587,9 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
                 }}
               />
             </div>
+            {selected &&
+              selected.metrics.style.category === null &&
+              kindChoice?.fontId !== selected.id && <p class="ff-muted">{t.font_type_unknown()}</p>}
             {selected?.metrics.style.italic && <p class="ff-muted">{t.font_italic_note()}</p>}
             {selected && selected.metrics.style.weight !== 400 && (
               <p class="ff-muted">
@@ -822,6 +813,7 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
                     <Preview
                       key={selected.id}
                       defaultSample={sampleText(selected.metrics, t.preview_sample_default())}
+                      codePoints={selected.metrics.codePoints}
                       locale={locale}
                       bytes={selected.bytes}
                       fallback={previewPick}
