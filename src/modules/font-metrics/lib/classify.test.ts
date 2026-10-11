@@ -30,6 +30,17 @@ describe('classifyFont', () => {
     expect(classifyFont({ panose: [2, 1], familyClass: -0x0100, monospaced: false })).toBeNull();
   });
 
+  it('reads the category from the font name before the tables', () => {
+    const base = { panose: [2, 11], familyClass: 0x0800, monospaced: false };
+    expect(
+      classifyFont({ ...base, names: ['Averia Serif Libre', null, 'AveriaSerifLibre-Italic'] }),
+    ).toBe('serif');
+    expect(classifyFont({ ...base, names: ['Noto Sans', null, null] })).toBe('sans-serif');
+    expect(classifyFont({ ...base, names: ['Noto Sans Mono', null, null] })).toBe('monospace');
+    expect(classifyFont({ ...base, names: ['Fira Code', null, null] })).toBe('monospace');
+    expect(classifyFont({ ...base, names: ['Inter', null, null] })).toBe('sans-serif');
+  });
+
   it('prefers monospace over the tables', () => {
     expect(classifyFont({ panose: [2, 11], familyClass: 0x0800, monospaced: true })).toBe(
       'monospace',

@@ -104,6 +104,7 @@ export function parseFontBuffer(buffer: ArrayBuffer): FontMetrics {
           panose: os2?.panose,
           familyClass: os2?.sFamilyClass,
           monospaced: isMonospaced(codePoints, advances),
+          names: [font.familyName, font.fullName, font.postscriptName],
         }),
       },
     };

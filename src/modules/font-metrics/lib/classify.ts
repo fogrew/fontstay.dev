@@ -24,12 +24,33 @@ export function isMonospaced(codePoints: ArrayLike<number>, advances: ArrayLike<
   return widths.length >= MIN_PROBE_GLYPHS && widths.every((width) => width === widths[0]);
 }
 
+const MONO_WORDS = new Set(['mono', 'monospace', 'monospaced', 'code', 'courier', 'typewriter']);
+const SANS_WORDS = new Set(['sans', 'grotesk', 'grotesque', 'gothic']);
+const SERIF_WORDS = new Set(['serif', 'slab', 'antiqua', 'garamond', 'didone', 'mincho']);
+
+function words(names: readonly (string | null)[]): string[] {
+  return names
+    .flatMap((name) => (name ?? '').replace(/([a-z])([A-Z])/g, '$1 $2').split(/[^A-Za-z]+/))
+    .map((word) => word.toLowerCase())
+    .filter(Boolean);
+}
+
+export function categoryFromNames(names: readonly (string | null)[]): FontCategory | null {
+  const list = words(names);
+  if (list.some((word) => MONO_WORDS.has(word))) return 'monospace';
+  if (list.some((word) => SANS_WORDS.has(word))) return 'sans-serif';
+  return list.some((word) => SERIF_WORDS.has(word)) ? 'serif' : null;
+}
+
 export function classifyFont(input: {
   panose: readonly number[] | undefined;
   familyClass: number | undefined;
   monospaced: boolean;
+  names?: readonly (string | null)[];
 }): FontCategory | null {
   if (input.monospaced) return 'monospace';
+  const named = categoryFromNames(input.names ?? []);
+  if (named) return named;
   const [kind, serifStyle] = input.panose ?? [];
   if (kind === LATIN_TEXT && serifStyle !== undefined && serifStyle > 1) {
     return SANS_SERIF_STYLES.has(serifStyle) ? 'sans-serif' : 'serif';
