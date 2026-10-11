@@ -104,7 +104,7 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
   const nextId = useRef(1);
   const [fonts, setFonts] = useState<LoadedFont[]>([]);
   const [selectedId, setSelectedId] = useState<number>();
-  const [kind, setKind] = useState<Category>('sans-serif');
+  const [kindChoice, setKindChoice] = useState<{ fontId: number | undefined; kind: Category }>();
   const [language, setLanguage] = useState<Language>('en');
   const [shares, setShares] = useState<OsShares>();
   const [manualSystems, setManualSystems] = useState(false);
@@ -188,6 +188,10 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
   };
 
   const selected = fonts.find((font) => font.id === selectedId) ?? fonts[0];
+  const kind: Category =
+    kindChoice && kindChoice.fontId === selected?.id
+      ? kindChoice.kind
+      : (selected?.metrics.style.category ?? 'sans-serif');
 
   const systems = useMemo(() => {
     if (!shares) return [];
@@ -588,13 +592,19 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
                   { value: 'monospace', label: t.type_mono() },
                 ]}
                 onChange={(value) => {
-                  setKind(value as Category);
+                  setKindChoice({ fontId: selected?.id, kind: value as Category });
                   setPicks({});
                   resetOptimization();
                   setEditId(undefined);
                 }}
               />
             </div>
+            {selected?.metrics.style.italic && <p class="ff-muted">{t.font_italic_note()}</p>}
+            {selected && selected.metrics.style.weight !== 400 && (
+              <p class="ff-muted">
+                {t.font_weight_note({ weight: selected.metrics.style.weight })}
+              </p>
+            )}
             <fieldset class="ff-generator__systems">
               <legend>{t.systems_legend()}</legend>
               {systems.map((os) => (

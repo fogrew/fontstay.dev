@@ -172,5 +172,7 @@
   "shell_show_settings": "Show settings",
   "shell_tab_css": "CSS",
   "matrix_baseline": "without the CSS {score}",
-  "fit_running": "Optimizing the fallback fonts…"
+  "fit_running": "Optimizing the fallback fonts…",
+  "font_italic_note": "This font is italic. The fallbacks are fitted on regular faces and the browser slants them itself.",
+  "font_weight_note": "This font is weight {weight}. The fallbacks are fitted on regular faces and the browser makes them bold itself, so widths can differ."
 }

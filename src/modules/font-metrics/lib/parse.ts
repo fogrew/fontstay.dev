@@ -1,4 +1,5 @@
 import { create } from 'fontkitten';
+import { classifyFont, isMonospaced } from './classify';
 import { legacyVerticalMetrics } from './legacy-os2';
 import { type FontMetrics, FontParseError, MAX_CMAP_ENTRIES } from './model';
 import { validateFontBuffer } from './validate';
@@ -19,6 +20,14 @@ function name(value: string | null): string | null {
     throw new FontParseError('invalid-font');
   }
   return value;
+}
+
+function slanted(font: { italicAngle: number }): boolean {
+  try {
+    return font.italicAngle !== 0;
+  } catch {
+    return false;
+  }
 }
 
 export function parseFontBuffer(buffer: ArrayBuffer): FontMetrics {
@@ -87,6 +96,16 @@ export function parseFontBuffer(buffer: ArrayBuffer): FontMetrics {
       codePoints,
       advances,
       isVariable: Object.keys(font.variationAxes).length > 0,
+      style: {
+        weight:
+          os2 && os2.usWeightClass >= 1 && os2.usWeightClass <= 1000 ? os2.usWeightClass : 400,
+        italic: Boolean(os2?.fsSelection?.italic || os2?.fsSelection?.oblique) || slanted(font),
+        category: classifyFont({
+          panose: os2?.panose,
+          familyClass: os2?.sFamilyClass,
+          monospaced: isMonospaced(codePoints, advances),
+        }),
+      },
     };
   } catch (error) {
     if (error instanceof FontParseError) throw error;

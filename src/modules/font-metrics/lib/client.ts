@@ -19,6 +19,8 @@ function isFontParseResult(data: unknown): data is FontParseResult {
       font.codePoints.length === font.advances.length &&
       typeof font.unitsPerEm === 'number' &&
       typeof font.isVariable === 'boolean' &&
+      typeof font.style === 'object' &&
+      font.style !== null &&
       typeof font.names === 'object' &&
       font.names !== null &&
       typeof font.hhea === 'object' &&

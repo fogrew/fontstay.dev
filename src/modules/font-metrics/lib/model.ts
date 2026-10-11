@@ -4,6 +4,14 @@ export interface VerticalMetrics {
   lineGap: number;
 }
 
+export type FontCategory = 'sans-serif' | 'serif' | 'monospace';
+
+export interface FontStyleInfo {
+  weight: number;
+  italic: boolean;
+  category: FontCategory | null;
+}
+
 export interface FontMetrics {
   names: { family: string | null; fullName: string | null; postscript: string | null };
   unitsPerEm: number;
@@ -15,6 +23,7 @@ export interface FontMetrics {
   codePoints: Uint32Array;
   advances: Float64Array;
   isVariable: boolean;
+  style: FontStyleInfo;
 }
 
 export const FONT_PARSE_ERROR_CODES = [

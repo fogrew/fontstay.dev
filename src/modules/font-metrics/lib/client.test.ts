@@ -49,6 +49,7 @@ describe('font parser client', () => {
     advances: new Float64Array(1),
     unitsPerEm: 1000,
     isVariable: false,
+    style: { weight: 400, italic: false, category: null },
   };
   it.each([
     null,

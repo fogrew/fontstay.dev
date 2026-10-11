@@ -28,6 +28,7 @@ describe('font metrics extraction', () => {
     );
     expect(metrics.advances.length).toBe(metrics.codePoints.length);
     expect(metrics.isVariable).toBe(false);
+    expect(metrics.style).toEqual({ weight: 400, italic: false, category: 'sans-serif' });
   });
 
   it('preserves the USE_TYPO_METRICS flag in a TTF', () => {

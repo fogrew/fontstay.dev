@@ -12,5 +12,6 @@ export function font(codePoints: number[], advance: number): FontMetrics {
     codePoints: Uint32Array.from(codePoints),
     advances: Float64Array.from(codePoints, () => advance),
     isVariable: false,
+    style: { weight: 400, italic: false, category: null },
   };
 }
