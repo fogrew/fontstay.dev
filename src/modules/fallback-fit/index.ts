@@ -19,4 +19,18 @@ export {
   StackResolveError,
 } from './lib/stack-model';
 export { type SystemFont, systemFonts } from './lib/system-fonts';
+export {
+  type CodePointRange,
+  compactRanges,
+  countCodePoints,
+  expandRanges,
+  formatUnicodeRange,
+  intersectCount,
+  parseUnicodeRange,
+  SUBSETS,
+  type SubsetCoverage,
+  type SubsetName,
+  subsetCoverage,
+  UnicodeRangeError,
+} from './lib/unicode-range';
 export { languageWeights } from './lib/weights';

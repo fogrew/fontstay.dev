@@ -75,3 +75,11 @@ The test compares the aggregate API with these frozen percentages to within
 0.00005 percentage points, accounting for Capsize's four-decimal rounding.
 This tests aggregate formula parity; it does not claim that a different corpus,
 font version or metric policy produces the same measured average.
+
+## `unicode-range`
+
+`lib/unicode-range.ts` compacts code points into sorted, disjoint ranges (lossless),
+formats and parses CSS `unicode-range` values (`U+20-7E, U+A0`), counts and
+intersects ranges, and reports coverage of named subsets (`SUBSETS`: latin,
+latin-ext, vietnamese, cyrillic, cyrillic-ext, greek, greek-ext). The subset
+definitions follow the `unicode-range` values served by the Google Fonts CSS API.
