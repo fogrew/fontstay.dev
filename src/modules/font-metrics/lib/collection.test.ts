@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  collectionMemberIndices,
   collectionSize,
   extractCollectionMember,
   isFontCollection,
@@ -31,6 +32,21 @@ describe('font collections', () => {
   it('reject a member index outside the collection', () => {
     expect(() => extractCollectionMember(collection, 2)).toThrow(FontParseError);
     expect(() => extractCollectionMember(collection, -1)).toThrow(FontParseError);
+  });
+
+  it('list each distinct member once', () => {
+    expect(collectionMemberIndices(collection)).toEqual([0, 1]);
+    const repeated = collection.slice(0);
+    const data = new DataView(repeated);
+    data.setUint32(16, data.getUint32(12));
+    expect(collectionMemberIndices(repeated)).toEqual([0]);
+  });
+
+  it('reject a member that is not an sfnt font', () => {
+    const copy = collection.slice(0);
+    const data = new DataView(copy);
+    data.setUint32(data.getUint32(12), 0x74746366);
+    expect(() => extractCollectionMember(copy, 0)).toThrow(FontParseError);
   });
 
   it('reject hostile headers', () => {

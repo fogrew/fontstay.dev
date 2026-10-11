@@ -24,6 +24,22 @@ export function collectionSize(buffer: ArrayBuffer): number {
   return count;
 }
 
+export function collectionMemberIndices(buffer: ArrayBuffer): number[] {
+  const count = collectionSize(buffer);
+  const view = new DataView(buffer);
+  const seen = new Set<number>();
+  const indices: number[] = [];
+  for (let index = 0; index < count; index++) {
+    const start = view.getUint32(HEADER_BYTES + index * 4);
+    if (seen.has(start)) continue;
+    seen.add(start);
+    indices.push(index);
+  }
+  return indices;
+}
+
+const SFNT_VERSIONS = new Set([0x00010000, 0x4f54544f, 0x74727565]);
+
 export function extractCollectionMember(buffer: ArrayBuffer, index: number): ArrayBuffer {
   const count = collectionSize(buffer);
   if (!Number.isInteger(index) || index < 0 || index >= count) {
@@ -32,7 +48,9 @@ export function extractCollectionMember(buffer: ArrayBuffer, index: number): Arr
   const bytes = new Uint8Array(buffer);
   const view = new DataView(buffer);
   const start = view.getUint32(HEADER_BYTES + index * 4);
-  if (start + HEADER_BYTES > buffer.byteLength) throw new FontParseError('invalid-font');
+  if (start + HEADER_BYTES > buffer.byteLength || !SFNT_VERSIONS.has(view.getUint32(start))) {
+    throw new FontParseError('invalid-font');
+  }
   const tableCount = view.getUint16(start + 4);
   if (tableCount === 0 || tableCount > MAX_TABLES) throw new FontParseError('invalid-font');
   const recordsEnd = start + HEADER_BYTES + tableCount * TABLE_RECORD_BYTES;

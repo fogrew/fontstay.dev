@@ -25,7 +25,7 @@ import {
 import { CssExportError } from '@/modules/export';
 import { compactRanges, formatUnicodeRange, StackResolveError } from '@/modules/fallback-fit';
 import {
-  collectionSize,
+  collectionMemberIndices,
   createFontParser,
   extractCollectionMember,
   type FontMetrics,
@@ -174,37 +174,40 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
           failures.push(`${file.name}: ${t.error_too_large()}`);
           continue;
         }
+        let buffer: ArrayBuffer;
         try {
-          const buffer = await file.arrayBuffer();
-          const members = isFontCollection(buffer)
-            ? Array.from({ length: collectionSize(buffer) }, (_, index) => ({
-                name: `${file.name} #${index + 1}`,
-                data: extractCollectionMember(buffer, index),
-              }))
-            : [{ name: file.name, data: buffer }];
-          for (const member of members) {
-            if (fonts.length + added.length >= MAX_FONTS) {
-              failures.push(`${member.name}: ${t.error_too_many()}`);
-              continue;
-            }
-            const bytes = member.data.slice(0);
-            const result = await parser.current.parse(member.data);
-            if (result.ok) {
-              added.push({
-                id: nextId.current++,
-                fileName: member.name,
-                metrics: result.font,
-                bytes,
-              });
-            } else {
-              failures.push(
-                `${member.name}: ${errors[result.error.code] ?? t.error_invalid_font()}`,
-              );
-            }
-          }
+          buffer = await file.arrayBuffer();
+        } catch {
+          failures.push(`${file.name}: ${t.error_worker_error()}`);
+          continue;
+        }
+        let indices: (number | undefined)[];
+        try {
+          indices = isFontCollection(buffer) ? collectionMemberIndices(buffer) : [undefined];
         } catch (failure) {
           const known = failure instanceof FontParseError ? errors[failure.code] : undefined;
-          failures.push(`${file.name}: ${known ?? t.error_worker_error()}`);
+          failures.push(`${file.name}: ${known ?? t.error_invalid_font()}`);
+          continue;
+        }
+        for (const index of indices) {
+          if (fonts.length + added.length >= MAX_FONTS) {
+            failures.push(`${file.name}: ${t.error_too_many()}`);
+            break;
+          }
+          const name = index === undefined ? file.name : `${file.name} #${index + 1}`;
+          try {
+            const data = index === undefined ? buffer : extractCollectionMember(buffer, index);
+            const bytes = data.slice(0);
+            const result = await parser.current.parse(data);
+            if (result.ok) {
+              added.push({ id: nextId.current++, fileName: name, metrics: result.font, bytes });
+            } else {
+              failures.push(`${name}: ${errors[result.error.code] ?? t.error_invalid_font()}`);
+            }
+          } catch (failure) {
+            const known = failure instanceof FontParseError ? errors[failure.code] : undefined;
+            failures.push(`${name}: ${known ?? t.error_worker_error()}`);
+          }
         }
       }
     } finally {

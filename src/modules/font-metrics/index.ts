@@ -1,6 +1,7 @@
 export { type BlockCoverage, blockCoverage, type UnicodeBlock, unicodeBlocks } from './lib/blocks';
 export { createFontParser, type FontParser } from './lib/client';
 export {
+  collectionMemberIndices,
   collectionSize,
   extractCollectionMember,
   isFontCollection,
