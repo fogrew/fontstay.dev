@@ -114,46 +114,10 @@ export function Accordion({ items, resizeLabel }: AccordionProps) {
       {items.map((item) => {
         const open = !closed.has(item.id);
         const position = openIds.indexOf(item.id);
-        const above = position > 0 ? openIds[position - 1] : undefined;
+        const below = open ? openIds[position + 1] : undefined;
         const fraction = sizes[item.id];
         return (
           <Fragment key={item.id}>
-            {above !== undefined && (
-              <Splitter
-                label={resizeLabel(labelOf(above), item.label)}
-                value={sizes[above] ?? measure().fractions[above] ?? 0}
-                onStart={(clientY) => {
-                  const { fractions, total } = measure();
-                  drag.current = {
-                    startY: clientY,
-                    start: fractions,
-                    above,
-                    below: item.id,
-                    total,
-                  };
-                  setSizes(fractions);
-                }}
-                onMove={(clientY) => {
-                  const state = drag.current;
-                  if (!state) return;
-                  apply(
-                    state.start,
-                    state.total,
-                    state.above,
-                    state.below,
-                    (clientY - state.startY) / state.total,
-                  );
-                }}
-                onEnd={() => {
-                  drag.current = undefined;
-                }}
-                onNudge={(direction) => {
-                  const { fractions, total } = measure();
-                  const start = Object.keys(sizes).length > 0 ? sizes : fractions;
-                  apply(start, total, above, item.id, direction * KEY_STEP);
-                }}
-              />
-            )}
             <section
               class="ff-accordion__item"
               data-open={open}
@@ -185,6 +149,42 @@ export function Accordion({ items, resizeLabel }: AccordionProps) {
               </div>
               {/* biome-ignore-end lint/a11y/noNoninteractiveTabindex: keyboard users scroll the panel */}
             </section>
+            {below !== undefined && (
+              <Splitter
+                label={resizeLabel(item.label, labelOf(below))}
+                value={sizes[item.id] ?? measure().fractions[item.id] ?? 0}
+                onStart={(clientY) => {
+                  const { fractions, total } = measure();
+                  drag.current = {
+                    startY: clientY,
+                    start: fractions,
+                    above: item.id,
+                    below,
+                    total,
+                  };
+                  setSizes(fractions);
+                }}
+                onMove={(clientY) => {
+                  const state = drag.current;
+                  if (!state) return;
+                  apply(
+                    state.start,
+                    state.total,
+                    state.above,
+                    state.below,
+                    (clientY - state.startY) / state.total,
+                  );
+                }}
+                onEnd={() => {
+                  drag.current = undefined;
+                }}
+                onNudge={(direction) => {
+                  const { fractions, total } = measure();
+                  const start = Object.keys(sizes).length > 0 ? sizes : fractions;
+                  apply(start, total, item.id, below, direction * KEY_STEP);
+                }}
+              />
+            )}
           </Fragment>
         );
       })}

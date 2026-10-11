@@ -318,8 +318,8 @@
     z-index: 1;
     display: block;
     flex: none;
-    block-size: var(--ff-space-2);
-    margin-block: calc(-1 * var(--ff-space-2)) 0;
+    block-size: 1.5rem;
+    margin-block: -1.5rem 0;
     cursor: row-resize;
     touch-action: none;
   }
@@ -328,4 +328,7 @@
     background: var(--ff-accent);
     opacity: 0.5;
   }
+}
+.ff-accordion__item[data-open="false"] {
+  flex: none;
 }

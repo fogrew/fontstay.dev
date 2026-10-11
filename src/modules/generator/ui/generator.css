@@ -294,3 +294,73 @@
 .ff-generator .ff-matrix__legend li {
   justify-content: flex-start;
 }
+
+.ff-map {
+  display: grid;
+  gap: var(--ff-space-2);
+}
+.ff-map p {
+  margin: 0;
+}
+.ff-map__controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--ff-space-3);
+  align-items: end;
+}
+.ff-map__pages {
+  display: flex;
+  gap: var(--ff-space-2);
+  align-items: center;
+}
+.ff-map__grid {
+  display: grid;
+  grid-template-columns: repeat(16, minmax(0, 1fr));
+  gap: 1px;
+  max-inline-size: 36rem;
+  border: 1px solid var(--ff-border);
+  background: var(--ff-border);
+}
+.ff-map__cell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  aspect-ratio: 1;
+  background: var(--ff-state-unknown);
+  font-family: "ff-preview-web", sans-serif;
+  font-size: 1rem;
+  overflow: hidden;
+}
+.ff-map__cell[data-covered="true"] {
+  background: var(--ff-state-full);
+}
+.ff-map__cell[data-cursor="true"] {
+  outline: 2px solid var(--ff-focus);
+  outline-offset: -2px;
+}
+.ff-map__readout {
+  min-block-size: 1.5rem;
+  font-variant-numeric: tabular-nums;
+}
+.ff-map__table {
+  inline-size: 100%;
+  border-collapse: collapse;
+  font-size: 0.8125rem;
+}
+.ff-map__table caption {
+  text-align: start;
+  font-weight: 600;
+}
+.ff-map__table th,
+.ff-map__table td {
+  padding: var(--ff-space-1) var(--ff-space-2);
+  border-block-end: 1px solid var(--ff-border);
+  text-align: start;
+}
+@media (forced-colors: active) {
+  .ff-map__cell[data-covered="true"] {
+    background: Highlight;
+    color: HighlightText;
+    forced-color-adjust: none;
+  }
+}

@@ -184,5 +184,22 @@
   "systems_include": "Include {system} in the stack",
   "accordion_resize": "Resize {above} and {below}",
   "range_enable": "Limit the fallbacks to the characters the web font covers (unicode-range)",
-  "range_note": "The range lists {count} spans of code points. Characters outside it use the generic family, like they would without the web font."
+  "range_note": "The range lists {count} spans of code points. Characters outside it use the generic family, like they would without the web font.",
+  "coverage_heading": "Glyph coverage",
+  "coverage_empty": "The font has no glyphs in a known Unicode block.",
+  "coverage_summary": "{count} code points in {blocks} Unicode blocks.",
+  "coverage_block_label": "Unicode block",
+  "coverage_prev": "Previous page",
+  "coverage_next": "Next page",
+  "coverage_page": "Page {page} of {pages}",
+  "coverage_map_label": "Unicode map of {block}",
+  "coverage_hint": "Point at a cell or focus the map and use the arrow keys. The table below lists the same data.",
+  "coverage_cell": "U+{code} · {char} · {block} · {state}",
+  "coverage_state_yes": "covered",
+  "coverage_state_no": "not covered",
+  "coverage_table_caption": "Glyph coverage per Unicode block",
+  "coverage_col_block": "Block",
+  "coverage_col_range": "Range",
+  "coverage_col_covered": "Covered",
+  "coverage_col_percent": "Share"
 }

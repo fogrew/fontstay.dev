@@ -57,6 +57,7 @@ import {
   webPredictFont,
 } from '../lib/predict-input';
 import { aspectOf, safariStrategyCss } from '../lib/safari';
+import { CoverageMap } from './CoverageMap';
 import { FontUpload } from './FontUpload';
 import { Preview } from './Preview';
 import './generator.css';
@@ -869,6 +870,12 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
                       )}
                     </>
                   ),
+                },
+                {
+                  id: 'coverage',
+                  label: t.coverage_heading(),
+                  open: false,
+                  content: <CoverageMap locale={locale} codePoints={selected.metrics.codePoints} />,
                 },
                 {
                   id: 'support',

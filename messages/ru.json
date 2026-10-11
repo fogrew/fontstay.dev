@@ -184,5 +184,22 @@
   "systems_include": "Учитывать систему {system} в стеке",
   "accordion_resize": "Изменить размер: {above} и {below}",
   "range_enable": "Ограничить запасные шрифты символами, которые есть в веб-шрифте (unicode-range)",
-  "range_note": "В списке диапазонов: {count}. Символы вне него отображаются общим шрифтом, как и без веб-шрифта."
+  "range_note": "В списке диапазонов: {count}. Символы вне него отображаются общим шрифтом, как и без веб-шрифта.",
+  "coverage_heading": "Покрытие глифов",
+  "coverage_empty": "В шрифте нет глифов из известных блоков Unicode.",
+  "coverage_summary": "Кодовых точек: {count}, блоков Unicode: {blocks}.",
+  "coverage_block_label": "Блок Unicode",
+  "coverage_prev": "Предыдущая страница",
+  "coverage_next": "Следующая страница",
+  "coverage_page": "Страница {page} из {pages}",
+  "coverage_map_label": "Карта Unicode: {block}",
+  "coverage_hint": "Наведите на ячейку или сфокусируйте карту и используйте стрелки. Те же данные есть в таблице ниже.",
+  "coverage_cell": "U+{code} · {char} · {block} · {state}",
+  "coverage_state_yes": "есть",
+  "coverage_state_no": "нет",
+  "coverage_table_caption": "Покрытие глифов по блокам Unicode",
+  "coverage_col_block": "Блок",
+  "coverage_col_range": "Диапазон",
+  "coverage_col_covered": "Покрыто",
+  "coverage_col_percent": "Доля"
 }

@@ -503,7 +503,7 @@ test('the panel separators move space between neighbours only', async ({ page })
   await expect(separators).toHaveCount(2);
   const heights = async () =>
     page.evaluate(() =>
-      [...document.querySelectorAll('.ff-accordion__item')].map(
+      [...document.querySelectorAll('.ff-accordion__item[data-open="true"]')].map(
         (item) => item.getBoundingClientRect().height,
       ),
     );
@@ -541,4 +541,24 @@ test('the unicode-range toggle limits the fallbacks to the covered characters', 
   await expect(code).toContainText('unicode-range: U+');
   await page.getByRole('checkbox', { name: /Limit the fallbacks to the characters/ }).uncheck();
   await expect(code).not.toContainText('unicode-range');
+});
+
+test('the coverage section shows a Unicode map and a per-block table', async ({ page }) => {
+  await page.goto('/en/');
+  await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
+  await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(sourceSans);
+  await page.getByRole('button', { name: 'Glyph coverage', exact: true }).click();
+  await expect(page.getByText(/code points in \d+ Unicode blocks/)).toBeVisible();
+  const table = page.getByRole('table', { name: 'Glyph coverage per Unicode block' });
+  await expect(table.getByRole('row', { name: /Basic Latin/ })).toBeVisible();
+  const map = page.getByRole('group', { name: 'Unicode map of Basic Latin' });
+  const status = page.locator('.ff-map__readout');
+  await map.locator('[data-cp="65"]').hover();
+  await expect(status).toContainText('U+0041 · A');
+  await expect(status).toContainText('covered');
+  await map.focus();
+  await page.keyboard.press('ArrowRight');
+  await expect(status).toContainText('U+0042 · B');
+  await page.keyboard.press('ArrowUp');
+  await expect(status).toContainText('U+0032');
 });
