@@ -42,9 +42,8 @@ describe('rankFor', () => {
   it('knows which systems have candidates', () => {
     const systems = systemsWithFonts();
     expect(systems).toEqual(
-      expect.arrayContaining(['windows', 'macos', 'ios', 'android', 'linux']),
+      expect.arrayContaining(['windows', 'macos', 'ios', 'android', 'linux', 'chromeos']),
     );
-    expect(systems).not.toContain('chromeos');
   });
 });
 

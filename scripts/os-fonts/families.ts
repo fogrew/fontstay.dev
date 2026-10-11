@@ -8,6 +8,7 @@ export interface FamilySpec {
   apple?: string;
   androidFiles?: RegExp;
   linuxPackages?: readonly string[];
+  chromeosPackages?: readonly string[];
 }
 
 const shared = (id: string, family: string, category: Category): FamilySpec => ({
@@ -53,13 +54,20 @@ export const FAMILIES: readonly FamilySpec[] = [
     apple: 'Helvetica Neue',
   },
   { id: 'lucida-grande', family: 'Lucida Grande', category: 'sans-serif', apple: 'Lucida Grande' },
-  { id: 'roboto', family: 'Roboto', category: 'sans-serif', androidFiles: /^Roboto(Static)?-/ },
+  {
+    id: 'roboto',
+    family: 'Roboto',
+    category: 'sans-serif',
+    androidFiles: /^Roboto(Static)?-/,
+    chromeosPackages: ['robotofonts'],
+  },
   {
     id: 'noto-serif',
     family: 'Noto Serif',
     category: 'serif',
     androidFiles: /^NotoSerif-/,
     linuxPackages: ['fonts-noto-core'],
+    chromeosPackages: ['notofonts'],
   },
   {
     id: 'noto-sans',
@@ -67,6 +75,7 @@ export const FAMILIES: readonly FamilySpec[] = [
     category: 'sans-serif',
     androidFiles: /^NotoSans-/,
     linuxPackages: ['fonts-noto-core'],
+    chromeosPackages: ['notofonts'],
   },
   {
     id: 'droid-sans-mono',
@@ -118,7 +127,22 @@ export const FAMILIES: readonly FamilySpec[] = [
     linuxPackages: ['fonts-ubuntu'],
   },
   { id: 'lato', family: 'Lato', category: 'sans-serif', linuxPackages: ['fonts-lato'] },
+  { id: 'arimo', family: 'Arimo', category: 'sans-serif', chromeosPackages: ['croscorefonts'] },
+  { id: 'tinos', family: 'Tinos', category: 'serif', chromeosPackages: ['croscorefonts'] },
+  { id: 'cousine', family: 'Cousine', category: 'monospace', chromeosPackages: ['croscorefonts'] },
+  {
+    id: 'carlito',
+    family: 'Carlito',
+    category: 'sans-serif',
+    chromeosPackages: ['crosextrafonts-carlito'],
+  },
+  { id: 'caladea', family: 'Caladea', category: 'serif', chromeosPackages: ['crosextrafonts'] },
 ];
+
+export const CHROMEOS_SOURCE = [
+  'current',
+  'https://chromium.googlesource.com/chromiumos/overlays/chromiumos-overlay/+/refs/heads/main/chromeos-base/chromeos-fonts/chromeos-fonts-0.0.1.ebuild',
+] as const;
 
 export const ANDROID_TAGS = [
   ['10', 'android-10.0.0_r1'],

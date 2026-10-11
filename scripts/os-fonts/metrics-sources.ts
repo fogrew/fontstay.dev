@@ -67,6 +67,36 @@ export const METRICS_SOURCES: readonly MetricsSource[] = [
     },
   },
   {
+    id: 'arimo',
+    family: 'Arimo',
+    files: [],
+    download: { url: googleFonts('ofl/arimo/Arimo%5Bwght%5D.ttf'), license: 'OFL-1.1' },
+  },
+  {
+    id: 'tinos',
+    family: 'Tinos',
+    files: [],
+    download: { url: googleFonts('ofl/tinos/Tinos-Regular.ttf'), license: 'OFL-1.1' },
+  },
+  {
+    id: 'cousine',
+    family: 'Cousine',
+    files: [],
+    download: { url: googleFonts('ofl/cousine/Cousine-Regular.ttf'), license: 'OFL-1.1' },
+  },
+  {
+    id: 'carlito',
+    family: 'Carlito',
+    files: [],
+    download: { url: googleFonts('ofl/carlito/Carlito-Regular.ttf'), license: 'OFL-1.1' },
+  },
+  {
+    id: 'caladea',
+    family: 'Caladea',
+    files: [],
+    download: { url: googleFonts('ofl/caladea/Caladea-Regular.ttf'), license: 'OFL-1.1' },
+  },
+  {
     id: 'ubuntu',
     family: 'Ubuntu',
     files: [],

@@ -16,6 +16,10 @@ const decode = (text: string) =>
     .replace(/&amp;/g, '&')
     .trim();
 
+export function parseChromeosFontPackages(ebuild: string): Set<string> {
+  return new Set([...ebuild.matchAll(/media-fonts\/([a-z0-9-]+)/g)].map((match) => match[1] ?? ''));
+}
+
 export interface WindowsFamilies {
   preinstalled: Set<string>;
   onDemand: Set<string>;

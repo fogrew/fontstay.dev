@@ -10,6 +10,7 @@ import type {
 import {
   ANDROID_TAGS,
   APPLE_SOURCE,
+  CHROMEOS_SOURCE,
   FAMILIES,
   OS_FONT_LIST_MACOS,
   UBUNTU_MANIFESTS,
@@ -19,6 +20,7 @@ import {
   appleStatus,
   parseAndroidFontFiles,
   parseAppleSystemFonts,
+  parseChromeosFontPackages,
   parseOsFontListCsv,
   parseUbuntuManifest,
   parseWindowsFontList,
@@ -107,6 +109,18 @@ for (const [version, url] of UBUNTU_MANIFESTS) {
   }
 }
 
+{
+  const [version, url] = CHROMEOS_SOURCE;
+  const encoded = await fetchText(`${url}?format=TEXT`);
+  const packages = parseChromeosFontPackages(Buffer.from(encoded, 'base64').toString('utf8'));
+  expectAtLeast('ChromeOS font packages', packages.size, 4);
+  for (const spec of FAMILIES) {
+    if (spec.chromeosPackages?.some((name) => packages.has(name))) {
+      add(spec.id, { os: 'chromeos', version, status: 'preinstalled', source: url });
+    }
+  }
+}
+
 function merge(list: Hit[]): Availability[] {
   const groups = new Map<string, Availability>();
   for (const hit of list) {
@@ -146,7 +160,10 @@ const dataset: OsFontsDataset = {
       note: 'AOSP fonts only; vendor builds add or replace fonts, and local() support depends on the browser.',
     },
     linux: { versions: UBUNTU_MANIFESTS.map(([version]) => version) },
-    chromeos: { versions: [] },
+    chromeos: {
+      versions: [CHROMEOS_SOURCE[0]],
+      note: 'Chromium OS font packages; devices differ by board and Chrome OS version.',
+    },
   },
   fonts,
 };

@@ -3,6 +3,7 @@ import {
   appleStatus,
   parseAndroidFontFiles,
   parseAppleSystemFonts,
+  parseChromeosFontPackages,
   parseOsFontListCsv,
   parseUbuntuManifest,
   parseWindowsFontList,
@@ -108,6 +109,14 @@ describe('other sources', () => {
     const xml =
       '<family name="serif"><font weight="400" style="normal">NotoSerif-Regular.ttf</font></family>';
     expect([...parseAndroidFontFiles(xml)]).toEqual(['NotoSerif-Regular.ttf']);
+  });
+
+  it('collects font package names from the ChromeOS ebuild', () => {
+    const ebuild = 'DEPEND=" media-fonts/croscorefonts:= media-fonts/crosextrafonts-carlito:= "';
+    expect([...parseChromeosFontPackages(ebuild)]).toEqual([
+      'croscorefonts',
+      'crosextrafonts-carlito',
+    ]);
   });
 
   it('collects package names from an Ubuntu manifest', () => {
