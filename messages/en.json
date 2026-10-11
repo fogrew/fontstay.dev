@@ -242,5 +242,16 @@
   "missing_label": "Font for the missing characters",
   "missing_system": "System UI",
   "missing_summary": "{count} characters are not in this font and are drawn with the {font} font instead: {list}.",
-  "missing_more": "…and {count} more."
+  "missing_more": "…and {count} more.",
+  "cssimport_heading": "Import from CSS",
+  "cssimport_note": "Paste @font-face rules or a Google Fonts link. Nothing is fetched from other sites: fonts embedded as data: URLs can be added right here, for other files download them and drop them above.",
+  "cssimport_label": "CSS or link",
+  "cssimport_read": "Read CSS",
+  "cssimport_none": "No @font-face rules or Google Fonts links were found.",
+  "cssimport_faces": "Fonts found in the CSS",
+  "cssimport_google": "Google Fonts families",
+  "cssimport_add": "Add to the fonts",
+  "cssimport_download": "Download the file",
+  "cssimport_unsupported": "Source not supported",
+  "cssimport_open_google": "Open on Google Fonts"
 }

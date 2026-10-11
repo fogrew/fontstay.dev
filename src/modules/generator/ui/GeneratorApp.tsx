@@ -64,6 +64,7 @@ import {
 } from '../lib/predict-input';
 import { aspectOf, safariStrategyCss } from '../lib/safari';
 import { CoverageMap } from './CoverageMap';
+import { CssImport } from './CssImport';
 import { FontUpload } from './FontUpload';
 import { Preview } from './Preview';
 import './generator.css';
@@ -771,6 +772,7 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
     <div class="ff-generator">
       <div class="ff-generator__settings" id="ff-settings">
         <FontUpload locale={locale} busy={busy} compact={fonts.length > 0} onFiles={addFiles} />
+        <CssImport locale={locale} busy={busy} onFiles={addFiles} />
         {error && (
           <p class="ff-error" role="alert">
             {error}

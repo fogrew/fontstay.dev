@@ -242,5 +242,16 @@
   "missing_label": "Шрифт для отсутствующих символов",
   "missing_system": "Системный интерфейсный",
   "missing_summary": "Символов, которых нет в этом шрифте: {count}. Они рисуются запасным шрифтом ({font}): {list}.",
-  "missing_more": "…и ещё {count}."
+  "missing_more": "…и ещё {count}.",
+  "cssimport_heading": "Импорт из CSS",
+  "cssimport_note": "Вставьте правила @font-face или ссылку Google Fonts. С других сайтов ничего не загружается: шрифты, встроенные как data: URL, можно добавить здесь, остальные файлы скачайте и перетащите в поле загрузки выше.",
+  "cssimport_label": "CSS или ссылка",
+  "cssimport_read": "Прочитать CSS",
+  "cssimport_none": "Правила @font-face и ссылки Google Fonts не найдены.",
+  "cssimport_faces": "Шрифты из CSS",
+  "cssimport_google": "Семейства Google Fonts",
+  "cssimport_add": "Добавить в шрифты",
+  "cssimport_download": "Скачать файл",
+  "cssimport_unsupported": "Источник не поддерживается",
+  "cssimport_open_google": "Открыть в Google Fonts"
 }

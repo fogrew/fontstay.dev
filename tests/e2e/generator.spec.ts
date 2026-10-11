@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs';
 import AxeBuilder from '@axe-core/playwright';
 import { buildCollection, buildFont } from '../../src/modules/font-metrics/lib/forged.test-util';
 import { expect, selectSystem, test } from './fixtures';
@@ -612,4 +613,26 @@ test('characters missing from the font are listed, marked and can use another fo
   await expect(missing.locator('mark')).toHaveText('☃');
   await missing.getByLabel('Font for the missing characters').selectOption('serif');
   await expect(missing).toContainText('Serif');
+});
+
+test('a font embedded in pasted CSS can be added and other sources are only linked', async ({
+  page,
+}) => {
+  await page.goto('/en/');
+  await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
+  const encoded = readFileSync(sourceSans).toString('base64');
+  const css = `@font-face { font-family: "Embedded"; font-weight: 700; src: url(data:font/woff2;base64,${encoded}) format("woff2"); }
+@font-face { font-family: "Remote"; src: url(https://example.com/remote.woff2) format("woff2"); }
+@font-face { font-family: "Script"; src: url(javascript:alert(1)); }`;
+  await page.getByText('Import from CSS').click();
+  await page.getByLabel('CSS or link').fill(css);
+  await page.getByRole('button', { name: 'Read CSS' }).click();
+  const list = page.getByRole('list', { name: 'Fonts found in the CSS' });
+  await expect(list.getByRole('link', { name: 'Download the file' })).toHaveAttribute(
+    'href',
+    'https://example.com/remote.woff2',
+  );
+  await expect(list.getByText('Source not supported')).toBeVisible();
+  await list.getByRole('button', { name: 'Add to the fonts' }).click();
+  await expect(page.getByRole('button', { name: /^Remove: Embedded/ })).toBeVisible();
 });

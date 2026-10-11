@@ -387,3 +387,15 @@
     forced-color-adjust: none;
   }
 }
+
+.ff-cssimport {
+  display: grid;
+  gap: var(--ff-space-2);
+}
+.ff-cssimport p {
+  margin: 0;
+}
+.ff-cssimport__list {
+  display: grid;
+  gap: var(--ff-space-1);
+}
