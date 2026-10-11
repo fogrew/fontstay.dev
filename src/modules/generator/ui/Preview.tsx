@@ -53,6 +53,7 @@ export function Preview({
   adjustment,
   defaultSample,
   codePoints,
+  unicodeRange,
 }: {
   locale: Locale;
   bytes: ArrayBuffer;
@@ -60,6 +61,7 @@ export function Preview({
   adjustment: Overrides;
   defaultSample: string;
   codePoints: Uint32Array;
+  unicodeRange?: string | undefined;
 }) {
   const t = messagesFor(locale);
   const [sample, setSample] = useState(defaultSample);
@@ -106,7 +108,7 @@ export function Preview({
   }, [bytes]);
   const css = buildCss(
     PREVIEW_FAMILY,
-    [{ family: fallback.family, localNames: fallback.localNames, adjustment }],
+    [{ family: fallback.family, localNames: fallback.localNames, adjustment, unicodeRange }],
     fallback.category,
   );
   useEffect(() => {

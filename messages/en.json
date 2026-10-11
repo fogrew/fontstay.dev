@@ -182,5 +182,7 @@
   "plan_reordered": "The fallback order was changed automatically so that every system gets its own font.",
   "preview_phrase_placeholder": "Choose a sample",
   "systems_include": "Include {system} in the stack",
-  "accordion_resize": "Resize {above} and {below}"
+  "accordion_resize": "Resize {above} and {below}",
+  "range_enable": "Limit the fallbacks to the characters the web font covers (unicode-range)",
+  "range_note": "The range lists {count} spans of code points. Characters outside it use the generic family, like they would without the web font."
 }

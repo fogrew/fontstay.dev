@@ -66,6 +66,27 @@ describe('fallback CSS export', () => {
     expect(output.fontFamily).not.toContain('</style>');
   });
 
+  it('emits a validated unicode-range descriptor', () => {
+    const output = generateFallbackCss({
+      targetFamily: 'Inter',
+      fallbacks: [{ ...face, unicodeRange: 'U+20-7E, U+A0' }],
+      genericFamily: 'sans-serif',
+    });
+    expect(output.fontFaces).toContain('  unicode-range: U+20-7E, U+A0;');
+  });
+
+  it.each(['U+20; color: red', 'u+20', 'U+110000x', ''])(
+    'rejects the unicode-range %j',
+    (unicodeRange) => {
+      expect(() =>
+        generateFallbackCss({
+          targetFamily: 'Inter',
+          fallbacks: [{ ...face, unicodeRange }],
+          genericFamily: 'sans-serif',
+        }),
+      ).toThrow();
+    },
+  );
   it('supports a target-only family stack', () => {
     expect(
       generateFallbackCss({ targetFamily: 'serif', fallbacks: [], genericFamily: 'serif' }),

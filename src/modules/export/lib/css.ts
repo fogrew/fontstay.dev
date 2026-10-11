@@ -37,6 +37,17 @@ function quoteName(name: string): string {
   return `${result}"`;
 }
 
+const UNICODE_RANGE = /^U\+[0-9A-F]{1,6}(-[0-9A-F]{1,6})?(, U\+[0-9A-F]{1,6}(-[0-9A-F]{1,6})?)*$/;
+const MAX_UNICODE_RANGE_LENGTH = 100_000;
+
+function unicodeRange(value: string | undefined): string[] {
+  if (value === undefined) return [];
+  if (value.length > MAX_UNICODE_RANGE_LENGTH || !UNICODE_RANGE.test(value)) {
+    throw new CssExportError('invalid-unicode-range');
+  }
+  return [`  unicode-range: ${value};`];
+}
+
 function percentage(ratio: number, positive = false): string {
   const percent = ratio * 100;
   if (!Number.isFinite(percent) || percent < 0 || percent > 1_000_000)
@@ -70,6 +81,7 @@ export function generateFallbackCss(input: FallbackCssInput): FallbackCss {
         `  ascent-override: ${percentage(adjustment.ascentOverride)};`,
         `  descent-override: ${percentage(adjustment.descentOverride)};`,
         `  line-gap-override: ${percentage(adjustment.lineGapOverride)};`,
+        ...unicodeRange(face.unicodeRange),
         '}',
       ].join('\n'),
     );

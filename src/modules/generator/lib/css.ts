@@ -13,6 +13,7 @@ export interface CssFace {
   family: string;
   localNames: readonly string[];
   adjustment: Overrides;
+  unicodeRange?: string | undefined;
 }
 
 export function adjustmentOf(adjustment: FitAdjustment, overrides: Partial<Overrides>): Overrides {
@@ -46,6 +47,7 @@ export function buildCss(targetFamily: string, faces: readonly CssFace[], generi
       family: fallbackFamilyName(targetFamily, face.family, faces.length),
       localNames: face.localNames,
       adjustment: face.adjustment,
+      unicodeRange: face.unicodeRange,
     })),
     genericFamily: generic,
   });

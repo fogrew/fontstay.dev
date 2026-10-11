@@ -24,6 +24,7 @@ export interface FallbackFace {
   family: string;
   localNames: readonly string[];
   adjustment: CssAdjustment;
+  unicodeRange?: string | undefined;
 }
 
 export interface FallbackCssInput {
@@ -44,6 +45,7 @@ export class CssExportError extends Error {
       | 'duplicate-family'
       | 'invalid-generic'
       | 'invalid-adjustment'
+      | 'invalid-unicode-range'
       | 'too-many-faces',
   ) {
     super(code);

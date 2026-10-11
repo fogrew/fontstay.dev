@@ -23,7 +23,7 @@ import {
   type SystemInfo,
 } from '@/modules/audience';
 import { CssExportError } from '@/modules/export';
-import { StackResolveError } from '@/modules/fallback-fit';
+import { compactRanges, formatUnicodeRange, StackResolveError } from '@/modules/fallback-fit';
 import {
   createFontParser,
   type FontMetrics,
@@ -118,6 +118,7 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
   const [optimized, setOptimized] = useState<Record<string, Partial<Overrides>>>({});
   const [spacingResult, setSpacingResult] = useState<{ key: string; value: SpacingEm }>();
   const [spacingOn, setSpacingOn] = useState(false);
+  const [rangeOn, setRangeOn] = useState(false);
   const [openSystem, setOpenSystem] = useState<OsId | null | undefined>();
   const [fontOpen, setFontOpen] = useState(true);
   const [fitting, setFitting] = useState(false);
@@ -292,6 +293,11 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
       }
     : { letter: 0, word: 0 };
   const systemName = (os: OsId) => t[`audience_os_${os}`]();
+  const coverageRanges = useMemo(
+    () => (selected ? compactRanges(selected.metrics.codePoints) : []),
+    [selected],
+  );
+  const coverageRange = coverageRanges.length > 0 ? formatUnicodeRange(coverageRanges) : undefined;
   let simulation: PanelInput | undefined;
   let output: ReturnType<typeof buildCss> | undefined;
   let adjustment: Overrides | undefined;
@@ -304,6 +310,7 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
               family: candidate.family,
               localNames: candidate.localNames,
               adjustment: adjustmentOf(baseOf(candidate), manualOf(id)),
+              unicodeRange: rangeOn ? coverageRange : undefined,
             },
           ]
         : [];
@@ -520,6 +527,15 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
         {selected.metrics.style.category === null && kindChoice?.fontId !== selected.id && (
           <p class="ff-muted">{t.font_type_unknown()}</p>
         )}
+        <label>
+          <input
+            type="checkbox"
+            checked={rangeOn}
+            onChange={(event) => setRangeOn(event.currentTarget.checked)}
+          />{' '}
+          {t.range_enable()}
+        </label>
+        <p class="ff-muted">{t.range_note({ count: coverageRanges.length })}</p>
         <p class="ff-muted">{t.systems_legend()}</p>
         {systems.map((os) => (
           <Collapsible
@@ -815,6 +831,7 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
                       bytes={selected.bytes}
                       fallback={previewPick}
                       adjustment={adjustment}
+                      unicodeRange={rangeOn ? coverageRange : undefined}
                     />
                   ),
                 },

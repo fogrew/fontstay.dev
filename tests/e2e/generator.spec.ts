@@ -527,3 +527,18 @@ test('the panel separators move space between neighbours only', async ({ page })
   expect(dragged[2] ?? 0).toBeGreaterThan(mid[2] ?? 0);
   expect(Math.abs((dragged[0] ?? 0) - (mid[0] ?? 0))).toBeLessThan(2);
 });
+
+test('the unicode-range toggle limits the fallbacks to the covered characters', async ({
+  page,
+}) => {
+  await page.goto('/en/');
+  await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
+  await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(sourceSans);
+  const code = page.getByRole('region', { name: 'Generated CSS' });
+  await expect(code).toContainText('size-adjust');
+  await expect(code).not.toContainText('unicode-range');
+  await page.getByRole('checkbox', { name: /Limit the fallbacks to the characters/ }).check();
+  await expect(code).toContainText('unicode-range: U+');
+  await page.getByRole('checkbox', { name: /Limit the fallbacks to the characters/ }).uncheck();
+  await expect(code).not.toContainText('unicode-range');
+});
