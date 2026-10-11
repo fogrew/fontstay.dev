@@ -21,7 +21,7 @@
   "css_tab": "CSS",
   "guide_disclosure": "Как это работает",
   "upload_heading": "Ваш веб-шрифт",
-  "upload_drop": "Перетащите сюда файлы WOFF2, WOFF, TTF или OTF или",
+  "upload_drop": "Перетащите сюда файлы WOFF2, WOFF, TTF, OTF, TTC или OTC или",
   "upload_choose": "Выберите файлы",
   "upload_local": "Файлы читаются на вашем устройстве и никуда не отправляются.",
   "upload_fonts_label": "Загруженные шрифты",

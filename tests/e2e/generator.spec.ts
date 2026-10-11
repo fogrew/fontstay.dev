@@ -1,5 +1,5 @@
 import AxeBuilder from '@axe-core/playwright';
-import { buildFont } from '../../src/modules/font-metrics/lib/forged.test-util';
+import { buildCollection, buildFont } from '../../src/modules/font-metrics/lib/forged.test-util';
 import { expect, selectSystem, test } from './fixtures';
 
 const fonts = new URL('../fixtures/fonts/', import.meta.url).pathname.replace(
@@ -578,4 +578,17 @@ test('the style select switches a system to the bold face and adds the descripto
   await page.getByLabel('Font style').selectOption('italic');
   await expect(code).toContainText('font-style: italic;');
   await expect(code).not.toContainText('font-weight');
+});
+
+test('a font collection is split into separate fonts', async ({ page }) => {
+  await page.goto('/en/');
+  await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
+  const collection = buildCollection([buildFont([[0x41, 0x5a, 1]]), buildFont([[0x61, 0x7a, 1]])]);
+  await page.locator('input[type="file"][accept*="woff2"]').setInputFiles({
+    name: 'pair.ttc',
+    mimeType: 'font/collection',
+    buffer: Buffer.from(collection),
+  });
+  await expect(page.getByRole('button', { name: 'Remove: pair.ttc #1' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Remove: pair.ttc #2' })).toBeVisible();
 });

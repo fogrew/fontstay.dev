@@ -88,3 +88,25 @@ export function buildWoff2(declaredBytes: number, payload: Uint8Array): ArrayBuf
   bytes.set(compressed, 48 + directory.length);
   return bytes.buffer;
 }
+
+export function buildCollection(fonts: ArrayBuffer[]): ArrayBuffer {
+  const headerSize = 12 + fonts.length * 4;
+  const total = fonts.reduce((sum, font) => sum + font.byteLength, headerSize);
+  const bytes = new Uint8Array(total);
+  const view = new DataView(bytes.buffer);
+  view.setUint32(0, 0x74746366);
+  view.setUint16(4, 1);
+  view.setUint32(8, fonts.length);
+  let start = headerSize;
+  for (const [index, font] of fonts.entries()) {
+    view.setUint32(12 + index * 4, start);
+    bytes.set(new Uint8Array(font), start);
+    const tableCount = view.getUint16(start + 4);
+    for (let table = 0; table < tableCount; table++) {
+      const record = start + 12 + table * 16 + 8;
+      view.setUint32(record, view.getUint32(record) + start);
+    }
+    start += font.byteLength;
+  }
+  return bytes.buffer;
+}

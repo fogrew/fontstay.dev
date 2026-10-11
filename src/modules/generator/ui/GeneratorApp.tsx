@@ -25,9 +25,13 @@ import {
 import { CssExportError } from '@/modules/export';
 import { compactRanges, formatUnicodeRange, StackResolveError } from '@/modules/fallback-fit';
 import {
+  collectionSize,
   createFontParser,
+  extractCollectionMember,
   type FontMetrics,
+  FontParseError,
   type FontParser,
+  isFontCollection,
   MAX_FONT_BYTES,
 } from '@/modules/font-metrics';
 import { LayoutShiftPanel, type PanelInput, ratingOf, worstShift } from '@/modules/layout-shift';
@@ -172,15 +176,35 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
         }
         try {
           const buffer = await file.arrayBuffer();
-          const bytes = buffer.slice(0);
-          const result = await parser.current.parse(buffer);
-          if (result.ok) {
-            added.push({ id: nextId.current++, fileName: file.name, metrics: result.font, bytes });
-          } else {
-            failures.push(`${file.name}: ${errors[result.error.code] ?? t.error_invalid_font()}`);
+          const members = isFontCollection(buffer)
+            ? Array.from({ length: collectionSize(buffer) }, (_, index) => ({
+                name: `${file.name} #${index + 1}`,
+                data: extractCollectionMember(buffer, index),
+              }))
+            : [{ name: file.name, data: buffer }];
+          for (const member of members) {
+            if (fonts.length + added.length >= MAX_FONTS) {
+              failures.push(`${member.name}: ${t.error_too_many()}`);
+              continue;
+            }
+            const bytes = member.data.slice(0);
+            const result = await parser.current.parse(member.data);
+            if (result.ok) {
+              added.push({
+                id: nextId.current++,
+                fileName: member.name,
+                metrics: result.font,
+                bytes,
+              });
+            } else {
+              failures.push(
+                `${member.name}: ${errors[result.error.code] ?? t.error_invalid_font()}`,
+              );
+            }
           }
-        } catch {
-          failures.push(`${file.name}: ${t.error_worker_error()}`);
+        } catch (failure) {
+          const known = failure instanceof FontParseError ? errors[failure.code] : undefined;
+          failures.push(`${file.name}: ${known ?? t.error_worker_error()}`);
         }
       }
     } finally {

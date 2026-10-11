@@ -47,7 +47,7 @@ export function FontUpload({
         hidden
         type="file"
         multiple
-        accept=".woff2,.woff,.ttf,.otf,font/woff2,font/woff,font/ttf,font/otf"
+        accept=".woff2,.woff,.ttf,.otf,.ttc,.otc,font/woff2,font/woff,font/ttf,font/otf,font/collection"
         onChange={(event) => {
           onFiles([...(event.currentTarget.files ?? [])]);
           event.currentTarget.value = '';

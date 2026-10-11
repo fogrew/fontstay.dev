@@ -21,7 +21,7 @@
   "css_tab": "CSS",
   "guide_disclosure": "How it works",
   "upload_heading": "Your web font",
-  "upload_drop": "Drop WOFF2, WOFF, TTF or OTF files here, or",
+  "upload_drop": "Drop WOFF2, WOFF, TTF, OTF, TTC or OTC files here, or",
   "upload_choose": "Choose files",
   "upload_local": "Files are read on your device and are never uploaded.",
   "upload_fonts_label": "Loaded fonts",
