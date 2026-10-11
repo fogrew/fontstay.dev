@@ -337,3 +337,7 @@
   max-inline-size: 9rem;
   padding-block: 0.125rem;
 }
+.ff-code__actions {
+  display: inline-flex;
+  gap: var(--ff-space-2);
+}

@@ -681,3 +681,28 @@ test('a failed Google Fonts download is explained', async ({ page }) => {
   await page.getByRole('button', { name: 'Add to the fonts' }).last().click();
   await expect(page.getByText(/Could not download the font/)).toBeVisible();
 });
+
+test('every export format can be shown, copied and downloaded', async ({ page }) => {
+  await page.goto('/en/');
+  await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
+  await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(sourceSans);
+  await page.getByRole('button', { name: 'Export', exact: true }).click();
+  const format = page.getByLabel('Format');
+  const expected: Record<string, RegExp> = {
+    'CSS custom properties': /--font-body:/,
+    'Tailwind CSS v4 (@theme)': /@theme \{\s+--font-sans:/,
+    'Next.js (next/font/local)': /localFont\(/,
+    'Nuxt Fonts': /@nuxt\/fonts/,
+    'Astro fonts config': /provider: 'local'/,
+    JSON: /"sizeAdjust"/,
+    'Preload tag': /rel="preload"/,
+    'Font Loading API script': /document\.fonts\.load/,
+  };
+  for (const [label, pattern] of Object.entries(expected)) {
+    await format.selectOption({ label });
+    await expect(page.getByRole('region', { name: `Export: ${label}` })).toContainText(pattern);
+  }
+  const download = page.waitForEvent('download');
+  await page.getByRole('button', { name: /^Download: Export: Font Loading API script/ }).click();
+  expect((await download).suggestedFilename()).toBe('font-loading.js');
+});

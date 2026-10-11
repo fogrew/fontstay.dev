@@ -273,5 +273,18 @@
   "google_error_network": "Could not download the font. Check the connection and that fonts.googleapis.com is reachable.",
   "google_error_subset": "Google has no file for this script subset and style.",
   "google_error_file": "The downloaded file was rejected.",
-  "google_downloaded": "Downloaded {name}."
+  "google_downloaded": "Downloaded {name}.",
+  "ui_download": "Download",
+  "export_heading": "Export",
+  "export_format_label": "Format",
+  "export_css": "CSS",
+  "export_variables": "CSS custom properties",
+  "export_tailwind": "Tailwind CSS v4 (@theme)",
+  "export_next": "Next.js (next/font/local)",
+  "export_nuxt": "Nuxt Fonts",
+  "export_astro": "Astro fonts config",
+  "export_json": "JSON",
+  "export_preload": "Preload tag",
+  "export_loading": "Font Loading API script",
+  "export_code_label": "Export: {format}"
 }

@@ -100,5 +100,6 @@ export function generateFallbackCss(input: FallbackCssInput): FallbackCss {
   return {
     fontFaces: rules.join('\n\n'),
     fontFamily: `font-family: ${families.join(', ')}, ${input.genericFamily};`,
+    families,
   };
 }

@@ -38,6 +38,7 @@ export interface FallbackCssInput {
 export interface FallbackCss {
   fontFaces: string;
   fontFamily: string;
+  families: string[];
 }
 
 export class CssExportError extends Error {

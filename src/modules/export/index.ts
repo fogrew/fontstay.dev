@@ -1,5 +1,12 @@
 export { generateFallbackCss } from './lib/css';
 export {
+  buildExport,
+  EXPORT_FORMATS,
+  type ExportFile,
+  type ExportFormat,
+  type ExportInput,
+} from './lib/formats';
+export {
   type CssAdjustment,
   CssExportError,
   type FallbackCss,

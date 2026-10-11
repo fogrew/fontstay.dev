@@ -22,6 +22,10 @@ describe('fallback CSS export', () => {
       }),
     ).toMatchInlineSnapshot(`
       {
+        "families": [
+          ""Inter"",
+          ""Inter Fallback: Arial"",
+        ],
         "fontFaces": "@font-face {
         font-family: "Inter Fallback: Arial";
         src: local("Arial"), local("ArialMT");
@@ -109,7 +113,11 @@ describe('fallback CSS export', () => {
   it('supports a target-only family stack', () => {
     expect(
       generateFallbackCss({ targetFamily: 'serif', fallbacks: [], genericFamily: 'serif' }),
-    ).toEqual({ fontFaces: '', fontFamily: 'font-family: "serif", serif;' });
+    ).toEqual({
+      fontFaces: '',
+      fontFamily: 'font-family: "serif", serif;',
+      families: ['"serif"'],
+    });
   });
 
   it.each([NaN, Infinity, -1, 0])('rejects invalid size adjustment %s', (sizeAdjust) => {

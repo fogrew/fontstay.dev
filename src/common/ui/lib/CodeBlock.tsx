@@ -7,10 +7,12 @@ export function CodeBlock({
   locale,
   code,
   label,
+  fileName,
 }: {
   locale: Locale;
   code: string;
   label: string;
+  fileName?: string | undefined;
 }) {
   const t = messagesFor(locale);
   const [status, setStatus] = useState<'idle' | 'copied' | 'failed'>('idle');
@@ -36,9 +38,26 @@ export function CodeBlock({
     <div class="ff-code">
       <div class="ff-code__header">
         <span>{label}</span>
-        <Button disabled={pending} onClick={copy} aria-label={`${t.ui_copy_code()}: ${label}`}>
-          {t.ui_copy_code()}
-        </Button>
+        <span class="ff-code__actions">
+          {fileName && (
+            <Button
+              onClick={() => {
+                const url = URL.createObjectURL(new Blob([code], { type: 'text/plain' }));
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = fileName;
+                link.click();
+                URL.revokeObjectURL(url);
+              }}
+              aria-label={`${t.ui_download()}: ${label}`}
+            >
+              {t.ui_download()}
+            </Button>
+          )}
+          <Button disabled={pending} onClick={copy} aria-label={`${t.ui_copy_code()}: ${label}`}>
+            {t.ui_copy_code()}
+          </Button>
+        </span>
       </div>
       {/* biome-ignore lint/a11y/noNoninteractiveTabindex: Scrollable code needs a keyboard focus target. */}
       <section class="ff-code__body" tabIndex={0} aria-label={label}>

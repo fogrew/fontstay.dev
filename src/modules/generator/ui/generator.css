@@ -434,3 +434,8 @@
 .ff-google__item[aria-pressed="true"] {
   background: var(--ff-state-full);
 }
+
+.ff-export {
+  display: grid;
+  gap: var(--ff-space-2);
+}

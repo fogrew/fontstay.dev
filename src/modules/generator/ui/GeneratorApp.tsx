@@ -22,7 +22,7 @@ import {
   SupportMatrix,
   type SystemInfo,
 } from '@/modules/audience';
-import { CssExportError } from '@/modules/export';
+import { CssExportError, type ExportInput, type FallbackFace } from '@/modules/export';
 import { compactRanges, formatUnicodeRange, StackResolveError } from '@/modules/fallback-fit';
 import {
   collectionMemberIndices,
@@ -66,6 +66,7 @@ import {
 import { aspectOf, safariStrategyCss } from '../lib/safari';
 import { CoverageMap } from './CoverageMap';
 import { CssImport } from './CssImport';
+import { ExportPanel } from './ExportPanel';
 import { FontUpload } from './FontUpload';
 import { Preview } from './Preview';
 import './generator.css';
@@ -347,6 +348,7 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
   const coverageRange = coverageRanges.length > 0 ? formatUnicodeRange(coverageRanges) : undefined;
   let simulation: PanelInput | undefined;
   let output: ReturnType<typeof buildCss> | undefined;
+  let facesForExport: FallbackFace[] = [];
   let adjustment: Overrides | undefined;
   if (selected && plan && previewPick) {
     const faces = plan.order.flatMap((id) => {
@@ -363,6 +365,18 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
           ]
         : [];
     });
+    facesForExport = faces.map((face) => ({
+      family: fallbackFamilyName(
+        selected.metrics.names.family?.trim().slice(0, 200) || 'Custom font',
+        face.family,
+        faces.length,
+      ),
+      localNames: face.localNames,
+      adjustment: face.adjustment,
+      unicodeRange: face.unicodeRange,
+      fontWeight: face.fontWeight,
+      fontStyle: face.fontStyle,
+    }));
     adjustment = adjustmentOf(baseOf(previewPick), manualOf(previewPick.id));
     try {
       const family = selected.metrics.names.family?.trim().slice(0, 200) || 'Custom font';
@@ -389,6 +403,23 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
   const safariCss =
     aspect !== null && vertical > 0.05 ? safariStrategyCss(aspect, STRATEGY_LINE_HEIGHT) : '';
 
+  const cssText = output
+    ? [output.fontFaces, fallbackRule(output.fontFamily, safariCss), loadingCss(spacingEm)]
+        .filter(Boolean)
+        .join('\n\n')
+    : '';
+  const exportFamily = selected?.metrics.names.family?.trim().slice(0, 200) || 'Custom font';
+  const exportInput: ExportInput = {
+    targetFamily: exportFamily,
+    generic: kind,
+    fontFaces: output?.fontFaces ?? '',
+    families: output?.families ?? [],
+    strategy: safariCss,
+    css: cssText,
+    loadingScript: loadingScript(exportFamily),
+    fileName: selected?.fileName ?? 'font.woff2',
+    fallbacks: facesForExport,
+  };
   const anyRanking = Object.values(rankings.result).find(Boolean);
   const winnerOf = (os: OsId) => {
     const winner = plan?.resolution.platforms.find((item) => item.platform === os)?.winner;
@@ -928,13 +959,8 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
                         <CodeBlock
                           locale={locale}
                           label={t.css_code_label()}
-                          code={[
-                            output.fontFaces,
-                            fallbackRule(output.fontFamily, safariCss),
-                            loadingCss(spacingEm),
-                          ]
-                            .filter(Boolean)
-                            .join('\n\n')}
+                          code={cssText}
+                          fileName="fallback-fonts.css"
                         />
                       </section>
                       {hasSpacing(spacingEm) && (
@@ -952,6 +978,12 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
                       )}
                     </>
                   ),
+                },
+                {
+                  id: 'export',
+                  label: t.export_heading(),
+                  open: false,
+                  content: <ExportPanel locale={locale} input={exportInput} />,
                 },
                 {
                   id: 'coverage',

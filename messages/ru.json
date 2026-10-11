@@ -273,5 +273,18 @@
   "google_error_network": "Не удалось скачать шрифт. Проверьте соединение и доступность fonts.googleapis.com.",
   "google_error_subset": "У Google нет файла для этого набора символов и начертания.",
   "google_error_file": "Скачанный файл отклонён.",
-  "google_downloaded": "Скачано: {name}."
+  "google_downloaded": "Скачано: {name}.",
+  "ui_download": "Скачать",
+  "export_heading": "Экспорт",
+  "export_format_label": "Формат",
+  "export_css": "CSS",
+  "export_variables": "CSS-переменные",
+  "export_tailwind": "Tailwind CSS v4 (@theme)",
+  "export_next": "Next.js (next/font/local)",
+  "export_nuxt": "Nuxt Fonts",
+  "export_astro": "Конфиг шрифтов Astro",
+  "export_json": "JSON",
+  "export_preload": "Тег preload",
+  "export_loading": "Скрипт Font Loading API",
+  "export_code_label": "Экспорт: {format}"
 }
