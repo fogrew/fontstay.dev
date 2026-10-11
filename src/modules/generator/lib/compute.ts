@@ -33,3 +33,9 @@ export function sampleText(web: FontMetrics, preferred: string): string {
   }
   return chunks.join(' ') || preferred;
 }
+
+const BIDI_CONTROLS = /[\u200e\u200f\u202a-\u202e\u2066-\u2069]/g;
+
+export function displayName(name: string): string {
+  return name.replace(BIDI_CONTROLS, '');
+}

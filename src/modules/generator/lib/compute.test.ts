@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { isNoCoverage, sampleText } from './compute';
+import { displayName, isNoCoverage, sampleText } from './compute';
 import { adjustmentOf, buildCss } from './css';
 import { font } from './font.test-util';
 import { rankFor } from './per-os';
@@ -67,5 +67,13 @@ describe('sampleText', () => {
       [...sample.replaceAll(' ', '')].every((char) => runes.includes(char.codePointAt(0) ?? 0)),
     ).toBe(true);
     expect(sample.split(' ').length).toBeGreaterThan(1);
+  });
+});
+
+describe('displayName', () => {
+  it('removes bidirectional control characters from file names', () => {
+    expect(displayName('\u202Etxt.woff2')).toBe('txt.woff2');
+    expect(displayName('a\u2066b\u2069.ttf')).toBe('ab.ttf');
+    expect(displayName('plain.otf')).toBe('plain.otf');
   });
 });

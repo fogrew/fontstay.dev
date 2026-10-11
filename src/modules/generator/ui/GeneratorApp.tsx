@@ -37,7 +37,7 @@ import {
 import { LayoutShiftPanel, type PanelInput, ratingOf, worstShift } from '@/modules/layout-shift';
 import type { Category, OsId } from '@/modules/os-fonts';
 import { autoFit } from '../lib/auto-fit';
-import { fitLanguage, isNoCoverage, LOW_COVERAGE, sampleText } from '../lib/compute';
+import { displayName, fitLanguage, isNoCoverage, LOW_COVERAGE, sampleText } from '../lib/compute';
 import {
   adjustmentOf,
   buildCss,
@@ -166,19 +166,20 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
     const failures: string[] = [];
     try {
       for (const file of files) {
+        const fileName = displayName(file.name);
         if (fonts.length + added.length >= MAX_FONTS) {
-          failures.push(`${file.name}: ${t.error_too_many()}`);
+          failures.push(`${fileName}: ${t.error_too_many()}`);
           continue;
         }
         if (file.size > MAX_FONT_BYTES) {
-          failures.push(`${file.name}: ${t.error_too_large()}`);
+          failures.push(`${fileName}: ${t.error_too_large()}`);
           continue;
         }
         let buffer: ArrayBuffer;
         try {
           buffer = await file.arrayBuffer();
         } catch {
-          failures.push(`${file.name}: ${t.error_worker_error()}`);
+          failures.push(`${fileName}: ${t.error_worker_error()}`);
           continue;
         }
         let indices: (number | undefined)[];
@@ -186,15 +187,15 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
           indices = isFontCollection(buffer) ? collectionMemberIndices(buffer) : [undefined];
         } catch (failure) {
           const known = failure instanceof FontParseError ? errors[failure.code] : undefined;
-          failures.push(`${file.name}: ${known ?? t.error_invalid_font()}`);
+          failures.push(`${fileName}: ${known ?? t.error_invalid_font()}`);
           continue;
         }
         for (const index of indices) {
           if (fonts.length + added.length >= MAX_FONTS) {
-            failures.push(`${file.name}: ${t.error_too_many()}`);
+            failures.push(`${fileName}: ${t.error_too_many()}`);
             break;
           }
-          const name = index === undefined ? file.name : `${file.name} #${index + 1}`;
+          const name = index === undefined ? fileName : `${fileName} #${index + 1}`;
           try {
             const data = index === undefined ? buffer : extractCollectionMember(buffer, index);
             const bytes = data.slice(0);
@@ -790,7 +791,7 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
               return (
                 <Collapsible
                   key={font.id}
-                  title={font.metrics.names.fullName ?? font.fileName}
+                  title={displayName(font.metrics.names.fullName ?? font.fileName)}
                   open={isSelected && fontOpen}
                   onToggle={(next) => {
                     if (!isSelected) {
