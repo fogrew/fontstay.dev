@@ -197,6 +197,10 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
   };
 
   const selected = fonts.find((font) => font.id === selectedId) ?? fonts[0];
+  const descriptorsOf = (style: FontStyleKey) => ({
+    fontWeight: style === 'bold' || style === 'bold-italic' ? 700 : undefined,
+    fontStyle: style === 'italic' || style === 'bold-italic' ? ('italic' as const) : undefined,
+  });
   const language: Language = fitLanguage(selected?.metrics, locale);
   const styleKey: FontStyleKey =
     styleChoice && styleChoice.fontId === selected?.id
@@ -324,11 +328,7 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
               localNames: candidate.localNames,
               adjustment: adjustmentOf(baseOf(candidate), manualOf(id)),
               unicodeRange: rangeOn ? coverageRange : undefined,
-              fontWeight: styleKey === 'bold' || styleKey === 'bold-italic' ? 700 : undefined,
-              fontStyle:
-                styleKey === 'italic' || styleKey === 'bold-italic'
-                  ? ('italic' as const)
-                  : undefined,
+              ...descriptorsOf(candidate.style),
             },
           ]
         : [];
@@ -522,6 +522,13 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
       item.latinOnly ? ` · ${t.fit_font_latin_only()}` : ''
     }`;
 
+  const unmatchedFonts = [
+    ...new Set(
+      chosen
+        .filter((item) => item.candidate.style === 'regular')
+        .map((item) => item.candidate.family),
+    ),
+  ];
   const fitBody =
     selected && current ? (
       <section
@@ -555,6 +562,9 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
           {t.range_enable()}
         </label>
         <p class="ff-muted">{t.range_note({ count: coverageRanges.length })}</p>
+        {styleKey !== 'regular' && unmatchedFonts.length > 0 && (
+          <p class="ff-muted">{t.style_unmatched({ fonts: unmatchedFonts.join(', ') })}</p>
+        )}
         <p class="ff-muted">{t.systems_legend()}</p>
         {systems.map((os) => (
           <Collapsible
@@ -872,12 +882,7 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
                       fallback={previewPick}
                       adjustment={adjustment}
                       unicodeRange={rangeOn ? coverageRange : undefined}
-                      fontWeight={
-                        styleKey === 'bold' || styleKey === 'bold-italic' ? 700 : undefined
-                      }
-                      fontStyle={
-                        styleKey === 'italic' || styleKey === 'bold-italic' ? 'italic' : undefined
-                      }
+                      {...descriptorsOf(previewPick.style)}
                     />
                   ),
                 },
