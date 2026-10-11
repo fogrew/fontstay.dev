@@ -107,6 +107,7 @@
   border-style: dotted;
 }
 .ff-matrix__scroll {
+  position: relative;
   overflow-x: auto;
 }
 .ff-matrix__groups {

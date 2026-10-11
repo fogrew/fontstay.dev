@@ -505,3 +505,20 @@ test('reordering to fix a shadowing conflict keeps the focus on the toolbar', as
   await page.getByRole('button', { name: 'Reorder to fix' }).click();
   await expect(page.locator('#ff-toolbar')).toBeFocused();
 });
+
+test('the page itself does not scroll on desktop', async ({ page }) => {
+  await page.setViewportSize({ width: 1453, height: 1000 });
+  await page.goto('/en/');
+  await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
+  await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(sourceSans);
+  await page.getByRole('tab', { name: 'CSS' }).click();
+  await expect(page.getByRole('region', { name: 'Browser support' })).toBeVisible();
+  const overflow = await page.evaluate(() => {
+    const root = document.documentElement;
+    return {
+      x: root.scrollWidth - root.clientWidth,
+      y: root.scrollHeight - root.clientHeight,
+    };
+  });
+  expect(overflow).toEqual({ x: 0, y: 0 });
+});

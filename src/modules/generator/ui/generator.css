@@ -119,6 +119,8 @@
 @media (min-width: 64rem) and (min-height: 40rem) {
   .ff-generator {
     flex: 1;
+    position: relative;
+    overflow: clip;
     grid-template-columns: minmax(20rem, 27rem) minmax(0, 1fr);
     align-items: stretch;
   }
