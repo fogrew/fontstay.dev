@@ -1,5 +1,6 @@
 import './lib/ui.css';
 
+export { Accordion, type AccordionProps } from './lib/Accordion';
 export { Button, type ButtonProps } from './lib/Button';
 export { CodeBlock } from './lib/CodeBlock';
 export { Disclosure } from './lib/Disclosure';

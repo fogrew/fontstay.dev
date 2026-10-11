@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { createViteServer } from 'vitest/node';
-import { expect, test } from './fixtures';
+import { expect, openSection, test } from './fixtures';
 
 const fonts = new URL('../fixtures/fonts/', import.meta.url).pathname.replace(
   /^\/([A-Za-z]:)/,
@@ -66,7 +66,7 @@ test('the layout model agrees with the browser measurement', async ({ page }) =>
   const section = page.getByRole('region', { name: 'Layout shift' });
 
   const measure = async () => {
-    await page.getByRole('tab', { name: 'Layout shift' }).click();
+    await openSection(page, 'Layout shift');
     await section.getByRole('button', { name: 'Verify on this device' }).click();
     const message = section.getByText(/Measured in the browser/);
     await expect(message).toBeVisible({ timeout: 25_000 });

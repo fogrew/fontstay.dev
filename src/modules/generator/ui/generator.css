@@ -220,17 +220,17 @@
   min-block-size: 0;
 }
 .ff-generator__stage {
-  display: grid;
-  gap: var(--ff-space-3);
-  align-content: start;
-  min-inline-size: 0;
-}
-.ff-generator__dock {
-  display: grid;
+  display: flex;
+  flex-direction: column;
   gap: var(--ff-space-2);
-  padding: var(--ff-space-2) var(--ff-space-3);
-  border: 1px solid var(--ff-border);
-  border-radius: var(--ff-radius);
+  min-inline-size: 0;
+  min-block-size: 0;
+}
+.ff-accordion__panel .ff-generator__section,
+.ff-accordion__panel .ff-matrix,
+.ff-accordion__panel .ff-cls {
+  padding: 0;
+  border: 0;
 }
 .ff-generator__notes {
   display: grid;
@@ -239,8 +239,7 @@
 .ff-generator__notes p {
   margin: 0;
 }
-.ff-generator__settings[hidden],
-.ff-generator__dock [hidden] {
+.ff-generator__settings[hidden] {
   display: none;
 }
 
@@ -251,17 +250,9 @@
   .ff-generator__main {
     overflow: hidden;
   }
-  .ff-generator__stage {
-    overflow-y: auto;
-    min-block-size: 0;
-  }
-  .ff-generator__dock {
-    max-block-size: 45vh;
-    overflow: auto;
-  }
 }
 
-.ff-generator .ff-tabs__panel:focus-visible {
+.ff-accordion__panel:focus-visible {
   outline-offset: -3px;
 }
 .ff-generator__notes:focus {
@@ -272,7 +263,7 @@
     grid-template-rows: minmax(0, 1fr);
   }
   .ff-generator__main {
-    grid-template-rows: minmax(0, 1fr) auto;
+    grid-template-rows: minmax(0, 1fr);
   }
 }
 

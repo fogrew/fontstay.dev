@@ -63,8 +63,7 @@ export function Preview({
   const webStyle = { ...shared, fontFamily: `"${PREVIEW_FAMILY}", sans-serif` };
   const fallbackStyle = { ...shared, fontFamily: `"${PREVIEW_FAMILY} Fallback", sans-serif` };
   return (
-    <section class="ff-preview" aria-labelledby="ff-preview-heading">
-      <h2 id="ff-preview-heading">{t.preview_heading()}</h2>
+    <section class="ff-preview" aria-label={t.preview_heading()}>
       {loadFailed && (
         <p class="ff-error" role="alert">
           {t.preview_load_failed()}

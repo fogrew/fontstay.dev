@@ -178,8 +178,7 @@ export function LayoutShiftPanel({
   };
 
   return (
-    <section class="ff-generator__section ff-cls" aria-labelledby="ff-cls-heading">
-      <h2 id="ff-cls-heading">{t.cls_heading()}</h2>
+    <section class="ff-generator__section ff-cls" aria-label={t.cls_heading()}>
       <p class="ff-muted">{t.cls_note()}</p>
       {rows.length > 0 && (
         <table class="ff-cls__table">

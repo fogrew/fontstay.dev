@@ -1,6 +1,6 @@
 import AxeBuilder from '@axe-core/playwright';
 import { buildFont } from '../../src/modules/font-metrics/lib/forged.test-util';
-import { expect, test } from './fixtures';
+import { expect, openSection, test } from './fixtures';
 
 const fonts = new URL('../fixtures/fonts/', import.meta.url).pathname.replace(
   /^\/([A-Za-z]:)/,
@@ -18,7 +18,6 @@ test('uploading a font produces per-system fallbacks, editable values and CSS', 
   const fallback = page.getByLabel('Fallback font 1', { exact: true });
   await expect(fallback).toBeVisible();
   const code = page.getByRole('region', { name: 'Generated CSS' });
-  await page.getByRole('tab', { name: 'CSS' }).click();
   await expect(code).toContainText('@font-face');
   await expect(code).toContainText('size-adjust');
   await expect(code).toContainText('"Source Sans Pro Fallback');
@@ -51,7 +50,6 @@ test('serif and monospace fallbacks are available by font type', async ({ page }
   await expect(page.getByLabel('Fallback font 1', { exact: true })).toContainText(
     'Times New Roman',
   );
-  await page.getByRole('tab', { name: 'CSS' }).click();
   await expect(page.getByRole('region', { name: 'Generated CSS' })).toContainText('serif;');
 });
 
@@ -131,7 +129,7 @@ for (const { width, height } of [
     await page.goto('/en/');
     await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
     await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(sourceSans);
-    await expect(page.getByRole('heading', { name: 'Preview' })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Preview', exact: true })).toBeVisible();
     const sizes = await page.evaluate(() => ({
       page: [document.documentElement.scrollHeight, window.innerHeight],
       settings: document.querySelector('.ff-generator__settings')?.scrollHeight,
@@ -189,7 +187,6 @@ test('the CSS tab keeps the generated code reachable', async ({ page }) => {
   const preview = page.getByRole('region', { name: 'Preview' });
   await preview.getByLabel('Text size').fill('72');
   await preview.getByLabel('Line height').fill('2');
-  await page.getByRole('tab', { name: 'CSS' }).click();
   const code = page.getByRole('region', { name: 'Generated CSS' });
   await expect(code).toBeInViewport();
   const box = await code.boundingBox();
@@ -317,7 +314,6 @@ test('a system can have several ordered fallbacks', async ({ page }) => {
   await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(sourceSans);
   await page.getByLabel('System', { exact: true }).selectOption('windows');
   const code = page.getByRole('region', { name: 'Generated CSS' });
-  await page.getByRole('tab', { name: 'CSS' }).click();
   await page.getByLabel('Fallback font 1', { exact: true }).selectOption('segoe-ui');
   await expect(page.getByLabel('Fallback font 2', { exact: true })).toHaveCount(0);
 
@@ -354,7 +350,6 @@ test('the support matrix shows the audience by system with ranges, states and sh
   await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
   await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(sourceSans);
   const code = page.getByRole('region', { name: 'Generated CSS' });
-  await page.getByRole('tab', { name: 'CSS' }).click();
   await expect(code).toContainText('font-size-adjust');
   await expect(code).toContainText('line-height: 1.4');
 
@@ -391,7 +386,7 @@ test('the layout shift estimate covers every fallback and viewport and can be ve
   await page.goto('/en/');
   await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
   await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(sourceSans);
-  await page.getByRole('tab', { name: 'Layout shift' }).click();
+  await openSection(page, 'Layout shift');
   const section = page.getByRole('region', { name: 'Layout shift' });
   const table = section.getByRole('table');
   for (const width of ['412px', '1350px']) {
@@ -414,7 +409,6 @@ test('spacing adds the fonts-loading CSS and script', async ({ page }) => {
   await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
   await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(sourceSans);
   const code = page.getByRole('region', { name: 'Generated CSS' });
-  await page.getByRole('tab', { name: 'CSS' }).click();
   await expect(code).not.toContainText('fonts-loading');
   await page.getByText('Spacing while fonts load').click();
   await page.getByRole('checkbox', { name: 'Compensate spacing while the font loads' }).check();
@@ -435,24 +429,22 @@ test('Optimize for CLS keeps pinned values and can be reset', async ({ page }) =
   await page.getByLabel('System', { exact: true }).selectOption('windows');
   await page.getByLabel('Fallback font 1', { exact: true }).selectOption('arial');
   const code = page.getByRole('region', { name: 'Generated CSS' });
-  await page.getByRole('tab', { name: 'CSS' }).click();
   const size = page.getByRole('spinbutton', { name: /Size adjust/ });
   await size.fill('108');
   await size.press('Enter');
   await expect(code).toContainText('size-adjust: 108%');
 
-  await page.getByRole('tab', { name: 'Layout shift' }).click();
+  await openSection(page, 'Layout shift');
   const section = page.getByRole('region', { name: 'Layout shift' });
   await section.getByRole('button', { name: 'Optimize for CLS' }).click();
   await expect(section.getByText(/Layout shift on this device: |Nothing to improve/)).toBeVisible({
     timeout: 25_000,
   });
   await expect(section.getByRole('alert')).toHaveCount(0);
-  await page.getByRole('tab', { name: 'CSS' }).click();
   await expect(code).toContainText('size-adjust: 108%');
 });
 
-test('the settings and the support dock can be hidden and shown', async ({ page }) => {
+test('the settings and the support section can be hidden and shown', async ({ page }) => {
   await page.goto('/en/');
   await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
   await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(sourceSans);
@@ -467,27 +459,12 @@ test('the settings and the support dock can be hidden and shown', async ({ page 
   await page.getByRole('button', { name: 'Show settings' }).click();
   await expect(page.locator('#ff-settings')).toBeVisible();
 
-  await page.getByRole('button', { name: 'Hide browser support' }).click();
+  const support = page.getByRole('button', { name: 'Browser support', exact: true });
+  await expect(support).toHaveAttribute('aria-expanded', 'true');
+  await support.click();
   await expect(page.getByRole('region', { name: 'Browser support' })).toBeHidden();
-  await page.getByRole('button', { name: 'Show browser support' }).click();
+  await support.click();
   await expect(page.getByRole('region', { name: 'Browser support' })).toBeVisible();
-});
-
-test('the result tabs work with the arrow keys', async ({ page }) => {
-  await page.goto('/en/');
-  await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
-  await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(sourceSans);
-  const preview = page.getByRole('tab', { name: 'Preview' });
-  await preview.focus();
-  await page.keyboard.press('ArrowRight');
-  await expect(page.getByRole('tab', { name: 'CSS' })).toHaveAttribute('aria-selected', 'true');
-  await page.keyboard.press('End');
-  await expect(page.getByRole('tab', { name: 'Layout shift' })).toHaveAttribute(
-    'aria-selected',
-    'true',
-  );
-  await page.keyboard.press('Home');
-  await expect(preview).toHaveAttribute('aria-selected', 'true');
 });
 
 test('reordering to fix a shadowing conflict keeps the focus on the page', async ({ page }) => {
@@ -512,7 +489,6 @@ test('the page itself does not scroll on desktop', async ({ page }) => {
   await page.goto('/en/');
   await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
   await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(sourceSans);
-  await page.getByRole('tab', { name: 'CSS' }).click();
   await expect(page.getByRole('region', { name: 'Browser support' })).toBeVisible();
   const overflow = await page.evaluate(() => {
     const root = document.documentElement;

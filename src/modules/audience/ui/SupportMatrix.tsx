@@ -28,8 +28,7 @@ export function SupportMatrix({
   };
   if (groups.length === 0) return <p class="ff-muted">{t.matrix_empty()}</p>;
   return (
-    <section class="ff-matrix" aria-labelledby="ff-matrix-heading">
-      <h2 id="ff-matrix-heading">{t.matrix_heading()}</h2>
+    <section class="ff-matrix" aria-label={t.matrix_heading()}>
       <ul class="ff-matrix__legend">
         {(['full', 'partial', 'none', 'unknown'] as const).map((state) => (
           <li key={state}>

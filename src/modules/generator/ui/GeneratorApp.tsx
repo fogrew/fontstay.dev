@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'preact/hooks';
 import { type Locale, messagesFor } from '@/common/i18n';
 import {
+  Accordion,
   Button,
   CodeBlock,
   Disclosure,
@@ -8,7 +9,6 @@ import {
   type FitValue,
   LiveRegion,
   Select,
-  Tabs,
 } from '@/common/ui';
 import {
   type AudienceData,
@@ -116,7 +116,6 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
   const [language, setLanguage] = useState<Language>('en');
   const [shares, setShares] = useState<OsShares>();
   const [manualSystems, setManualSystems] = useState(false);
-  const [dockOpen, setDockOpen] = useState(true);
   const [audience, setAudience] = useState<AudienceData>();
   const [enabledSystems, setEnabledSystems] = useState<Partial<Record<OsId, boolean>>>({});
   const [activeOs, setActiveOs] = useState<OsId>();
@@ -866,8 +865,7 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
               </div>
             )}
           {output && selected && previewPick && adjustment ? (
-            <Tabs
-              label={t.shell_tabs_label()}
+            <Accordion
               items={[
                 {
                   id: 'preview',
@@ -888,8 +886,7 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
                   label: t.shell_tab_css(),
                   content: (
                     <>
-                      <section class="ff-generator__section" aria-labelledby="ff-css-heading">
-                        <h2 id="ff-css-heading">{t.css_heading()}</h2>
+                      <section class="ff-generator__section" aria-label={t.css_heading()}>
                         <p class="ff-muted">{t.fit_latin_note()}</p>
                         <CodeBlock
                           locale={locale}
@@ -920,8 +917,18 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
                   ),
                 },
                 {
+                  id: 'support',
+                  label: t.matrix_heading(),
+                  content: manualSystems ? (
+                    <p class="ff-muted">{t.matrix_manual()}</p>
+                  ) : (
+                    <SupportMatrix locale={locale} groups={matrixGroups} rating={ratingText} />
+                  ),
+                },
+                {
                   id: 'shift',
                   label: t.shell_tab_shift(),
+                  open: false,
                   content: (
                     <LayoutShiftPanel
                       locale={locale}
@@ -938,24 +945,6 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
           )}
           {plan && !output && selected && <p role="alert">{t.css_error()}</p>}
         </div>
-        {output && selected && (
-          <div class="ff-generator__dock" data-open={dockOpen}>
-            <Button
-              aria-expanded={dockOpen}
-              aria-controls="ff-dock-body"
-              onClick={() => setDockOpen((open) => !open)}
-            >
-              {dockOpen ? t.shell_hide_support() : t.shell_show_support()}
-            </Button>
-            <div id="ff-dock-body" hidden={!dockOpen}>
-              {manualSystems ? (
-                <p class="ff-muted">{t.matrix_manual()}</p>
-              ) : (
-                <SupportMatrix locale={locale} groups={matrixGroups} rating={ratingText} />
-              )}
-            </div>
-          </div>
-        )}
       </div>
     </div>
   );
