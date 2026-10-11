@@ -253,5 +253,6 @@
   "cssimport_add": "Add to the fonts",
   "cssimport_download": "Download the file",
   "cssimport_unsupported": "Source not supported",
-  "cssimport_open_google": "Open on Google Fonts"
+  "cssimport_open_google": "Open on Google Fonts",
+  "cssimport_too_large": "The CSS is too large to read here."
 }

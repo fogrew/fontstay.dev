@@ -253,5 +253,6 @@
   "cssimport_add": "Добавить в шрифты",
   "cssimport_download": "Скачать файл",
   "cssimport_unsupported": "Источник не поддерживается",
-  "cssimport_open_google": "Открыть в Google Fonts"
+  "cssimport_open_google": "Открыть в Google Fonts",
+  "cssimport_too_large": "CSS слишком большой, чтобы прочитать его здесь."
 }
