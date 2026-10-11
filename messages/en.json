@@ -172,7 +172,6 @@
   "font_weight_note": "This font is weight {weight}. The fallbacks are fitted on regular faces and the browser makes them bold itself, so widths can differ.",
   "font_type_unknown": "The font type could not be detected. Check the Font type above.",
   "preview_phrase_label": "Sample language",
-  "preview_phrase_custom": "Custom text",
   "preview_phrase_en": "The quick brown fox jumps over the lazy dog",
   "preview_phrase_ru": "Съешь же ещё этих мягких французских булок, да выпей чаю",
   "preview_phrase_de": "Zwölf Boxkämpfer jagen Viktor quer über den großen Sylter Deich",
@@ -183,5 +182,6 @@
   "systems_share": "{system} · {share}% of the audience",
   "preview_not_installed": "{font} is not installed on this device, so the preview falls back to a generic font. The values and the support matrix are still calculated for it.",
   "plan_no_more": "{system}: no other fonts of this type are known yet.",
-  "plan_reordered": "The fallback order was changed automatically so that every system gets its own font."
+  "plan_reordered": "The fallback order was changed automatically so that every system gets its own font.",
+  "preview_phrase_placeholder": "Choose a sample"
 }

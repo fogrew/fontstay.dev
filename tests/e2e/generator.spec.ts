@@ -144,23 +144,24 @@ test('preview modes switch between side by side, overlay, web font and fallback'
   await page.goto('/en/');
   await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
   await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(sourceSans);
-  const mode = page.getByLabel('View', { exact: true });
   const preview = page.getByRole('region', { name: 'Preview' });
-  await expect(mode).toHaveValue('overlay');
+  const mode = (name: string) => preview.getByRole('button', { name, exact: true });
+  await expect(mode('Overlay')).toHaveAttribute('aria-pressed', 'true');
   await expect(preview.getByRole('figure')).toHaveCount(1);
 
-  await mode.selectOption('side');
+  await mode('Side by side').click();
+  await expect(mode('Side by side')).toHaveAttribute('aria-pressed', 'true');
   await expect(preview.getByRole('figure')).toHaveCount(2);
 
-  await mode.selectOption('overlay');
+  await mode('Overlay').click();
   await expect(preview.getByRole('figure')).toHaveCount(1);
   await expect(preview).toContainText('outlined dotted text');
   await expect(preview.locator('[aria-hidden="true"].ff-preview__outline')).toHaveCount(1);
 
-  await mode.selectOption('web');
+  await mode('Web font').click();
   await expect(preview.getByRole('figure', { name: 'Web font' })).toHaveCount(1);
   await expect(preview.getByRole('figure', { name: 'Adjusted fallback' })).toHaveCount(0);
-  await mode.selectOption('fallback');
+  await mode('Adjusted fallback').click();
   await expect(preview.getByRole('figure', { name: 'Adjusted fallback' })).toHaveCount(1);
 
   await preview.getByLabel(/Text size/).fill('48');
@@ -209,9 +210,9 @@ test('a font with few Latin glyphs warns about coverage and previews its own gly
     buffer: Buffer.from(font),
   });
   await expect(page.getByRole('status').filter({ hasText: 'Covered share' })).toBeVisible();
-  const sample = page.getByLabel('Sample text');
-  await expect(sample).not.toHaveValue(/quick/);
-  await expect(sample).toHaveValue(/[ᚠ-ᚳ]/);
+  const sample = page.getByRole('textbox', { name: 'Sample text' });
+  await expect(sample).not.toHaveText(/quick/);
+  await expect(sample).toHaveText(/[ᚠ-ᚳ]/);
 });
 
 test('the audience editor resolves presets and reports invalid queries', async ({ page }) => {
@@ -474,8 +475,13 @@ test('the preview offers sample phrases the font can render and there is no text
   await expect(page.getByLabel('Text language')).toHaveCount(0);
   const phrase = page.getByLabel('Sample language');
   await expect(phrase).toBeVisible();
-  await phrase.selectOption({ label: 'German' });
-  await expect(page.getByLabel('Sample text')).toHaveValue(/Zwölf Boxkämpfer/);
+  await phrase.fill('German: Zwölf Boxkämpfer jagen Viktor quer über den großen Sylter Deich');
+  await expect(page.getByRole('textbox', { name: 'Sample text' })).toHaveText(/Zwölf Boxkämpfer/);
+  const text = page.getByRole('textbox', { name: 'Sample text' });
+  await text.click();
+  await page.keyboard.press('End');
+  await page.keyboard.type('!');
+  await expect(text).toHaveText(/Deich!/);
 });
 
 test('a system with a single known font explains why no fallback can be added', async ({

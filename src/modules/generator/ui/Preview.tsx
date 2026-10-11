@@ -1,17 +1,51 @@
-import { useEffect, useState } from 'preact/hooks';
+import type { JSX } from 'preact';
+import { useEffect, useRef, useState } from 'preact/hooks';
 import { type Locale, messagesFor } from '@/common/i18n';
-import { Select } from '@/common/ui';
 import type { Category } from '@/modules/os-fonts';
 import { covers } from '../lib/compute';
 import { buildCss, type Overrides } from '../lib/css';
 import { canvasMeasure, isInstalled } from '../lib/installed';
 
 const PHRASES = ['en', 'ru', 'de', 'fr', 'es', 'pl', 'el'] as const;
-const CUSTOM = 'custom';
 
 const PREVIEW_FAMILY = 'ff-preview-web';
 
 type Mode = 'side' | 'overlay' | 'web' | 'fallback';
+const MODES: readonly Mode[] = ['overlay', 'side', 'web', 'fallback'];
+
+function EditableText({
+  value,
+  onChange,
+  label,
+  style,
+}: {
+  value: string;
+  onChange: (text: string) => void;
+  label: string;
+  style: JSX.CSSProperties;
+}) {
+  const element = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const node = element.current;
+    if (node && node.textContent !== value) node.textContent = value;
+  }, [value]);
+  const editable = { contenteditable: 'plaintext-only' } as Record<string, string>;
+  // biome-ignore-start lint/a11y/useSemanticElements: the text must wrap like a paragraph
+  return (
+    <div
+      {...editable}
+      ref={element}
+      class="ff-preview__text"
+      role="textbox"
+      tabIndex={0}
+      aria-label={label}
+      spellcheck={false}
+      style={style}
+      onInput={(event) => onChange(event.currentTarget.textContent ?? '')}
+    />
+  );
+  // biome-ignore-end lint/a11y/useSemanticElements: the text must wrap like a paragraph
+}
 
 export function Preview({
   locale,
@@ -30,10 +64,6 @@ export function Preview({
 }) {
   const t = messagesFor(locale);
   const [sample, setSample] = useState(defaultSample);
-  const phraseText = (id: (typeof PHRASES)[number]) => t[`preview_phrase_${id}`]();
-  const languageName = new Intl.DisplayNames(locale, { type: 'language' });
-  const phrases = PHRASES.filter((id) => covers({ codePoints }, phraseText(id)));
-  const phrase = phrases.find((id) => phraseText(id) === sample) ?? CUSTOM;
   const [loadFailed, setLoadFailed] = useState(false);
   const [installed, setInstalled] = useState(true);
   const localKey = fallback.localNames.join('|');
@@ -44,6 +74,18 @@ export function Preview({
   const [mode, setMode] = useState<Mode>('overlay');
   const [size, setSize] = useState(28);
   const [lineHeight, setLineHeight] = useState(1.4);
+  const languageName = new Intl.DisplayNames(locale, { type: 'language' });
+  const options = PHRASES.filter((id) => covers({ codePoints }, t[`preview_phrase_${id}`]())).map(
+    (id) => ({
+      text: t[`preview_phrase_${id}`](),
+      value: `${languageName.of(id) ?? id}: ${t[`preview_phrase_${id}`]()}`,
+    }),
+  );
+  const [draft, setDraft] = useState('');
+  useEffect(() => {
+    const match = options.find((option) => option.text === sample);
+    setDraft(match?.value ?? '');
+  }, [sample]);
   useEffect(() => {
     let cancelled = false;
     const face = new FontFace(PREVIEW_FAMILY, bytes.slice(0));
@@ -79,6 +121,11 @@ export function Preview({
   const shared = { fontSize: `${size}px`, lineHeight: String(lineHeight) };
   const webStyle = { ...shared, fontFamily: `"${PREVIEW_FAMILY}", sans-serif` };
   const fallbackStyle = { ...shared, fontFamily: `"${PREVIEW_FAMILY} Fallback", sans-serif` };
+  const modeLabel = (value: Mode) => {
+    if (value === 'side') return t.mode_side();
+    if (value === 'overlay') return t.mode_overlay();
+    return value === 'web' ? t.preview_web_label() : t.preview_fallback_label();
+  };
   return (
     <section class="ff-preview" aria-label={t.preview_heading()}>
       {loadFailed && (
@@ -87,18 +134,21 @@ export function Preview({
         </p>
       )}
       <div class="ff-preview__controls">
-        <Select
-          label={t.preview_mode_label()}
-          value={mode}
-          options={[
-            { value: 'side', label: t.mode_side() },
-            { value: 'overlay', label: t.mode_overlay() },
-            { value: 'web', label: t.preview_web_label() },
-            { value: 'fallback', label: t.preview_fallback_label() },
-          ]}
-          onChange={(value) => setMode(value as Mode)}
-        />
-        <div class="ff-field">
+        <fieldset class="ff-preview__modes">
+          <legend class="ff-sr-only">{t.preview_mode_label()}</legend>
+          {MODES.map((value) => (
+            <button
+              key={value}
+              type="button"
+              class="ff-button ff-button--secondary"
+              aria-pressed={mode === value}
+              onClick={() => setMode(value)}
+            >
+              {modeLabel(value)}
+            </button>
+          ))}
+        </fieldset>
+        <div class="ff-field ff-preview__slider">
           <div class="ff-preview__label">
             <label for="ff-preview-size">{t.preview_size_label()}</label>
             <output for="ff-preview-size">{size}px</output>
@@ -112,7 +162,7 @@ export function Preview({
             onInput={(event) => setSize(event.currentTarget.valueAsNumber)}
           />
         </div>
-        <div class="ff-field">
+        <div class="ff-field ff-preview__slider">
           <div class="ff-preview__label">
             <label for="ff-preview-line">{t.preview_line_height_label()}</label>
             <output for="ff-preview-line">{lineHeight}</output>
@@ -127,27 +177,29 @@ export function Preview({
             onInput={(event) => setLineHeight(event.currentTarget.valueAsNumber)}
           />
         </div>
-      </div>
-      <Select
-        label={t.preview_phrase_label()}
-        value={phrase}
-        options={[
-          ...phrases.map((id) => ({ value: id, label: languageName.of(id) ?? id })),
-          { value: CUSTOM, label: t.preview_phrase_custom(), disabled: phrase !== CUSTOM },
-        ]}
-        onChange={(id) => {
-          if (id !== CUSTOM) setSample(phraseText(id as (typeof PHRASES)[number]));
-        }}
-      />
-      <div class="ff-field">
-        <label for="ff-preview-sample">{t.preview_sample_label()}</label>
-        <input
-          id="ff-preview-sample"
-          class="ff-input"
-          type="text"
-          value={sample}
-          onInput={(event) => setSample(event.currentTarget.value)}
-        />
+        <div class="ff-field ff-preview__samples">
+          <label for="ff-preview-sample">{t.preview_phrase_label()}</label>
+          <input
+            id="ff-preview-sample"
+            class="ff-input"
+            type="text"
+            list="ff-preview-samples"
+            autocomplete="off"
+            placeholder={t.preview_phrase_placeholder()}
+            value={draft}
+            onInput={(event) => {
+              const value = event.currentTarget.value;
+              setDraft(value);
+              const match = options.find((option) => option.value === value);
+              if (match) setSample(match.text);
+            }}
+          />
+          <datalist id="ff-preview-samples">
+            {options.map((option) => (
+              <option key={option.value} value={option.value} />
+            ))}
+          </datalist>
+        </div>
       </div>
       {!installed && (
         <p class="ff-muted" role="status">
@@ -158,24 +210,35 @@ export function Preview({
         {(mode === 'side' || mode === 'web') && (
           <figure>
             <figcaption>{t.preview_web_label()}</figcaption>
-            <p class="ff-preview__text" style={webStyle}>
-              {sample}
-            </p>
+            <EditableText
+              value={sample}
+              onChange={setSample}
+              label={t.preview_sample_label()}
+              style={webStyle}
+            />
           </figure>
         )}
         {(mode === 'side' || mode === 'fallback') && (
           <figure>
             <figcaption>{t.preview_fallback_label()}</figcaption>
-            <p class="ff-preview__text" style={fallbackStyle}>
-              {sample}
-            </p>
+            <EditableText
+              value={sample}
+              onChange={setSample}
+              label={t.preview_sample_label()}
+              style={fallbackStyle}
+            />
           </figure>
         )}
         {mode === 'overlay' && (
           <figure>
             <figcaption>{t.overlay_legend()}</figcaption>
             <div class="ff-preview__text ff-preview__overlay">
-              <p style={{ ...webStyle, margin: 0 }}>{sample}</p>
+              <EditableText
+                value={sample}
+                onChange={setSample}
+                label={t.preview_sample_label()}
+                style={{ ...webStyle, margin: 0 }}
+              />
               <p
                 class="ff-preview__outline"
                 aria-hidden="true"

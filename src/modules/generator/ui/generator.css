@@ -63,10 +63,34 @@
   font-size: 0.8125rem;
 }
 .ff-preview__controls {
-  display: grid;
+  display: flex;
+  flex-wrap: wrap;
   gap: var(--ff-space-2);
-  grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
   align-items: end;
+}
+.ff-preview__modes {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  min-inline-size: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--ff-space-1);
+}
+.ff-preview__modes [aria-pressed="true"] {
+  background: var(--ff-accent);
+  color: var(--ff-on-accent, #fff);
+  border-color: var(--ff-accent);
+}
+.ff-preview__slider {
+  flex: 1 1 6rem;
+  min-inline-size: 5rem;
+}
+.ff-preview__samples {
+  flex: 1 1 12rem;
+}
+.ff-preview__outline {
+  pointer-events: none;
 }
 .ff-preview__controls input[type="range"] {
   inline-size: 100%;
