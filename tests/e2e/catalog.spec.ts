@@ -70,3 +70,36 @@ test('the header navigation marks the current page', async ({ page }) => {
     .click();
   await expect(page).toHaveURL(/\/en\/$/);
 });
+
+for (const locale of ['en', 'ru']) {
+  test(`${locale}: the presets page has no accessibility violations`, async ({ page }) => {
+    await page.goto(`/${locale}/presets/`);
+    await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
+    await expect(page.getByRole('heading', { level: 2 }).first()).toBeVisible();
+    const results = await new AxeBuilder({ page }).withTags(wcagTags).analyze();
+    expect(results.violations).toEqual([]);
+  });
+}
+
+test('a preset opens in the generator with its type and per-system fallbacks', async ({ page }) => {
+  await page.goto('/en/presets/');
+  await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
+  const item = page.locator('li', { has: page.getByRole('heading', { name: 'Classic serif' }) });
+  await expect(item.getByRole('region', { name: 'Font stack: Classic serif' })).toContainText(
+    '"Times New Roman", Georgia',
+  );
+  await item.getByRole('link', { name: 'Open in the generator' }).click();
+  await expect(page).toHaveURL(/\/en\/(#s=.*)?$/);
+  await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
+  const font = new URL(
+    '../fixtures/fonts/SourceSansPro-Regular.woff2',
+    import.meta.url,
+  ).pathname.replace(/^\/([A-Za-z]:)/, '$1');
+  await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(font);
+  await expect(page.getByLabel('Font type')).toHaveValue('serif');
+  const windows = page.getByRole('button', { name: /^Windows/ });
+  if ((await windows.getAttribute('aria-expanded')) === 'false') await windows.click();
+  await expect(page.getByLabel('Fallback font 1', { exact: true })).toContainText(
+    'Times New Roman',
+  );
+});

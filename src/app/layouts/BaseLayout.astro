@@ -7,7 +7,7 @@ interface Props {
   locale: Locale;
   path: string;
   settingsToggle?: boolean;
-  page?: 'generator' | 'fonts';
+  page?: 'generator' | 'fonts' | 'presets';
 }
 
 const { locale, path, settingsToggle = false, page = 'generator' } = Astro.props;
@@ -54,6 +54,9 @@ const indexable = !process.env.WORKERS_CI_BRANCH || process.env.WORKERS_CI_BRANC
           </li>
           <li>
             <a href={localizeHref('/fonts/', { locale })} aria-current={page === 'fonts' ? 'page' : undefined}>{t.nav_fonts()}</a>
+          </li>
+          <li>
+            <a href={localizeHref('/presets/', { locale })} aria-current={page === 'presets' ? 'page' : undefined}>{t.nav_presets()}</a>
           </li>
         </ul>
       </nav>

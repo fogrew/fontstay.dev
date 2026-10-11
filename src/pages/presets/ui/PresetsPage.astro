@@ -1,0 +1,29 @@
+---
+import { type Locale, localizeHref, messagesFor } from '@/common/i18n';
+import { encodeShareState } from '@/modules/generator';
+import { osFontsDataset } from '@/modules/os-fonts';
+import { PRESETS, type PresetId, PresetList, presetPicks } from '@/modules/presets';
+
+interface Props {
+  locale: Locale;
+}
+
+const { locale } = Astro.props;
+const t = messagesFor(locale);
+const systems = ['windows', 'macos', 'ios', 'android', 'linux', 'chromeos'] as const;
+const links = {} as Record<PresetId, string>;
+for (const preset of PRESETS) {
+  const payload = await encodeShareState({
+    v: 1,
+    kind: preset.kind,
+    picks: presetPicks(preset, osFontsDataset, systems),
+  });
+  links[preset.id] = `${localizeHref('/', { locale })}#s=${payload}`;
+}
+---
+
+<div class="ff-page">
+  <h1>{t.presets_heading()}</h1>
+  <p>{t.presets_intro()}</p>
+  <PresetList locale={locale} links={links} client:load />
+</div>

@@ -220,3 +220,21 @@ main > h1 {
 .ff-specimen {
   font-size: 1.5rem;
 }
+.ff-presets {
+  display: grid;
+  gap: var(--ff-space-4);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.ff-presets__item {
+  display: grid;
+  gap: var(--ff-space-2);
+  padding: var(--ff-space-3);
+  border: 1px solid var(--ff-border);
+  border-radius: var(--ff-radius);
+}
+.ff-presets__item h2,
+.ff-presets__item p {
+  margin: 0;
+}

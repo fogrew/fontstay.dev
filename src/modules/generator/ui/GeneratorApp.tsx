@@ -293,12 +293,15 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
   useEffect(() => {
     const state = pending.current;
     if (!state || fonts.length === 0) return;
-    if (!fonts.some((font) => font.fileName === state.fontName)) {
+    const target =
+      state.fontName === undefined
+        ? fonts[0]
+        : fonts.find((font) => font.fileName === state.fontName);
+    if (!target) {
       if (restored) pending.current = null;
       return;
     }
     pending.current = null;
-    const target = fonts.find((font) => font.fileName === state.fontName);
     if (!target) return;
     setSelectedId(target.id);
     if (state.kind) setKindChoice({ fontId: target.id, kind: state.kind });
