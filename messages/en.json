@@ -181,5 +181,6 @@
   "plan_no_more": "{system}: no other fonts of this type are known yet.",
   "plan_reordered": "The fallback order was changed automatically so that every system gets its own font.",
   "preview_phrase_placeholder": "Choose a sample",
-  "systems_include": "Include {system} in the stack"
+  "systems_include": "Include {system} in the stack",
+  "accordion_resize": "Resize {above} and {below}"
 }

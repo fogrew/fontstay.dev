@@ -493,3 +493,37 @@ test('a system with a single known font explains why no fallback can be added', 
   await expect(page.getByRole('button', { name: 'Add fallback' })).toBeDisabled();
   await expect(page.getByText(/no other fonts of this type are known yet/)).toBeVisible();
 });
+
+test('the panel separators move space between neighbours only', async ({ page }) => {
+  await page.setViewportSize({ width: 1453, height: 1000 });
+  await page.goto('/en/');
+  await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
+  await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(sourceSans);
+  const separators = page.getByRole('separator');
+  await expect(separators).toHaveCount(2);
+  const heights = async () =>
+    page.evaluate(() =>
+      [...document.querySelectorAll('.ff-accordion__item')].map(
+        (item) => item.getBoundingClientRect().height,
+      ),
+    );
+  const before = await heights();
+  await separators.first().focus();
+  await page.keyboard.press('ArrowDown');
+  const after = await heights();
+  expect(after[0] ?? 0).toBeGreaterThan(before[0] ?? 0);
+  expect(after[1] ?? 0).toBeLessThan(before[1] ?? 0);
+  expect(Math.abs((after[2] ?? 0) - (before[2] ?? 0))).toBeLessThan(2);
+
+  const box = await separators.nth(1).boundingBox();
+  if (!box) throw new Error('no separator');
+  const mid = await heights();
+  await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2 - 40, { steps: 5 });
+  await page.mouse.up();
+  const dragged = await heights();
+  expect(dragged[1] ?? 0).toBeLessThan(mid[1] ?? 0);
+  expect(dragged[2] ?? 0).toBeGreaterThan(mid[2] ?? 0);
+  expect(Math.abs((dragged[0] ?? 0) - (mid[0] ?? 0))).toBeLessThan(2);
+});

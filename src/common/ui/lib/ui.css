@@ -201,8 +201,13 @@
 .ff-accordion {
   display: flex;
   flex-direction: column;
-  gap: var(--ff-space-2);
   min-block-size: 0;
+}
+.ff-accordion__item {
+  margin-block-end: var(--ff-space-2);
+}
+.ff-accordion__separator {
+  display: none;
 }
 .ff-accordion__item {
   display: flex;
@@ -306,4 +311,21 @@
   font-size: 1.125rem;
   line-height: 1;
   cursor: pointer;
+}
+@media (min-width: 64rem) and (min-height: 40rem) {
+  .ff-accordion__separator {
+    position: relative;
+    z-index: 1;
+    display: block;
+    flex: none;
+    block-size: var(--ff-space-2);
+    margin-block: calc(-1 * var(--ff-space-2)) 0;
+    cursor: row-resize;
+    touch-action: none;
+  }
+  .ff-accordion__separator:hover,
+  .ff-accordion__separator:focus-visible {
+    background: var(--ff-accent);
+    opacity: 0.5;
+  }
 }

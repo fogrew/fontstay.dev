@@ -181,5 +181,6 @@
   "plan_no_more": "{system}: других шрифтов этого типа пока нет в данных.",
   "plan_reordered": "Порядок запасных шрифтов изменён автоматически, чтобы каждая система получила свой шрифт.",
   "preview_phrase_placeholder": "Выберите пример",
-  "systems_include": "Учитывать систему {system} в стеке"
+  "systems_include": "Учитывать систему {system} в стеке",
+  "accordion_resize": "Изменить размер: {above} и {below}"
 }

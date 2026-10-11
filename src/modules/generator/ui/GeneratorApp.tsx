@@ -801,6 +801,7 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
             )}
           {output && selected && previewPick && adjustment ? (
             <Accordion
+              resizeLabel={(above, below) => t.accordion_resize({ above, below })}
               items={[
                 {
                   id: 'preview',
