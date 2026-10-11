@@ -3,6 +3,7 @@ import type { CellState, MatrixGroup } from '../lib/matrix';
 import './audience.css';
 
 const SYMBOLS: Record<CellState, string> = { full: '✓', partial: '~', none: '✗', unknown: '?' };
+const RATING_SYMBOLS = { good: '✓', needs: '!', poor: '✗' } as const;
 
 export function SupportMatrix({
   locale,
@@ -74,7 +75,9 @@ export function SupportMatrix({
                                   rating: rating(cell.shift).label,
                                 })}
                               </span>
-                              <span aria-hidden="true">{number(cell.shift, 3)}</span>
+                              <span aria-hidden="true">
+                                {RATING_SYMBOLS[rating(cell.shift).level]} {number(cell.shift, 3)}
+                              </span>
                             </span>
                           )}
                           {cell.baseline !== null && (

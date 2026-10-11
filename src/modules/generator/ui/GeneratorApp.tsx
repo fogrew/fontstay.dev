@@ -118,6 +118,7 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
   const [optimized, setOptimized] = useState<Record<string, Partial<Overrides>>>({});
   const [spacingResult, setSpacingResult] = useState<{ key: string; value: SpacingEm }>();
   const [spacingOn, setSpacingOn] = useState(false);
+  const [fitting, setFitting] = useState(false);
   const [spacingValues, setSpacingValues] = useState<{ letter: FitValue; word: FitValue }>({
     letter: { mode: 'auto' },
     word: { mode: 'auto' },
@@ -412,6 +413,7 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
   useEffect(() => {
     if (!selected || !anyRanking || fitFaces.length === 0) return;
     const controller = new AbortController();
+    setFitting(true);
     const model = { web: webPredictFont(selected.metrics, anyRanking), language };
     const { letter: letterValue, word: wordValue } = spacingValues;
     const letterManual = letterValue.mode === 'manual';
@@ -422,6 +424,7 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
         word: spacingOn && wordValue.mode === 'manual' ? wordValue.value / 100 : 0,
       };
       const found: Record<string, Overrides> = {};
+      const missing: string[] = [];
       let spacingFound: SpacingEm | undefined;
       for (const [index, candidate] of fitFaces.entries()) {
         const free = spacingOn && index === 0;
@@ -434,17 +437,28 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
           signal: controller.signal,
         });
         if (controller.signal.aborted) return;
-        if (!result) continue;
+        if (!result) {
+          missing.push(valueKey(candidate.id));
+          continue;
+        }
         found[valueKey(candidate.id)] = result.adjustment;
         if (free) {
           spacing = result.spacing;
           spacingFound = result.spacing;
         }
       }
-      setOptimized((all) => ({ ...all, ...found }));
+      setOptimized((all) => {
+        const next = { ...all, ...found };
+        for (const key of missing) delete next[key];
+        return next;
+      });
+      setFitting(false);
       if (spacingFound) setSpacingResult({ key: spacingKey, value: spacingFound });
     })();
-    return () => controller.abort();
+    return () => {
+      controller.abort();
+      setFitting(false);
+    };
   }, [fitKey]);
   const ratingText = (shift: number) => {
     const rating = ratingOf(shift);
@@ -747,6 +761,8 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
               {t.fit_low_coverage()} {Math.round(coverage * 100)}%
             </p>
           )}
+          <LiveRegion>{fitting ? t.fit_running() : ''}</LiveRegion>
+          {fitting && <p class="ff-muted">{t.fit_running()}</p>}
           {plan &&
             (shadowed.length > 0 ||
               plan.resolution.blockedBy === 'cycle' ||

@@ -171,5 +171,6 @@
   "shell_hide_settings": "Скрыть настройки",
   "shell_show_settings": "Показать настройки",
   "shell_tab_css": "CSS",
-  "matrix_baseline": "без CSS {score}"
+  "matrix_baseline": "без CSS {score}",
+  "fit_running": "Подбираю значения для запасных шрифтов…"
 }

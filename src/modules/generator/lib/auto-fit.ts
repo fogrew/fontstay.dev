@@ -28,8 +28,15 @@ export interface AutoFitResult {
   after: number;
 }
 
-const total = (model: PredictModel, font: PredictFont) =>
-  scoreOf(model, font).reduce((sum, item) => sum + item.score, 0);
+const WORST_WEIGHT = 1;
+const SUM_WEIGHT = 0.1;
+
+const cost = (model: PredictModel, font: PredictFont) => {
+  const scores = scoreOf(model, font).map((item) => item.score);
+  return (
+    WORST_WEIGHT * Math.max(...scores) + SUM_WEIGHT * scores.reduce((sum, score) => sum + score, 0)
+  );
+};
 
 export async function autoFit(input: AutoFitInput): Promise<AutoFitResult | null> {
   const { candidate, manual, spacing, pinSpacing, model } = input;
@@ -97,11 +104,11 @@ export async function autoFit(input: AutoFitInput): Promise<AutoFitResult | null
       evaluated += 1;
       if (evaluated % 40 === 0) await new Promise<void>((resolve) => setTimeout(resolve));
       const font = fontFor(values);
-      return font ? total(model, font) : 0;
+      return font ? cost(model, font) : 0;
     },
     {
       maxEvaluations: input.maxEvaluations ?? 800,
-      maxMs: input.maxMs ?? 2000,
+      maxMs: input.maxMs ?? 10_000,
       signal: input.signal,
     },
   );

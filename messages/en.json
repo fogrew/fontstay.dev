@@ -171,5 +171,6 @@
   "shell_hide_settings": "Hide settings",
   "shell_show_settings": "Show settings",
   "shell_tab_css": "CSS",
-  "matrix_baseline": "without the CSS {score}"
+  "matrix_baseline": "without the CSS {score}",
+  "fit_running": "Optimizing the fallback fonts…"
 }
