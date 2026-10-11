@@ -127,6 +127,7 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
   const [values, setValues] = useState<Record<string, Values>>({});
   const [optimized, setOptimized] = useState<Record<string, Partial<Overrides>>>({});
   const [spacingResult, setSpacingResult] = useState<{ key: string; value: SpacingEm }>();
+  const [spacingOn, setSpacingOn] = useState(false);
   const [spacingValues, setSpacingValues] = useState<{ letter: FitValue; word: FitValue }>({
     letter: { mode: 'auto' },
     word: { mode: 'auto' },
@@ -282,16 +283,18 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
   const spacingKey = JSON.stringify([selected?.id, language, kind, previewPick?.id]);
   const optimizedSpacing = spacingResult?.key === spacingKey ? spacingResult.value : undefined;
 
-  const spacingEm: SpacingEm = {
-    letter:
-      spacingValues.letter.mode === 'manual'
-        ? spacingValues.letter.value / 100
-        : (optimizedSpacing?.letter ?? 0),
-    word:
-      spacingValues.word.mode === 'manual'
-        ? spacingValues.word.value / 100
-        : (optimizedSpacing?.word ?? 0),
-  };
+  const spacingEm: SpacingEm = spacingOn
+    ? {
+        letter:
+          spacingValues.letter.mode === 'manual'
+            ? spacingValues.letter.value / 100
+            : (optimizedSpacing?.letter ?? 0),
+        word:
+          spacingValues.word.mode === 'manual'
+            ? spacingValues.word.value / 100
+            : (optimizedSpacing?.word ?? 0),
+      }
+    : { letter: 0, word: 0 };
   const systemName = (os: OsId) => t[`audience_os_${os}`]();
   let simulation: PanelInput | undefined;
   let model: PanelModel | undefined;
@@ -407,19 +410,19 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
       ),
       dimension(
         'letterSpacing',
-        letter.mode === 'manual' ? letter.value / 100 : (optimizedSpacing?.letter ?? 0),
+        spacingEm.letter,
         -0.03,
         0.03,
         0.002,
-        letter.mode === 'manual',
+        !spacingOn || letter.mode === 'manual',
       ),
       dimension(
         'wordSpacing',
-        word.mode === 'manual' ? word.value / 100 : (optimizedSpacing?.word ?? 0),
+        spacingEm.word,
         -0.2,
         0.2,
         0.01,
-        word.mode === 'manual',
+        !spacingOn || word.mode === 'manual',
       ),
     ];
     return {
@@ -787,11 +790,21 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
                   />
                 ))}
                 <Disclosure summary={t.spacing_heading()}>
-                  {(
-                    [
-                      ['letter', t.spacing_letter_label(), -5, 5, 0.01],
-                      ['word', t.spacing_word_label(), -30, 30, 0.1],
-                    ] as const
+                  <p class="ff-muted">{t.spacing_note()}</p>
+                  <label>
+                    <input
+                      type="checkbox"
+                      checked={spacingOn}
+                      onChange={(event) => setSpacingOn(event.currentTarget.checked)}
+                    />{' '}
+                    {t.spacing_enable()}
+                  </label>
+                  {(spacingOn
+                    ? ([
+                        ['letter', t.spacing_letter_label(), -5, 5, 0.01],
+                        ['word', t.spacing_word_label(), -30, 30, 0.1],
+                      ] as const)
+                    : []
                   ).map(([name, label, min, max, step]) => (
                     <FitField
                       key={name}

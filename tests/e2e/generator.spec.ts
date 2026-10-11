@@ -417,6 +417,7 @@ test('spacing adds the fonts-loading CSS and script', async ({ page }) => {
   await page.getByRole('tab', { name: 'CSS' }).click();
   await expect(code).not.toContainText('fonts-loading');
   await page.getByText('Spacing while fonts load').click();
+  await page.getByRole('checkbox', { name: 'Compensate spacing while the font loads' }).check();
   const letter = page.getByRole('spinbutton', { name: /Letter spacing/ });
   await letter.fill('0.2');
   await letter.press('Enter');
