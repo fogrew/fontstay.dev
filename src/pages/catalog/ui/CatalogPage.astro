@@ -1,0 +1,17 @@
+---
+import { type Locale, messagesFor } from '@/common/i18n';
+import { CatalogTable } from '@/modules/catalog';
+
+interface Props {
+  locale: Locale;
+}
+
+const { locale } = Astro.props;
+const t = messagesFor(locale);
+---
+
+<div class="ff-page">
+  <h1>{t.catalog_heading()}</h1>
+  <p>{t.catalog_intro()}</p>
+  <CatalogTable locale={locale} client:load />
+</div>

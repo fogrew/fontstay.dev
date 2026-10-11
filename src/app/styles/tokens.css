@@ -176,3 +176,47 @@ main > h1 {
     font-size: 1.25rem;
   }
 }
+.ff-header__nav {
+  display: flex;
+  gap: var(--ff-space-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.ff-header__nav a[aria-current="page"] {
+  font-weight: 700;
+}
+.ff-page {
+  display: grid;
+  gap: var(--ff-space-3);
+  max-inline-size: 72rem;
+  margin-inline: auto;
+}
+.ff-page h1,
+.ff-page h2,
+.ff-page h3,
+.ff-page p {
+  margin: 0;
+}
+.ff-page__table {
+  inline-size: 100%;
+  border-collapse: collapse;
+}
+.ff-page__table th,
+.ff-page__table td {
+  padding: var(--ff-space-1) var(--ff-space-2);
+  border-block-end: 1px solid var(--ff-border);
+  text-align: start;
+}
+.ff-page__metrics {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: var(--ff-space-1) var(--ff-space-4);
+  margin: 0;
+}
+.ff-page__metrics dd {
+  margin: 0;
+}
+.ff-specimen {
+  font-size: 1.5rem;
+}

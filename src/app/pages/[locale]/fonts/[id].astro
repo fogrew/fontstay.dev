@@ -1,0 +1,19 @@
+---
+import { assertIsLocale, locales } from '@/common/i18n';
+import { osFontsDataset } from '@/modules/os-fonts';
+import { FontPage } from '@/pages/catalog';
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+
+export function getStaticPaths() {
+  return locales.flatMap((locale) =>
+    osFontsDataset.fonts.map((font) => ({ params: { locale, id: font.id } })),
+  );
+}
+
+const locale = assertIsLocale(Astro.params.locale);
+const id = Astro.params.id ?? '';
+---
+
+<BaseLayout {locale} path={`/fonts/${id}/`} page="fonts">
+  <FontPage {locale} {id} />
+</BaseLayout>

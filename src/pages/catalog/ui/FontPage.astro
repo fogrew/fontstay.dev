@@ -1,0 +1,91 @@
+---
+import { type Locale, localizeHref, messagesFor } from '@/common/i18n';
+import { osAvailability, osFontMetrics, osFontsDataset } from '@/modules/os-fonts';
+
+interface Props {
+  locale: Locale;
+  id: string;
+}
+
+const { locale, id } = Astro.props;
+const t = messagesFor(locale);
+const font = osFontsDataset.fonts.find((item) => item.id === id);
+if (!font) throw new Error(`Unknown font ${id}`);
+const metrics = osFontMetrics().find((item) => item.id === id);
+const systems = ['windows', 'macos', 'linux', 'chromeos', 'android', 'ios'] as const;
+const percent = (value: number) =>
+  new Intl.NumberFormat(locale, { maximumFractionDigits: 1 }).format(value * 100);
+const levelLabel = (level: string) => {
+  if (level === 'preinstalled') return t.catalog_level_preinstalled();
+  if (level === 'partial') return t.catalog_level_partial();
+  return level === 'on-demand' ? t.catalog_level_on_demand() : t.catalog_level_unknown();
+};
+const vertical = metrics
+  ? {
+      ascent: metrics.hhea.ascent / metrics.unitsPerEm,
+      descent: Math.abs(metrics.hhea.descent) / metrics.unitsPerEm,
+      lineGap: Math.max(0, metrics.hhea.lineGap) / metrics.unitsPerEm,
+    }
+  : undefined;
+---
+
+<div class="ff-page">
+  <p><a href={localizeHref('/fonts/', { locale })}>{t.font_back()}</a></p>
+  <h1>{font.family}</h1>
+  <p>{font.category === 'serif' ? t.type_serif() : font.category === 'monospace' ? t.type_mono() : t.type_sans()}</p>
+
+  <h2>{t.font_specimen_heading()}</h2>
+  <link rel="stylesheet" href="/specimens/fonts.css" />
+  <p class="ff-specimen" data-font={font.id}>{t.preview_sample_default()}</p>
+  <p class="ff-specimen" data-font={font.id}>ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz 0123456789</p>
+  <p class="ff-muted">{t.font_specimen_note()}</p>
+
+  <h2>{t.font_availability_heading()}</h2>
+  <table class="ff-page__table">
+    <thead>
+      <tr>
+        <th scope="col">{t.catalog_col_system()}</th>
+        <th scope="col">{t.catalog_col_availability()}</th>
+        <th scope="col">{t.font_versions()}</th>
+      </tr>
+    </thead>
+    <tbody>
+      {systems.map((os) => {
+        const result = osAvailability(font, os, osFontsDataset);
+        return (
+          <tr>
+            <th scope="row">{t[`audience_os_${os}`]()}</th>
+            <td>{levelLabel(result.level)}</td>
+            <td>{result.present.join(', ') || '—'}</td>
+          </tr>
+        );
+      })}
+    </tbody>
+  </table>
+  <h3>{t.font_sources_heading()}</h3>
+  <ul>
+    {[...new Set(font.availability.map((entry) => entry.source))].map((source) => (
+      <li><a href={source} rel="noopener noreferrer">{source}</a></li>
+    ))}
+  </ul>
+
+  <h2>{t.font_metrics_heading()}</h2>
+  {vertical && metrics ? (
+    <dl class="ff-page__metrics">
+      <dt>{t.font_metrics_names()}</dt>
+      <dd>{metrics.localNames.join(', ')}</dd>
+      <dt>{t.font_metrics_units()}</dt>
+      <dd>{metrics.unitsPerEm}</dd>
+      <dt>{t.font_metrics_ascent()}</dt>
+      <dd>{percent(vertical.ascent)}%</dd>
+      <dt>{t.font_metrics_descent()}</dt>
+      <dd>{percent(vertical.descent)}%</dd>
+      <dt>{t.font_metrics_gap()}</dt>
+      <dd>{percent(vertical.lineGap)}%</dd>
+      <dt>{t.font_metrics_glyphs()}</dt>
+      <dd>{metrics.codePoints.length}</dd>
+    </dl>
+  ) : (
+    <p class="ff-muted">{t.font_no_metrics()}</p>
+  )}
+</div>

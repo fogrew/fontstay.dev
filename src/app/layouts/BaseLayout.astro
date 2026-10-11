@@ -7,9 +7,10 @@ interface Props {
   locale: Locale;
   path: string;
   settingsToggle?: boolean;
+  page?: 'generator' | 'fonts';
 }
 
-const { locale, path, settingsToggle = false } = Astro.props;
+const { locale, path, settingsToggle = false, page = 'generator' } = Astro.props;
 const t = messagesFor(locale);
 const canonical = new URL(localizeHref(path, { locale }), Astro.site);
 const indexable = !process.env.WORKERS_CI_BRANCH || process.env.WORKERS_CI_BRANCH === 'main';
@@ -46,6 +47,16 @@ const indexable = !process.env.WORKERS_CI_BRANCH || process.env.WORKERS_CI_BRANC
         </button>
       )}
       <a class="ff-brand" href={localizeHref('/', { locale })}>{t.app_title()}</a>
+      <nav aria-label={t.nav_label()}>
+        <ul class="ff-header__nav">
+          <li>
+            <a href={localizeHref('/', { locale })} aria-current={page === 'generator' ? 'page' : undefined}>{t.nav_generator()}</a>
+          </li>
+          <li>
+            <a href={localizeHref('/fonts/', { locale })} aria-current={page === 'fonts' ? 'page' : undefined}>{t.nav_fonts()}</a>
+          </li>
+        </ul>
+      </nav>
       <div class="ff-header__end">
         <LocaleSwitcher current={locale} {path} />
         <a class="ff-header__link" href="https://github.com/fogrew/fontstay.dev">{t.header_github()}</a>
