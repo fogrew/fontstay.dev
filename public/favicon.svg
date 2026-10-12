@@ -1,1 +1,11 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><title>fontstay.dev</title><rect width="64" height="64" rx="12" fill="#1f4a30"/><text x="32" y="46" font-family="Georgia, serif" font-size="40" font-weight="700" text-anchor="middle" fill="#c8e6d1">Aa</text></svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="title desc">
+ <title id="title">Fontstay F with a larger serif on the orange rear glyph</title>
+ <desc id="desc">The orange serif F behind has a a clearly visible serif on its middle arm. The white sans-serif F in front remains plain. Transparent background.</desc>
+ <g transform="translate(7 4)" fill="#FF6B35" stroke="#17252D" stroke-width="1.6" stroke-linejoin="round">
+  <path d="M12 9h40v11h-8v-3H25v12h18v-3h7v16h-7v-3H25v9h5v8H12v-8h4V17h-4z"/>
+ </g>
+ <g fill="#F8F7F2" stroke="#17252D" stroke-width="1.4" stroke-linejoin="round">
+  <path d="M16 10h34v10H26v10h21v10H26v14H16z"/>
+ </g>
+</svg>
+

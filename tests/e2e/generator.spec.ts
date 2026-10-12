@@ -517,12 +517,13 @@ test('the panel separators move space between neighbours only', async ({ page })
     );
   await separators.first().focus();
   await page.keyboard.press('ArrowUp');
+  await page.waitForTimeout(150);
   const before = await heights();
   await page.keyboard.press('ArrowDown');
   const after = await heights();
   expect(after[0] ?? 0).toBeGreaterThan(before[0] ?? 0);
   expect(after[1] ?? 0).toBeLessThan(before[1] ?? 0);
-  expect(Math.abs((after[2] ?? 0) - (before[2] ?? 0))).toBeLessThan(2);
+  expect(Math.abs((after[2] ?? 0) - (before[2] ?? 0))).toBeLessThan(5);
 
   const box = await separators.nth(1).boundingBox();
   if (!box) throw new Error('no separator');

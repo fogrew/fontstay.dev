@@ -17,9 +17,9 @@ for (const [name, size, padding] of icons) {
   const inner = Math.round(size * (1 - padding * 2));
   const offset = Math.round((size - inner) / 2);
   await page.setContent(
-    `<!doctype html><style>html,body{margin:0;width:${size}px;height:${size}px;background:${padding > 0 ? '#1f4a30' : 'transparent'}}svg{position:absolute;left:${offset}px;top:${offset}px;width:${inner}px;height:${inner}px}</style>${svg}`,
+    `<!doctype html><style>html,body{margin:0;width:${size}px;height:${size}px;background:#161a19}svg{position:absolute;left:${offset}px;top:${offset}px;width:${inner}px;height:${inner}px}</style>${svg}`,
   );
-  await page.screenshot({ path: out(name), omitBackground: padding === 0 });
+  await page.screenshot({ path: out(name), omitBackground: false });
   await page.close();
 }
 await browser.close();

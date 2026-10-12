@@ -9,10 +9,12 @@ export function ExportPanel({
   locale,
   input,
   report,
+  reordered = false,
 }: {
   locale: Locale;
   input: ExportInput;
   report: () => string;
+  reordered?: boolean;
 }) {
   const t = messagesFor(locale);
   const [format, setFormat] = useState<Choice>('css');
@@ -42,7 +44,12 @@ export function ExportPanel({
         }))}
         onChange={(value) => setFormat(value as Choice)}
       />
-      {format === 'css' && <p class="ff-muted">{t.fit_latin_note()}</p>}
+      {format === 'css' && (
+        <p class="ff-muted">
+          {t.fit_latin_note()}
+          {reordered && ` ${t.plan_reordered()}`}
+        </p>
+      )}
       {format === 'loading' && <p class="ff-muted">{t.loading_note()}</p>}
       <CodeBlock
         locale={locale}
