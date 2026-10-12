@@ -1,6 +1,5 @@
 import { describe, expect, it } from 'vitest';
 import {
-  computeManualShares,
   computeOsShares,
   DEFAULT_DESKTOP_SPLIT,
   isValidSplit,
@@ -69,21 +68,5 @@ describe('desktop split', () => {
     expect(isValidSplit({ ...DEFAULT_DESKTOP_SPLIT, linux: 10 })).toBe(false);
     expect(isValidSplit({ windows: 110, macos: -10, linux: 0, chromeos: 0 })).toBe(false);
     expect(isValidSplit({ ...DEFAULT_DESKTOP_SPLIT, windows: Number.NaN })).toBe(false);
-  });
-});
-
-describe('computeManualShares', () => {
-  it('scales relative weights to 100 and ignores unusable values', () => {
-    const shares = computeManualShares({ android: 3, ios: 1, windows: -5, macos: Number.NaN });
-    expect(shares.android).toBeCloseTo(75);
-    expect(shares.ios).toBeCloseTo(25);
-    expect(shares.windows).toBe(0);
-    expect(shares.macos).toBe(0);
-  });
-
-  it('survives huge weights and all-empty input', () => {
-    const huge = computeManualShares({ android: 1e308, ios: 1e308 });
-    expect(huge.android).toBeCloseTo(50);
-    expect(OS_IDS.every((id) => computeManualShares({})[id] === 0)).toBe(true);
   });
 });

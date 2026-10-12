@@ -137,7 +137,6 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
   const [kindChoice, setKindChoice] = useState<{ fontId: number | undefined; kind: Category }>();
   const [styleChoices, setStyleChoices] = useState<Record<number, FontStyleKey>>({});
   const [shares, setShares] = useState<OsShares>();
-  const [manualSystems, setManualSystems] = useState(false);
   const [audience, setAudience] = useState<AudienceData>();
   const [enabledSystems, setEnabledSystems] = useState<Partial<Record<OsId, boolean>>>({});
   const [activeOs, setActiveOs] = useState<OsId>();
@@ -162,10 +161,7 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
   const [restored, setRestored] = useState(false);
   const pending = useRef<ShareState | null>(null);
   const [shareMessage, setShareMessage] = useState('');
-  const handleShares = useCallback((next: OsShares, mode: 'browsers' | 'manual') => {
-    setShares(next);
-    setManualSystems(mode === 'manual');
-  }, []);
+  const handleShares = useCallback((next: OsShares) => setShares(next), []);
   const resetOptimization = () => {
     setOptimized({});
     setSpacingResult(undefined);
@@ -1181,11 +1177,7 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
                   open: false,
                   content: (
                     <>
-                      {manualSystems ? (
-                        <p class="ff-muted">{t.matrix_manual()}</p>
-                      ) : (
-                        <SupportMatrix locale={locale} groups={matrixGroups} rating={ratingText} />
-                      )}
+                      <SupportMatrix locale={locale} groups={matrixGroups} rating={ratingText} />
                       {simulation && (
                         <LayoutShiftPanel
                           locale={locale}

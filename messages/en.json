@@ -100,11 +100,6 @@
   "audience_preset_mystats": "Over 0.5% of my stats",
   "audience_coverage": "Covers {percent}% of your traffic",
   "audience_os_heading": "Operating systems",
-  "audience_os_mode_label": "Source of the system mix",
-  "audience_os_mode_browsers": "From the browser query",
-  "audience_os_mode_manual": "Choose systems manually",
-  "audience_os_manual_hint": "Relative weights; they are scaled to 100%.",
-  "audience_os_manual_empty": "Enter a weight for at least one system.",
   "audience_os_shares_label": "Estimated audience by system",
   "audience_os_windows": "Windows",
   "audience_os_macos": "macOS",
@@ -158,7 +153,6 @@
   "systems_legend": "Systems with their own fallback: open one to edit its fonts, tick it to include it.",
   "matrix_nodata": "No font data for this system yet",
   "matrix_scroll": "Support by browser version",
-  "matrix_manual": "The support matrix needs a browser query; the manual system mode has no browser data.",
   "shell_hide_settings": "Hide settings",
   "shell_show_settings": "Show settings",
   "matrix_baseline": "was {score} ({delta})",
@@ -396,5 +390,11 @@
   "catalog_filter_type": "Filter by type",
   "catalog_filter_all": "All",
   "catalog_filter_system": "Filter by availability on {system}",
-  "catalog_filter_coverage": "Minimum audience coverage, %"
+  "catalog_filter_coverage": "Minimum audience coverage, %",
+  "audience_tags_included": "Included",
+  "audience_tags_excluded": "Excluded",
+  "audience_tags_add_include": "Add to the audience",
+  "audience_tags_add_exclude": "Exclude from the audience",
+  "audience_tags_none": "Nothing yet",
+  "audience_tags_remove": "Remove: {tag}"
 }

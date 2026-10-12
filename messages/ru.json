@@ -100,11 +100,6 @@
   "audience_preset_mystats": "Более 0,5% по моей статистике",
   "audience_coverage": "Покрывает {percent}% вашего трафика",
   "audience_os_heading": "Операционные системы",
-  "audience_os_mode_label": "Источник структуры систем",
-  "audience_os_mode_browsers": "Из запроса по браузерам",
-  "audience_os_mode_manual": "Выбрать системы вручную",
-  "audience_os_manual_hint": "Относительные веса; они приводятся к 100%.",
-  "audience_os_manual_empty": "Укажите вес хотя бы для одной системы.",
   "audience_os_shares_label": "Оценка аудитории по системам",
   "audience_os_windows": "Windows",
   "audience_os_macos": "macOS",
@@ -158,7 +153,6 @@
   "systems_legend": "Системы с отдельным запасным шрифтом: раскройте, чтобы изменить шрифты, отметьте, чтобы учитывать.",
   "matrix_nodata": "Для этой системы пока нет данных о шрифтах",
   "matrix_scroll": "Поддержка по версиям браузеров",
-  "matrix_manual": "Матрице поддержки нужен запрос по браузерам; в ручном режиме систем данных о браузерах нет.",
   "shell_hide_settings": "Скрыть настройки",
   "shell_show_settings": "Показать настройки",
   "matrix_baseline": "было {score} ({delta})",
@@ -396,5 +390,11 @@
   "catalog_filter_type": "Фильтр по типу",
   "catalog_filter_all": "Все",
   "catalog_filter_system": "Фильтр по наличию в {system}",
-  "catalog_filter_coverage": "Минимальный охват аудитории, %"
+  "catalog_filter_coverage": "Минимальный охват аудитории, %",
+  "audience_tags_included": "Включено",
+  "audience_tags_excluded": "Исключено",
+  "audience_tags_add_include": "Добавить в аудиторию",
+  "audience_tags_add_exclude": "Исключить из аудитории",
+  "audience_tags_none": "Пока ничего",
+  "audience_tags_remove": "Убрать: {tag}"
 }

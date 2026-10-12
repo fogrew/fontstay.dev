@@ -85,16 +85,3 @@ export function computeOsShares(entries: readonly WeightedEntry[], split: Deskto
 function isDesktop(os: Os): os is DesktopOs {
   return (DESKTOP_OS_IDS as readonly string[]).includes(os);
 }
-
-export const MAX_MANUAL_WEIGHT = 1_000_000;
-
-export function computeManualShares(weights: Partial<Record<Os, number>>): OsShares {
-  const shares = emptyShares();
-  const clean = (id: Os) => {
-    const value = weights[id] ?? 0;
-    return Number.isFinite(value) ? Math.min(Math.max(value, 0), MAX_MANUAL_WEIGHT) : 0;
-  };
-  const sum = OS_IDS.reduce((acc, id) => acc + clean(id), 0);
-  if (sum > 0) for (const id of OS_IDS) shares[id] = (clean(id) / sum) * 100;
-  return shares;
-}

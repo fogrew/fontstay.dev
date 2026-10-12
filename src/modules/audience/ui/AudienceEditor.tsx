@@ -13,6 +13,7 @@ import {
 } from '../lib/stats';
 import { BrowserIcon } from './BrandIcon';
 import { OsPanel } from './OsPanel';
+import { TagEditor } from './TagEditor';
 import './audience.css';
 
 const CUSTOM = 'custom';
@@ -45,7 +46,7 @@ export function AudienceEditor({
   onQueryChange?: ((query: string) => void) | undefined;
   active?: boolean;
   onEntries?: ((data: AudienceData | undefined) => void) | undefined;
-  onShares?: ((shares: OsShares, mode: 'browsers' | 'manual') => void) | undefined;
+  onShares?: ((shares: OsShares) => void) | undefined;
 }) {
   const t = messagesFor(locale);
   const inputId = useId();
@@ -155,6 +156,7 @@ export function AudienceEditor({
           />
           <p class="ff-muted">{t.audience_query_hint()}</p>
         </div>
+        <TagEditor locale={locale} query={query} onChange={setQuery} />
         <div id={messageId} role="status" class="ff-audience__result">
           {'loading' in state && opened && t.audience_loading()}
           {'failed' in state && t.audience_load_failed()}

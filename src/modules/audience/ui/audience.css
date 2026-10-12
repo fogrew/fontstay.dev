@@ -191,3 +191,33 @@
 .ff-generator .ff-matrix__column li {
   display: block;
 }
+.ff-tags {
+  display: grid;
+  gap: var(--ff-space-2);
+}
+.ff-tags h4 {
+  margin: 0;
+  font-size: 0.875rem;
+}
+.ff-tags__list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--ff-space-1);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 0.8125rem;
+}
+.ff-tag {
+  min-block-size: 1.5rem;
+  padding: 0 var(--ff-space-2);
+  border: 1px solid var(--ff-border);
+  border-radius: 0.75rem;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+}
+.ff-tag:disabled {
+  opacity: 0.5;
+  cursor: default;
+}

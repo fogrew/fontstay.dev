@@ -286,7 +286,7 @@ test('imported usage statistics enable "in my stats" queries and report ignored 
   await expect(page.getByRole('link', { name: 'browserslist-ga', exact: true })).toBeVisible();
 });
 
-test('system shares follow the query and the manual mode', async ({ page }) => {
+test('system shares follow the query and the tag controls edit it', async ({ page }) => {
   await page.goto('/en/');
   await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
   await page.getByText('Audience (browsers)').click();
@@ -298,12 +298,13 @@ test('system shares follow the query and the manual mode', async ({ page }) => {
 
   await page.getByLabel('Browserslist query').fill('firefox 120');
   await expect(shares).toContainText('Windows');
-  await page.getByLabel('Choose systems manually').check();
-  await expect(page.getByText('Enter a weight for at least one system.')).toBeVisible();
-  await page.getByLabel('Android').fill('3');
-  await page.getByLabel('iOS and iPadOS').fill('1');
-  await expect(shares).toContainText('75');
-  await expect(shares).not.toContainText('Windows');
+
+  await page.getByRole('button', { name: 'not firefox > 0', exact: true }).click();
+  await expect(page.getByLabel('Browserslist query')).toHaveValue('firefox 120, not firefox > 0');
+  await page.getByRole('button', { name: 'Remove: not firefox > 0' }).click();
+  await expect(page.getByLabel('Browserslist query')).toHaveValue('firefox 120');
+  await page.getByRole('button', { name: '> 1%', exact: true }).click();
+  await expect(page.getByLabel('Browserslist query')).toHaveValue('firefox 120, > 1%');
 });
 
 test('a system can have several ordered fallbacks', async ({ page }) => {
