@@ -774,8 +774,7 @@ test('fonts and settings survive a reload and the share link restores the settin
     page.getByRole('checkbox', { name: 'Include Android in the stack' }),
   ).not.toBeChecked();
 
-  await page.getByText('Save and share').click();
-  await page.getByRole('button', { name: 'Copy share link' }).click();
+  await page.getByRole('button', { name: 'Share', exact: true }).click();
   await expect(page.getByText('The link was copied.')).toBeVisible();
   const link = await page.evaluate(() => navigator.clipboard.readText());
   expect(link).toMatch(/#s=[A-Za-z0-9_-]+$/);
@@ -791,7 +790,7 @@ test('fonts and settings survive a reload and the share link restores the settin
   ).not.toBeChecked();
   await fresh.close();
 
-  await page.getByRole('button', { name: 'Forget saved data' }).click();
+  await page.getByRole('button', { name: 'Forget', exact: true }).click();
   await expect(page.getByText(/were removed from this browser/)).toBeVisible();
   await page.reload();
   await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));

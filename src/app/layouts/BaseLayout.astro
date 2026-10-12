@@ -112,6 +112,7 @@ const indexable = !process.env.WORKERS_CI_BRANCH || process.env.WORKERS_CI_BRANC
         </ul>
       </nav>
       <div class="ff-header__end">
+        {settingsToggle && <div class="ff-header__actions" id="ff-header-actions"></div>}
         <InstallButton locale={locale} client:idle />
         <LocaleSwitcher current={locale} {path} />
         <a class="ff-header__link" href="https://github.com/fogrew/fontstay.dev"><Icon name="github" />{t.header_github()}</a>

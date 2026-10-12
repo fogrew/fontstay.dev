@@ -83,9 +83,16 @@ header {
 }
 .ff-header__end {
   display: flex;
+  flex-wrap: wrap;
   gap: var(--ff-space-3);
   align-items: center;
   margin-inline-start: auto;
+}
+.ff-header__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--ff-space-2);
+  align-items: center;
 }
 .ff-brand {
   display: inline-flex;

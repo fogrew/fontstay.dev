@@ -29,12 +29,7 @@ for (const scheme of ['light', 'dark'] as const) {
     await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
     await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(fontFile);
     await page.getByRole('button', { name: 'Glyph coverage', exact: true }).click();
-    for (const summary of [
-      'Spacing while fonts load',
-      'Import from CSS',
-      'Google Fonts',
-      'Save and share',
-    ]) {
+    for (const summary of ['Spacing while fonts load', 'Import from CSS', 'Google Fonts']) {
       await page.getByText(summary, { exact: false }).first().click();
     }
     await page.waitForTimeout(1500);

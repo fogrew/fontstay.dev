@@ -386,5 +386,7 @@
   "pwa_whats_new": "Что нового",
   "pwa_install": "Установить приложение",
   "matrix_cls_legend": "CLS, сдвиг вёрстки при замене запасного шрифта веб-шрифтом:",
-  "cssimport_files": "CSS-файлы"
+  "cssimport_files": "CSS-файлы",
+  "share_copy_short": "Поделиться",
+  "share_forget_short": "Забыть"
 }

@@ -1,3 +1,4 @@
+import { createPortal } from 'preact/compat';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'preact/hooks';
 import { type Locale, messagesFor } from '@/common/i18n';
 import {
@@ -579,6 +580,13 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
     const timer = setTimeout(() => saveSettings(JSON.parse(stateKey) as ShareState), 400);
     return () => clearTimeout(timer);
   }, [stateKey, restored, forgotten]);
+  const [headerSlot, setHeaderSlot] = useState<HTMLElement | null>(null);
+  useEffect(() => setHeaderSlot(document.getElementById('ff-header-actions')), []);
+  useEffect(() => {
+    if (!shareMessage) return;
+    const timer = setTimeout(() => setShareMessage(''), 5000);
+    return () => clearTimeout(timer);
+  }, [shareMessage]);
   const copyLink = async () => {
     try {
       const payload = await encodeShareState(currentShareState());
@@ -976,6 +984,23 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
 
   return (
     <div class="ff-generator">
+      {headerSlot &&
+        createPortal(
+          <>
+            <Button onClick={() => void copyLink()} title={t.share_note()}>
+              <Icon name="share" />
+              {t.share_copy_short()}
+            </Button>
+            <Button onClick={() => void forget()}>
+              <Icon name="forget" />
+              {t.share_forget_short()}
+            </Button>
+            <span class="ff-muted" role="status">
+              {shareMessage}
+            </span>
+          </>,
+          headerSlot,
+        )}
       <div class="ff-generator__settings" id="ff-settings">
         <FontUpload locale={locale} busy={busy} compact={fonts.length > 0} onFiles={addFiles} />
         <GoogleFontsPicker locale={locale} busy={busy} onFile={(file) => void addFiles([file])} />
@@ -1062,24 +1087,6 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
           <p role="alert">{t.fit_no_coverage()}</p>
         )}
         {selected && !shares && <p class="ff-muted">{t.plan_waiting()}</p>}
-        <Disclosure icon={<Icon name="share" />} summary={t.share_heading()}>
-          <div class="ff-share">
-            <p class="ff-muted">{t.share_note()}</p>
-            <div class="ff-generator__buttons">
-              <Button onClick={() => void copyLink()}>
-                <Icon name="share" />
-                {t.share_copy()}
-              </Button>
-              <Button onClick={() => void forget()}>
-                <Icon name="forget" />
-                {t.share_forget()}
-              </Button>
-            </div>
-            <p class="ff-muted" role="status">
-              {shareMessage}
-            </p>
-          </div>
-        </Disclosure>
         {restored && (
           <AudienceEditor
             initialQuery={initialQuery}

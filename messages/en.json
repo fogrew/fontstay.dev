@@ -386,5 +386,7 @@
   "pwa_whats_new": "What is new",
   "pwa_install": "Install app",
   "matrix_cls_legend": "CLS, the layout shift when the web font replaces the fallback:",
-  "cssimport_files": "CSS files"
+  "cssimport_files": "CSS files",
+  "share_copy_short": "Share",
+  "share_forget_short": "Forget"
 }
