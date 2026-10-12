@@ -29,7 +29,8 @@ export function ExportPanel({
   multi?: boolean;
 }) {
   const t = messagesFor(locale);
-  const [format, setFormat] = useState<Choice>('css');
+  const [chosen, setFormat] = useState<Choice>('css');
+  const format: Choice = multi ? 'css' : chosen;
   const labels: Record<Choice, string> = {
     report: t.export_report(),
     css: t.export_css(),

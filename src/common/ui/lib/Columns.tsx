@@ -57,6 +57,11 @@ export function Columns({ items, storageKey, resizeLabel }: ColumnsProps) {
 
   const openIds = ids.filter((id) => !collapsed.has(id));
   const rtl = typeof document !== 'undefined' && document.documentElement.dir === 'rtl';
+  const totalWeight =
+    openIds.reduce(
+      (sum, id) => sum + (sizes[id] ?? items.find((i) => i.id === id)?.weight ?? 1),
+      0,
+    ) || 1;
   const labelOf = (id: string) => items.find((item) => item.id === id)?.label ?? id;
 
   const measure = () => {
@@ -75,13 +80,11 @@ export function Columns({ items, storageKey, resizeLabel }: ColumnsProps) {
     const second = (start[right] ?? 0) * total;
     if (first + delta < COLLAPSE_PX) {
       drag.current = undefined;
-      setSizes({});
       setCollapsed((current) => new Set(current).add(left));
       return;
     }
     if (second - delta < COLLAPSE_PX) {
       drag.current = undefined;
-      setSizes({});
       setCollapsed((current) => new Set(current).add(right));
       return;
     }
@@ -118,7 +121,6 @@ export function Columns({ items, storageKey, resizeLabel }: ColumnsProps) {
                   aria-expanded={open}
                   aria-controls={`${base}-${item.id}-panel`}
                   onClick={() => {
-                    setSizes({});
                     setCollapsed((current) => {
                       const updated = new Set(current);
                       if (!updated.delete(item.id)) updated.add(item.id);
@@ -141,7 +143,7 @@ export function Columns({ items, storageKey, resizeLabel }: ColumnsProps) {
                 aria-label={resizeLabel(item.label, labelOf(next))}
                 aria-valuemin={0}
                 aria-valuemax={100}
-                aria-valuenow={Math.round((sizes[item.id] ?? weight) * 100)}
+                aria-valuenow={Math.round((weight / totalWeight) * 100)}
                 tabIndex={0}
                 class="ff-columns__separator"
                 onPointerDown={(event) => {
@@ -178,9 +180,8 @@ export function Columns({ items, storageKey, resizeLabel }: ColumnsProps) {
                   if (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight') return;
                   event.preventDefault();
                   const { fractions, total } = measure();
-                  const start = Object.keys(sizes).length > 0 ? sizes : fractions;
                   const direction = (event.key === 'ArrowLeft' ? -1 : 1) * (rtl ? -1 : 1);
-                  apply(start, total, item.id, next, direction * KEY_STEP * total);
+                  apply(fractions, total, item.id, next, direction * KEY_STEP * total);
                 }}
               />
             )}

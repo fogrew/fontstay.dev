@@ -503,3 +503,39 @@
   white-space: nowrap;
   cursor: pointer;
 }
+.ff-article {
+  display: grid;
+  gap: var(--ff-space-3);
+}
+.ff-article__controls {
+  display: grid;
+  gap: var(--ff-space-2);
+}
+.ff-article__page {
+  box-sizing: border-box;
+  inline-size: 100%;
+  padding: var(--ff-space-3);
+  border: 1px solid var(--ff-border);
+  border-radius: var(--ff-radius);
+  overflow-wrap: anywhere;
+}
+.ff-article__page h3,
+.ff-article__page h4 {
+  margin: 0 0 var(--ff-space-2);
+  font-size: 1.5rem;
+  line-height: 1.2;
+}
+.ff-article__page h4 {
+  margin-block-start: var(--ff-space-3);
+  font-size: 1.125rem;
+}
+.ff-article__page p,
+.ff-article__page ul,
+.ff-article__page blockquote {
+  margin: 0 0 var(--ff-space-2);
+}
+.ff-article__page blockquote {
+  padding-inline-start: var(--ff-space-3);
+  border-inline-start: 3px solid var(--ff-accent);
+  font-style: italic;
+}

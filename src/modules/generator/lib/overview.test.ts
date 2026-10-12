@@ -53,5 +53,6 @@ describe('mergeOutputs', () => {
   it('builds safe class names', () => {
     expect(slugOf('Source Sans Pro')).toBe('source-sans-pro');
     expect(slugOf('  !!!  ')).toBe('font');
+    expect(slugOf('1Password')).toBe('font-1password');
   });
 });

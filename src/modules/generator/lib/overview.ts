@@ -10,12 +10,11 @@ export interface FontOutput {
 }
 
 export function slugOf(family: string): string {
-  return (
-    family
-      .toLowerCase()
-      .replace(/[^\p{L}\p{N}]+/gu, '-')
-      .replace(/^-|-$/g, '') || 'font'
-  );
+  const slug = family
+    .toLowerCase()
+    .replace(/[^\p{L}\p{N}]+/gu, '-')
+    .replace(/^-|-$/g, '');
+  return /^\p{L}/u.test(slug) ? slug : `font-${slug}`.replace(/-$/, '');
 }
 
 export function currentFallback(
@@ -52,13 +51,17 @@ export function mergeOutputs(
     groups.set(output.targetFamily, group);
   }
   const single = groups.size === 1;
+  const used = new Set<string>();
   const rules = [...groups.entries()].map(([family, group]) => {
+    let slug = slugOf(family);
+    for (let count = 2; used.has(slug); count++) slug = `${slugOf(family)}-${count}`;
+    used.add(slug);
     const lines = [
       `font-family: ${group.families.join(', ')}, ${group.generic};`,
       ...(single ? strategy.split('\n').filter(Boolean) : []),
     ];
     return [
-      `${single ? RULE_SELECTOR : `.${slugOf(family)}`} {`,
+      `${single ? RULE_SELECTOR : `.${slug}`} {`,
       ...lines.map((line) => `  ${line}`),
       '}',
     ].join('\n');

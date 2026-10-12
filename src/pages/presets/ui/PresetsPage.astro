@@ -16,6 +16,7 @@ for (const preset of PRESETS) {
   const payload = await encodeShareState({
     v: 1,
     kind: preset.kind,
+    preset: preset.id,
     picks: presetPicks(preset, osFontsDataset, systems),
   });
   links[preset.id] = `${localizeHref('/', { locale })}#s=${payload}`;

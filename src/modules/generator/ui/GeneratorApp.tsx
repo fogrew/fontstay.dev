@@ -40,7 +40,8 @@ import {
 } from '@/modules/font-metrics';
 import { GoogleFontsPicker } from '@/modules/google-fonts';
 import { LayoutShiftPanel, type PanelInput, ratingOf, worstShift } from '@/modules/layout-shift';
-import { type Category, loadVariantMetrics, type OsId } from '@/modules/os-fonts';
+import { type Category, loadVariantMetrics, type OsId, osFontsDataset } from '@/modules/os-fonts';
+import { cssStack, PRESETS, type PresetId, presetName, presetPicks } from '@/modules/presets';
 import { autoFit } from '../lib/auto-fit';
 import { displayName, fitLanguage, isNoCoverage, LOW_COVERAGE, sampleText } from '../lib/compute';
 import {
@@ -52,6 +53,7 @@ import {
 } from '../lib/css';
 import { hasSpacing, loadingCss, loadingScript, type SpacingEm } from '../lib/loading';
 import { currentFallback, mergeOutputs } from '../lib/overview';
+import { ownOs } from '../lib/own-os';
 import {
   type Candidate,
   type FontStyleKey,
@@ -86,6 +88,7 @@ import {
   saveSettings,
   storeFont,
 } from '../lib/storage';
+import { ArticlePreview } from './ArticlePreview';
 import { CoverageMap } from './CoverageMap';
 import { CssImport } from './CssImport';
 import { ExportPanel } from './ExportPanel';
@@ -141,6 +144,7 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
   const [fonts, setFonts] = useState<LoadedFont[]>([]);
   const [selectedId, setSelectedId] = useState<number | 'all'>();
   const [kindChoices, setKindChoices] = useState<Record<number, Category>>({});
+  const [presetId, setPresetId] = useState<PresetId>();
   const [styleChoices, setStyleChoices] = useState<Record<number, FontStyleKey>>({});
   const [shares, setShares] = useState<OsShares>();
   const [audience, setAudience] = useState<AudienceData>();
@@ -264,6 +268,7 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
         setInitialQuery(state.query);
         setEnabledSystems(Object.fromEntries((state.disabled ?? []).map((os) => [os, false])));
         setRangeOn(state.range ?? false);
+        setPresetId(PRESETS.find((item) => item.id === state.preset)?.id);
         if (state.spacing) {
           setSpacingOn(state.spacing.on);
           const value = (number: number | undefined): FitValue =>
@@ -340,16 +345,23 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
     if (!needsVariants || variantsReady) return;
     void loadVariantMetrics().then(() => setVariantsReady(true));
   }, [needsVariants, variantsReady]);
+  const preset = PRESETS.find((item) => item.id === presetId);
+  const presetMap = useMemo(
+    () => (preset ? presetPicks(preset, osFontsDataset, ALL_SYSTEMS) : undefined),
+    [preset],
+  );
   const kind: Category =
     (selected ? kindChoices[selected.id] : undefined) ??
+    preset?.kind ??
     selected?.metrics.style.category ??
     'sans-serif';
-  const picks = (selected ? picksByFont[selected.id] : undefined) ?? NO_PICKS;
+  const picks = (selected ? picksByFont[selected.id] : undefined) ?? presetMap ?? NO_PICKS;
   const setPicks = (next: Picks | ((all: Picks) => Picks)) => {
     if (!selected) return;
     setPicksByFont((all) => ({
       ...all,
-      [selected.id]: typeof next === 'function' ? next(all[selected.id] ?? NO_PICKS) : next,
+      [selected.id]:
+        typeof next === 'function' ? next(all[selected.id] ?? presetMap ?? NO_PICKS) : next,
     }));
   };
 
@@ -387,7 +399,14 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
     return explicit.length > 0 ? explicit : all.slice(0, 1);
   };
 
-  const current = activeOs && systems.includes(activeOs) ? activeOs : systems[0];
+  const [own, setOwn] = useState<OsId>();
+  useEffect(() => setOwn(ownOs()), []);
+  const current =
+    activeOs && systems.includes(activeOs)
+      ? activeOs
+      : own && systems.includes(own)
+        ? own
+        : systems[0];
   const currentList = current ? listFor(current) : [];
   const currentCandidates = current ? candidatesOf(current) : [];
   const currentPick = currentList.find((item) => item.id === editId) ?? currentList[0];
@@ -555,8 +574,9 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
     if (!shares) return undefined;
     const lang: Language = fitLanguage(font.metrics, locale);
     const fontStyle = styleOf(font);
-    const fontKind: Category = kindChoices[font.id] ?? font.metrics.style.category ?? 'sans-serif';
-    const fontPicks = picksByFont[font.id] ?? NO_PICKS;
+    const fontKind: Category =
+      kindChoices[font.id] ?? preset?.kind ?? font.metrics.style.category ?? 'sans-serif';
+    const fontPicks = picksByFont[font.id] ?? presetMap ?? NO_PICKS;
     let anyFontRanking: Ranking | undefined;
     const fontChosen = systems.filter(isEnabled).flatMap((os) => {
       const ranking = rankOf(font, os, lang, fontStyle);
@@ -686,6 +706,7 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
       ...(query ? { query } : {}),
       ...(selected && !allMode ? { fontName: selected.fileName } : {}),
       ...(selected && kindChoices[selected.id] ? { kind: kindChoices[selected.id] } : {}),
+      ...(presetId ? { preset: presetId } : {}),
       ...(selected && styleChoices[selected.id] ? { style: styleChoices[selected.id] } : {}),
       disabled: ALL_SYSTEMS.filter((os) => enabledSystems[os] === false),
       picks,
@@ -1261,7 +1282,6 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
                       const choose = () => {
                         if (isSelected) return;
                         setSelectedId(font.id);
-                        setPicks({});
                         setOpenSystem(undefined);
                         resetOptimization();
                       };
@@ -1335,6 +1355,22 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
             weight: 1,
             content: (
               <div class="ff-generator__settings">
+                {preset && (
+                  <section class="ff-generator__section" aria-label={t.preset_applied_heading()}>
+                    <p>{t.preset_applied({ name: presetName(t, preset.id) })}</p>
+                    <p class="ff-muted">{cssStack(preset)}</p>
+                    <Button
+                      onClick={() => {
+                        setPresetId(undefined);
+                        setPicksByFont({});
+                        setKindChoices({});
+                        resetOptimization();
+                      }}
+                    >
+                      {t.preset_clear()}
+                    </Button>
+                  </section>
+                )}
                 {allMode ? allBody : (fitBody ?? <p class="ff-muted">{t.tuning_empty()}</p>)}
               </div>
             ),
@@ -1415,6 +1451,12 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
                               multi={allMode}
                             />
                           ),
+                        },
+                        {
+                          id: 'article',
+                          label: t.article_heading(),
+                          open: false,
+                          content: <ArticlePreview locale={locale} items={previewItems} />,
                         },
                         {
                           id: 'coverage',

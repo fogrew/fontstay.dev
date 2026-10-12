@@ -46,8 +46,8 @@ export function TagEditor({
           <h4>{group.label}</h4>
           <ul class="ff-tags__list">
             {group.tags.length === 0 && <li class="ff-muted">{t.audience_tags_none()}</li>}
-            {group.tags.map((tag) => (
-              <li key={tag}>
+            {group.tags.map((tag, index) => (
+              <li key={`${tag}-${index}`}>
                 <button
                   type="button"
                   class="ff-tag"

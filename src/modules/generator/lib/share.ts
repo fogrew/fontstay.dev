@@ -18,6 +18,7 @@ export interface ShareState {
   query?: string;
   fontName?: string;
   kind?: Category;
+  preset?: string;
   style?: FontStyleKey;
   disabled?: OsId[];
   picks?: Partial<Record<OsId, string[]>>;
@@ -73,6 +74,7 @@ export function parseShareState(
     state.fontName = input.fontName;
   }
   if (KINDS.includes(input.kind as Category)) state.kind = input.kind as Category;
+  if (typeof input.preset === 'string' && ID.test(input.preset)) state.preset = input.preset;
   if (STYLES.includes(input.style as FontStyleKey)) state.style = input.style as FontStyleKey;
   if (Array.isArray(input.disabled)) {
     state.disabled = input.disabled.filter((os): os is OsId => OS_LIST.includes(os as OsId));

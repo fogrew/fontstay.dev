@@ -892,3 +892,20 @@ test('several fonts are previewed and exported together and can be opened one by
   await expect(preview.getByRole('figure')).toHaveCount(1);
   await expect(code).not.toContainText('Source Sans Pro Fallback');
 });
+
+test('the article preview shows the text in the three views', async ({ page }) => {
+  await page.goto('/en/');
+  await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
+  await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(sourceSans);
+  await page.getByRole('button', { name: 'Article', exact: true }).click();
+  const article = page.getByRole('region', { name: 'Article' });
+  await expect(
+    article.getByRole('heading', { name: 'Why the page jumps when a font loads' }),
+  ).toBeVisible();
+  const page_ = article.locator('article');
+  await expect(page_).toHaveCSS('font-family', /Fallback/);
+  await article.getByRole('button', { name: 'Web font', exact: true }).click();
+  await expect(page_).not.toHaveCSS('font-family', /Fallback/);
+  await article.getByRole('button', { name: 'Plain fallback' }).click();
+  await expect(page_).toHaveCSS('font-family', /sans-serif/);
+});
