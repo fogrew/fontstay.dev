@@ -1,5 +1,6 @@
 import { type ComponentChildren, Fragment } from 'preact';
-import { useId, useRef, useState } from 'preact/hooks';
+import { useEffect, useId, useRef, useState } from 'preact/hooks';
+import { loadLayout, parseIds, parseSizes, saveLayout } from './persist';
 
 export interface AccordionProps {
   items: readonly {
@@ -10,6 +11,7 @@ export interface AccordionProps {
     keep?: boolean;
   }[];
   resizeLabel: (above: string, below: string) => string;
+  storageKey?: string;
 }
 
 type Sizes = Record<string, number>;
@@ -69,12 +71,30 @@ function Splitter({
   // biome-ignore-end lint/a11y/useSemanticElements: a focusable splitter has no native element
 }
 
-export function Accordion({ items, resizeLabel }: AccordionProps) {
+export function Accordion({ items, resizeLabel, storageKey }: AccordionProps) {
   const base = useId();
   const [closed, setClosed] = useState<ReadonlySet<string>>(
     () => new Set(items.filter((item) => item.open === false).map((item) => item.id)),
   );
   const [sizes, setSizes] = useState<Sizes>({});
+  const [ready, setReady] = useState(false);
+  useEffect(() => {
+    if (!storageKey) return;
+    const ids = items.map((item) => item.id);
+    const saved = loadLayout(storageKey, (value) => {
+      if (typeof value !== 'object' || value === null) return undefined;
+      const record = value as Record<string, unknown>;
+      return { sizes: parseSizes(record.sizes, ids), closed: parseIds(record.closed, ids) };
+    });
+    if (saved) {
+      if (saved.sizes) setSizes(saved.sizes);
+      setClosed(new Set(saved.closed));
+    }
+    setReady(true);
+  }, []);
+  useEffect(() => {
+    if (storageKey && ready) saveLayout(storageKey, { sizes, closed: [...closed] });
+  }, [storageKey, ready, sizes, closed]);
   const elements = useRef(new Map<string, HTMLElement>());
   const drag = useRef<Drag>();
 

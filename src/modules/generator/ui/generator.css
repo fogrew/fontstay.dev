@@ -145,13 +145,8 @@
     flex: 1;
     position: relative;
     overflow: clip;
-    grid-template-columns: minmax(20rem, 27rem) minmax(0, 1fr);
+    display: flex;
     align-items: stretch;
-  }
-  .ff-generator__settings {
-    position: relative;
-    overflow-y: auto;
-    padding-inline-end: var(--ff-space-1);
   }
   .ff-generator .ff-code__body {
     max-block-size: none;
@@ -269,9 +264,6 @@
 }
 
 @media (min-width: 64rem) and (min-height: 40rem) {
-  html[data-settings="closed"] .ff-generator {
-    grid-template-columns: minmax(0, 1fr);
-  }
   .ff-generator__main {
     overflow: hidden;
   }
@@ -485,4 +477,29 @@
 .ff-preview__menu button:hover,
 .ff-preview__menu button:focus-visible {
   background: var(--ff-state-full);
+}
+.ff-fontlist__item {
+  display: flex;
+  gap: var(--ff-space-2);
+  align-items: center;
+  padding: var(--ff-space-1);
+  border: 1px solid var(--ff-border);
+  border-radius: var(--ff-radius);
+}
+.ff-fontlist__item[data-selected="true"] {
+  border-color: var(--ff-accent);
+}
+.ff-fontlist__select {
+  flex: 1;
+  min-inline-size: 0;
+  min-block-size: 2rem;
+  overflow: hidden;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font-weight: 600;
+  text-align: start;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  cursor: pointer;
 }

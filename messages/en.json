@@ -153,8 +153,6 @@
   "systems_legend": "Systems with their own fallback: open one to edit its fonts, tick it to include it.",
   "matrix_nodata": "No font data for this system yet",
   "matrix_scroll": "Support by browser version",
-  "shell_hide_settings": "Hide settings",
-  "shell_show_settings": "Show settings",
   "matrix_baseline": "was {score} ({delta})",
   "fit_running": "Optimizing the fallback fonts…",
   "font_type_unknown": "The font type could not be detected. Check the Font type above.",
@@ -396,5 +394,10 @@
   "audience_tags_add_include": "Add to the audience",
   "audience_tags_add_exclude": "Exclude from the audience",
   "audience_tags_none": "Nothing yet",
-  "audience_tags_remove": "Remove: {tag}"
+  "audience_tags_remove": "Remove: {tag}",
+  "col_inputs": "1. Inputs",
+  "col_tuning": "2. Fine-tuning",
+  "col_results": "3. Results",
+  "columns_resize": "Resize: {left} and {right}",
+  "tuning_empty": "Add a font to tune its fallbacks."
 }

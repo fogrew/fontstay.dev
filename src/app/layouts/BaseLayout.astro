@@ -8,7 +8,7 @@ import '../styles/tokens.css';
 interface Props {
   locale: Locale;
   path: string;
-  settingsToggle?: boolean;
+  headerActions?: boolean;
   page?: 'generator' | 'fonts' | 'presets' | 'guide' | 'credits' | 'changelog';
   title?: string;
   description?: string;
@@ -17,7 +17,7 @@ interface Props {
 const {
   locale,
   path,
-  settingsToggle = false,
+  headerActions = false,
   page = 'generator',
   title: pageTitle,
   description: pageDescription,
@@ -42,7 +42,7 @@ const structured = JSON.stringify({
 const indexable = !process.env.WORKERS_CI_BRANCH || process.env.WORKERS_CI_BRANCH === 'main';
 ---
 
-<html lang={locale} dir={getTextDirection(locale)} data-settings="open">
+<html lang={locale} dir={getTextDirection(locale)}>
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -78,22 +78,6 @@ const indexable = !process.env.WORKERS_CI_BRANCH || process.env.WORKERS_CI_BRANC
   <body>
     <a class="ff-skip-link" href="#main-content">{t.ui_skip_content()}</a>
     <header class="ff-header">
-      {settingsToggle && (
-        <button
-          type="button"
-          class="ff-burger"
-          aria-controls="ff-settings"
-          aria-expanded="true"
-          aria-label={t.shell_hide_settings()}
-          data-label-open={t.shell_hide_settings()}
-          data-label-closed={t.shell_show_settings()}
-          data-settings-toggle
-        >
-          <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false">
-            <path d="M3 6h18M3 12h18M3 18h18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
-          </svg>
-        </button>
-      )}
       <a class="ff-brand" href={localizeHref('/', { locale })}><img src="/favicon.svg" alt="" width="24" height="24" />{t.app_title()}</a>
       <nav aria-label={t.nav_label()}>
         <ul class="ff-header__nav">
@@ -112,7 +96,7 @@ const indexable = !process.env.WORKERS_CI_BRANCH || process.env.WORKERS_CI_BRANC
         </ul>
       </nav>
       <div class="ff-header__end">
-        {settingsToggle && <div class="ff-header__actions" id="ff-header-actions"></div>}
+        {headerActions && <div class="ff-header__actions" id="ff-header-actions"></div>}
         <InstallButton locale={locale} client:idle />
         <LocaleSwitcher current={locale} {path} />
         <a class="ff-header__link" href="https://github.com/fogrew/fontstay.dev"><Icon name="github" />{t.header_github()}</a>
@@ -131,13 +115,3 @@ const indexable = !process.env.WORKERS_CI_BRANCH || process.env.WORKERS_CI_BRANC
   </body>
 </html>
 
-<script>
-  const button = document.querySelector<HTMLButtonElement>('[data-settings-toggle]');
-  button?.addEventListener('click', () => {
-    const root = document.documentElement;
-    const open = root.dataset.settings === 'closed';
-    root.dataset.settings = open ? 'open' : 'closed';
-    button.setAttribute('aria-expanded', String(open));
-    button.setAttribute('aria-label', (open ? button.dataset.labelOpen : button.dataset.labelClosed) ?? '');
-  });
-</script>

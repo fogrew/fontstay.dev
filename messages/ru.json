@@ -153,8 +153,6 @@
   "systems_legend": "Системы с отдельным запасным шрифтом: раскройте, чтобы изменить шрифты, отметьте, чтобы учитывать.",
   "matrix_nodata": "Для этой системы пока нет данных о шрифтах",
   "matrix_scroll": "Поддержка по версиям браузеров",
-  "shell_hide_settings": "Скрыть настройки",
-  "shell_show_settings": "Показать настройки",
   "matrix_baseline": "было {score} ({delta})",
   "fit_running": "Подбираю значения для запасных шрифтов…",
   "font_type_unknown": "Тип шрифта определить не удалось. Проверьте поле «Тип шрифта» выше.",
@@ -396,5 +394,10 @@
   "audience_tags_add_include": "Добавить в аудиторию",
   "audience_tags_add_exclude": "Исключить из аудитории",
   "audience_tags_none": "Пока ничего",
-  "audience_tags_remove": "Убрать: {tag}"
+  "audience_tags_remove": "Убрать: {tag}",
+  "col_inputs": "1. Исходные данные",
+  "col_tuning": "2. Настройка",
+  "col_results": "3. Результат",
+  "columns_resize": "Изменить размер: {left} и {right}",
+  "tuning_empty": "Добавьте шрифт, чтобы настроить его фолбэки."
 }

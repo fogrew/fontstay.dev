@@ -10,6 +10,6 @@ export function getStaticPaths() {
 const locale = assertIsLocale(Astro.params.locale);
 ---
 
-<BaseLayout {locale} path="/" settingsToggle>
+<BaseLayout {locale} path="/" headerActions>
   <HomePage {locale} />
 </BaseLayout>

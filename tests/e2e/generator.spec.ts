@@ -128,11 +128,11 @@ for (const { width, height } of [
     await expect(page.getByRole('button', { name: 'Preview', exact: true })).toBeVisible();
     const sizes = await page.evaluate(() => ({
       page: [document.documentElement.scrollHeight, window.innerHeight],
-      settings: document.querySelector('.ff-generator__settings')?.scrollHeight,
-      settingsVisible: document.querySelector('.ff-generator__settings')?.clientHeight,
+      settings: document.querySelector('#ff-settings')?.scrollHeight,
+      settingsVisible: document.querySelector('#ff-settings')?.clientHeight,
     }));
     expect(sizes.page[0]).toBeLessThanOrEqual(sizes.page[1] ?? 0);
-    const settings = await page.locator('.ff-generator__settings').boundingBox();
+    const settings = await page.locator('#ff-settings').boundingBox();
     const results = await page.locator('.ff-generator__main').boundingBox();
     expect(settings?.x).toBeLessThan(results?.x ?? 0);
   });
@@ -434,20 +434,25 @@ test('values are optimized automatically and pinned values stay', async ({ page 
   await expect(page.getByRole('checkbox', { name: 'Auto' }).nth(1)).toBeChecked();
 });
 
-test('the settings and the support section can be hidden and shown', async ({ page }) => {
+test('the columns and the support section can be collapsed and the layout is remembered', async ({
+  page,
+}) => {
   await page.goto('/en/');
   await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
-  await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(sourceSans);
-  const toggle = page.getByRole('button', { name: 'Hide settings' });
-  await expect(toggle).toHaveAttribute('aria-expanded', 'true');
-  await toggle.click();
-  await expect(page.getByRole('button', { name: 'Show settings' })).toHaveAttribute(
+  const inputs = page.getByRole('button', { name: '1. Inputs' });
+  await expect(inputs).toHaveAttribute('aria-expanded', 'true');
+  await inputs.click();
+  await expect(inputs).toHaveAttribute('aria-expanded', 'false');
+  await expect(page.locator('#ff-settings')).toBeHidden();
+  await page.reload();
+  await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
+  await expect(page.getByRole('button', { name: '1. Inputs' })).toHaveAttribute(
     'aria-expanded',
     'false',
   );
-  await expect(page.locator('#ff-settings')).toBeHidden();
-  await page.getByRole('button', { name: 'Show settings' }).click();
+  await page.getByRole('button', { name: '1. Inputs' }).click();
   await expect(page.locator('#ff-settings')).toBeVisible();
+  await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(sourceSans);
 
   const support = page.getByRole('button', { name: 'Browser support', exact: true });
   await expect(support).toHaveAttribute('aria-expanded', 'false');
@@ -503,12 +508,12 @@ test('a system with a single known font explains why no fallback can be added', 
 });
 
 test('the panel separators move space between neighbours only', async ({ page }) => {
-  await page.setViewportSize({ width: 1453, height: 1000 });
+  await page.setViewportSize({ width: 1453, height: 1400 });
   await page.goto('/en/');
   await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
   await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(sourceSans);
   await openSupport(page);
-  const separators = page.getByRole('separator');
+  const separators = page.locator('.ff-accordion__separator');
   await expect(separators).toHaveCount(2);
   const heights = async () =>
     page.evaluate(() =>
@@ -830,4 +835,32 @@ test('the dropdown works from the keyboard, with typeahead, and has no axe viola
   await page.keyboard.press('Escape');
   await expect(format).toHaveAttribute('aria-expanded', 'false');
   await expect(format).toHaveAttribute('data-value', 'nuxt');
+});
+
+test('a column separator resizes with the keyboard and collapses a column when dragged to zero', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1453, height: 1000 });
+  await page.goto('/en/');
+  await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
+  const widthOf = (name: string) =>
+    page
+      .getByRole('button', { name })
+      .evaluate((button) => button.closest('section')?.getBoundingClientRect().width ?? 0);
+  const separator = page.locator('.ff-columns__separator').first();
+  const before = await widthOf('1. Inputs');
+  await separator.focus();
+  await page.keyboard.press('ArrowRight');
+  expect(await widthOf('1. Inputs')).toBeGreaterThan(before);
+
+  const box = await separator.boundingBox();
+  if (!box) throw new Error('no separator');
+  await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(2, box.y + box.height / 2, { steps: 8 });
+  await page.mouse.up();
+  await expect(page.getByRole('button', { name: '1. Inputs' })).toHaveAttribute(
+    'aria-expanded',
+    'false',
+  );
 });

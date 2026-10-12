@@ -113,22 +113,6 @@ header {
   font-weight: 700;
   text-decoration: none;
 }
-.ff-burger {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-block-size: 2rem;
-  min-inline-size: 2rem;
-  padding: 0.25rem;
-  color: inherit;
-  background: transparent;
-  border: 1px solid var(--ff-border);
-  border-radius: var(--ff-radius);
-  cursor: pointer;
-}
-html[data-settings="closed"] .ff-generator__settings {
-  display: none;
-}
 a {
   color: var(--ff-accent);
 }

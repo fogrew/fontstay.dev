@@ -19,6 +19,9 @@ export interface SelectProps {
 }
 
 const TYPEAHEAD_MS = 600;
+const EDGE_PX = 8;
+const OPTION_PX = 32;
+const MAX_LIST_PX = 320;
 
 export function Select({
   label,
@@ -32,7 +35,13 @@ export function Select({
   const id = useId();
   const [open, setOpen] = useState(false);
   const [active, setActive] = useState(0);
-  const [box, setBox] = useState<{ left: number; top: number; width: number }>();
+  const [box, setBox] = useState<{
+    left: number;
+    width: number;
+    top?: number;
+    bottom?: number;
+    maxHeight: number;
+  }>();
   const root = useRef<HTMLDivElement>(null);
   const button = useRef<HTMLButtonElement>(null);
   const typed = useRef({ text: '', at: 0 });
@@ -52,7 +61,18 @@ export function Select({
 
   const show = (index = selectedIndex) => {
     const rect = button.current?.getBoundingClientRect();
-    if (rect) setBox({ left: rect.left, top: rect.bottom, width: rect.width });
+    if (rect) {
+      const below = window.innerHeight - rect.bottom - EDGE_PX;
+      const above = rect.top - EDGE_PX;
+      const wanted = Math.min(options.length * OPTION_PX + EDGE_PX, MAX_LIST_PX);
+      const up = below < wanted && above > below;
+      setBox({
+        left: rect.left,
+        width: rect.width,
+        ...(up ? { bottom: window.innerHeight - rect.top } : { top: rect.bottom }),
+        maxHeight: Math.min(MAX_LIST_PX, up ? above : below),
+      });
+    }
     setActive(index);
     setOpen(true);
   };
@@ -164,7 +184,13 @@ export function Select({
           class="ff-select__list"
           role="listbox"
           aria-labelledby={`${id}-label`}
-          style={{ left: `${box.left}px`, top: `${box.top}px`, minWidth: `${box.width}px` }}
+          style={{
+            left: `${box.left}px`,
+            top: box.top === undefined ? undefined : `${box.top}px`,
+            bottom: box.bottom === undefined ? undefined : `${box.bottom}px`,
+            minWidth: `${box.width}px`,
+            maxHeight: `${box.maxHeight}px`,
+          }}
         >
           {options.map((option, index) => (
             // biome-ignore lint/a11y/useFocusableInteractive lint/a11y/useKeyWithClickEvents: focus stays on the combobox (aria-activedescendant)

@@ -5,6 +5,8 @@ import {
   Accordion,
   Button,
   Collapsible,
+  Columns,
+  clearLayouts,
   Disclosure,
   FitField,
   type FitValue,
@@ -149,7 +151,6 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
   const [spacingOn, setSpacingOn] = useState(false);
   const [rangeOn, setRangeOn] = useState(false);
   const [openSystem, setOpenSystem] = useState<OsId | null | undefined>();
-  const [fontOpen, setFontOpen] = useState(true);
   const [fitting, setFitting] = useState(false);
   const [spacingValues, setSpacingValues] = useState<{ letter: FitValue; word: FitValue }>({
     letter: { mode: 'auto' },
@@ -595,6 +596,7 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
   };
   const forget = async () => {
     await clearStorage();
+    clearLayouts();
     setForgotten(stateKey);
     setShareMessage(t.share_forgotten());
   };
@@ -998,204 +1000,246 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
           </>,
           headerSlot,
         )}
-      <div class="ff-generator__settings" id="ff-settings">
-        <FontUpload locale={locale} busy={busy} compact={fonts.length > 0} onFiles={addFiles} />
-        <GoogleFontsPicker locale={locale} busy={busy} onFile={(file) => void addFiles([file])} />
-        <CssImport locale={locale} busy={busy} onFiles={addFiles} />
-        {error && (
-          <p class="ff-error" role="alert">
-            {error}
-          </p>
-        )}
-        <LiveRegion>{announcement}</LiveRegion>
-        <LiveRegion>{planIssue || planNote}</LiveRegion>
-        {fonts.length > 0 && (
-          <section
-            class="ff-generator__section ff-generator__section--plain"
-            aria-labelledby="ff-fonts-heading"
-          >
-            <h2 id="ff-fonts-heading" class="ff-sr-only">
-              {t.upload_fonts_label()}
-            </h2>
-            {fonts.map((font) => {
-              const isSelected = font.id === selected?.id;
-              return (
-                <Collapsible
-                  key={font.id}
-                  title={displayName(font.metrics.names.fullName ?? font.fileName)}
-                  open={isSelected && fontOpen}
-                  onToggle={(next) => {
-                    if (!isSelected) {
-                      setSelectedId(font.id);
-                      setPicks({});
-                      setOpenSystem(undefined);
-                      resetOptimization();
-                    }
-                    setFontOpen(next);
-                  }}
-                  after={
-                    <>
-                      <Select
-                        compact
-                        hideLabel
-                        label={t.style_label()}
-                        value={styleOf(font)}
-                        options={[
-                          { value: 'regular', label: t.style_regular() },
-                          { value: 'italic', label: t.style_italic() },
-                          { value: 'bold', label: t.style_bold() },
-                          { value: 'bold-italic', label: t.style_bold_italic() },
-                        ]}
-                        onChange={(next) => {
-                          const key = next as FontStyleKey;
-                          setStyleChoices((choices) => ({ ...choices, [font.id]: key }));
-                          if (!isSelected) {
-                            setSelectedId(font.id);
-                            setPicks({});
-                            setOpenSystem(undefined);
-                          }
-                          resetOptimization();
-                        }}
-                      />
-                      <button
-                        type="button"
-                        class="ff-icon-button"
-                        aria-label={`${t.upload_remove()}: ${font.fileName}`}
-                        onClick={() => {
-                          void removeStoredFont(font.fileName);
-                          setFonts((list) => list.filter((item) => item.id !== font.id));
-                          setSelectedId((id) => (id === font.id ? undefined : id));
-                          setValues({});
-                          resetOptimization();
-                        }}
-                      >
-                        <span aria-hidden="true">×</span>
-                      </button>
-                    </>
-                  }
-                >
-                  {isSelected && fitBody}
-                </Collapsible>
-              );
-            })}
-          </section>
-        )}
-        {selected && rankings.noCoverage && Object.keys(rankings.result).length === 0 && (
-          <p role="alert">{t.fit_no_coverage()}</p>
-        )}
-        {selected && !shares && <p class="ff-muted">{t.plan_waiting()}</p>}
-        {restored && (
-          <AudienceEditor
-            initialQuery={initialQuery}
-            onQueryChange={setQuery}
-            locale={locale}
-            onShares={handleShares}
-            onEntries={setAudience}
-            active={fonts.length > 0}
-          />
-        )}
-      </div>
-      <div class="ff-generator__main">
-        <div class="ff-generator__stage">
-          {output && selected && coverage < LOW_COVERAGE && (
-            <p class="ff-error" role="status">
-              {t.fit_low_coverage()} {Math.round(coverage * 100)}%
-            </p>
-          )}
-          <LiveRegion>{fitting ? t.fit_running() : ''}</LiveRegion>
-          {fitting && <p class="ff-muted">{t.fit_running()}</p>}
-          {plan &&
-            (shadowed.length > 0 ||
-              plan.resolution.blockedBy === 'cycle' ||
-              uncovered.length > 0) && (
-              <div class="ff-generator__notes" id="ff-notes" tabIndex={-1}>
-                {shadowed.map((item) => (
-                  <p key={item.platform} class="ff-error">
-                    {t.plan_shadowed({
-                      system: systemName(item.platform.split('#')[0] as OsId),
-                      winner: familyOf(item.winner ?? ''),
-                      font: familyOf(item.preferredFace),
-                    })}
+      <Columns
+        storageKey="columns"
+        resizeLabel={(left, right) => t.columns_resize({ left, right })}
+        items={[
+          {
+            id: 'inputs',
+            label: t.col_inputs(),
+            weight: 1,
+            content: (
+              <div class="ff-generator__settings" id="ff-settings">
+                <FontUpload
+                  locale={locale}
+                  busy={busy}
+                  compact={fonts.length > 0}
+                  onFiles={addFiles}
+                />
+                <GoogleFontsPicker
+                  locale={locale}
+                  busy={busy}
+                  onFile={(file) => void addFiles([file])}
+                />
+                <CssImport locale={locale} busy={busy} onFiles={addFiles} />
+                {error && (
+                  <p class="ff-error" role="alert">
+                    {error}
                   </p>
-                ))}
-                {plan.resolution.blockedBy === 'cycle' && (
-                  <p class="ff-error">{t.plan_blocked()}</p>
                 )}
-                {uncovered.length > 0 && shares && (
-                  <p class="ff-muted">
-                    {t.plan_uncovered({
-                      systems: uncovered.map(systemName).join(', '),
-                      share: percent(uncovered.reduce((sum, os) => sum + shares[os], 0)),
+                <LiveRegion>{announcement}</LiveRegion>
+                <LiveRegion>{planIssue || planNote}</LiveRegion>
+                {fonts.length > 0 && (
+                  <section
+                    class="ff-generator__section ff-generator__section--plain"
+                    aria-labelledby="ff-fonts-heading"
+                  >
+                    <h2 id="ff-fonts-heading" class="ff-sr-only">
+                      {t.upload_fonts_label()}
+                    </h2>
+                    {fonts.map((font) => {
+                      const isSelected = font.id === selected?.id;
+                      const choose = () => {
+                        if (isSelected) return;
+                        setSelectedId(font.id);
+                        setPicks({});
+                        setOpenSystem(undefined);
+                        resetOptimization();
+                      };
+                      return (
+                        <div class="ff-fontlist__item" key={font.id} data-selected={isSelected}>
+                          <button
+                            type="button"
+                            class="ff-fontlist__select"
+                            aria-pressed={isSelected}
+                            onClick={choose}
+                          >
+                            {displayName(font.metrics.names.fullName ?? font.fileName)}
+                          </button>
+                          <Select
+                            compact
+                            hideLabel
+                            label={t.style_label()}
+                            value={styleOf(font)}
+                            options={[
+                              { value: 'regular', label: t.style_regular() },
+                              { value: 'italic', label: t.style_italic() },
+                              { value: 'bold', label: t.style_bold() },
+                              { value: 'bold-italic', label: t.style_bold_italic() },
+                            ]}
+                            onChange={(next) => {
+                              const key = next as FontStyleKey;
+                              setStyleChoices((choices) => ({ ...choices, [font.id]: key }));
+                              choose();
+                              resetOptimization();
+                            }}
+                          />
+                          <button
+                            type="button"
+                            class="ff-icon-button"
+                            aria-label={`${t.upload_remove()}: ${font.fileName}`}
+                            onClick={() => {
+                              void removeStoredFont(font.fileName);
+                              setFonts((current) => current.filter((item) => item.id !== font.id));
+                              setSelectedId((id) => (id === font.id ? undefined : id));
+                              setValues({});
+                              resetOptimization();
+                            }}
+                          >
+                            <span aria-hidden="true">×</span>
+                          </button>
+                        </div>
+                      );
                     })}
-                  </p>
+                  </section>
+                )}
+                {selected && rankings.noCoverage && Object.keys(rankings.result).length === 0 && (
+                  <p role="alert">{t.fit_no_coverage()}</p>
+                )}
+                {selected && !shares && <p class="ff-muted">{t.plan_waiting()}</p>}
+                {restored && (
+                  <AudienceEditor
+                    initialQuery={initialQuery}
+                    onQueryChange={setQuery}
+                    locale={locale}
+                    onShares={handleShares}
+                    onEntries={setAudience}
+                    active={fonts.length > 0}
+                  />
                 )}
               </div>
-            )}
-          {output && selected && previewPick && adjustment ? (
-            <Accordion
-              resizeLabel={(above, below) => t.accordion_resize({ above, below })}
-              items={[
-                {
-                  id: 'preview',
-                  keep: true,
-                  label: t.preview_tab(),
-                  content: (
-                    <Preview
-                      key={selected.id}
-                      defaultSample={sampleText(selected.metrics, t.preview_sample_default())}
-                      codePoints={selected.metrics.codePoints}
-                      locale={locale}
-                      bytes={selected.bytes}
-                      fallback={previewPick}
-                      adjustment={adjustment}
-                      unicodeRange={rangeOn ? coverageRange : undefined}
-                      {...descriptorsOf(previewPick.style)}
+            ),
+          },
+          {
+            id: 'tuning',
+            label: t.col_tuning(),
+            weight: 1,
+            content: (
+              <div class="ff-generator__settings">
+                {fitBody ?? <p class="ff-muted">{t.tuning_empty()}</p>}
+              </div>
+            ),
+          },
+          {
+            id: 'results',
+            label: t.col_results(),
+            weight: 2,
+            content: (
+              <div class="ff-generator__main">
+                <div class="ff-generator__stage">
+                  {output && selected && coverage < LOW_COVERAGE && (
+                    <p class="ff-error" role="status">
+                      {t.fit_low_coverage()} {Math.round(coverage * 100)}%
+                    </p>
+                  )}
+                  <LiveRegion>{fitting ? t.fit_running() : ''}</LiveRegion>
+                  {fitting && <p class="ff-muted">{t.fit_running()}</p>}
+                  {plan &&
+                    (shadowed.length > 0 ||
+                      plan.resolution.blockedBy === 'cycle' ||
+                      uncovered.length > 0) && (
+                      <div class="ff-generator__notes" id="ff-notes" tabIndex={-1}>
+                        {shadowed.map((item) => (
+                          <p key={item.platform} class="ff-error">
+                            {t.plan_shadowed({
+                              system: systemName(item.platform.split('#')[0] as OsId),
+                              winner: familyOf(item.winner ?? ''),
+                              font: familyOf(item.preferredFace),
+                            })}
+                          </p>
+                        ))}
+                        {plan.resolution.blockedBy === 'cycle' && (
+                          <p class="ff-error">{t.plan_blocked()}</p>
+                        )}
+                        {uncovered.length > 0 && shares && (
+                          <p class="ff-muted">
+                            {t.plan_uncovered({
+                              systems: uncovered.map(systemName).join(', '),
+                              share: percent(uncovered.reduce((sum, os) => sum + shares[os], 0)),
+                            })}
+                          </p>
+                        )}
+                      </div>
+                    )}
+                  {output && selected && previewPick && adjustment ? (
+                    <Accordion
+                      storageKey="results"
+                      resizeLabel={(above, below) => t.accordion_resize({ above, below })}
+                      items={[
+                        {
+                          id: 'preview',
+                          keep: true,
+                          label: t.preview_tab(),
+                          content: (
+                            <Preview
+                              key={selected.id}
+                              defaultSample={sampleText(
+                                selected.metrics,
+                                t.preview_sample_default(),
+                              )}
+                              codePoints={selected.metrics.codePoints}
+                              locale={locale}
+                              bytes={selected.bytes}
+                              fallback={previewPick}
+                              adjustment={adjustment}
+                              unicodeRange={rangeOn ? coverageRange : undefined}
+                              {...descriptorsOf(previewPick.style)}
+                            />
+                          ),
+                        },
+                        {
+                          id: 'export',
+                          label: t.export_heading(),
+                          content: (
+                            <ExportPanel
+                              locale={locale}
+                              input={exportInput}
+                              report={reportText}
+                              reordered={reordered}
+                            />
+                          ),
+                        },
+                        {
+                          id: 'coverage',
+                          label: t.coverage_heading(),
+                          open: false,
+                          content: (
+                            <CoverageMap locale={locale} codePoints={selected.metrics.codePoints} />
+                          ),
+                        },
+                        {
+                          id: 'support',
+                          label: t.matrix_heading(),
+                          open: false,
+                          content: (
+                            <>
+                              <SupportMatrix
+                                locale={locale}
+                                groups={matrixGroups}
+                                rating={ratingText}
+                              />
+                              {simulation && (
+                                <LayoutShiftPanel
+                                  locale={locale}
+                                  verify={simulation}
+                                  signature={output.fontFaces}
+                                />
+                              )}
+                            </>
+                          ),
+                        },
+                      ]}
                     />
-                  ),
-                },
-                {
-                  id: 'export',
-                  label: t.export_heading(),
-                  content: (
-                    <ExportPanel
-                      locale={locale}
-                      input={exportInput}
-                      report={reportText}
-                      reordered={reordered}
-                    />
-                  ),
-                },
-                {
-                  id: 'coverage',
-                  label: t.coverage_heading(),
-                  open: false,
-                  content: <CoverageMap locale={locale} codePoints={selected.metrics.codePoints} />,
-                },
-                {
-                  id: 'support',
-                  label: t.matrix_heading(),
-                  open: false,
-                  content: (
-                    <>
-                      <SupportMatrix locale={locale} groups={matrixGroups} rating={ratingText} />
-                      {simulation && (
-                        <LayoutShiftPanel
-                          locale={locale}
-                          verify={simulation}
-                          signature={output.fontFaces}
-                        />
-                      )}
-                    </>
-                  ),
-                },
-              ]}
-            />
-          ) : (
-            <p class="ff-generator__empty">{t.results_empty()}</p>
-          )}
-          {plan && !output && selected && <p role="alert">{t.css_error()}</p>}
-        </div>
-      </div>
+                  ) : (
+                    <p class="ff-generator__empty">{t.results_empty()}</p>
+                  )}
+                  {plan && !output && selected && <p role="alert">{t.css_error()}</p>}
+                </div>
+              </div>
+            ),
+          },
+        ]}
+      />
     </div>
   );
 }
