@@ -148,7 +148,7 @@
   "matrix_none": "Not adjusted",
   "matrix_unknown": "Unknown",
   "matrix_generic": "Generic fallback (system switched off)",
-  "matrix_shift": "shift {score}, {rating}",
+  "matrix_shift": "CLS {score}, {rating}",
   "matrix_hidden": "Not shown: smaller browsers with {percent}% of this system.",
   "matrix_note": "Columns are the browsers of the audience grouped by system, the most used first. Shares of desktop browsers per system are estimates from StatCounter.",
   "matrix_full_hint": "size-adjust and all vertical overrides work.",
@@ -161,7 +161,7 @@
   "matrix_manual": "The support matrix needs a browser query; the manual system mode has no browser data.",
   "shell_hide_settings": "Hide settings",
   "shell_show_settings": "Show settings",
-  "matrix_baseline": "without the CSS {score}",
+  "matrix_baseline": "was {score} ({delta})",
   "fit_running": "Optimizing the fallback fonts…",
   "font_type_unknown": "The font type could not be detected. Check the Font type above.",
   "preview_phrase_label": "Sample language",
@@ -384,5 +384,6 @@
   "pwa_dismiss": "Dismiss",
   "pwa_updated": "The app was updated from {from} to {to}.",
   "pwa_whats_new": "What is new",
-  "pwa_install": "Install app"
+  "pwa_install": "Install app",
+  "matrix_cls_legend": "CLS, the layout shift when the web font replaces the fallback:"
 }

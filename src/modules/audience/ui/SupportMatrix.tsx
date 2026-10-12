@@ -3,7 +3,7 @@ import type { CellState, MatrixGroup } from '../lib/matrix';
 import './audience.css';
 
 const SYMBOLS: Record<CellState, string> = { full: '✓', partial: '~', none: '✗', unknown: '?' };
-const RATING_SYMBOLS = { good: '✓', needs: '!', poor: '✗' } as const;
+const RATING_SYMBOLS = { good: '🟢', needs: '🟡', poor: '🔴' } as const;
 
 export function SupportMatrix({
   locale,
@@ -17,6 +17,10 @@ export function SupportMatrix({
   const t = messagesFor(locale);
   const number = (value: number, digits: number) =>
     new Intl.NumberFormat(locale, { maximumFractionDigits: digits }).format(value);
+  const signed = (value: number) =>
+    new Intl.NumberFormat(locale, { maximumFractionDigits: 3, signDisplay: 'exceptZero' })
+      .format(value)
+      .replace('-', '−');
   const stateLabel = (state: CellState) => {
     if (state === 'full') return t.matrix_full();
     if (state === 'partial') return t.matrix_partial();
@@ -39,6 +43,19 @@ export function SupportMatrix({
             <span class="ff-muted">{stateHint(state)}</span>
           </li>
         ))}
+        <li>
+          <span class="ff-muted">{t.matrix_cls_legend()}</span>
+          {(['good', 'needs', 'poor'] as const).map((level) => (
+            <span class="ff-matrix__shift" data-rating={level} key={level}>
+              <span aria-hidden="true">{RATING_SYMBOLS[level]} </span>
+              {level === 'good'
+                ? t.cls_rating_good()
+                : level === 'needs'
+                  ? t.cls_rating_needs()
+                  : t.cls_rating_poor()}
+            </span>
+          ))}
+        </li>
       </ul>
       {/* biome-ignore lint/a11y/noNoninteractiveTabindex: keyboard users scroll the wide matrix */}
       <section class="ff-matrix__scroll" tabIndex={0} aria-label={t.matrix_scroll()}>
@@ -76,13 +93,17 @@ export function SupportMatrix({
                                 })}
                               </span>
                               <span aria-hidden="true">
-                                {RATING_SYMBOLS[rating(cell.shift).level]} {number(cell.shift, 3)}
+                                {RATING_SYMBOLS[rating(cell.shift).level]} CLS{' '}
+                                {number(cell.shift, 3)}
                               </span>
                             </span>
                           )}
                           {cell.baseline !== null && (
                             <span class="ff-matrix__baseline">
-                              {t.matrix_baseline({ score: number(cell.baseline, 3) })}
+                              {t.matrix_baseline({
+                                score: number(cell.baseline, 3),
+                                delta: signed(cell.shift === null ? 0 : cell.shift - cell.baseline),
+                              })}
                             </span>
                           )}
                         </li>

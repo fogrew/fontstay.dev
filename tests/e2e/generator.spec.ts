@@ -358,7 +358,7 @@ test('the support matrix shows the audience by system with ranges, states and sh
   await expect(matrix).toContainText('Safari');
   await expect(matrix).toContainText('Partly adjusted');
   await expect(matrix).toContainText(/\d+–\d+/);
-  await expect(matrix.getByText(/shift \d/).first()).toBeVisible();
+  await expect(matrix.getByText(/CLS \d/).first()).toBeVisible();
 
   await page.getByText('Audience (browsers)').click();
   await page.getByLabel('Browserslist query').fill('chrome 120');
@@ -390,7 +390,7 @@ test('the support matrix shows the shift with and without the CSS and the result
   await openSupport(page);
   const matrix = page.getByRole('region', { name: 'Browser support' });
   await expect(matrix.locator('[data-rating]').first()).toBeVisible();
-  await expect(matrix.getByText(/without the CSS/).first()).toBeVisible();
+  await expect(matrix.getByText(/was \d/).first()).toBeVisible();
   await expect(page.getByRole('button', { name: 'Layout shift', exact: true })).toHaveCount(0);
 
   await page.getByRole('button', { name: 'Verify on this device' }).click();
