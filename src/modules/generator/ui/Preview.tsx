@@ -92,11 +92,7 @@ export function Preview({
       value: `${languageName.of(id) ?? id}: ${t[`preview_phrase_${id}`]()}`,
     }),
   );
-  const [draft, setDraft] = useState('');
-  useEffect(() => {
-    const match = options.find((option) => option.text === sample);
-    setDraft(match?.value ?? '');
-  }, [sample]);
+  const [menuOpen, setMenuOpen] = useState(false);
   useEffect(() => {
     let cancelled = false;
     const face = new FontFace(PREVIEW_FAMILY, bytes.slice(0));
@@ -204,78 +200,90 @@ export function Preview({
             onInput={(event) => setLineHeight(event.currentTarget.valueAsNumber)}
           />
         </div>
-        <div class="ff-field ff-preview__samples">
-          <label for="ff-preview-sample">{t.preview_phrase_label()}</label>
-          <input
-            id="ff-preview-sample"
-            class="ff-input"
-            type="text"
-            list="ff-preview-samples"
-            autocomplete="off"
-            placeholder={t.preview_phrase_placeholder()}
-            value={draft}
-            onInput={(event) => {
-              const value = event.currentTarget.value;
-              setDraft(value);
-              const match = options.find((option) => option.value === value);
-              if (match) setSample(match.text);
-            }}
-          />
-          <datalist id="ff-preview-samples">
-            {options.map((option) => (
-              <option key={option.value} value={option.value} />
-            ))}
-          </datalist>
-        </div>
       </div>
       {!installed && (
         <p class="ff-muted" role="status">
           {t.preview_not_installed({ font: fallback.family })}
         </p>
       )}
-      <div class="ff-preview__stage">
-        {(mode === 'side' || mode === 'web') && (
-          <figure>
-            <figcaption>{t.preview_web_label()}</figcaption>
-            <EditableText
-              value={sample}
-              onChange={setSample}
-              label={t.preview_sample_label()}
-              style={webStyle}
-            />
-          </figure>
-        )}
-        {(mode === 'side' || mode === 'fallback') && (
-          <figure>
-            <figcaption>{t.preview_fallback_label()}</figcaption>
-            <EditableText
-              value={sample}
-              onChange={setSample}
-              label={t.preview_sample_label()}
-              style={fallbackStyle}
-            />
-          </figure>
-        )}
-        {mode === 'overlay' && (
-          <figure>
-            <figcaption>{t.overlay_legend()}</figcaption>
-            <div class="ff-preview__text ff-preview__overlay">
+      <div class="ff-preview__field">
+        <div class="ff-preview__samples">
+          <button
+            type="button"
+            class="ff-icon-button"
+            aria-label={t.preview_phrase_label()}
+            aria-haspopup="true"
+            aria-expanded={menuOpen}
+            aria-controls="ff-preview-samples"
+            onClick={() => setMenuOpen((open) => !open)}
+          >
+            <span aria-hidden="true">▾</span>
+          </button>
+          {menuOpen && (
+            <ul id="ff-preview-samples" class="ff-preview__menu">
+              {options.map((option) => (
+                <li key={option.value}>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSample(option.text);
+                      setMenuOpen(false);
+                    }}
+                    onKeyDown={(event) => {
+                      if (event.key === 'Escape') setMenuOpen(false);
+                    }}
+                  >
+                    {option.value}
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+        <div class="ff-preview__stage">
+          {(mode === 'side' || mode === 'web') && (
+            <figure>
+              <figcaption>{t.preview_web_label()}</figcaption>
               <EditableText
                 value={sample}
                 onChange={setSample}
                 label={t.preview_sample_label()}
-                style={{ ...webStyle, margin: 0 }}
+                style={webStyle}
               />
-              <p
-                class="ff-preview__outline"
-                aria-hidden="true"
-                style={{ ...fallbackStyle, margin: 0 }}
-              >
-                {sample}
-              </p>
-            </div>
-          </figure>
-        )}
+            </figure>
+          )}
+          {(mode === 'side' || mode === 'fallback') && (
+            <figure>
+              <figcaption>{t.preview_fallback_label()}</figcaption>
+              <EditableText
+                value={sample}
+                onChange={setSample}
+                label={t.preview_sample_label()}
+                style={fallbackStyle}
+              />
+            </figure>
+          )}
+          {mode === 'overlay' && (
+            <figure>
+              <figcaption>{t.overlay_legend()}</figcaption>
+              <div class="ff-preview__text ff-preview__overlay">
+                <EditableText
+                  value={sample}
+                  onChange={setSample}
+                  label={t.preview_sample_label()}
+                  style={{ ...webStyle, margin: 0 }}
+                />
+                <p
+                  class="ff-preview__outline"
+                  aria-hidden="true"
+                  style={{ ...fallbackStyle, margin: 0 }}
+                >
+                  {sample}
+                </p>
+              </div>
+            </figure>
+          )}
+        </div>
       </div>
       {missing.length > 0 && (
         <section class="ff-preview__missing" aria-label={t.missing_heading()}>

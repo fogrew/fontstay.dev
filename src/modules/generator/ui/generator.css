@@ -250,6 +250,7 @@
   min-inline-size: 0;
   min-block-size: 0;
 }
+.ff-accordion__panel .ff-preview,
 .ff-accordion__panel .ff-generator__section,
 .ff-accordion__panel .ff-matrix,
 .ff-accordion__panel .ff-cls {
@@ -446,4 +447,42 @@
 }
 .ff-share p {
   margin: 0;
+}
+
+.ff-preview__field {
+  position: relative;
+}
+.ff-preview__samples {
+  position: absolute;
+  inset-block-start: var(--ff-space-1);
+  inset-inline-end: var(--ff-space-1);
+  z-index: 2;
+  display: grid;
+  justify-items: end;
+}
+.ff-preview__menu {
+  display: grid;
+  gap: 1px;
+  margin: 0;
+  padding: var(--ff-space-1);
+  max-inline-size: min(28rem, 80vw);
+  border: 1px solid var(--ff-border);
+  border-radius: var(--ff-radius);
+  background: var(--ff-surface);
+  box-shadow: 0 4px 16px rgb(0 0 0 / 25%);
+  list-style: none;
+}
+.ff-preview__menu button {
+  inline-size: 100%;
+  min-block-size: 2rem;
+  padding: var(--ff-space-1) var(--ff-space-2);
+  border: 0;
+  background: transparent;
+  color: inherit;
+  text-align: start;
+  cursor: pointer;
+}
+.ff-preview__menu button:hover,
+.ff-preview__menu button:focus-visible {
+  background: var(--ff-state-full);
 }

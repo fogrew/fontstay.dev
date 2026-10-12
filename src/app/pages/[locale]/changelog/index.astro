@@ -1,0 +1,22 @@
+---
+import { assertIsLocale, locales, messagesFor } from '@/common/i18n';
+import { ChangelogPage } from '@/pages/changelog';
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+
+export function getStaticPaths() {
+  return locales.map((locale) => ({ params: { locale } }));
+}
+
+const locale = assertIsLocale(Astro.params.locale);
+const t = messagesFor(locale);
+---
+
+<BaseLayout
+  {locale}
+  path="/changelog/"
+  page="changelog"
+  title={t.changelog_title()}
+  description={t.changelog_description()}
+>
+  <ChangelogPage {locale} />
+</BaseLayout>

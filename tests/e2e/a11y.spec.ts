@@ -1,5 +1,5 @@
 import AxeBuilder from '@axe-core/playwright';
-import { expect, test } from './fixtures';
+import { expect, openSupport, test } from './fixtures';
 
 const fontFile = new URL(
   '../fixtures/fonts/SourceSansPro-Regular.woff2',
@@ -28,9 +28,7 @@ for (const scheme of ['light', 'dark'] as const) {
     await page.goto('/en/');
     await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
     await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(fontFile);
-    for (const name of ['Glyph coverage', 'Export']) {
-      await page.getByRole('button', { name, exact: true }).click();
-    }
+    await page.getByRole('button', { name: 'Glyph coverage', exact: true }).click();
     for (const summary of [
       'Spacing while fonts load',
       'Import from CSS',
@@ -81,11 +79,11 @@ test('keyboard users can reach the main controls and open the sections', async (
   await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(fontFile);
   const section = page.getByRole('button', { name: 'Browser support', exact: true });
   await section.focus();
-  await expect(section).toHaveAttribute('aria-expanded', 'true');
-  await page.keyboard.press('Enter');
   await expect(section).toHaveAttribute('aria-expanded', 'false');
-  await page.keyboard.press('Space');
+  await page.keyboard.press('Enter');
   await expect(section).toHaveAttribute('aria-expanded', 'true');
+  await page.keyboard.press('Space');
+  await expect(section).toHaveAttribute('aria-expanded', 'false');
   for (const name of [/^Remove: /]) await expect(page.getByRole('button', { name })).toBeVisible();
 });
 
@@ -94,6 +92,7 @@ test('forced colors keeps the support states distinguishable by text', async ({ 
   await page.goto('/en/');
   await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
   await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(fontFile);
+  await openSupport(page);
   const matrix = page.getByRole('region', { name: 'Browser support' });
   await expect(matrix.getByText('Fully adjusted').first()).toBeVisible();
   await expect(matrix.locator('[data-state]').first()).toBeVisible();

@@ -1,9 +1,11 @@
 import { createReadStream, existsSync, readFileSync, statSync } from 'node:fs';
 import { createServer } from 'node:http';
-import { extname, join, normalize, sep } from 'node:path';
+import { extname, join, normalize, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-const root = fileURLToPath(new URL('../../dist/', import.meta.url));
+const root = process.env.DIST_DIR
+  ? `${resolve(process.env.DIST_DIR)}${sep}`
+  : fileURLToPath(new URL('../../dist/', import.meta.url));
 const port = Number(process.argv[2] ?? 4321);
 
 const types = {
@@ -16,6 +18,7 @@ const types = {
   '.ico': 'image/x-icon',
   '.png': 'image/png',
   '.xml': 'application/xml; charset=utf-8',
+  '.webmanifest': 'application/manifest+json',
   '.txt': 'text/plain; charset=utf-8',
   '.woff2': 'font/woff2',
   '.woff': 'font/woff',

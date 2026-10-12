@@ -24,7 +24,6 @@ export function ExportPanel({
     next: t.export_next(),
     nuxt: t.export_nuxt(),
     astro: t.export_astro(),
-    json: t.export_json(),
     preload: t.export_preload(),
     loading: t.export_loading(),
   };
@@ -43,9 +42,13 @@ export function ExportPanel({
         }))}
         onChange={(value) => setFormat(value as Choice)}
       />
+      {format === 'css' && <p class="ff-muted">{t.fit_latin_note()}</p>}
+      {format === 'loading' && <p class="ff-muted">{t.loading_note()}</p>}
       <CodeBlock
         locale={locale}
-        label={t.export_code_label({ format: labels[format] })}
+        label={
+          format === 'css' ? t.css_code_label() : t.export_code_label({ format: labels[format] })
+        }
         code={file.text}
         fileName={file.fileName}
       />

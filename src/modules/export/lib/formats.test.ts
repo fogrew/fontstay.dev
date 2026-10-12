@@ -11,19 +11,6 @@ const input: ExportInput = {
   css: 'CSS-TEXT',
   loadingScript: 'document.fonts.load("1em Inter");',
   fileName: 'Inter-Regular.woff2',
-  fallbacks: [
-    {
-      family: 'Inter Fallback Arial',
-      localNames: ['Arial'],
-      adjustment: {
-        sizeAdjust: 1.071194,
-        ascentOverride: 0.904365,
-        descentOverride: 0.22518,
-        lineGapOverride: 0,
-      },
-      unicodeRange: 'U+20-7E',
-    },
-  ],
 };
 
 describe('buildExport', () => {

@@ -1,0 +1,35 @@
+.ff-toasts {
+  position: fixed;
+  inset-block-end: var(--ff-space-4);
+  inset-inline-end: var(--ff-space-4);
+  z-index: 20;
+  max-inline-size: min(26rem, calc(100vw - 2 * var(--ff-space-4)));
+}
+.ff-toast {
+  display: grid;
+  gap: var(--ff-space-2);
+  padding: var(--ff-space-3) var(--ff-space-4);
+  border: 1px solid var(--ff-border);
+  border-radius: var(--ff-radius);
+  background: var(--ff-surface);
+  box-shadow: 0 4px 16px rgb(0 0 0 / 25%);
+}
+.ff-toast p {
+  margin: 0;
+}
+.ff-toast__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--ff-space-3);
+  align-items: center;
+}
+.ff-toast__actions a {
+  display: inline-block;
+  min-block-size: 1.5rem;
+  padding-block: 0.125rem;
+}
+@media (forced-colors: active) {
+  .ff-toast {
+    border-color: CanvasText;
+  }
+}

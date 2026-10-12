@@ -218,7 +218,7 @@
   background: var(--ff-surface);
 }
 .ff-accordion__item[data-open="true"] {
-  flex: 1 1 auto;
+  flex: 0 0 auto;
 }
 .ff-accordion__heading {
   margin: 0;
@@ -256,6 +256,7 @@
 @media (min-width: 64rem) and (min-height: 40rem) {
   .ff-accordion {
     flex: 1;
+    overflow-y: auto;
   }
 }
 .ff-collapsible {

@@ -31,3 +31,13 @@ export async function selectSystem(page: Page, os: string) {
   const button = page.getByRole('button', { name: SYSTEM_NAMES[os] ?? os });
   if ((await button.getAttribute('aria-expanded')) === 'false') await button.click();
 }
+
+export async function openSupport(page: Page) {
+  const button = page.getByRole('button', { name: 'Browser support', exact: true });
+  if ((await button.getAttribute('aria-expanded')) === 'false') await button.click();
+}
+
+export async function openExport(page: Page) {
+  const button = page.getByRole('button', { name: 'Export', exact: true });
+  if ((await button.getAttribute('aria-expanded')) === 'false') await button.click();
+}

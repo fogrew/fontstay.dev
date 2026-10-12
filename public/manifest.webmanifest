@@ -1,0 +1,20 @@
+{
+  "name": "fontstay.dev",
+  "short_name": "fontstay",
+  "description": "Metric-adjusted fallback fonts without layout shift",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#161a19",
+  "theme_color": "#161a19",
+  "icons": [
+    { "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/icons/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    {
+      "src": "/icons/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}

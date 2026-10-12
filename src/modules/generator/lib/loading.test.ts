@@ -22,14 +22,14 @@ describe('loadingScript', () => {
   it('loads the font and removes the class when done', () => {
     const script = loadingScript('Source Sans Pro');
     expect(script).toContain("classList.add('fonts-loading')");
-    expect(script).toContain('document.fonts.load("1em \\"Source Sans Pro\\"")');
+    expect(script).toContain(`document.fonts.load('1em "Source Sans Pro"')`);
     expect(script).toContain("classList.remove('fonts-loading')");
     expect(script).toContain('.then(done, done)');
   });
 
   it('escapes quotes and backslashes in the family name', () => {
     const script = loadingScript('A"B\\C');
-    expect(script).toContain('A\\\\\\"B');
+    expect(script).toContain('A\\\\"B');
     expect(() => new Function(script.replace('document.fonts.load', 'void'))).not.toThrow();
   });
 

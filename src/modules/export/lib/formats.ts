@@ -1,5 +1,3 @@
-import type { FallbackFace } from './model';
-
 export interface ExportInput {
   targetFamily: string;
   generic: string;
@@ -9,7 +7,6 @@ export interface ExportInput {
   css: string;
   loadingScript: string;
   fileName: string;
-  fallbacks: readonly FallbackFace[];
 }
 
 export const EXPORT_FORMATS = [
@@ -19,7 +16,6 @@ export const EXPORT_FORMATS = [
   'next',
   'nuxt',
   'astro',
-  'json',
   'preload',
   'loading',
 ] as const;
@@ -29,7 +25,7 @@ export type ExportFormat = (typeof EXPORT_FORMATS)[number];
 export interface ExportFile {
   text: string;
   fileName: string;
-  language: 'css' | 'js' | 'ts' | 'json' | 'html';
+  language: 'css' | 'js' | 'ts' | 'html';
 }
 
 const stackOf = (input: ExportInput) => `${input.families.join(', ')}, ${input.generic}`;
@@ -54,8 +50,6 @@ const MIME: Record<string, string> = {
 const unquote = (name: string) => name.replace(/^"|"$/g, '');
 
 const fallbackNames = (input: ExportInput) => input.families.slice(1).map(unquote);
-
-const percent = (ratio: number) => `${Number((ratio * 100).toFixed(4))}%`;
 
 function themeName(generic: string): string {
   if (generic === 'serif') return '--font-serif';
@@ -95,7 +89,7 @@ export function buildExport(format: ExportFormat, input: ExportInput): ExportFil
     case 'next':
       return {
         text: [
-          '// Put the @font-face rules below into your global CSS (see the CSS export).',
+          `// Put ${safeName} into ./fonts/ and the @font-face rules from the CSS export into your global CSS.`,
           "import localFont from 'next/font/local';",
           '',
           'export const font = localFont({',
@@ -151,31 +145,6 @@ export function buildExport(format: ExportFormat, input: ExportInput): ExportFil
         ].join('\n'),
         fileName: 'astro.config.mjs',
         language: 'js',
-      };
-    case 'json':
-      return {
-        text: JSON.stringify(
-          {
-            family: input.targetFamily,
-            generic: input.generic,
-            stack: [...input.families.map(unquote), input.generic],
-            fallbacks: input.fallbacks.map((face) => ({
-              family: face.family,
-              src: face.localNames,
-              sizeAdjust: percent(face.adjustment.sizeAdjust),
-              ascentOverride: percent(face.adjustment.ascentOverride),
-              descentOverride: percent(face.adjustment.descentOverride),
-              lineGapOverride: percent(face.adjustment.lineGapOverride),
-              ...(face.unicodeRange ? { unicodeRange: face.unicodeRange } : {}),
-              ...(face.fontWeight ? { fontWeight: face.fontWeight } : {}),
-              ...(face.fontStyle ? { fontStyle: face.fontStyle } : {}),
-            })),
-          },
-          null,
-          2,
-        ),
-        fileName: 'fallback-fonts.json',
-        language: 'json',
       };
     case 'preload': {
       const type = MIME[extensionOf(safeName)] ?? 'font/woff2';

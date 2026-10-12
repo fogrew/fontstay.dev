@@ -1,0 +1,54 @@
+---
+import { Content } from '@root/CHANGELOG.md';
+import { type Locale, messagesFor } from '@/common/i18n';
+
+interface Props {
+  locale: Locale;
+}
+
+const t = messagesFor(Astro.props.locale);
+---
+
+<div class="ff-page ff-prose" id="changelog" data-since-label={t.changelog_since({ version: '{version}' })} data-all-label={t.changelog_show_all()}>
+  <p class="ff-muted" id="changelog-note" role="status"></p>
+  <Content />
+</div>
+
+<script>
+  import { headingVersion, hiddenSections } from '@/modules/pwa';
+
+  const root = document.getElementById('changelog');
+  const note = document.getElementById('changelog-note');
+  const headings = [...(root?.querySelectorAll('h2') ?? [])];
+  for (const heading of headings) {
+    const version = headingVersion(heading.textContent ?? '');
+    if (version) heading.id = `v${version}`;
+  }
+  const since = new URLSearchParams(location.search).get('since');
+  if (root && note && since) {
+    const flags = hiddenSections(headings.map((heading) => heading.textContent ?? ''), since);
+    const hide = (hidden: boolean) => {
+      headings.forEach((heading, index) => {
+        const isHidden = hidden && flags[index];
+        let element: Element | null = heading;
+        while (element) {
+          element.toggleAttribute('hidden', Boolean(isHidden));
+          element = element.nextElementSibling;
+          if (element?.tagName === 'H2') break;
+        }
+      });
+    };
+    hide(true);
+    const text = (root.dataset.sinceLabel ?? '').replace('{version}', since);
+    note.textContent = `${text} `;
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'ff-button ff-button--secondary';
+    button.textContent = root.dataset.allLabel ?? '';
+    button.addEventListener('click', () => {
+      hide(false);
+      note.textContent = '';
+    });
+    note.append(button);
+  }
+</script>

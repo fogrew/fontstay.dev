@@ -31,35 +31,6 @@ exports[`buildExport > produces a stable css export 1`] = `
 }
 `;
 
-exports[`buildExport > produces a stable json export 1`] = `
-{
-  "fileName": "fallback-fonts.json",
-  "language": "json",
-  "text": "{
-  "family": "Inter",
-  "generic": "sans-serif",
-  "stack": [
-    "Inter",
-    "Inter Fallback Arial",
-    "sans-serif"
-  ],
-  "fallbacks": [
-    {
-      "family": "Inter Fallback Arial",
-      "src": [
-        "Arial"
-      ],
-      "sizeAdjust": "107.1194%",
-      "ascentOverride": "90.4365%",
-      "descentOverride": "22.518%",
-      "lineGapOverride": "0%",
-      "unicodeRange": "U+20-7E"
-    }
-  ]
-}",
-}
-`;
-
 exports[`buildExport > produces a stable loading export 1`] = `
 {
   "fileName": "font-loading.js",
@@ -72,7 +43,7 @@ exports[`buildExport > produces a stable next export 1`] = `
 {
   "fileName": "font.ts",
   "language": "ts",
-  "text": "// Put the @font-face rules below into your global CSS (see the CSS export).
+  "text": "// Put Inter-Regular.woff2 into ./fonts/ and the @font-face rules from the CSS export into your global CSS.
 import localFont from 'next/font/local';
 
 export const font = localFont({

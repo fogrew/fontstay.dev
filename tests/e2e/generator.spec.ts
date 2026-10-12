@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import AxeBuilder from '@axe-core/playwright';
 import { buildCollection, buildFont } from '../../src/modules/font-metrics/lib/forged.test-util';
-import { expect, selectSystem, test } from './fixtures';
+import { expect, openExport, openSupport, selectSystem, test } from './fixtures';
 
 const fonts = new URL('../fixtures/fonts/', import.meta.url).pathname.replace(
   /^\/([A-Za-z]:)/,
@@ -185,6 +185,7 @@ test('the CSS tab keeps the generated code reachable', async ({ page }) => {
   await preview.getByLabel('Text size').fill('72');
   await preview.getByLabel('Line height').fill('2');
   const code = page.getByRole('region', { name: 'Generated CSS' });
+  await code.scrollIntoViewIfNeeded();
   await expect(code).toBeInViewport();
   const box = await code.boundingBox();
   expect(box?.height).toBeGreaterThan(40);
@@ -309,6 +310,7 @@ test('a system can have several ordered fallbacks', async ({ page }) => {
   await page.goto('/en/');
   await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
   await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(sourceSans);
+  await openSupport(page);
   await selectSystem(page, 'windows');
   const code = page.getByRole('region', { name: 'Generated CSS' });
   await page.getByLabel('Fallback font 1', { exact: true }).selectOption('segoe-ui');
@@ -346,6 +348,7 @@ test('the support matrix shows the audience by system with ranges, states and sh
   await page.goto('/en/');
   await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
   await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(sourceSans);
+  await openSupport(page);
   const code = page.getByRole('region', { name: 'Generated CSS' });
   await expect(code).toContainText('font-size-adjust');
   await expect(code).toContainText('line-height: 1.4');
@@ -368,6 +371,7 @@ test('a system can be switched off and then falls back to the generic family', a
   await page.goto('/en/');
   await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
   await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(sourceSans);
+  await openSupport(page);
   const matrix = page.getByRole('region', { name: 'Browser support' });
   await expect(matrix).not.toContainText('Generic fallback');
   await page.getByRole('checkbox', { name: 'Include Android in the stack' }).uncheck();
@@ -383,6 +387,7 @@ test('the support matrix shows the shift with and without the CSS and the result
   await page.goto('/en/');
   await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
   await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(sourceSans);
+  await openSupport(page);
   const matrix = page.getByRole('region', { name: 'Browser support' });
   await expect(matrix.locator('[data-rating]').first()).toBeVisible();
   await expect(matrix.getByText(/without the CSS/).first()).toBeVisible();
@@ -405,9 +410,10 @@ test('spacing adds the fonts-loading CSS and script', async ({ page }) => {
   await letter.press('Enter');
   await expect(code).toContainText('.fonts-loading');
   await expect(code).toContainText('letter-spacing: 0.002em');
-  const script = page.getByRole('region', { name: 'Font loading script' });
+  await page.getByLabel('Format').selectOption({ label: 'Font Loading API script' });
+  const script = page.getByRole('region', { name: 'Export: Font Loading API script' });
   await expect(script).toContainText("classList.add('fonts-loading')");
-  await expect(script).toContainText('Source Sans Pro');
+  await expect(script).toContainText(`'1em "Source Sans Pro"'`);
 });
 
 test('values are optimized automatically and pinned values stay', async ({ page }) => {
@@ -443,11 +449,11 @@ test('the settings and the support section can be hidden and shown', async ({ pa
   await expect(page.locator('#ff-settings')).toBeVisible();
 
   const support = page.getByRole('button', { name: 'Browser support', exact: true });
-  await expect(support).toHaveAttribute('aria-expanded', 'true');
-  await support.click();
-  await expect(page.getByRole('region', { name: 'Browser support' })).toBeHidden();
+  await expect(support).toHaveAttribute('aria-expanded', 'false');
   await support.click();
   await expect(page.getByRole('region', { name: 'Browser support' })).toBeVisible();
+  await support.click();
+  await expect(page.getByRole('region', { name: 'Browser support' })).toBeHidden();
 });
 
 test('the page itself does not scroll on desktop', async ({ page }) => {
@@ -455,6 +461,7 @@ test('the page itself does not scroll on desktop', async ({ page }) => {
   await page.goto('/en/');
   await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
   await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(sourceSans);
+  await openSupport(page);
   await expect(page.getByRole('region', { name: 'Browser support' })).toBeVisible();
   const overflow = await page.evaluate(() => {
     const root = document.documentElement;
@@ -473,9 +480,8 @@ test('the preview offers sample phrases the font can render and there is no text
   await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
   await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(sourceSans);
   await expect(page.getByLabel('Text language')).toHaveCount(0);
-  const phrase = page.getByLabel('Sample language');
-  await expect(phrase).toBeVisible();
-  await phrase.fill('German: Zwölf Boxkämpfer jagen Viktor quer über den großen Sylter Deich');
+  await page.getByRole('button', { name: 'Sample language' }).click();
+  await page.getByRole('button', { name: /^German: Zwölf/ }).click();
   await expect(page.getByRole('textbox', { name: 'Sample text' })).toHaveText(/Zwölf Boxkämpfer/);
   const text = page.getByRole('textbox', { name: 'Sample text' });
   await text.click();
@@ -500,6 +506,7 @@ test('the panel separators move space between neighbours only', async ({ page })
   await page.goto('/en/');
   await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
   await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(sourceSans);
+  await openSupport(page);
   const separators = page.getByRole('separator');
   await expect(separators).toHaveCount(2);
   const heights = async () =>
@@ -508,8 +515,9 @@ test('the panel separators move space between neighbours only', async ({ page })
         (item) => item.getBoundingClientRect().height,
       ),
     );
-  const before = await heights();
   await separators.first().focus();
+  await page.keyboard.press('ArrowUp');
+  const before = await heights();
   await page.keyboard.press('ArrowDown');
   const after = await heights();
   expect(after[0] ?? 0).toBeGreaterThan(before[0] ?? 0);
@@ -686,7 +694,7 @@ test('every export format can be shown, copied and downloaded', async ({ page })
   await page.goto('/en/');
   await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
   await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(sourceSans);
-  await page.getByRole('button', { name: 'Export', exact: true }).click();
+  await openExport(page);
   const format = page.getByLabel('Format');
   const expected: Record<string, RegExp> = {
     'CSS custom properties': /--font-body:/,
@@ -694,7 +702,6 @@ test('every export format can be shown, copied and downloaded', async ({ page })
     'Next.js (next/font/local)': /localFont\(/,
     'Nuxt Fonts': /@nuxt\/fonts/,
     'Astro fonts config': /provider: 'local'/,
-    JSON: /"sizeAdjust"/,
     'Preload tag': /rel="preload"/,
     'Font Loading API script': /document\.fonts\.load/,
   };
@@ -713,7 +720,7 @@ test('the impact report is built from the same state as the matrix and can be do
   await page.goto('/en/');
   await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
   await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(sourceSans);
-  await page.getByRole('button', { name: 'Export', exact: true }).click();
+  await openExport(page);
   await page.getByLabel('Format').selectOption({ label: 'Impact report (Markdown)' });
   const report = page.getByRole('region', { name: 'Export: Impact report (Markdown)' });
   await expect(report).toContainText('# Impact report: Source Sans Pro');
@@ -736,7 +743,7 @@ test('fonts and settings survive a reload and the share link restores the settin
   await expect(page.getByRole('button', { name: /^Remove: SourceSansPro-Regular/ })).toBeVisible();
   const android = page.getByRole('checkbox', { name: 'Include Android in the stack' });
   await android.uncheck();
-  await page.getByRole('button', { name: 'Export', exact: true }).click();
+  await openExport(page);
   await page.waitForTimeout(800);
 
   await page.reload();

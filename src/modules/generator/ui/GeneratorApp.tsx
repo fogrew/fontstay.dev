@@ -3,7 +3,6 @@ import { type Locale, messagesFor } from '@/common/i18n';
 import {
   Accordion,
   Button,
-  CodeBlock,
   Collapsible,
   Disclosure,
   FitField,
@@ -22,7 +21,7 @@ import {
   SupportMatrix,
   type SystemInfo,
 } from '@/modules/audience';
-import { CssExportError, type ExportInput, type FallbackFace } from '@/modules/export';
+import { CssExportError, type ExportInput } from '@/modules/export';
 import { compactRanges, formatUnicodeRange, StackResolveError } from '@/modules/fallback-fit';
 import {
   collectionMemberIndices,
@@ -487,7 +486,6 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
   const coverageRange = coverageRanges.length > 0 ? formatUnicodeRange(coverageRanges) : undefined;
   let simulation: PanelInput | undefined;
   let output: ReturnType<typeof buildCss> | undefined;
-  let facesForExport: FallbackFace[] = [];
   let adjustment: Overrides | undefined;
   if (selected && plan && previewPick) {
     const faces = plan.order.flatMap((id) => {
@@ -504,18 +502,6 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
           ]
         : [];
     });
-    facesForExport = faces.map((face) => ({
-      family: fallbackFamilyName(
-        selected.metrics.names.family?.trim().slice(0, 200) || 'Custom font',
-        face.family,
-        faces.length,
-      ),
-      localNames: face.localNames,
-      adjustment: face.adjustment,
-      unicodeRange: face.unicodeRange,
-      fontWeight: face.fontWeight,
-      fontStyle: face.fontStyle,
-    }));
     adjustment = adjustmentOf(baseOf(previewPick), manualOf(previewPick.id));
     try {
       const family = selected.metrics.names.family?.trim().slice(0, 200) || 'Custom font';
@@ -557,7 +543,6 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
     css: cssText,
     loadingScript: loadingScript(exportFamily),
     fileName: selected?.fileName ?? 'font.woff2',
-    fallbacks: facesForExport,
   };
   const anyRanking = Object.values(rankings.result).find(Boolean);
   const currentShareState = (): ShareState => {
@@ -1158,39 +1143,8 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
                   ),
                 },
                 {
-                  id: 'css',
-                  label: t.shell_tab_css(),
-                  content: (
-                    <>
-                      <section class="ff-generator__section" aria-label={t.css_heading()}>
-                        <p class="ff-muted">{t.fit_latin_note()}</p>
-                        <CodeBlock
-                          locale={locale}
-                          label={t.css_code_label()}
-                          code={cssText}
-                          fileName="fallback-fonts.css"
-                        />
-                      </section>
-                      {hasSpacing(spacingEm) && (
-                        <section class="ff-generator__section" aria-labelledby="ff-loading-heading">
-                          <h2 id="ff-loading-heading">{t.loading_heading()}</h2>
-                          <p class="ff-muted">{t.loading_note()}</p>
-                          <CodeBlock
-                            locale={locale}
-                            label={t.loading_code_label()}
-                            code={loadingScript(
-                              selected.metrics.names.family?.trim().slice(0, 200) || 'Custom font',
-                            )}
-                          />
-                        </section>
-                      )}
-                    </>
-                  ),
-                },
-                {
                   id: 'export',
                   label: t.export_heading(),
-                  open: false,
                   content: <ExportPanel locale={locale} input={exportInput} report={reportText} />,
                 },
                 {
@@ -1202,6 +1156,7 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
                 {
                   id: 'support',
                   label: t.matrix_heading(),
+                  open: false,
                   content: (
                     <>
                       {manualSystems ? (

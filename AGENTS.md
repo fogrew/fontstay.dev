@@ -6,7 +6,7 @@ Static Astro site that generates metric-adjusted fallback font stacks. Full scop
 
 | Command | Purpose |
 |---|---|
-| `pnpm dev` / `pnpm build` / `pnpm preview` | Astro dev server, static build to `dist/`, serve the build |
+| `pnpm dev` / `pnpm build` / `pnpm preview` | Astro dev server, static build to `dist/` plus the PWA step (service worker, `version.json`), serve the build |
 | `pnpm check` | Compile messages, then typecheck (`astro check`) |
 | `pnpm changelog` | Regenerate `CHANGELOG.md` (the `Unreleased` section) from Conventional Commits with git-cliff (`cliff.toml`) |
 | `pnpm release <semver>` | On `release/v<semver>`: bump `package.json`, stamp `CHANGELOG.md` with the version; commit and signed tag are manual |

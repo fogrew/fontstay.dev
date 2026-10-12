@@ -1,13 +1,14 @@
 ---
 import { getTextDirection, type Locale, locales, localizeHref, messagesFor } from '@/common/i18n';
 import { LocaleSwitcher } from '@/modules/locale-switcher';
+import { InstallButton, PwaManager } from '@/modules/pwa';
 import '../styles/tokens.css';
 
 interface Props {
   locale: Locale;
   path: string;
   settingsToggle?: boolean;
-  page?: 'generator' | 'fonts' | 'presets' | 'guide' | 'credits';
+  page?: 'generator' | 'fonts' | 'presets' | 'guide' | 'credits' | 'changelog';
   title?: string;
   description?: string;
 }
@@ -47,6 +48,8 @@ const indexable = !process.env.WORKERS_CI_BRANCH || process.env.WORKERS_CI_BRANC
     <title>{title}</title>
     <meta name="description" content={description} />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
     <meta name="theme-color" content="#161a19" media="(prefers-color-scheme: dark)" />
     <meta name="theme-color" content="#f5f4f0" media="(prefers-color-scheme: light)" />
     <meta property="og:type" content="website" />
@@ -108,15 +111,18 @@ const indexable = !process.env.WORKERS_CI_BRANCH || process.env.WORKERS_CI_BRANC
         </ul>
       </nav>
       <div class="ff-header__end">
+        <InstallButton locale={locale} client:idle />
         <LocaleSwitcher current={locale} {path} />
         <a class="ff-header__link" href="https://github.com/fogrew/fontstay.dev">{t.header_github()}</a>
       </div>
     </header>
     <main id="main-content" tabindex="-1"><slot /></main>
+    <PwaManager locale={locale} client:idle />
     {page !== 'generator' && (
       <footer class="ff-footer">
         <a href={localizeHref('/guide/', { locale })} aria-current={page === 'guide' ? 'page' : undefined}>{t.nav_guide()}</a>
         <a href={localizeHref('/credits/', { locale })} aria-current={page === 'credits' ? 'page' : undefined}>{t.nav_credits()}</a>
+        <a href={localizeHref('/changelog/', { locale })} aria-current={page === 'changelog' ? 'page' : undefined}>{t.nav_changelog()}</a>
         <a href="https://github.com/fogrew/fontstay.dev">{t.header_github()}</a>
       </footer>
     )}

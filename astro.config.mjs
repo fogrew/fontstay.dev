@@ -1,7 +1,10 @@
+import { readFileSync } from 'node:fs';
 import preact from '@astrojs/preact';
 import { paraglideVitePlugin } from '@inlang/paraglide-js';
 import { defineConfig } from 'astro/config';
 import { paraglideOptions } from './paraglide.config.mjs';
+
+const { version } = JSON.parse(readFileSync(new URL('./package.json', import.meta.url), 'utf8'));
 
 export default defineConfig({
   site: 'https://fontstay.dev',
@@ -24,6 +27,7 @@ export default defineConfig({
     },
   },
   vite: {
+    define: { __APP_VERSION__: JSON.stringify(version) },
     plugins: [paraglideVitePlugin(paraglideOptions)],
   },
 });
