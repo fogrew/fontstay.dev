@@ -132,10 +132,7 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
   const [fonts, setFonts] = useState<LoadedFont[]>([]);
   const [selectedId, setSelectedId] = useState<number>();
   const [kindChoice, setKindChoice] = useState<{ fontId: number | undefined; kind: Category }>();
-  const [styleChoice, setStyleChoice] = useState<{
-    fontId: number | undefined;
-    key: FontStyleKey;
-  }>();
+  const [styleChoices, setStyleChoices] = useState<Record<number, FontStyleKey>>({});
   const [shares, setShares] = useState<OsShares>();
   const [manualSystems, setManualSystems] = useState(false);
   const [audience, setAudience] = useState<AudienceData>();
@@ -304,7 +301,8 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
     if (!target) return;
     setSelectedId(target.id);
     if (state.kind) setKindChoice({ fontId: target.id, kind: state.kind });
-    if (state.style) setStyleChoice({ fontId: target.id, key: state.style });
+    const restoredStyle = state.style;
+    if (restoredStyle) setStyleChoices((choices) => ({ ...choices, [target.id]: restoredStyle }));
     if (state.manual) {
       const restoredValues: Record<string, Values> = {};
       for (const [faceId, entry] of Object.entries(state.manual)) {
@@ -325,12 +323,9 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
   });
   const language: Language = fitLanguage(selected?.metrics, locale);
   const [variantsReady, setVariantsReady] = useState(false);
-  const styleKey: FontStyleKey =
-    styleChoice && styleChoice.fontId === selected?.id
-      ? styleChoice.key
-      : selected
-        ? styleKeyOf(selected.metrics.style)
-        : 'regular';
+  const styleOf = (font: (typeof fonts)[number]): FontStyleKey =>
+    styleChoices[font.id] ?? styleKeyOf(font.metrics.style);
+  const styleKey: FontStyleKey = selected ? styleOf(selected) : 'regular';
   useEffect(() => {
     if (styleKey === 'regular' || variantsReady) return;
     void loadVariantMetrics().then(() => setVariantsReady(true));
@@ -564,7 +559,7 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
       ...(query ? { query } : {}),
       ...(selected ? { fontName: selected.fileName } : {}),
       ...(kindChoice && kindChoice.fontId === selected?.id ? { kind: kindChoice.kind } : {}),
-      ...(styleChoice && styleChoice.fontId === selected?.id ? { style: styleChoice.key } : {}),
+      ...(selected && styleChoices[selected.id] ? { style: styleChoices[selected.id] } : {}),
       disabled: ALL_SYSTEMS.filter((os) => enabledSystems[os] === false),
       picks,
       manual,
@@ -1015,16 +1010,19 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
                   }}
                   after={
                     <>
-                      {isSelected && (
+                      {
                         <select
                           class="ff-style-select"
                           aria-label={t.style_label()}
-                          value={styleKey}
+                          value={styleOf(font)}
                           onChange={(event) => {
-                            setStyleChoice({
-                              fontId: font.id,
-                              key: event.currentTarget.value as FontStyleKey,
-                            });
+                            const key = event.currentTarget.value as FontStyleKey;
+                            setStyleChoices((choices) => ({ ...choices, [font.id]: key }));
+                            if (!isSelected) {
+                              setSelectedId(font.id);
+                              setPicks({});
+                              setOpenSystem(undefined);
+                            }
                             resetOptimization();
                           }}
                         >
@@ -1033,7 +1031,7 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
                           <option value="bold">{t.style_bold()}</option>
                           <option value="bold-italic">{t.style_bold_italic()}</option>
                         </select>
-                      )}
+                      }
                       <button
                         type="button"
                         class="ff-icon-button"
