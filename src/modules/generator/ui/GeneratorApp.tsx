@@ -1039,28 +1039,28 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
                   }}
                   after={
                     <>
-                      {
-                        <select
-                          class="ff-style-select"
-                          aria-label={t.style_label()}
-                          value={styleOf(font)}
-                          onChange={(event) => {
-                            const key = event.currentTarget.value as FontStyleKey;
-                            setStyleChoices((choices) => ({ ...choices, [font.id]: key }));
-                            if (!isSelected) {
-                              setSelectedId(font.id);
-                              setPicks({});
-                              setOpenSystem(undefined);
-                            }
-                            resetOptimization();
-                          }}
-                        >
-                          <option value="regular">{t.style_regular()}</option>
-                          <option value="italic">{t.style_italic()}</option>
-                          <option value="bold">{t.style_bold()}</option>
-                          <option value="bold-italic">{t.style_bold_italic()}</option>
-                        </select>
-                      }
+                      <Select
+                        compact
+                        hideLabel
+                        label={t.style_label()}
+                        value={styleOf(font)}
+                        options={[
+                          { value: 'regular', label: t.style_regular() },
+                          { value: 'italic', label: t.style_italic() },
+                          { value: 'bold', label: t.style_bold() },
+                          { value: 'bold-italic', label: t.style_bold_italic() },
+                        ]}
+                        onChange={(next) => {
+                          const key = next as FontStyleKey;
+                          setStyleChoices((choices) => ({ ...choices, [font.id]: key }));
+                          if (!isSelected) {
+                            setSelectedId(font.id);
+                            setPicks({});
+                            setOpenSystem(undefined);
+                          }
+                          resetOptimization();
+                        }}
+                      />
                       <button
                         type="button"
                         class="ff-icon-button"

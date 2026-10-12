@@ -28,7 +28,6 @@ export function ExportPanel({
 }) {
   const t = messagesFor(locale);
   const [format, setFormat] = useState<Choice>('css');
-  const icon = FORMAT_ICONS[format];
   const labels: Record<Choice, string> = {
     report: t.export_report(),
     css: t.export_css(),
@@ -49,10 +48,10 @@ export function ExportPanel({
       <Select
         label={t.export_format_label()}
         value={format}
-        options={[...EXPORT_FORMATS, 'report' as const].map((value) => ({
-          value,
-          label: labels[value],
-        }))}
+        options={[...EXPORT_FORMATS, 'report' as const].map((value) => {
+          const name = FORMAT_ICONS[value];
+          return { value, label: labels[value], icon: name && <Icon name={name} /> };
+        })}
         onChange={(value) => setFormat(value as Choice)}
       />
       {format === 'css' && (
@@ -62,17 +61,9 @@ export function ExportPanel({
         </p>
       )}
       {format === 'loading' && <p class="ff-muted">{t.loading_note()}</p>}
-      {icon && (
-        <p class="ff-export__target">
-          <Icon name={icon} />
-          {labels[format]}
-        </p>
-      )}
       <CodeBlock
         locale={locale}
-        label={
-          format === 'css' ? t.css_code_label() : t.export_code_label({ format: labels[format] })
-        }
+        label={format === 'css' ? t.css_code_label() : file.fileName}
         code={file.text}
         fileName={file.fileName}
       />

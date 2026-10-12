@@ -63,3 +63,4 @@
 - [Simple Icons](https://simpleicons.org/) (CC0 1.0) — brand marks for browsers, systems, GitHub, Google Fonts, CSS, HTML, Tailwind CSS, Next.js, Nuxt and Astro in `public/brands.svg`. The marks belong to their owners.
 - [Font Awesome Free brands](https://fontawesome.com/license/free) (icons under CC BY 4.0, Fonticons, Inc.) — the Windows and Edge marks and the save, share, download, copy and forget action icons in `public/brands.svg`.
 - [Browserslist logo](https://github.com/browserslist/browserslist) by Anton Popov (MIT) — the Browserslist mark in `public/brands.svg`.
+- [WAI-ARIA APG select-only combobox](https://www.w3.org/WAI/ARIA/apg/patterns/combobox/examples/combobox-select-only/) — keyboard and ARIA model of the custom dropdown.

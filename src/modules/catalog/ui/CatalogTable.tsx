@@ -1,7 +1,7 @@
 import { type ComponentChildren, Fragment } from 'preact';
 import { useCallback, useMemo, useState } from 'preact/hooks';
 import { type Locale, localizeHref, messagesFor } from '@/common/i18n';
-import { Button } from '@/common/ui';
+import { Button, Select } from '@/common/ui';
 import { AudienceEditor, OsIcon } from '@/modules/audience';
 import { osFontsDataset } from '@/modules/os-fonts';
 import {
@@ -165,45 +165,39 @@ export function CatalogTable({ locale }: { locale: Locale }) {
                 />
               </td>
               <td>
-                <select
-                  class="ff-input"
-                  aria-label={t.catalog_filter_type()}
+                <Select
+                  compact
+                  hideLabel
+                  label={t.catalog_filter_type()}
                   value={filters.category}
-                  onChange={(event) =>
-                    setFilters({ ...filters, category: event.currentTarget.value })
-                  }
-                >
-                  <option value="">{t.catalog_filter_all()}</option>
-                  {CATEGORIES.map((category) => (
-                    <option key={category} value={category}>
-                      {categoryLabel(category)}
-                    </option>
-                  ))}
-                </select>
+                  options={[
+                    { value: '', label: t.catalog_filter_all() },
+                    ...CATEGORIES.map((category) => ({
+                      value: category,
+                      label: categoryLabel(category),
+                    })),
+                  ]}
+                  onChange={(category) => setFilters({ ...filters, category })}
+                />
               </td>
               {CATALOG_SYSTEMS.map((os) => (
                 <td key={os}>
-                  <select
-                    class="ff-input"
-                    aria-label={t.catalog_filter_system({ system: t[`audience_os_${os}`]() })}
+                  <Select
+                    compact
+                    hideLabel
+                    label={t.catalog_filter_system({ system: t[`audience_os_${os}`]() })}
                     value={filters.levels[os] ?? ''}
-                    onChange={(event) =>
+                    options={[
+                      { value: '', label: t.catalog_filter_all() },
+                      ...LEVELS.map((level) => ({ value: level, label: levelLabel(level) })),
+                    ]}
+                    onChange={(level) =>
                       setFilters({
                         ...filters,
-                        levels: {
-                          ...filters.levels,
-                          [os]: event.currentTarget.value as Level | '',
-                        },
+                        levels: { ...filters.levels, [os]: level as Level | '' },
                       })
                     }
-                  >
-                    <option value="">{t.catalog_filter_all()}</option>
-                    {LEVELS.map((level) => (
-                      <option key={level} value={level}>
-                        {levelLabel(level)}
-                      </option>
-                    ))}
-                  </select>
+                  />
                 </td>
               ))}
               <td>

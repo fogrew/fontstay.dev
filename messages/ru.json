@@ -279,7 +279,6 @@
   "export_astro": "Конфиг шрифтов Astro",
   "export_preload": "Тег preload",
   "export_loading": "Скрипт Font Loading API",
-  "export_code_label": "Экспорт: {format}",
   "report_title": "Отчёт о влиянии: {family}",
   "report_font": "Файл веб-шрифта: {file}",
   "report_audience": "Аудитория: версий браузеров — {count}.",

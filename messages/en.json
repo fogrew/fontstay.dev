@@ -279,7 +279,6 @@
   "export_astro": "Astro fonts config",
   "export_preload": "Preload tag",
   "export_loading": "Font Loading API script",
-  "export_code_label": "Export: {format}",
   "report_title": "Impact report: {family}",
   "report_font": "Web font file: {file}",
   "report_audience": "Audience: {count} browser versions.",

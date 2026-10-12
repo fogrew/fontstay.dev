@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import AxeBuilder from '@axe-core/playwright';
 import { buildCollection, buildFont } from '../../src/modules/font-metrics/lib/forged.test-util';
-import { expect, openExport, openSupport, selectSystem, test } from './fixtures';
+import { choose, expect, listed, openExport, openSupport, selectSystem, test } from './fixtures';
 
 const fonts = new URL('../fixtures/fonts/', import.meta.url).pathname.replace(
   /^\/([A-Za-z]:)/,
@@ -26,9 +26,9 @@ test('uploading a font produces per-system fallbacks, editable values and CSS', 
 
   await selectSystem(page, 'windows');
   const before = await code.textContent();
-  await fallback.selectOption({ index: 2 });
+  await choose(fallback, { index: 2 });
   await expect(code).not.toHaveText(before ?? '');
-  const picked = await fallback.inputValue();
+  const picked = (await fallback.getAttribute('data-value')) ?? '';
 
   const size = page.getByRole('spinbutton', { name: /Size adjust/ });
   await size.fill('110');
@@ -36,9 +36,9 @@ test('uploading a font produces per-system fallbacks, editable values and CSS', 
   await expect(code).toContainText('size-adjust: 110%');
   await expect(page.getByRole('checkbox', { name: 'Auto' }).first()).not.toBeChecked();
 
-  await fallback.selectOption({ index: 0 });
+  await choose(fallback, { index: 0 });
   await expect(code).not.toContainText('size-adjust: 110%');
-  await fallback.selectOption(picked);
+  await choose(fallback, picked);
   await expect(code).toContainText('size-adjust: 110%');
 });
 
@@ -47,8 +47,8 @@ test('serif and monospace fallbacks are available by font type', async ({ page }
   await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
   await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(sourceSans);
   await selectSystem(page, 'windows');
-  await page.getByLabel('Font type').selectOption('serif');
-  await expect(page.getByLabel('Fallback font 1', { exact: true })).toContainText(
+  await choose(page.getByLabel('Font type'), 'serif');
+  expect(await listed(page.getByLabel('Fallback font 1', { exact: true }))).toContain(
     'Times New Roman',
   );
   await expect(page.getByRole('region', { name: 'Generated CSS' })).toContainText('serif;');
@@ -63,18 +63,18 @@ test('the fallback list follows the selected system and reports shadowing with a
   const fallback = page.getByLabel('Fallback font 1', { exact: true });
 
   await selectSystem(page, 'android');
-  await expect(fallback).toContainText('Roboto');
-  await expect(fallback).not.toContainText('Segoe UI');
+  expect(await listed(fallback)).toContain('Roboto');
+  expect(await listed(fallback)).not.toContain('Segoe UI');
   await selectSystem(page, 'windows');
-  await expect(fallback).toContainText('Segoe UI');
-  await expect(fallback).not.toContainText('Roboto');
+  expect(await listed(fallback)).toContain('Segoe UI');
+  expect(await listed(fallback)).not.toContain('Roboto');
 
   await page.getByText('Audience (browsers)').click();
   await page.getByLabel('Browserslist query').fill('safari 17, chrome 120');
   await selectSystem(page, 'macos');
-  await fallback.selectOption('helvetica');
+  await choose(fallback, 'helvetica');
   await selectSystem(page, 'windows');
-  await fallback.selectOption('arial');
+  await choose(fallback, 'arial');
   await expect(page.getByText('The fallback order was changed automatically')).toBeVisible();
   await expect(page.locator('p.ff-error', { hasText: /would be used instead of/ })).toHaveCount(0);
 });
@@ -228,13 +228,13 @@ test('the audience editor resolves presets and reports invalid queries', async (
   const query = page.getByLabel('Browserslist query');
   await query.fill('chrome 120');
   await expect(list.getByRole('listitem')).toHaveCount(1);
-  await expect(page.getByLabel('Preset')).toHaveValue('custom');
+  await expect(page.getByLabel('Preset')).toHaveAttribute('data-value', 'custom');
 
   await query.fill('not a query');
   await expect(page.getByRole('status').filter({ hasText: 'not valid' })).toBeVisible();
   await expect(query).toHaveAttribute('aria-invalid', 'true');
 
-  await page.getByLabel('Preset').selectOption('defaults');
+  await choose(page.getByLabel('Preset'), 'defaults');
   await expect(query).toHaveValue('defaults');
   await expect(list).toBeVisible();
 });
@@ -278,7 +278,7 @@ test('imported usage statistics enable "in my stats" queries and report ignored 
   await expect(page.getByText(/Ignored 1 unknown versions, for example: chrome 1/)).toBeVisible();
   await expect(page.getByLabel('Browserslist query')).toHaveValue('> 0.5% in my stats');
   await expect(page.getByText('Covers 73.0% of your traffic')).toBeVisible();
-  await expect(page.getByLabel('Preset')).toHaveValue('mystats');
+  await expect(page.getByLabel('Preset')).toHaveAttribute('data-value', 'mystats');
 
   await page.getByRole('button', { name: 'Remove my statistics' }).click();
   await expect(page.getByRole('button', { name: 'Import browserslist-stats.json' })).toBeFocused();
@@ -313,13 +313,13 @@ test('a system can have several ordered fallbacks', async ({ page }) => {
   await openSupport(page);
   await selectSystem(page, 'windows');
   const code = page.getByRole('region', { name: 'Generated CSS' });
-  await page.getByLabel('Fallback font 1', { exact: true }).selectOption('segoe-ui');
+  await choose(page.getByLabel('Fallback font 1', { exact: true }), 'segoe-ui');
   await expect(page.getByLabel('Fallback font 2', { exact: true })).toHaveCount(0);
 
   await page.getByRole('button', { name: 'Add fallback' }).click();
   const second = page.getByLabel('Fallback font 2', { exact: true });
   await expect(second).toBeVisible();
-  await second.selectOption('arial');
+  await choose(second, 'arial');
   await expect(code).toContainText('"Source Sans Pro Fallback Segoe UI"');
   await expect(code).toContainText('"Source Sans Pro Fallback Arial"');
   await expect(
@@ -329,7 +329,7 @@ test('a system can have several ordered fallbacks', async ({ page }) => {
     page.getByLabel('Fallback font 1', { exact: true }).locator('option[value="arial"]'),
   ).toHaveCount(0);
 
-  await page.getByLabel('Adjust values of').selectOption('arial');
+  await choose(page.getByLabel('Adjust values of'), 'arial');
   const size = page.getByRole('spinbutton', { name: /Size adjust/ });
   await size.fill('120');
   await size.press('Enter');
@@ -410,8 +410,8 @@ test('spacing adds the fonts-loading CSS and script', async ({ page }) => {
   await letter.press('Enter');
   await expect(code).toContainText('.fonts-loading');
   await expect(code).toContainText('letter-spacing: 0.002em');
-  await page.getByLabel('Format').selectOption({ label: 'Font Loading API script' });
-  const script = page.getByRole('region', { name: 'Export: Font Loading API script' });
+  await choose(page.getByLabel('Format'), { label: 'Font Loading API script' });
+  const script = page.getByRole('region', { name: 'font-loading.js' });
   await expect(script).toContainText("classList.add('fonts-loading')");
   await expect(script).toContainText(`'1em "Source Sans Pro"'`);
 });
@@ -421,7 +421,7 @@ test('values are optimized automatically and pinned values stay', async ({ page 
   await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
   await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(sourceSans);
   await selectSystem(page, 'windows');
-  await page.getByLabel('Fallback font 1', { exact: true }).selectOption('arial');
+  await choose(page.getByLabel('Fallback font 1', { exact: true }), 'arial');
   await expect(page.getByRole('button', { name: 'Optimize for CLS' })).toHaveCount(0);
   const code = page.getByRole('region', { name: 'Generated CSS' });
   const size = page.getByRole('spinbutton', { name: /Size adjust/ });
@@ -582,10 +582,10 @@ test('the style select switches a system to the bold face and adds the descripto
   await selectSystem(page, 'windows');
   const code = page.getByRole('region', { name: 'Generated CSS' });
   await expect(code).not.toContainText('font-weight');
-  await page.getByLabel('Font style').selectOption('bold');
+  await choose(page.getByLabel('Font style'), 'bold');
   await expect(code).toContainText('font-weight: 700;');
   await expect(code).toContainText('Bold');
-  await page.getByLabel('Font style').selectOption('italic');
+  await choose(page.getByLabel('Font style'), 'italic');
   await expect(code).toContainText('font-style: italic;');
   await expect(code).not.toContainText('font-weight');
 });
@@ -620,7 +620,7 @@ test('characters missing from the font are listed, marked and can use another fo
   const missing = preview.getByRole('region', { name: 'Characters missing from the font' });
   await expect(missing).toContainText('U+2603');
   await expect(missing.locator('mark')).toHaveText('☃');
-  await missing.getByLabel('Font for the missing characters').selectOption('serif');
+  await choose(missing.getByLabel('Font for the missing characters'), 'serif');
   await expect(missing).toContainText('Serif');
 });
 
@@ -691,7 +691,7 @@ test('a Google Fonts family can be searched and downloaded through the two allow
   await expect(page.getByText(/\d+ families shown/)).toBeVisible();
   const list = page.getByRole('list', { name: 'Google Fonts families' });
   await list.getByRole('button', { name: /^Open Sans/ }).click();
-  await expect(page.getByLabel('Script subset')).toHaveValue('latin');
+  await expect(page.getByLabel('Script subset')).toHaveAttribute('data-value', 'latin');
   await page.getByRole('button', { name: 'Add to the fonts' }).last().click();
   await expect(page.getByText('Downloaded Open Sans.')).toBeVisible();
   await expect(page.getByRole('button', { name: /^Remove: Open-Sans-400-latin/ })).toBeVisible();
@@ -717,21 +717,21 @@ test('every export format can be shown, copied and downloaded', async ({ page })
   await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(sourceSans);
   await openExport(page);
   const format = page.getByLabel('Format');
-  const expected: Record<string, RegExp> = {
-    'CSS custom properties': /--font-body:/,
-    'Tailwind CSS v4 (@theme)': /@theme \{\s+--font-sans:/,
-    'Next.js (next/font/local)': /localFont\(/,
-    'Nuxt Fonts': /@nuxt\/fonts/,
-    'Astro fonts config': /provider: 'local'/,
-    'Preload tag': /rel="preload"/,
-    'Font Loading API script': /document\.fonts\.load/,
-  };
-  for (const [label, pattern] of Object.entries(expected)) {
-    await format.selectOption({ label });
-    await expect(page.getByRole('region', { name: `Export: ${label}` })).toContainText(pattern);
+  const expected: [string, string, RegExp][] = [
+    ['CSS custom properties', 'fallback-fonts.css', /--font-body:/],
+    ['Tailwind CSS v4 (@theme)', 'app.css', /@theme \{\s+--font-sans:/],
+    ['Next.js (next/font/local)', 'font.ts', /localFont\(/],
+    ['Nuxt Fonts', 'nuxt.config.ts', /@nuxt\/fonts/],
+    ['Astro fonts config', 'astro.config.mjs', /provider: 'local'/],
+    ['Preload tag', 'preload.html', /rel="preload"/],
+    ['Font Loading API script', 'font-loading.js', /document\.fonts\.load/],
+  ];
+  for (const [label, fileName, pattern] of expected) {
+    await choose(format, { label });
+    await expect(page.getByRole('region', { name: fileName })).toContainText(pattern);
   }
   const download = page.waitForEvent('download');
-  await page.getByRole('button', { name: /^Download: Export: Font Loading API script/ }).click();
+  await page.getByRole('button', { name: /^Download: font-loading.js/ }).click();
   expect((await download).suggestedFilename()).toBe('font-loading.js');
 });
 
@@ -742,14 +742,14 @@ test('the impact report is built from the same state as the matrix and can be do
   await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
   await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(sourceSans);
   await openExport(page);
-  await page.getByLabel('Format').selectOption({ label: 'Impact report (Markdown)' });
-  const report = page.getByRole('region', { name: 'Export: Impact report (Markdown)' });
+  await choose(page.getByLabel('Format'), { label: 'Impact report (Markdown)' });
+  const report = page.getByRole('region', { name: 'impact-report.md' });
   await expect(report).toContainText('# Impact report: Source Sans Pro');
   await expect(report).toContainText('## Layout shift');
   await expect(report).toContainText('| Android |');
   await expect(report).toContainText('`size-adjust`');
   const download = page.waitForEvent('download');
-  await page.getByRole('button', { name: /^Download: Export: Impact report/ }).click();
+  await page.getByRole('button', { name: /^Download: impact-report.md/ }).click();
   expect((await download).suggestedFilename()).toBe('impact-report.md');
 });
 
@@ -802,4 +802,31 @@ test('a corrupt share link is ignored', async ({ page }) => {
   await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
   await expect(page.getByRole('region', { name: 'Fonts to adapt' })).toHaveCount(0);
   await expect(page.getByText('Your web font')).toBeVisible();
+});
+
+test('the dropdown works from the keyboard, with typeahead, and has no axe violations while open', async ({
+  page,
+}) => {
+  await page.goto('/en/');
+  await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
+  await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(sourceSans);
+  await openExport(page);
+  const format = page.getByRole('combobox', { name: 'Format' });
+  await format.focus();
+  await page.keyboard.press('ArrowDown');
+  await expect(format).toHaveAttribute('aria-expanded', 'true');
+  const results = await new AxeBuilder({ page }).include('[role="listbox"]').analyze();
+  expect(results.violations).toEqual([]);
+  await page.keyboard.press('ArrowDown');
+  await page.keyboard.press('Enter');
+  await expect(format).toHaveAttribute('data-value', 'variables');
+  await expect(format).toHaveAttribute('aria-expanded', 'false');
+  await page.keyboard.press('ArrowDown');
+  await page.keyboard.type('nuxt');
+  await page.keyboard.press('Enter');
+  await expect(format).toHaveAttribute('data-value', 'nuxt');
+  await page.keyboard.press('Enter');
+  await page.keyboard.press('Escape');
+  await expect(format).toHaveAttribute('aria-expanded', 'false');
+  await expect(format).toHaveAttribute('data-value', 'nuxt');
 });

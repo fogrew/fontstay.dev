@@ -1,4 +1,4 @@
-import { test as base, expect, type Page } from '@playwright/test';
+import { test as base, expect, type Locator, type Page } from '@playwright/test';
 
 export const test = base.extend({
   page: async ({ page }, use) => {
@@ -40,4 +40,29 @@ export async function openSupport(page: Page) {
 export async function openExport(page: Page) {
   const button = page.getByRole('button', { name: 'Export', exact: true });
   if ((await button.getAttribute('aria-expanded')) === 'false') await button.click();
+}
+
+export async function choose(
+  box: Locator,
+  option: string | { label: string | RegExp } | { index: number },
+) {
+  const button = box.first();
+  const list = box.page().getByRole('listbox');
+  const item =
+    typeof option === 'string'
+      ? list.locator(`[role="option"][data-value="${option}"]`)
+      : 'label' in option
+        ? list.getByRole('option', { name: option.label })
+        : list.getByRole('option').nth(option.index);
+  await expect(async () => {
+    if ((await button.getAttribute('aria-expanded')) !== 'true') await button.click();
+    await item.click({ timeout: 2000 });
+  }).toPass();
+}
+
+export async function listed(box: Locator): Promise<string> {
+  await box.click();
+  const texts = await box.page().getByRole('listbox').getByRole('option').allInnerTexts();
+  await box.page().keyboard.press('Escape');
+  return texts.join(' | ');
 }

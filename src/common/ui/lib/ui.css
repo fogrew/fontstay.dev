@@ -336,11 +336,6 @@
 .ff-accordion__item[data-open="false"] {
   flex: none;
 }
-.ff-style-select {
-  min-block-size: 2rem;
-  max-inline-size: 9rem;
-  padding-block: 0.125rem;
-}
 .ff-code__actions {
   display: inline-flex;
   gap: var(--ff-space-2);
@@ -351,4 +346,64 @@
   block-size: 1em;
   margin-inline-end: 0.35em;
   vertical-align: -0.125em;
+}
+
+.ff-select__button {
+  display: flex;
+  gap: 0.35em;
+  align-items: center;
+  inline-size: 100%;
+  text-align: start;
+  cursor: pointer;
+}
+.ff-select__button::after {
+  content: "▾" / "";
+  margin-inline-start: auto;
+}
+.ff-select__value {
+  min-inline-size: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.ff-select[data-compact="true"] .ff-select__button {
+  min-block-size: 2rem;
+  padding-block: 0.125rem;
+}
+.ff-select__list {
+  position: fixed;
+  z-index: 50;
+  box-sizing: border-box;
+  max-block-size: min(20rem, 50vh);
+  margin: 0;
+  padding: var(--ff-space-1);
+  overflow-y: auto;
+  border: 1px solid var(--ff-border);
+  border-radius: var(--ff-radius);
+  background: var(--ff-surface);
+  box-shadow: 0 4px 16px rgb(0 0 0 / 25%);
+  list-style: none;
+}
+.ff-select__list [role="option"] {
+  display: flex;
+  gap: 0.35em;
+  align-items: center;
+  min-block-size: 2rem;
+  padding: var(--ff-space-1) var(--ff-space-2);
+  white-space: nowrap;
+  cursor: pointer;
+}
+.ff-select__list [role="option"][aria-selected="true"] {
+  font-weight: 700;
+}
+.ff-select__list [role="option"][data-active="true"] {
+  background: var(--ff-state-full);
+}
+.ff-select__list [role="option"][aria-disabled="true"] {
+  opacity: 0.5;
+}
+@media (forced-colors: active) {
+  .ff-select__list [role="option"][data-active="true"] {
+    outline: 2px solid Highlight;
+  }
 }
