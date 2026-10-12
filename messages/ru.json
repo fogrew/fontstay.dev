@@ -339,5 +339,14 @@
   "preset_slab_serif_name": "Брусковая антиква",
   "preset_slab_serif_description": "Плотные засечки и ровные сильные штрихи.",
   "preset_monospace_code_name": "Моноширинный для кода",
-  "preset_monospace_code_description": "Шрифты фиксированной ширины для кода и таблиц."
+  "preset_monospace_code_description": "Шрифты фиксированной ширины для кода и таблиц.",
+  "seo_home_title": "fontstay.dev — подогнанные запасные шрифты без сдвига вёрстки",
+  "seo_home_description": "Генерируйте стеки запасных шрифтов, подогнанные под ваш веб-шрифт: size-adjust и переопределения ascent, descent, line-gap по системам с учётом вашей аудитории и оценкой сдвига вёрстки.",
+  "seo_fonts_title": "Системные шрифты по операционным системам — fontstay.dev",
+  "seo_fonts_description": "Какие шрифты есть в Windows, macOS, Linux, ChromeOS, Android и iOS и какая доля вашей аудитории их имеет.",
+  "seo_font_title": "{family}: наличие и метрики — fontstay.dev",
+  "seo_font_description": "В каких системах предустановлен шрифт {family}, его вертикальные метрики и образец.",
+  "seo_presets_title": "Пресеты стеков шрифтов — fontstay.dev",
+  "seo_presets_description": "Подборки шрифтов для текста без засечек, с засечками и моноширинного: открываются в генераторе запасных шрифтов с подходящими системными шрифтами.",
+  "seo_image_alt": "fontstay.dev: подогнанные запасные шрифты без сдвига вёрстки"
 }

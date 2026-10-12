@@ -32,6 +32,7 @@
     "compat:build": "node scripts/compat/build-descriptors.ts",
     "os-fonts:import": "node scripts/os-fonts/import.ts",
     "google-fonts:catalog": "node scripts/google-fonts/import-catalog.mjs",
+    "og:build": "node scripts/og/build-og.mjs",
     "unicode:blocks": "node scripts/unicode/import-blocks.mjs",
     "os-fonts:metrics": "node scripts/os-fonts/extract-metrics.mjs",
     "postinstall": "pnpm i18n:compile"

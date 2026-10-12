@@ -1,5 +1,5 @@
 ---
-import { assertIsLocale, locales } from '@/common/i18n';
+import { assertIsLocale, locales, messagesFor } from '@/common/i18n';
 import { CatalogPage } from '@/pages/catalog';
 import BaseLayout from '../../../layouts/BaseLayout.astro';
 
@@ -8,8 +8,15 @@ export function getStaticPaths() {
 }
 
 const locale = assertIsLocale(Astro.params.locale);
+const t = messagesFor(locale);
 ---
 
-<BaseLayout {locale} path="/fonts/" page="fonts">
+<BaseLayout
+  {locale}
+  path="/fonts/"
+  page="fonts"
+  title={t.seo_fonts_title()}
+  description={t.seo_fonts_description()}
+>
   <CatalogPage {locale} />
 </BaseLayout>

@@ -339,5 +339,14 @@
   "preset_slab_serif_name": "Slab serif",
   "preset_slab_serif_description": "Heavy serifs with strong, even strokes.",
   "preset_monospace_code_name": "Monospace code",
-  "preset_monospace_code_description": "Fixed-width fonts for code and tables."
+  "preset_monospace_code_description": "Fixed-width fonts for code and tables.",
+  "seo_home_title": "fontstay.dev — metric-adjusted fallback fonts without layout shift",
+  "seo_home_description": "Generate fallback font stacks that match your web font: size-adjust, ascent, descent and line-gap overrides per system, tuned to your audience, with a layout shift estimate.",
+  "seo_fonts_title": "System fonts by operating system — fontstay.dev",
+  "seo_fonts_description": "Which fonts ship with Windows, macOS, Linux, ChromeOS, Android and iOS, and what share of your audience has them.",
+  "seo_font_title": "{family}: availability and metrics — fontstay.dev",
+  "seo_font_description": "Where the system font {family} is preinstalled, its vertical metrics and a specimen.",
+  "seo_presets_title": "Font stack presets — fontstay.dev",
+  "seo_presets_description": "Curated font stacks for sans, serif and monospace text that open in the fallback font generator with matching system fonts.",
+  "seo_image_alt": "fontstay.dev: metric-adjusted fallback fonts without layout shift"
 }

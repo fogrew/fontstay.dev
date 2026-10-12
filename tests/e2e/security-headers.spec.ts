@@ -51,7 +51,7 @@ test('same-origin frames are allowed', async ({ page }) => {
       }),
     '/ru/',
   );
-  expect(title).toBe('fontstay.dev');
+  expect(title).toContain('fontstay.dev');
 });
 
 test('directory URLs redirect to the trailing-slash form', async ({ request }) => {

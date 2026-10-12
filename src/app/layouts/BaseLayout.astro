@@ -8,11 +8,35 @@ interface Props {
   path: string;
   settingsToggle?: boolean;
   page?: 'generator' | 'fonts' | 'presets';
+  title?: string;
+  description?: string;
 }
 
-const { locale, path, settingsToggle = false, page = 'generator' } = Astro.props;
+const {
+  locale,
+  path,
+  settingsToggle = false,
+  page = 'generator',
+  title: pageTitle,
+  description: pageDescription,
+} = Astro.props;
 const t = messagesFor(locale);
 const canonical = new URL(localizeHref(path, { locale }), Astro.site);
+const title = pageTitle ?? t.seo_home_title();
+const description = pageDescription ?? t.seo_home_description();
+const image = new URL('/og.png', Astro.site);
+const ogLocale = locale === 'ru' ? 'ru_RU' : 'en_US';
+const structured = JSON.stringify({
+  '@context': 'https://schema.org',
+  '@type': 'WebApplication',
+  name: t.app_title(),
+  url: new URL(localizeHref('/', { locale }), Astro.site).toString(),
+  description: t.seo_home_description(),
+  applicationCategory: 'DeveloperApplication',
+  operatingSystem: 'Any',
+  inLanguage: locale,
+  offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+});
 const indexable = !process.env.WORKERS_CI_BRANCH || process.env.WORKERS_CI_BRANCH === 'main';
 ---
 
@@ -20,7 +44,27 @@ const indexable = !process.env.WORKERS_CI_BRANCH || process.env.WORKERS_CI_BRANC
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>{t.app_title()}</title>
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <meta name="theme-color" content="#161a19" media="(prefers-color-scheme: dark)" />
+    <meta name="theme-color" content="#f5f4f0" media="(prefers-color-scheme: light)" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content={t.app_title()} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:locale" content={ogLocale} />
+    <meta property="og:image" content={image} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content={t.seo_image_alt()} />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={image} />
+    <link rel="alternate" hreflang="x-default" href={new URL(localizeHref(path, { locale: 'en' }), Astro.site)} />
+    <script type="application/ld+json" set:html={structured} />
     <link rel="canonical" href={canonical} />
     {locales.map((code) => (
       <link rel="alternate" hreflang={code} href={new URL(localizeHref(path, { locale: code }), Astro.site)} />
