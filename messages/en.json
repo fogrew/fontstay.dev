@@ -389,5 +389,13 @@
   "share_copy_short": "Share",
   "share_forget_short": "Forget",
   "fallback_percent_note": "The percentage is the size adjustment: how much the font is scaled to match the width of your font. Above 100% it is enlarged, below 100% it is shrunk.",
-  "breadcrumbs_label": "Breadcrumbs"
+  "breadcrumbs_label": "Breadcrumbs",
+  "catalog_group_type": "Group by type",
+  "catalog_filters_reset": "Reset filters",
+  "catalog_results": "{count} of {total} fonts",
+  "catalog_filter_font": "Filter by font name",
+  "catalog_filter_type": "Filter by type",
+  "catalog_filter_all": "All",
+  "catalog_filter_system": "Filter by availability on {system}",
+  "catalog_filter_coverage": "Minimum audience coverage, %"
 }

@@ -389,5 +389,13 @@
   "share_copy_short": "Поделиться",
   "share_forget_short": "Забыть",
   "fallback_percent_note": "Процент — это size-adjust: во сколько раз масштабируется шрифт, чтобы совпасть по ширине с вашим. Больше 100% — шрифт увеличивается, меньше — уменьшается.",
-  "breadcrumbs_label": "Хлебные крошки"
+  "breadcrumbs_label": "Хлебные крошки",
+  "catalog_group_type": "Группировать по типу",
+  "catalog_filters_reset": "Сбросить фильтры",
+  "catalog_results": "{count} из {total} шрифтов",
+  "catalog_filter_font": "Фильтр по названию шрифта",
+  "catalog_filter_type": "Фильтр по типу",
+  "catalog_filter_all": "Все",
+  "catalog_filter_system": "Фильтр по наличию в {system}",
+  "catalog_filter_coverage": "Минимальный охват аудитории, %"
 }

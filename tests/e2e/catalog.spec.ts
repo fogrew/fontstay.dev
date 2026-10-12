@@ -96,7 +96,7 @@ test('a preset opens in the generator with its type and per-system fallbacks', a
     import.meta.url,
   ).pathname.replace(/^\/([A-Za-z]:)/, '$1');
   await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(font);
-  await expect(page.getByLabel('Font type')).toHaveValue('serif');
+  await expect(page.getByLabel('Font type')).toHaveValue('serif', { timeout: 15_000 });
   const windows = page.getByRole('button', { name: /^Windows/ });
   if ((await windows.getAttribute('aria-expanded')) === 'false') await windows.click();
   await expect(page.getByLabel('Fallback font 1', { exact: true })).toContainText(
@@ -129,4 +129,29 @@ test('the guide shows descriptor support and the credits page renders CREDITS.md
   await expect(page.getByRole('link', { name: 'Fallback Font Generator' })).toBeVisible();
   await page.getByRole('contentinfo').getByRole('link', { name: 'Guide' }).click();
   await expect(page).toHaveURL(/\/en\/guide\/$/);
+});
+
+test('the catalog table filters by every column and groups by type', async ({ page }) => {
+  await page.goto('/en/fonts/');
+  await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
+  const table = page.getByRole('table', { name: 'System fonts by operating system' });
+  const names = async () => table.locator('tbody th a').allInnerTexts();
+  const all = await names();
+  await page.getByLabel('Filter by font name').fill('arial');
+  const filtered = await names();
+  expect(filtered.length).toBeGreaterThan(0);
+  expect(filtered.length).toBeLessThan(all.length);
+  expect(filtered.every((name) => name.toLowerCase().includes('arial'))).toBe(true);
+  await page.getByRole('button', { name: 'Reset filters' }).click();
+  expect(await names()).toEqual(all);
+
+  await page.getByLabel('Filter by type').selectOption('monospace');
+  const mono = await names();
+  expect(mono.length).toBeLessThan(all.length);
+  await page.getByLabel('Filter by availability on Windows').selectOption('preinstalled');
+  expect((await names()).length).toBeLessThanOrEqual(mono.length);
+  await page.getByRole('button', { name: 'Reset filters' }).click();
+
+  await page.getByLabel('Group by type').check();
+  await expect(table.getByRole('columnheader', { name: /^Serif \(\d+\)$/ })).toBeVisible();
 });

@@ -70,3 +70,20 @@
     color: CanvasText;
   }
 }
+.ff-catalog__toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--ff-space-3);
+  align-items: center;
+}
+.ff-catalog__filters td {
+  padding: var(--ff-space-1);
+}
+.ff-catalog__filters .ff-input {
+  inline-size: 100%;
+  min-inline-size: 5rem;
+}
+.ff-catalog__group th {
+  background: var(--ff-surface);
+  text-align: start;
+}
