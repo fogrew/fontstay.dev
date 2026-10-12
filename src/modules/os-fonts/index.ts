@@ -2,6 +2,7 @@ export { osFontsDataset } from './lib/dataset';
 export {
   decodeMetrics,
   type FaceMetrics,
+  loadVariantMetrics,
   type MetricsSource,
   type OsFontMetrics,
   osFontMetrics,

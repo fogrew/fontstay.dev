@@ -88,3 +88,21 @@ export function osFontMetrics(): readonly OsFontMetrics[] {
   decoded ??= (raw as { fonts: RawMetrics[] }).fonts.map(decodeMetrics);
   return decoded;
 }
+
+let variantsLoaded: Promise<void> | undefined;
+
+export function loadVariantMetrics(): Promise<void> {
+  variantsLoaded ??= import('../data/variants.json').then((module) => {
+    const data = module.default as unknown as {
+      variants: Record<string, Partial<Record<StyleVariant, RawFace>>>;
+    };
+    for (const font of osFontMetrics()) {
+      const entry = data.variants[font.id];
+      if (!entry) continue;
+      for (const [style, face] of Object.entries(entry) as [StyleVariant, RawFace][]) {
+        font.variants[style] = decodeFace(`${font.id} ${style}`, face);
+      }
+    }
+  });
+  return variantsLoaded;
+}

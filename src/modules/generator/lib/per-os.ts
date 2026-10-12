@@ -105,16 +105,18 @@ function fonts(): PoolFont[] {
       latinWidthEm: null,
       native: nativeOf(metrics),
       dataset,
-      styles: Object.fromEntries(
-        Object.entries(metrics.variants).map(([style, face]) => [
-          style,
-          {
-            localNames: face.localNames.length > 0 ? face.localNames : [dataset.family],
-            fit: face,
-            native: nativeOf(face),
-          },
-        ]),
-      ),
+      get styles() {
+        return Object.fromEntries(
+          Object.entries(metrics.variants).map(([style, face]) => [
+            style,
+            {
+              localNames: face.localNames.length > 0 ? face.localNames : [dataset.family],
+              fit: face,
+              native: nativeOf(face),
+            },
+          ]),
+        );
+      },
     });
   }
   for (const system of systemFonts) {

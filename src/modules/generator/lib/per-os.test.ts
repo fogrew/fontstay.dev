@@ -1,4 +1,5 @@
-import { describe, expect, it } from 'vitest';
+import { beforeAll, describe, expect, it } from 'vitest';
+import { loadVariantMetrics } from '@/modules/os-fonts';
 import { font } from './font.test-util';
 import { planStack, rankFor, styleKeyOf, systemsWithFonts } from './per-os';
 
@@ -136,6 +137,10 @@ describe('planStack', () => {
 });
 
 describe('rankFor with a style', () => {
+  beforeAll(async () => {
+    await loadVariantMetrics();
+  });
+
   it('classifies the web font style', () => {
     expect(styleKeyOf({ weight: 400, italic: false })).toBe('regular');
     expect(styleKeyOf({ weight: 700, italic: false })).toBe('bold');

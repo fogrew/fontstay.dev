@@ -36,7 +36,7 @@ import {
 } from '@/modules/font-metrics';
 import { GoogleFontsPicker } from '@/modules/google-fonts';
 import { LayoutShiftPanel, type PanelInput, ratingOf, worstShift } from '@/modules/layout-shift';
-import type { Category, OsId } from '@/modules/os-fonts';
+import { type Category, loadVariantMetrics, type OsId } from '@/modules/os-fonts';
 import { autoFit } from '../lib/auto-fit';
 import { displayName, fitLanguage, isNoCoverage, LOW_COVERAGE, sampleText } from '../lib/compute';
 import {
@@ -325,12 +325,17 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
     fontStyle: style === 'italic' || style === 'bold-italic' ? ('italic' as const) : undefined,
   });
   const language: Language = fitLanguage(selected?.metrics, locale);
+  const [variantsReady, setVariantsReady] = useState(false);
   const styleKey: FontStyleKey =
     styleChoice && styleChoice.fontId === selected?.id
       ? styleChoice.key
       : selected
         ? styleKeyOf(selected.metrics.style)
         : 'regular';
+  useEffect(() => {
+    if (styleKey === 'regular' || variantsReady) return;
+    void loadVariantMetrics().then(() => setVariantsReady(true));
+  }, [styleKey, variantsReady]);
   const kind: Category =
     kindChoice && kindChoice.fontId === selected?.id
       ? kindChoice.kind
@@ -360,7 +365,7 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
       }
     }
     return { result, noCoverage };
-  }, [selected, systems, language, styleKey]);
+  }, [selected, systems, language, styleKey, variantsReady]);
 
   const candidatesOf = (os: OsId): Candidate[] =>
     (rankings.result[os]?.candidates ?? []).filter((item) => item.category === kind);

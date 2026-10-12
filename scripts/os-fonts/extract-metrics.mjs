@@ -7,6 +7,7 @@ import { createViteServer } from 'vitest/node';
 
 const root = fileURLToPath(new URL('../../', import.meta.url));
 const output = join(root, 'src/modules/os-fonts/data/metrics.json');
+const variantsOutput = join(root, 'src/modules/os-fonts/data/variants.json');
 const cache = join(tmpdir(), 'fontstay-os-fonts-cache');
 mkdirSync(cache, { recursive: true });
 
@@ -47,7 +48,12 @@ try {
   );
 
   const existing = existsSync(output) ? JSON.parse(readFileSync(output, 'utf8')) : { fonts: [] };
-  const byId = new Map(existing.fonts.map((font) => [font.id, font]));
+  const existingVariants = existsSync(variantsOutput)
+    ? JSON.parse(readFileSync(variantsOutput, 'utf8')).variants
+    : {};
+  const byId = new Map(
+    existing.fonts.map((font) => [font.id, { ...font, variants: existingVariants[font.id] ?? {} }]),
+  );
 
   const findLocal = (names) => {
     for (const dir of fontDirs) {
@@ -182,7 +188,13 @@ try {
   }
 
   const fonts = [...byId.values()].sort((a, b) => a.id.localeCompare(b.id));
-  writeFileSync(output, `${JSON.stringify({ schema: 1, fonts })}\n`);
+  const variantMap = {};
+  const baseFonts = fonts.map(({ variants, ...rest }) => {
+    if (variants && Object.keys(variants).length > 0) variantMap[rest.id] = variants;
+    return rest;
+  });
+  writeFileSync(output, `${JSON.stringify({ schema: 1, fonts: baseFonts })}\n`);
+  writeFileSync(variantsOutput, `${JSON.stringify({ schema: 1, variants: variantMap })}\n`);
   console.log(`${fonts.length} fonts written`);
 } finally {
   await server.close();

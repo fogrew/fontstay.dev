@@ -16,7 +16,8 @@ Static Astro site that generates metric-adjusted fallback font stacks. Full scop
 | `pnpm lint:arch` | FEOD boundary check: `@feod/analyzer` (`.ts`/`.tsx`) run from `scripts/lint-arch.ts` after a sha256 check of its binary, with a scrubbed environment (build variables still reach the rest of the Cloudflare build, only the analyzer binary is isolated); plus a check for relative path literals in `.astro` files that leave their entity. After upgrading `@feod/analyzer`, vet the release and update `scripts/feod-analyzer.sha256.json` |
 | `pnpm test` / `pnpm test:watch` | Vitest unit and property tests (`src/**/*.test.ts`) |
 | `pnpm test:e2e` | Build, then Playwright e2e + axe against `astro preview`, then the worker suite in `tests/worker` (real Chromium worker) (first run: `pnpm exec playwright install chromium`) |
-| `pnpm verify` | Gate: lint, architecture, typecheck, unit tests, build. E2E is added once the Cloudflare spike (#7) settles |
+| `pnpm perf` | Initial JavaScript budget per page (gzip), read from `dist/` after a build; see [`docs/performance.md`](docs/performance.md) |
+| `pnpm verify` | Gate: lint, architecture, typecheck, unit tests, build, performance budget. E2E is added once the Cloudflare spike (#7) settles |
 
 Git hooks (lefthook, installed by `pnpm install`; reinstall with `pnpm exec lefthook install`): `pre-commit` runs Biome on staged files (fixes re-staged), then the FEOD check and `astro check` on the whole working tree (~6 s); `commit-msg` runs commitlint (~1 s).
 
