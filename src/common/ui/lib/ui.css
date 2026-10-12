@@ -555,3 +555,49 @@ html[data-transition] .ff-accordion__item[data-id="support"] {
     animation: none;
   }
 }
+.ff-code {
+  --ff-tok-keyword: light-dark(#a626a4, #c678dd);
+  --ff-tok-string: light-dark(#1a6b32, #98c379);
+  --ff-tok-string-expression: light-dark(#1a6b32, #98c379);
+  --ff-tok-constant: light-dark(#8a5000, #d19a66);
+  --ff-tok-comment: light-dark(#5c6370, #8b949e);
+  --ff-tok-function: light-dark(#0b5cad, #61afef);
+  --ff-tok-parameter: light-dark(#a0301c, #e06c75);
+  --ff-tok-punctuation: light-dark(#4b5563, #abb2bf);
+  --ff-tok-link: light-dark(#0b5cad, #61afef);
+}
+.ff-tok-keyword {
+  color: var(--ff-tok-keyword);
+}
+.ff-tok-string {
+  color: var(--ff-tok-string);
+}
+.ff-tok-string-expression {
+  color: var(--ff-tok-string-expression);
+}
+.ff-tok-constant {
+  color: var(--ff-tok-constant);
+}
+.ff-tok-comment {
+  color: var(--ff-tok-comment);
+  font-style: italic;
+}
+.ff-tok-function {
+  color: var(--ff-tok-function);
+}
+.ff-tok-parameter {
+  color: var(--ff-tok-parameter);
+}
+.ff-tok-punctuation {
+  color: var(--ff-tok-punctuation);
+}
+.ff-tok-link {
+  color: var(--ff-tok-link);
+  text-decoration: underline;
+}
+.ff-tok-italic {
+  font-style: italic;
+}
+.ff-tok-bold {
+  font-weight: 700;
+}

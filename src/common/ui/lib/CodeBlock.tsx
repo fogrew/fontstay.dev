@@ -1,6 +1,8 @@
+import { Fragment } from 'preact';
 import { useEffect, useState } from 'preact/hooks';
 import { type Locale, messagesFor } from '@/common/i18n';
 import { Button } from './Button';
+import type { CodeLanguage, Token } from './highlight';
 import { Icon } from './Icon';
 import { LiveRegion } from './LiveRegion';
 
@@ -9,15 +11,31 @@ export function CodeBlock({
   code,
   label,
   fileName,
+  language,
 }: {
   locale: Locale;
   code: string;
   label: string;
   fileName?: string | undefined;
+  language?: CodeLanguage | undefined;
 }) {
   const t = messagesFor(locale);
   const [status, setStatus] = useState<'idle' | 'copied' | 'failed'>('idle');
   const [pending, setPending] = useState(false);
+  const [tokens, setTokens] = useState<{ code: string; lines: Token[][] }>();
+  useEffect(() => {
+    if (!language) return;
+    let cancelled = false;
+    void import('./highlight')
+      .then(({ tokenize }) => tokenize(code, language))
+      .then((lines) => {
+        if (!cancelled && lines) setTokens({ code, lines });
+      })
+      .catch(() => undefined);
+    return () => {
+      cancelled = true;
+    };
+  }, [code, language]);
   useEffect(() => {
     if (status !== 'copied') return;
     const timer = setTimeout(() => setStatus('idle'), 4000);
@@ -65,7 +83,27 @@ export function CodeBlock({
       {/* biome-ignore lint/a11y/noNoninteractiveTabindex: Scrollable code needs a keyboard focus target. */}
       <section class="ff-code__body" tabIndex={0} aria-label={label}>
         <pre>
-          <code>{code}</code>
+          <code>
+            {tokens?.code === code
+              ? tokens.lines.map((line, row) => (
+                  <Fragment key={row}>
+                    {line.map((token, column) => (
+                      <span
+                        key={column}
+                        class={
+                          token.kind || token.italic || token.bold
+                            ? `${token.kind ? `ff-tok-${token.kind}` : ''}${token.italic ? ' ff-tok-italic' : ''}${token.bold ? ' ff-tok-bold' : ''}`.trim()
+                            : undefined
+                        }
+                      >
+                        {token.text}
+                      </span>
+                    ))}
+                    {row < tokens.lines.length - 1 ? '\n' : ''}
+                  </Fragment>
+                ))
+              : code}
+          </code>
         </pre>
       </section>
       {status === 'failed' && (

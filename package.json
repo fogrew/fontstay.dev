@@ -45,7 +45,8 @@
     "astro": "7.3.8",
     "browserslist": "4.29.3",
     "fontkitten": "1.0.3",
-    "preact": "10.29.8"
+    "preact": "10.29.8",
+    "shiki": "4.4.3"
   },
   "devDependencies": {
     "@astrojs/check": "0.9.10",

@@ -940,3 +940,20 @@ test('panels animate with view transitions unless reduced motion is requested', 
     await page.evaluate(() => (window as unknown as { transitions: number }).transitions),
   ).toBe(1);
 });
+
+test('the export code is syntax highlighted without inline styles', async ({ page }) => {
+  await page.goto('/en/');
+  await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
+  await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(sourceSans);
+  const code = page.getByRole('region', { name: 'Generated CSS' });
+  await expect(code.locator('code span[class^="ff-tok-"]').first()).toBeVisible({
+    timeout: 15_000,
+  });
+  await expect(code.locator('code [style]')).toHaveCount(0);
+  await expect(code).toContainText('@font-face');
+  await choose(page.getByLabel('Format'), { label: 'Next.js (next/font/local)' });
+  const next = page.getByRole('region', { name: 'font.ts' });
+  await expect(next.locator('code span[class^="ff-tok-"]').first()).toBeVisible({
+    timeout: 15_000,
+  });
+});

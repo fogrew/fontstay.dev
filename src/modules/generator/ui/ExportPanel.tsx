@@ -44,7 +44,7 @@ export function ExportPanel({
   };
   const file =
     format === 'report'
-      ? { text: report(), fileName: 'impact-report.md' }
+      ? { text: report(), fileName: 'impact-report.md', language: 'markdown' as const }
       : buildExport(format, input);
   return (
     <div class="ff-export">
@@ -71,6 +71,7 @@ export function ExportPanel({
         label={format === 'css' ? t.css_code_label() : file.fileName}
         code={file.text}
         fileName={file.fileName}
+        language={file.language}
       />
     </div>
   );

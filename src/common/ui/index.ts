@@ -8,6 +8,7 @@ export { Columns, type ColumnsProps } from './lib/Columns';
 export { Disclosure } from './lib/Disclosure';
 export { FitField, type FitFieldProps } from './lib/FitField';
 export { displayedFitValue, type FitValue, pinFitValue } from './lib/fit-value';
+export type { CodeLanguage } from './lib/highlight';
 export { Icon, type IconName } from './lib/Icon';
 export { LiveRegion } from './lib/LiveRegion';
 export { clearLayouts } from './lib/persist';
