@@ -60,3 +60,6 @@
 - [Preact hooks](https://preactjs.com/guide/v10/hooks/#useid) — stable server/client IDs and local component state.
 - [MDN light-dark](https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/Values/color_value/light-dark) and [forced colors](https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/At-rules/@media/forced-colors) — theme and system-color handling.
 - [MDN Clipboard.writeText](https://developer.mozilla.org/en-US/docs/Web/API/Clipboard/writeText) — explicit copy actions with accessible failure feedback.
+- [Simple Icons](https://simpleicons.org/) (CC0 1.0) — brand marks for browsers, systems, GitHub, Google Fonts, Tailwind CSS, Next.js, Nuxt and Astro in `public/brands.svg`. The marks belong to their owners.
+- [Font Awesome Free brands](https://fontawesome.com/license/free) (icons under CC BY 4.0, Fonticons, Inc.) — the Windows and Edge marks in `public/brands.svg`.
+- [Browserslist logo](https://github.com/browserslist/browserslist) by Anton Popov (MIT) — the Browserslist mark in `public/brands.svg`.

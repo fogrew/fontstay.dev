@@ -17,6 +17,7 @@ import {
   DEFAULT_DESKTOP_SPLIT,
   descriptorSupport,
   lacksVerticalOverrides,
+  OsIcon,
   type OsShares,
   SupportMatrix,
   type SystemInfo,
@@ -801,6 +802,7 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
         {systems.map((os) => (
           <Collapsible
             key={os}
+            icon={<OsIcon os={os} />}
             title={t.systems_share({ system: systemName(os), share: percent(shares?.[os] ?? 0) })}
             open={(openSystem === undefined ? current : openSystem) === os}
             onToggle={(next) => {
@@ -1124,6 +1126,7 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
               items={[
                 {
                   id: 'preview',
+                  keep: true,
                   label: t.preview_tab(),
                   content: (
                     <Preview

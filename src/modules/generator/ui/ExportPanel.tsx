@@ -1,9 +1,16 @@
 import { useState } from 'preact/hooks';
 import { type Locale, messagesFor } from '@/common/i18n';
-import { CodeBlock, Select } from '@/common/ui';
+import { CodeBlock, Icon, type IconName, Select } from '@/common/ui';
 import { buildExport, EXPORT_FORMATS, type ExportFormat, type ExportInput } from '@/modules/export';
 
 type Choice = ExportFormat | 'report';
+
+const FORMAT_ICONS: Partial<Record<Choice, IconName>> = {
+  tailwind: 'tailwind',
+  next: 'next',
+  nuxt: 'nuxt',
+  astro: 'astro',
+};
 
 export function ExportPanel({
   locale,
@@ -18,6 +25,7 @@ export function ExportPanel({
 }) {
   const t = messagesFor(locale);
   const [format, setFormat] = useState<Choice>('css');
+  const icon = FORMAT_ICONS[format];
   const labels: Record<Choice, string> = {
     report: t.export_report(),
     css: t.export_css(),
@@ -51,6 +59,12 @@ export function ExportPanel({
         </p>
       )}
       {format === 'loading' && <p class="ff-muted">{t.loading_note()}</p>}
+      {icon && (
+        <p class="ff-export__target">
+          <Icon name={icon} />
+          {labels[format]}
+        </p>
+      )}
       <CodeBlock
         locale={locale}
         label={

@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'preact/hooks';
 import { type Locale, messagesFor } from '@/common/i18n';
-import { Button, Disclosure, Select } from '@/common/ui';
+import { Button, Disclosure, Icon, Select } from '@/common/ui';
 import {
   CJK_SUBSETS,
   downloadFont,
@@ -94,7 +94,11 @@ export function GoogleFontsPicker({
   };
 
   return (
-    <Disclosure summary={t.google_heading()} onToggle={(open) => open && setOpened(true)}>
+    <Disclosure
+      icon={<Icon name="googlefonts" />}
+      summary={t.google_heading()}
+      onToggle={(open) => open && setOpened(true)}
+    >
       <div class="ff-google">
         <p class="ff-muted">{t.google_note()}</p>
         <div class="ff-field">

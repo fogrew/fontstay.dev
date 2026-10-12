@@ -1,0 +1,24 @@
+export const ICON_NAMES = [
+  'chrome',
+  'firefox',
+  'safari',
+  'opera',
+  'samsung',
+  'kaios',
+  'qq',
+  'android',
+  'macos',
+  'ios',
+  'linux',
+  'github',
+  'tailwind',
+  'next',
+  'nuxt',
+  'astro',
+  'googlefonts',
+  'edge',
+  'windows',
+  'browserslist',
+] as const;
+
+export type IconName = (typeof ICON_NAMES)[number];

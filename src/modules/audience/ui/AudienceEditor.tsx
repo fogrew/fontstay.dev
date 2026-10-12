@@ -1,6 +1,6 @@
 import { useEffect, useId, useRef, useState } from 'preact/hooks';
 import { type Locale, messagesFor } from '@/common/i18n';
-import { Button, Disclosure, Select } from '@/common/ui';
+import { Button, Disclosure, Icon, Select } from '@/common/ui';
 import type { OsShares, WeightedEntry } from '../lib/os';
 import { DEFAULT_QUERY, MY_STATS_PRESET, PRESETS, presetFor } from '../lib/presets';
 import { MAX_QUERY_LENGTH, type Resolution, resolveQuery } from '../lib/resolve';
@@ -120,7 +120,11 @@ export function AudienceEditor({
   const presets = stats ? [...PRESETS, MY_STATS_PRESET] : PRESETS;
 
   return (
-    <Disclosure summary={t.audience_heading()} onToggle={(open) => open && setOpened(true)}>
+    <Disclosure
+      icon={<Icon name="browserslist" />}
+      summary={t.audience_heading()}
+      onToggle={(open) => open && setOpened(true)}
+    >
       <div class="ff-audience">
         <Select
           label={t.audience_preset_label()}
@@ -132,7 +136,10 @@ export function AudienceEditor({
           onChange={(id) => setQuery(presets.find((preset) => preset.id === id)?.query ?? query)}
         />
         <div class="ff-field">
-          <label for={inputId}>{t.audience_query_label()}</label>
+          <label for={inputId}>
+            <Icon name="browserslist" />
+            {t.audience_query_label()}
+          </label>
           <input
             id={inputId}
             class="ff-input"

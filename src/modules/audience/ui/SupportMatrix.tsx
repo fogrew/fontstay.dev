@@ -1,5 +1,6 @@
 import { type Locale, messagesFor } from '@/common/i18n';
 import type { CellState, MatrixGroup } from '../lib/matrix';
+import { BrowserIcon, OsIcon } from './BrandIcon';
 import './audience.css';
 
 const SYMBOLS: Record<CellState, string> = { full: '✓', partial: '~', none: '✗', unknown: '?' };
@@ -63,6 +64,7 @@ export function SupportMatrix({
           {groups.map((group) => (
             <section class="ff-matrix__group" key={group.os}>
               <h3>
+                <OsIcon os={group.os} />
                 {t[`audience_os_${group.os}`]()} <span>{number(group.share, 1)}%</span>
               </h3>
               <p class="ff-muted">
@@ -76,6 +78,7 @@ export function SupportMatrix({
                 {group.columns.map((column) => (
                   <div class="ff-matrix__column" key={column.browser}>
                     <h4>
+                      <BrowserIcon id={column.browser} />
                       {column.name} <span>{number(column.share, 1)}%</span>
                     </h4>
                     <ul>

@@ -1,5 +1,6 @@
 ---
 import { getTextDirection, type Locale, locales, localizeHref, messagesFor } from '@/common/i18n';
+import { Icon } from '@/common/ui';
 import { LocaleSwitcher } from '@/modules/locale-switcher';
 import { InstallButton, PwaManager } from '@/modules/pwa';
 import '../styles/tokens.css';
@@ -113,7 +114,7 @@ const indexable = !process.env.WORKERS_CI_BRANCH || process.env.WORKERS_CI_BRANC
       <div class="ff-header__end">
         <InstallButton locale={locale} client:idle />
         <LocaleSwitcher current={locale} {path} />
-        <a class="ff-header__link" href="https://github.com/fogrew/fontstay.dev">{t.header_github()}</a>
+        <a class="ff-header__link" href="https://github.com/fogrew/fontstay.dev"><Icon name="github" />{t.header_github()}</a>
       </div>
     </header>
     <main id="main-content" tabindex="-1"><slot /></main>
@@ -123,7 +124,7 @@ const indexable = !process.env.WORKERS_CI_BRANCH || process.env.WORKERS_CI_BRANC
         <a href={localizeHref('/guide/', { locale })} aria-current={page === 'guide' ? 'page' : undefined}>{t.nav_guide()}</a>
         <a href={localizeHref('/credits/', { locale })} aria-current={page === 'credits' ? 'page' : undefined}>{t.nav_credits()}</a>
         <a href={localizeHref('/changelog/', { locale })} aria-current={page === 'changelog' ? 'page' : undefined}>{t.nav_changelog()}</a>
-        <a href="https://github.com/fogrew/fontstay.dev">{t.header_github()}</a>
+        <a href="https://github.com/fogrew/fontstay.dev"><Icon name="github" />{t.header_github()}</a>
       </footer>
     )}
   </body>

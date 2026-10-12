@@ -10,6 +10,7 @@ import {
   type OsShares,
   type WeightedEntry,
 } from '../lib/os';
+import { OsIcon } from './BrandIcon';
 
 export type Mode = 'browsers' | 'manual';
 
@@ -72,7 +73,10 @@ export function OsPanel({
           <legend>{t.audience_os_manual_hint()}</legend>
           {MANUAL_IDS.map((id) => (
             <label key={id}>
-              <span>{label(id)}</span>
+              <span>
+                <OsIcon os={id} />
+                {label(id)}
+              </span>
               <input
                 class="ff-input"
                 type="number"
@@ -97,7 +101,10 @@ export function OsPanel({
       <ul class="ff-audience__list" aria-label={t.audience_os_shares_label()}>
         {OS_IDS.filter((id) => shares[id] > 0).map((id) => (
           <li key={id}>
-            <span>{label(id)}</span>
+            <span>
+              <OsIcon os={id} />
+              {label(id)}
+            </span>
             <span class="ff-muted">
               {number.format(shares[id])}
               {t.fit_percent_unit()}

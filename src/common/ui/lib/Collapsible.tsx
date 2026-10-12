@@ -3,6 +3,7 @@ import { useId } from 'preact/hooks';
 
 export interface CollapsibleProps {
   title: string;
+  icon?: ComponentChildren;
   open: boolean;
   onToggle: (open: boolean) => void;
   before?: ComponentChildren;
@@ -10,7 +11,15 @@ export interface CollapsibleProps {
   children?: ComponentChildren;
 }
 
-export function Collapsible({ title, open, onToggle, before, after, children }: CollapsibleProps) {
+export function Collapsible({
+  title,
+  icon,
+  open,
+  onToggle,
+  before,
+  after,
+  children,
+}: CollapsibleProps) {
   const id = useId();
   return (
     <div class="ff-collapsible" data-open={open}>
@@ -23,6 +32,7 @@ export function Collapsible({ title, open, onToggle, before, after, children }: 
           aria-controls={id}
           onClick={() => onToggle(!open)}
         >
+          {icon}
           {title}
         </button>
         {after}

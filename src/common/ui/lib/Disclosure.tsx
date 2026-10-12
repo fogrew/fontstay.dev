@@ -2,11 +2,13 @@ import type { ComponentChildren } from 'preact';
 
 export function Disclosure({
   summary,
+  icon,
   children,
   open = false,
   onToggle,
 }: {
   summary: string;
+  icon?: ComponentChildren;
   children: ComponentChildren;
   open?: boolean;
   onToggle?: (open: boolean) => void;
@@ -17,7 +19,10 @@ export function Disclosure({
       open={open}
       onToggle={(event) => onToggle?.(event.currentTarget.open)}
     >
-      <summary>{summary}</summary>
+      <summary>
+        {icon}
+        {summary}
+      </summary>
       <div>{children}</div>
     </details>
   );

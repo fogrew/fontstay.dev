@@ -1,7 +1,7 @@
-import { Fragment } from 'preact';
+import { type ComponentChildren, Fragment } from 'preact';
 import { useCallback, useMemo, useState } from 'preact/hooks';
 import { type Locale, localizeHref, messagesFor } from '@/common/i18n';
-import { AudienceEditor } from '@/modules/audience';
+import { AudienceEditor, OsIcon } from '@/modules/audience';
 import { osFontsDataset } from '@/modules/os-fonts';
 import {
   audienceCoverage,
@@ -45,7 +45,7 @@ export function CatalogTable({ locale }: { locale: Locale }) {
     return category === 'monospace' ? t.type_mono() : t.type_sans();
   };
 
-  const header = (key: SortKey, label: string) => {
+  const header = (key: SortKey, label: string, icon?: ComponentChildren) => {
     const active = sort.key === key;
     const ariaSort = active ? (sort.descending ? 'descending' : 'ascending') : 'none';
     return (
@@ -61,6 +61,7 @@ export function CatalogTable({ locale }: { locale: Locale }) {
             )
           }
         >
+          {icon}
           {label}
         </button>
       </th>
@@ -86,7 +87,9 @@ export function CatalogTable({ locale }: { locale: Locale }) {
               {header('family', t.catalog_col_font())}
               {header('category', t.catalog_col_type())}
               {CATALOG_SYSTEMS.map((os) => (
-                <Fragment key={os}>{header(os, t[`audience_os_${os}`]())}</Fragment>
+                <Fragment key={os}>
+                  {header(os, t[`audience_os_${os}`](), <OsIcon os={os} />)}
+                </Fragment>
               ))}
               {header('coverage', t.catalog_col_coverage())}
             </tr>

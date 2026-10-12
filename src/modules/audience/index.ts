@@ -13,4 +13,5 @@ export {
   supportData,
 } from './lib/support';
 export { type AudienceData, AudienceEditor } from './ui/AudienceEditor';
+export { BrowserIcon, OsIcon } from './ui/BrandIcon';
 export { SupportMatrix } from './ui/SupportMatrix';

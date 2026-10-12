@@ -7,6 +7,7 @@ export interface AccordionProps {
     label: string;
     content: ComponentChildren;
     open?: boolean;
+    keep?: boolean;
   }[];
   resizeLabel: (above: string, below: string) => string;
 }
@@ -121,6 +122,7 @@ export function Accordion({ items, resizeLabel }: AccordionProps) {
             <section
               class="ff-accordion__item"
               data-open={open}
+              data-keep={item.keep ? 'true' : undefined}
               ref={(element) => {
                 if (element) elements.current.set(item.id, element);
                 else elements.current.delete(item.id);

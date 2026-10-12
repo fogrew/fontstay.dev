@@ -221,6 +221,9 @@
   flex: 1 1 auto;
   min-block-size: 7rem;
 }
+.ff-accordion__item[data-open="true"][data-keep="true"] {
+  flex: 0 0.15 auto;
+}
 .ff-accordion__heading {
   margin: 0;
   font-size: 1rem;
@@ -341,4 +344,11 @@
 .ff-code__actions {
   display: inline-flex;
   gap: var(--ff-space-2);
+}
+.ff-icon {
+  flex: none;
+  inline-size: 1em;
+  block-size: 1em;
+  margin-inline-end: 0.35em;
+  vertical-align: -0.125em;
 }
