@@ -909,3 +909,34 @@ test('the article preview shows the text in the three views', async ({ page }) =
   await article.getByRole('button', { name: 'Plain fallback' }).click();
   await expect(page_).toHaveCSS('font-family', /sans-serif/);
 });
+
+test('panels animate with view transitions unless reduced motion is requested', async ({
+  page,
+}) => {
+  await page.emulateMedia({ reducedMotion: 'no-preference' });
+  await page.addInitScript(() => {
+    const original = document.startViewTransition?.bind(document);
+    (window as unknown as { transitions: number }).transitions = 0;
+    if (original) {
+      document.startViewTransition = ((update: () => Promise<void>) => {
+        (window as unknown as { transitions: number }).transitions++;
+        return original(update);
+      }) as typeof document.startViewTransition;
+    }
+  });
+  await page.goto('/en/');
+  await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
+  const inputs = page.getByRole('button', { name: '1. Inputs' });
+  await inputs.click();
+  await expect(inputs).toHaveAttribute('aria-expanded', 'false');
+  expect(
+    await page.evaluate(() => (window as unknown as { transitions: number }).transitions),
+  ).toBe(1);
+
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await inputs.click();
+  await expect(inputs).toHaveAttribute('aria-expanded', 'true');
+  expect(
+    await page.evaluate(() => (window as unknown as { transitions: number }).transitions),
+  ).toBe(1);
+});

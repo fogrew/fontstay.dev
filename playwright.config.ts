@@ -11,6 +11,7 @@ export default defineConfig({
   use: {
     baseURL: `http://localhost:${port}`,
     trace: 'retain-on-failure',
+    reducedMotion: 'reduce',
   },
   projects: [{ name: 'chromium', use: { ...devices['Desktop Chrome'] } }],
   webServer: {

@@ -1,6 +1,7 @@
 import { type ComponentChildren, Fragment } from 'preact';
 import { useEffect, useId, useRef, useState } from 'preact/hooks';
 import { loadLayout, parseIds, parseSizes, saveLayout } from './persist';
+import { transition } from './transition';
 
 export interface ColumnsProps {
   items: readonly { id: string; label: string; weight: number; content: ComponentChildren }[];
@@ -80,12 +81,12 @@ export function Columns({ items, storageKey, resizeLabel }: ColumnsProps) {
     const second = (start[right] ?? 0) * total;
     if (first + delta < COLLAPSE_PX) {
       drag.current = undefined;
-      setCollapsed((current) => new Set(current).add(left));
+      transition(() => setCollapsed((current) => new Set(current).add(left)));
       return;
     }
     if (second - delta < COLLAPSE_PX) {
       drag.current = undefined;
-      setCollapsed((current) => new Set(current).add(right));
+      transition(() => setCollapsed((current) => new Set(current).add(right)));
       return;
     }
     const bounded = Math.min(Math.max(delta, MIN_COLUMN_PX - first), second - MIN_COLUMN_PX);
@@ -107,6 +108,7 @@ export function Columns({ items, storageKey, resizeLabel }: ColumnsProps) {
             <section
               class="ff-columns__column"
               data-open={open}
+              data-id={item.id}
               ref={(element) => {
                 if (element) elements.current.set(item.id, element);
                 else elements.current.delete(item.id);
@@ -120,13 +122,15 @@ export function Columns({ items, storageKey, resizeLabel }: ColumnsProps) {
                   id={`${base}-${item.id}-button`}
                   aria-expanded={open}
                   aria-controls={`${base}-${item.id}-panel`}
-                  onClick={() => {
-                    setCollapsed((current) => {
-                      const updated = new Set(current);
-                      if (!updated.delete(item.id)) updated.add(item.id);
-                      return updated;
-                    });
-                  }}
+                  onClick={() =>
+                    transition(() =>
+                      setCollapsed((current) => {
+                        const updated = new Set(current);
+                        if (!updated.delete(item.id)) updated.add(item.id);
+                        return updated;
+                      }),
+                    )
+                  }
                 >
                   {item.label}
                 </button>

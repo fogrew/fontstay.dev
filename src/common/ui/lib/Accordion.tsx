@@ -1,6 +1,7 @@
 import { type ComponentChildren, Fragment } from 'preact';
 import { useEffect, useId, useRef, useState } from 'preact/hooks';
 import { loadLayout, parseIds, parseSizes, saveLayout } from './persist';
+import { transition } from './transition';
 
 export interface AccordionProps {
   items: readonly {
@@ -98,14 +99,15 @@ export function Accordion({ items, resizeLabel, storageKey }: AccordionProps) {
   const elements = useRef(new Map<string, HTMLElement>());
   const drag = useRef<Drag>();
 
-  const toggle = (id: string) => {
-    setSizes({});
-    setClosed((current) => {
-      const next = new Set(current);
-      if (!next.delete(id)) next.add(id);
-      return next;
+  const toggle = (id: string) =>
+    transition(() => {
+      setSizes({});
+      setClosed((current) => {
+        const next = new Set(current);
+        if (!next.delete(id)) next.add(id);
+        return next;
+      });
     });
-  };
 
   const openIds = items.filter((item) => !closed.has(item.id)).map((item) => item.id);
 
@@ -142,6 +144,7 @@ export function Accordion({ items, resizeLabel, storageKey }: AccordionProps) {
             <section
               class="ff-accordion__item"
               data-open={open}
+              data-id={item.id}
               data-keep={item.keep ? 'true' : undefined}
               ref={(element) => {
                 if (element) elements.current.set(item.id, element);

@@ -1,5 +1,6 @@
 import type { ComponentChildren } from 'preact';
 import { useId } from 'preact/hooks';
+import { transition } from './transition';
 
 export interface CollapsibleProps {
   title: string;
@@ -30,7 +31,7 @@ export function Collapsible({
           class="ff-collapsible__toggle"
           aria-expanded={open}
           aria-controls={id}
-          onClick={() => onToggle(!open)}
+          onClick={() => transition(() => onToggle(!open))}
         >
           {icon}
           {title}

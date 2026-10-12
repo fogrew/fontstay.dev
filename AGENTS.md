@@ -100,4 +100,5 @@ Release procedure:
 - Minimal comments: only for non-obvious anti-patterns, one line.
 - Every external source of data, code or inspiration is added to [`CREDITS.md`](CREDITS.md) in the same PR.
 - UI strings only via i18n messages (`messages/<locale>.json`, English is the source of truth); in components use `messagesFor(locale)` from `@/common/i18n` and pass `locale` explicitly (pages are prerendered, so the global locale must not be relied on). Never hardcode user-visible text.
+- Animate UI state changes with view transitions (FLIP-like): wrap panel and layout changes in `transition()` from `@/common/ui`, name the transitioned elements only while a transition runs (a permanent `view-transition-name` creates a stacking context), prefer panels over page navigation, and always respect `prefers-reduced-motion`.
 - Accessibility target: WCAG 2.2 AA.

@@ -520,3 +520,38 @@
     margin-inline-start: var(--ff-space-2);
   }
 }
+html[data-transition] .ff-columns__column[data-id="inputs"] {
+  view-transition-name: ff-column-inputs;
+}
+html[data-transition] .ff-columns__column[data-id="tuning"] {
+  view-transition-name: ff-column-tuning;
+}
+html[data-transition] .ff-columns__column[data-id="results"] {
+  view-transition-name: ff-column-results;
+}
+html[data-transition] .ff-accordion__item[data-id="preview"] {
+  view-transition-name: ff-panel-preview;
+}
+html[data-transition] .ff-accordion__item[data-id="export"] {
+  view-transition-name: ff-panel-export;
+}
+html[data-transition] .ff-accordion__item[data-id="article"] {
+  view-transition-name: ff-panel-article;
+}
+html[data-transition] .ff-accordion__item[data-id="coverage"] {
+  view-transition-name: ff-panel-coverage;
+}
+html[data-transition] .ff-accordion__item[data-id="support"] {
+  view-transition-name: ff-panel-support;
+}
+::view-transition-group(*) {
+  animation-duration: 0.25s;
+  animation-timing-function: ease;
+}
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation: none;
+  }
+}

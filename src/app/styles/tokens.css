@@ -81,6 +81,14 @@ header {
   gap: var(--ff-space-3);
   align-items: center;
 }
+.ff-header {
+  view-transition-name: ff-header;
+}
+@media (prefers-reduced-motion: no-preference) {
+  @view-transition {
+    navigation: auto;
+  }
+}
 .ff-header__end {
   display: flex;
   flex-wrap: wrap;
