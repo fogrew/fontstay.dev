@@ -1,6 +1,8 @@
+import { Fragment } from 'preact';
 import { useEffect, useRef, useState } from 'preact/hooks';
 import { type Locale, messagesFor } from '@/common/i18n';
 import { Select } from '@/common/ui';
+import type { FontMetrics } from '@/modules/font-metrics';
 import type { Category } from '@/modules/os-fonts';
 import { covers } from '../lib/compute';
 import { buildCss, type Overrides } from '../lib/css';
@@ -51,93 +53,122 @@ function EditableText({
   // biome-ignore-end lint/a11y/useSemanticElements: the text must wrap like a paragraph
 }
 
-export function Preview({
-  locale,
-  bytes,
-  fallback,
-  adjustment,
-  defaultSample,
-  codePoints,
-  unicodeRange,
-  fontWeight,
-  fontStyle,
-}: {
-  locale: Locale;
+export interface PreviewItem {
+  id: number;
+  name: string;
   bytes: ArrayBuffer;
+  codePoints: Uint32Array;
+  metrics: FontMetrics;
   fallback: { family: string; localNames: readonly string[]; category: Category };
   adjustment: Overrides;
-  defaultSample: string;
-  codePoints: Uint32Array;
   unicodeRange?: string | undefined;
   fontWeight?: number | undefined;
   fontStyle?: 'italic' | undefined;
+}
+
+const familyOf = (item: PreviewItem) => `${PREVIEW_FAMILY}-${item.id}`;
+
+export function Preview({
+  locale,
+  items,
+  defaultSample,
+}: {
+  locale: Locale;
+  items: readonly PreviewItem[];
+  defaultSample: string;
 }) {
   const t = messagesFor(locale);
+  const many = items.length > 1;
+  const first = items[0];
   const [sample, setSample] = useState(defaultSample);
   const [loadFailed, setLoadFailed] = useState(false);
-  const [installed, setInstalled] = useState(true);
-  const localKey = fallback.localNames.join('|');
+  const [notInstalled, setNotInstalled] = useState<string[]>([]);
+  const localKey = items
+    .map((item) => `${item.id}:${item.fallback.localNames.join('|')}`)
+    .join(';');
   useEffect(() => {
     const measure = canvasMeasure();
-    setInstalled(measure ? isInstalled(fallback.localNames, measure) : true);
+    setNotInstalled(
+      measure
+        ? [
+            ...new Set(
+              items
+                .filter((item) => !isInstalled(item.fallback.localNames, measure))
+                .map((item) => item.fallback.family),
+            ),
+          ]
+        : [],
+    );
   }, [localKey]);
   const [mode, setMode] = useState<Mode>('overlay');
   const [substitute, setSubstitute] = useState<Substitute>('sans-serif');
   const [size, setSize] = useState(28);
   const [lineHeight, setLineHeight] = useState(1.4);
   const languageName = new Intl.DisplayNames(locale, { type: 'language' });
-  const options = PHRASES.filter((id) => covers({ codePoints }, t[`preview_phrase_${id}`]())).map(
-    (id) => ({
-      text: t[`preview_phrase_${id}`](),
-      value: `${languageName.of(id) ?? id}: ${t[`preview_phrase_${id}`]()}`,
-    }),
-  );
+  const options = PHRASES.filter((id) =>
+    items.every((item) => covers({ codePoints: item.codePoints }, t[`preview_phrase_${id}`]())),
+  ).map((id) => ({
+    text: t[`preview_phrase_${id}`](),
+    value: `${languageName.of(id) ?? id}: ${t[`preview_phrase_${id}`]()}`,
+  }));
   const [menuOpen, setMenuOpen] = useState(false);
+  const bytesKey = items.map((item) => item.bytes);
   useEffect(() => {
     let cancelled = false;
-    const face = new FontFace(PREVIEW_FAMILY, bytes.slice(0));
-    face
-      .load()
+    const faces = items.map((item) => new FontFace(familyOf(item), item.bytes.slice(0)));
+    Promise.all(faces.map((face) => face.load()))
       .then(() => {
-        if (!cancelled) {
-          document.fonts.add(face);
-          setLoadFailed(false);
-        }
+        if (cancelled) return;
+        for (const face of faces) document.fonts.add(face);
+        setLoadFailed(false);
       })
       .catch(() => {
         if (!cancelled) setLoadFailed(true);
       });
     return () => {
       cancelled = true;
-      document.fonts.delete(face);
+      for (const face of faces) document.fonts.delete(face);
     };
-  }, [bytes]);
-  const css = buildCss(
-    PREVIEW_FAMILY,
-    [
-      {
-        family: fallback.family,
-        localNames: fallback.localNames,
-        adjustment,
-        unicodeRange,
-        fontWeight,
-        fontStyle,
-      },
-    ],
-    fallback.category,
-  );
+  }, bytesKey);
+  const fontFaces = items
+    .map(
+      (item) =>
+        buildCss(
+          familyOf(item),
+          [
+            {
+              family: item.fallback.family,
+              localNames: item.fallback.localNames,
+              adjustment: item.adjustment,
+              unicodeRange: item.unicodeRange,
+              fontWeight: item.fontWeight,
+              fontStyle: item.fontStyle,
+            },
+          ],
+          item.fallback.category,
+        ).fontFaces,
+    )
+    .join('\n\n');
   useEffect(() => {
     const sheet = new CSSStyleSheet();
-    sheet.replaceSync(css.fontFaces);
+    sheet.replaceSync(fontFaces);
     document.adoptedStyleSheets = [...document.adoptedStyleSheets, sheet];
     return () => {
       document.adoptedStyleSheets = document.adoptedStyleSheets.filter((item) => item !== sheet);
     };
-  }, [css.fontFaces]);
+  }, [fontFaces]);
   const shared = { fontSize: `${size}px`, lineHeight: String(lineHeight) };
-  const webStyle = { ...shared, fontFamily: `"${PREVIEW_FAMILY}", ${substitute}` };
-  const fallbackStyle = { ...shared, fontFamily: `"${PREVIEW_FAMILY} Fallback", ${substitute}` };
-  const runs = textRuns(sample, codePoints);
+  const webStyleOf = (item: PreviewItem) => ({
+    ...shared,
+    fontFamily: `"${familyOf(item)}", ${substitute}`,
+  });
+  const fallbackStyleOf = (item: PreviewItem) => ({
+    ...shared,
+    fontFamily: `"${familyOf(item)} Fallback", ${substitute}`,
+    ...(item.fontWeight === undefined ? {} : { fontWeight: item.fontWeight }),
+    ...(item.fontStyle === undefined ? {} : { fontStyle: item.fontStyle }),
+  });
+  const runs = first && !many ? textRuns(sample, first.codePoints) : [];
   const missing = missingCharacters(runs);
   const substituteLabel = (value: Substitute) => {
     if (value === 'serif') return t.type_serif();
@@ -201,9 +232,10 @@ export function Preview({
           />
         </div>
       </div>
-      {!installed && (
-        <p class="ff-muted" role="status">
-          {t.preview_not_installed({ font: fallback.family })}
+      {notInstalled.length > 0 && (
+        <p role="status">
+          <span class="ff-error">{t.preview_not_installed({ font: notInstalled.join(', ') })}</span>{' '}
+          <span class="ff-muted">{t.preview_not_installed_note()}</span>
         </p>
       )}
       <div class="ff-preview__field">
@@ -241,51 +273,59 @@ export function Preview({
           )}
         </div>
         <div class="ff-preview__stage">
-          {(mode === 'side' || mode === 'web') && (
-            <figure>
-              <figcaption>{t.preview_web_label()}</figcaption>
-              <EditableText
-                value={sample}
-                onChange={setSample}
-                label={t.preview_sample_label()}
-                style={webStyle}
-              />
-            </figure>
-          )}
-          {(mode === 'side' || mode === 'fallback') && (
-            <figure>
-              <figcaption>{t.preview_fallback_label()}</figcaption>
-              <EditableText
-                value={sample}
-                onChange={setSample}
-                label={t.preview_sample_label()}
-                style={fallbackStyle}
-              />
-            </figure>
-          )}
-          {mode === 'overlay' && (
-            <figure>
-              <figcaption>{t.overlay_legend()}</figcaption>
-              <div class="ff-preview__text ff-preview__overlay">
-                <EditableText
-                  value={sample}
-                  onChange={setSample}
-                  label={t.preview_sample_label()}
-                  style={{ ...webStyle, margin: 0 }}
-                />
-                <p
-                  class="ff-preview__outline"
-                  aria-hidden="true"
-                  style={{ ...fallbackStyle, margin: 0 }}
-                >
-                  {sample}
-                </p>
-              </div>
-            </figure>
-          )}
+          {items.map((item) => {
+            const title = (label: string) => (many ? `${item.name} · ${label}` : label);
+            return (
+              <Fragment key={item.id}>
+                {(mode === 'side' || mode === 'web') && (
+                  <figure>
+                    <figcaption>{title(t.preview_web_label())}</figcaption>
+                    <EditableText
+                      value={sample}
+                      onChange={setSample}
+                      label={t.preview_sample_label()}
+                      style={webStyleOf(item)}
+                    />
+                  </figure>
+                )}
+                {(mode === 'side' || mode === 'fallback') && (
+                  <figure>
+                    <figcaption>{title(t.preview_fallback_label())}</figcaption>
+                    <EditableText
+                      value={sample}
+                      onChange={setSample}
+                      label={t.preview_sample_label()}
+                      style={fallbackStyleOf(item)}
+                    />
+                  </figure>
+                )}
+                {mode === 'overlay' && (
+                  <figure>
+                    <figcaption>{many ? item.name : t.overlay_legend()}</figcaption>
+                    <div class="ff-preview__text ff-preview__overlay">
+                      <EditableText
+                        value={sample}
+                        onChange={setSample}
+                        label={t.preview_sample_label()}
+                        style={{ ...webStyleOf(item), margin: 0 }}
+                      />
+                      <p
+                        class="ff-preview__outline"
+                        aria-hidden="true"
+                        style={{ ...fallbackStyleOf(item), margin: 0 }}
+                      >
+                        {sample}
+                      </p>
+                    </div>
+                  </figure>
+                )}
+              </Fragment>
+            );
+          })}
+          {many && mode === 'overlay' && <p class="ff-muted">{t.overlay_legend()}</p>}
         </div>
       </div>
-      {missing.length > 0 && (
+      {first && !many && missing.length > 0 && (
         <section class="ff-preview__missing" aria-label={t.missing_heading()}>
           <Select
             label={t.missing_label()}
@@ -305,7 +345,7 @@ export function Preview({
             {missing.length > MAX_LISTED &&
               ` ${t.missing_more({ count: missing.length - MAX_LISTED })}`}
           </p>
-          <p class="ff-preview__map" aria-hidden="true" style={{ ...webStyle, margin: 0 }}>
+          <p class="ff-preview__map" aria-hidden="true" style={{ ...webStyleOf(first), margin: 0 }}>
             {runs.map((run, index) =>
               run.covered ? (
                 <span key={index}>{run.text}</span>

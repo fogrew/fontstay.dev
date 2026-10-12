@@ -864,3 +864,31 @@ test('a column separator resizes with the keyboard and collapses a column when d
     'false',
   );
 });
+
+test('several fonts are previewed and exported together and can be opened one by one', async ({
+  page,
+}) => {
+  await page.goto('/en/');
+  await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
+  await page
+    .locator('input[type="file"][accept*="woff2"]')
+    .setInputFiles([sourceSans, `${fonts}FiraSans-Regular.ttf`]);
+  const all = page.getByRole('button', { name: 'All fonts', exact: true });
+  await expect(all).toHaveAttribute('aria-pressed', 'true');
+  const preview = page.getByRole('region', { name: 'Preview' });
+  await expect(preview.getByRole('figure')).toHaveCount(2);
+  await expect(preview).toContainText('Source Sans');
+  await expect(preview).toContainText('Fira Sans');
+  const code = page.getByRole('region', { name: 'Generated CSS' });
+  await expect(code).toContainText('Source Sans Pro Fallback');
+  await expect(code).toContainText('Fira Sans Fallback');
+  await expect(code).toContainText('.source-sans-pro {');
+
+  await page
+    .getByRole('button', { name: /^Fira Sans/ })
+    .first()
+    .click();
+  await expect(all).toHaveAttribute('aria-pressed', 'false');
+  await expect(preview.getByRole('figure')).toHaveCount(1);
+  await expect(code).not.toContainText('Source Sans Pro Fallback');
+});

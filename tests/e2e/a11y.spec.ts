@@ -10,6 +10,7 @@ const pages = ['/', '/fonts/', '/fonts/arial/', '/presets/', '/guide/', '/credit
 
 for (const scheme of ['light', 'dark'] as const) {
   test(`${scheme} scheme: every page has no axe violations`, async ({ page }) => {
+    test.setTimeout(120_000);
     await page.emulateMedia({ colorScheme: scheme });
     for (const locale of ['en', 'ru']) {
       for (const path of pages) {

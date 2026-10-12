@@ -6,11 +6,11 @@
 
 | Page | Measured | Budget |
 |---|---|---|
-| `/en/` (generator) | 112.7 kB | 125 kB |
-| `/en/fonts/` (catalog) | 48.1 kB | 60 kB |
-| `/en/presets/` | 40.0 kB | 50 kB |
+| `/en/` (generator) | 125.3 kB | 140 kB |
+| `/en/fonts/` (catalog) | 57.5 kB | 64 kB |
+| `/en/presets/` | 48.2 kB | 54 kB |
 
-Raise a limit only with a justification in the PR.
+Raise a limit only with a justification in the PR. The limits were raised for the three-column layout, the custom dropdown (shared by every page), the catalog filters and the all-fonts overview.
 
 ## What is lazy
 

@@ -165,7 +165,7 @@
   "preview_phrase_pl": "Pchnąć w tę łódź jeża lub ośm skrzyń fig",
   "preview_phrase_el": "Ξεσκεπάζω την ψυχοφθόρα βδελυγμία",
   "systems_share": "{system} · {share}% of the audience",
-  "preview_not_installed": "{font} is not installed on this device, so the preview falls back to a generic font. The values and the support matrix are still calculated for it.",
+  "preview_not_installed": "{font} is not installed on this device.",
   "plan_no_more": "{system}: no other fonts of this type are known yet.",
   "plan_reordered": "The fallback order was changed automatically so that every system gets its own font.",
   "systems_include": "Include {system} in the stack",
@@ -399,5 +399,10 @@
   "col_tuning": "2. Fine-tuning",
   "col_results": "3. Results",
   "columns_resize": "Resize: {left} and {right}",
-  "tuning_empty": "Add a font to tune its fallbacks."
+  "tuning_empty": "Add a font to tune its fallbacks.",
+  "preview_not_installed_note": "The preview falls back to a generic font; the values and the support matrix are still calculated for it.",
+  "results_pick_font": "Choose a single font in the first column to see this.",
+  "fonts_all": "All fonts",
+  "tuning_all_note": "Choose a single font to tune it. The preview and the export cover every font; the preview shows the fallbacks for the system selected here.",
+  "tuning_system_label": "System"
 }
