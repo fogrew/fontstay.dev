@@ -94,6 +94,18 @@ header {
   gap: var(--ff-space-2);
   align-items: center;
 }
+.ff-breadcrumbs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--ff-space-1);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.ff-breadcrumbs li:not(:last-child)::after {
+  content: "/" / "";
+  margin-inline-start: var(--ff-space-1);
+}
 .ff-brand {
   display: inline-flex;
   gap: var(--ff-space-2);

@@ -30,7 +30,13 @@ const vertical = metrics
 ---
 
 <div class="ff-page">
-  <p><a href={localizeHref('/fonts/', { locale })}>{t.font_back()}</a></p>
+  <nav aria-label={t.breadcrumbs_label()}>
+    <ol class="ff-breadcrumbs">
+      <li><a href={localizeHref('/', { locale })}>{t.nav_generator()}</a></li>
+      <li><a href={localizeHref('/fonts/', { locale })}>{t.nav_fonts()}</a></li>
+      <li aria-current="page">{font.family}</li>
+    </ol>
+  </nav>
   <h1>{font.family}</h1>
   <p>{font.category === 'serif' ? t.type_serif() : font.category === 'monospace' ? t.type_mono() : t.type_sans()}</p>
 

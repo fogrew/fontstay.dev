@@ -219,7 +219,6 @@
   "catalog_level_partial": "Some versions",
   "catalog_level_on_demand": "On demand",
   "catalog_level_unknown": "No data",
-  "font_back": "All system fonts",
   "font_specimen_heading": "Specimen",
   "font_specimen_note": "Shown in the font installed on your device; if it is missing here, you see a generic font.",
   "font_availability_heading": "Availability",
@@ -389,5 +388,6 @@
   "cssimport_files": "CSS files",
   "share_copy_short": "Share",
   "share_forget_short": "Forget",
-  "fallback_percent_note": "The percentage is the size adjustment: how much the font is scaled to match the width of your font. Above 100% it is enlarged, below 100% it is shrunk."
+  "fallback_percent_note": "The percentage is the size adjustment: how much the font is scaled to match the width of your font. Above 100% it is enlarged, below 100% it is shrunk.",
+  "breadcrumbs_label": "Breadcrumbs"
 }
