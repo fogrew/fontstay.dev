@@ -1,0 +1,92 @@
+---
+import { type Locale, messagesFor } from '@/common/i18n';
+import { browserName, FEATURES, supportData } from '@/modules/audience';
+
+interface Props {
+  locale: Locale;
+}
+
+const { locale } = Astro.props;
+const t = messagesFor(locale);
+const browsers = ['chrome', 'edge', 'firefox', 'safari'] as const;
+const support = (feature: (typeof FEATURES)[number], browser: string) => {
+  const value = supportData.features[feature]?.[browser];
+  return typeof value === 'string' ? value : value === false ? '—' : '?';
+};
+const example = `@font-face {
+  font-family: "Inter Fallback Arial";
+  src: local("Arial");
+  size-adjust: 107.12%;
+  ascent-override: 90.44%;
+  descent-override: 22.52%;
+  line-gap-override: 0%;
+  unicode-range: U+20-7E, U+A0-FF;
+}
+
+body {
+  font-family: "Inter", "Inter Fallback Arial", sans-serif;
+}`;
+const specs = [
+  ['CSS Fonts Module Level 4', 'https://www.w3.org/TR/css-fonts-4/'],
+  ['CSS Fonts: @font-face descriptors', 'https://www.w3.org/TR/css-fonts-4/#font-face-rule'],
+  ['WOFF File Format 1.0', 'https://www.w3.org/TR/WOFF/'],
+  ['WOFF File Format 2.0', 'https://www.w3.org/TR/WOFF2/'],
+  ['Layout Instability API', 'https://wicg.github.io/layout-instability/'],
+  ['OpenType specification', 'https://learn.microsoft.com/en-us/typography/opentype/spec/'],
+] as const;
+---
+
+<div class="ff-page ff-prose">
+  <h1>{t.guide_heading()}</h1>
+  <p>{t.guide_intro()}</p>
+
+  <h2>{t.guide_cls_heading()}</h2>
+  <p>{t.guide_cls_text()}</p>
+
+  <h2>{t.guide_descriptors_heading()}</h2>
+  <p>{t.guide_descriptors_text()}</p>
+  <!-- biome-ignore lint/a11y/noNoninteractiveTabindex: scrollable code needs a keyboard focus target -->
+  <pre class="ff-prose__code" tabindex="0"><code>{example}</code></pre>
+  <table class="ff-page__table">
+    <caption>{t.guide_support_caption({ version: supportData.bcdVersion })}</caption>
+    <thead>
+      <tr>
+        <th scope="col">{t.report_feature()}</th>
+        {browsers.map((browser) => <th scope="col">{browserName(browser)}</th>)}
+      </tr>
+    </thead>
+    <tbody>
+      {FEATURES.map((feature) => (
+        <tr>
+          <th scope="row"><code>{feature}</code></th>
+          {browsers.map((browser) => <td>{support(feature, browser)}</td>)}
+        </tr>
+      ))}
+    </tbody>
+  </table>
+  <p class="ff-muted">{t.guide_support_note()}</p>
+
+  <h2>{t.guide_safari_heading()}</h2>
+  <p>{t.guide_safari_text()}</p>
+
+  <h2>{t.guide_range_heading()}</h2>
+  <p>{t.guide_range_text()}</p>
+
+  <h2>{t.guide_formats_heading()}</h2>
+  <p>{t.guide_formats_text()}</p>
+
+  <h2>{t.guide_licenses_heading()}</h2>
+  <p>{t.guide_licenses_text()}</p>
+  <ul>
+    <li>{t.guide_license_ofl()}</li>
+    <li>{t.guide_license_apache()}</li>
+    <li>{t.guide_license_ufl()}</li>
+    <li>{t.guide_license_proprietary()}</li>
+  </ul>
+  <p>{t.guide_licenses_where()}</p>
+
+  <h2>{t.guide_specs_heading()}</h2>
+  <ul>
+    {specs.map(([name, href]) => <li><a href={href} rel="noopener noreferrer">{name}</a></li>)}
+  </ul>
+</div>

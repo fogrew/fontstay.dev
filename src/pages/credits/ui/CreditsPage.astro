@@ -1,0 +1,15 @@
+---
+import { Content } from '@root/CREDITS.md';
+import { type Locale, messagesFor } from '@/common/i18n';
+
+interface Props {
+  locale: Locale;
+}
+
+const t = messagesFor(Astro.props.locale);
+---
+
+<div class="ff-page ff-prose">
+  <p class="ff-muted">{t.credits_note()}</p>
+  <Content />
+</div>

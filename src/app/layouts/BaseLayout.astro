@@ -7,7 +7,7 @@ interface Props {
   locale: Locale;
   path: string;
   settingsToggle?: boolean;
-  page?: 'generator' | 'fonts' | 'presets';
+  page?: 'generator' | 'fonts' | 'presets' | 'guide' | 'credits';
   title?: string;
   description?: string;
 }
@@ -102,6 +102,9 @@ const indexable = !process.env.WORKERS_CI_BRANCH || process.env.WORKERS_CI_BRANC
           <li>
             <a href={localizeHref('/presets/', { locale })} aria-current={page === 'presets' ? 'page' : undefined}>{t.nav_presets()}</a>
           </li>
+          <li>
+            <a href={localizeHref('/guide/', { locale })} aria-current={page === 'guide' ? 'page' : undefined}>{t.nav_guide()}</a>
+          </li>
         </ul>
       </nav>
       <div class="ff-header__end">
@@ -110,6 +113,13 @@ const indexable = !process.env.WORKERS_CI_BRANCH || process.env.WORKERS_CI_BRANC
       </div>
     </header>
     <main id="main-content" tabindex="-1"><slot /></main>
+    {page !== 'generator' && (
+      <footer class="ff-footer">
+        <a href={localizeHref('/guide/', { locale })} aria-current={page === 'guide' ? 'page' : undefined}>{t.nav_guide()}</a>
+        <a href={localizeHref('/credits/', { locale })} aria-current={page === 'credits' ? 'page' : undefined}>{t.nav_credits()}</a>
+        <a href="https://github.com/fogrew/fontstay.dev">{t.header_github()}</a>
+      </footer>
+    )}
   </body>
 </html>
 

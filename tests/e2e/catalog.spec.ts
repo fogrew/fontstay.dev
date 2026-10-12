@@ -103,3 +103,30 @@ test('a preset opens in the generator with its type and per-system fallbacks', a
     'Times New Roman',
   );
 });
+
+for (const locale of ['en', 'ru']) {
+  test(`${locale}: the guide and credits pages have no accessibility violations`, async ({
+    page,
+  }) => {
+    for (const path of ['guide', 'credits']) {
+      await page.goto(`/${locale}/${path}/`);
+      await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
+      const results = await new AxeBuilder({ page }).withTags(wcagTags).analyze();
+      expect(results.violations).toEqual([]);
+    }
+  });
+}
+
+test('the guide shows descriptor support and the credits page renders CREDITS.md', async ({
+  page,
+}) => {
+  await page.goto('/en/guide/');
+  const table = page.getByRole('table', { name: /First browser version/ });
+  await expect(table.getByRole('row', { name: /^size-adjust \d/ })).toContainText('92');
+  await expect(table.getByRole('row', { name: /^ascent-override/ })).toContainText('—');
+  await page.goto('/en/credits/');
+  await expect(page.getByRole('heading', { level: 1, name: 'Credits' })).toBeVisible();
+  await expect(page.getByRole('link', { name: 'Fallback Font Generator' })).toBeVisible();
+  await page.getByRole('contentinfo').getByRole('link', { name: 'Guide' }).click();
+  await expect(page).toHaveURL(/\/en\/guide\/$/);
+});

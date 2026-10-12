@@ -238,3 +238,58 @@ main > h1 {
 .ff-presets__item p {
   margin: 0;
 }
+.ff-footer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--ff-space-4);
+  padding: var(--ff-space-3) var(--ff-space-6);
+  border-block-start: 1px solid var(--ff-border);
+}
+.ff-prose {
+  line-height: 1.6;
+  max-inline-size: 48rem;
+}
+.ff-prose h2 {
+  margin-block-start: var(--ff-space-4);
+}
+.ff-prose table {
+  font-size: 0.9375rem;
+}
+.ff-prose caption {
+  text-align: start;
+  font-weight: 600;
+  margin-block-end: var(--ff-space-1);
+}
+.ff-prose__code {
+  overflow-x: auto;
+  padding: var(--ff-space-3);
+  border: 1px solid var(--ff-border);
+  border-radius: var(--ff-radius);
+  background: var(--ff-surface);
+  font-size: 0.875rem;
+}
+.ff-header a,
+.ff-footer a,
+.ff-prose td a,
+.ff-page li > a,
+.ff-prose li a {
+  display: inline-block;
+  min-block-size: 1.5rem;
+  padding-block: 0.125rem;
+}
+.ff-page ul:not(.ff-presets, .ff-header__nav) li {
+  margin-block: 0.25rem;
+}
+.ff-page ul:not(.ff-presets, .ff-header__nav) {
+  margin-block: 0.25rem;
+  padding-block: 0.25rem;
+}
+@media (min-width: 64rem) and (min-height: 40rem) {
+  body:not(:has(.ff-generator)) {
+    block-size: auto;
+    min-block-size: 100dvh;
+  }
+  body:not(:has(.ff-generator)) main {
+    min-block-size: auto;
+  }
+}

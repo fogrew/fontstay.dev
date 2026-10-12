@@ -1,0 +1,22 @@
+---
+import { assertIsLocale, locales, messagesFor } from '@/common/i18n';
+import { GuidePage } from '@/pages/guide';
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+
+export function getStaticPaths() {
+  return locales.map((locale) => ({ params: { locale } }));
+}
+
+const locale = assertIsLocale(Astro.params.locale);
+const t = messagesFor(locale);
+---
+
+<BaseLayout
+  {locale}
+  path="/guide/"
+  page="guide"
+  title={t.guide_title()}
+  description={t.guide_description()}
+>
+  <GuidePage {locale} />
+</BaseLayout>
