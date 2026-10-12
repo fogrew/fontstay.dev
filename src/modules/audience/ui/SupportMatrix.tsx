@@ -22,6 +22,7 @@ export function SupportMatrix({
     new Intl.NumberFormat(locale, { maximumFractionDigits: 3, signDisplay: 'exceptZero' })
       .format(value)
       .replace('-', '−');
+  const shortName = (name: string) => name.replace(/ (for Android|on iOS)$/, '');
   const stateLabel = (state: CellState) => {
     if (state === 'full') return t.matrix_full();
     if (state === 'partial') return t.matrix_partial();
@@ -35,29 +36,6 @@ export function SupportMatrix({
   if (groups.length === 0) return <p class="ff-muted">{t.matrix_empty()}</p>;
   return (
     <section class="ff-matrix" aria-label={t.matrix_heading()}>
-      <ul class="ff-matrix__legend">
-        {(['full', 'partial', 'none', 'unknown'] as const).map((state) => (
-          <li key={state}>
-            <span class="ff-matrix__chip" data-state={state}>
-              <span aria-hidden="true">{SYMBOLS[state]}</span> {stateLabel(state)}
-            </span>
-            <span class="ff-muted">{stateHint(state)}</span>
-          </li>
-        ))}
-        <li>
-          <span class="ff-muted">{t.matrix_cls_legend()}</span>
-          {(['good', 'needs', 'poor'] as const).map((level) => (
-            <span class="ff-matrix__shift" data-rating={level} key={level}>
-              <span aria-hidden="true">{RATING_SYMBOLS[level]} </span>
-              {level === 'good'
-                ? t.cls_rating_good()
-                : level === 'needs'
-                  ? t.cls_rating_needs()
-                  : t.cls_rating_poor()}
-            </span>
-          ))}
-        </li>
-      </ul>
       {/* biome-ignore lint/a11y/noNoninteractiveTabindex: keyboard users scroll the wide matrix */}
       <section class="ff-matrix__scroll" tabIndex={0} aria-label={t.matrix_scroll()}>
         <div class="ff-matrix__groups">
@@ -79,7 +57,7 @@ export function SupportMatrix({
                   <div class="ff-matrix__column" key={column.browser}>
                     <h4>
                       <BrowserIcon id={column.browser} />
-                      {column.name} <span>{number(column.share, 1)}%</span>
+                      {shortName(column.name)} <span>{number(column.share, 1)}%</span>
                     </h4>
                     <ul>
                       {column.cells.map((cell) => (
@@ -122,6 +100,29 @@ export function SupportMatrix({
           ))}
         </div>
       </section>
+      <ul class="ff-matrix__legend">
+        {(['full', 'partial', 'none', 'unknown'] as const).map((state) => (
+          <li key={state}>
+            <span class="ff-matrix__chip" data-state={state}>
+              <span aria-hidden="true">{SYMBOLS[state]}</span> {stateLabel(state)}
+            </span>
+            <span class="ff-muted">{stateHint(state)}</span>
+          </li>
+        ))}
+        <li>
+          <span class="ff-muted">{t.matrix_cls_legend()}</span>
+          {(['good', 'needs', 'poor'] as const).map((level) => (
+            <span class="ff-matrix__shift" data-rating={level} key={level}>
+              <span aria-hidden="true">{RATING_SYMBOLS[level]} </span>
+              {level === 'good'
+                ? t.cls_rating_good()
+                : level === 'needs'
+                  ? t.cls_rating_needs()
+                  : t.cls_rating_poor()}
+            </span>
+          ))}
+        </li>
+      </ul>
       <p class="ff-muted">{t.matrix_note()}</p>
     </section>
   );
