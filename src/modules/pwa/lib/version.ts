@@ -1,5 +1,5 @@
 export function parseVersion(text: string): number[] | null {
-  const match = /^v?(\d+)\.(\d+)\.(\d+)/.exec(text.trim());
+  const match = /^v?(\d+)\.(\d+)\.(\d+)$/.exec(text.trim());
   return match ? [Number(match[1]), Number(match[2]), Number(match[3])] : null;
 }
 

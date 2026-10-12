@@ -38,9 +38,9 @@ const urls = entries.map((path) => {
 
 const template = readFileSync(new URL('./sw.template.js', import.meta.url), 'utf8');
 const worker = template
-  .replace('__VERSION__', pkg.version)
-  .replace('__BUILD__', build)
-  .replace('__PRECACHE__', JSON.stringify(urls));
+  .replace('__VERSION__', () => pkg.version)
+  .replace('__BUILD__', () => build)
+  .replace('__PRECACHE__', () => JSON.stringify(urls));
 writeFileSync(join(dist, 'sw.js'), worker);
 writeFileSync(join(dist, 'version.json'), `${JSON.stringify({ version: pkg.version, build })}\n`);
 console.log(

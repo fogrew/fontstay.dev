@@ -42,27 +42,42 @@ export function PwaManager({ locale }: { locale: Locale }) {
       } catch {
         version = undefined;
       }
-      setToast((existing) => existing ?? { kind: 'update', version });
+      setToast((existing) =>
+        existing?.kind === 'update'
+          ? existing
+          : { kind: 'update', version: version === currentVersion() ? undefined : version },
+      );
     };
-    void navigator.serviceWorker.register('/sw.js').then((reg) => {
-      setRegistration(reg);
-      if (reg.waiting && navigator.serviceWorker.controller) void offer();
-      reg.addEventListener('updatefound', () => {
-        const worker = reg.installing;
-        worker?.addEventListener('statechange', () => {
-          if (worker.state === 'installed' && navigator.serviceWorker.controller) void offer();
+    let active: ServiceWorkerRegistration | undefined;
+    const onVisible = () => {
+      if (document.visibilityState === 'visible') void active?.update().catch(() => undefined);
+    };
+    document.addEventListener('visibilitychange', onVisible);
+    void navigator.serviceWorker
+      .register('/sw.js')
+      .catch(() => undefined)
+      .then((reg) => {
+        if (!reg) return;
+        active = reg;
+        setRegistration(reg);
+        if (reg.waiting && navigator.serviceWorker.controller) void offer();
+        reg.addEventListener('updatefound', () => {
+          const worker = reg.installing;
+          worker?.addEventListener('statechange', () => {
+            if (worker.state === 'installed' && navigator.serviceWorker.controller) void offer();
+          });
         });
+        timer = setInterval(() => void reg.update().catch(() => undefined), CHECK_INTERVAL_MS);
       });
-      timer = setInterval(() => void reg.update().catch(() => undefined), CHECK_INTERVAL_MS);
-      document.addEventListener('visibilitychange', () => {
-        if (document.visibilityState === 'visible') void reg.update().catch(() => undefined);
-      });
-    });
-    return () => clearInterval(timer);
+    return () => {
+      clearInterval(timer);
+      document.removeEventListener('visibilitychange', onVisible);
+    };
   }, []);
 
   if (!toast) return null;
-  const changelog = (since: string) => `${localizeHref('/changelog/', { locale })}?since=${since}`;
+  const changelog = (since: string) =>
+    `${localizeHref('/changelog/', { locale })}?since=${encodeURIComponent(since)}`;
 
   const apply = () => {
     const waiting = registration?.waiting;

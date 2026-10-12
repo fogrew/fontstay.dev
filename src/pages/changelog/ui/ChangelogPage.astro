@@ -15,7 +15,7 @@ const t = messagesFor(Astro.props.locale);
 </div>
 
 <script>
-  import { headingVersion, hiddenSections } from '@/modules/pwa';
+  import { headingVersion, hiddenSections, parseVersion } from '@/modules/pwa';
 
   const root = document.getElementById('changelog');
   const note = document.getElementById('changelog-note');
@@ -24,7 +24,8 @@ const t = messagesFor(Astro.props.locale);
     const version = headingVersion(heading.textContent ?? '');
     if (version) heading.id = `v${version}`;
   }
-  const since = new URLSearchParams(location.search).get('since');
+  const requested = new URLSearchParams(location.search).get('since');
+  const since = requested && parseVersion(requested) ? requested : null;
   if (root && note && since) {
     const flags = hiddenSections(headings.map((heading) => heading.textContent ?? ''), since);
     const hide = (hidden: boolean) => {
@@ -39,7 +40,7 @@ const t = messagesFor(Astro.props.locale);
       });
     };
     hide(true);
-    const text = (root.dataset.sinceLabel ?? '').replace('{version}', since);
+    const text = (root.dataset.sinceLabel ?? '').replace('{version}', () => since);
     note.textContent = `${text} `;
     const button = document.createElement('button');
     button.type = 'button';
