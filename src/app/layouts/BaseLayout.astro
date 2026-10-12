@@ -93,7 +93,7 @@ const indexable = !process.env.WORKERS_CI_BRANCH || process.env.WORKERS_CI_BRANC
           </svg>
         </button>
       )}
-      <a class="ff-brand" href={localizeHref('/', { locale })}>{t.app_title()}</a>
+      <a class="ff-brand" href={localizeHref('/', { locale })}><img src="/favicon.svg" alt="" width="24" height="24" />{t.app_title()}</a>
       <nav aria-label={t.nav_label()}>
         <ul class="ff-header__nav">
           <li>

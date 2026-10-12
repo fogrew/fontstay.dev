@@ -646,6 +646,26 @@ test('a font embedded in pasted CSS can be added and other sources are only link
   await expect(page.getByRole('button', { name: /^Remove: Embedded/ })).toBeVisible();
 });
 
+test('CSS files can be chosen and their font declarations are found automatically', async ({
+  page,
+}) => {
+  await page.goto('/en/');
+  await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
+  await page.getByText('Import from CSS').click();
+  await page.getByLabel('CSS files').setInputFiles({
+    name: 'fonts.css',
+    mimeType: 'text/css',
+    buffer: Buffer.from(
+      '@font-face { font-family: "Remote"; src: url(https://example.com/remote.woff2) format("woff2"); }',
+    ),
+  });
+  const list = page.getByRole('list', { name: 'Fonts found in the CSS' });
+  await expect(list.getByRole('link', { name: 'Download the file' })).toHaveAttribute(
+    'href',
+    'https://example.com/remote.woff2',
+  );
+});
+
 test('a Google Fonts family can be searched and downloaded through the two allowed origins', async ({
   page,
 }) => {

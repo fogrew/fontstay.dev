@@ -239,7 +239,7 @@
   "missing_summary": "{count} characters are not in this font and are drawn with the {font} font instead: {list}.",
   "missing_more": "…and {count} more.",
   "cssimport_heading": "Import from CSS",
-  "cssimport_note": "Paste @font-face rules or a Google Fonts link. Nothing is fetched from other sites: fonts embedded as data: URLs can be added right here, for other files download them and drop them above.",
+  "cssimport_note": "Paste @font-face rules or a Google Fonts link, or choose CSS files: the declarations are found automatically. Nothing is fetched from other sites: fonts embedded as data: URLs can be added right here, for other files download them and drop them above.",
   "cssimport_label": "CSS or link",
   "cssimport_read": "Read CSS",
   "cssimport_none": "No @font-face rules or Google Fonts links were found.",
@@ -385,5 +385,6 @@
   "pwa_updated": "The app was updated from {from} to {to}.",
   "pwa_whats_new": "What is new",
   "pwa_install": "Install app",
-  "matrix_cls_legend": "CLS, the layout shift when the web font replaces the fallback:"
+  "matrix_cls_legend": "CLS, the layout shift when the web font replaces the fallback:",
+  "cssimport_files": "CSS files"
 }

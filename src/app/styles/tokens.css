@@ -88,6 +88,9 @@ header {
   margin-inline-start: auto;
 }
 .ff-brand {
+  display: inline-flex;
+  gap: var(--ff-space-2);
+  align-items: center;
   font-weight: 700;
   text-decoration: none;
 }

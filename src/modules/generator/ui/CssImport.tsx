@@ -56,13 +56,25 @@ export function CssImport({
   const [text, setText] = useState('');
   const [result, setResult] = useState<Result>();
 
-  const read = () => {
-    if (text.length > MAX_CSS_CHARS) {
+  const analyze = (source: string) => {
+    if (source.length > MAX_CSS_CHARS) {
       setResult({ entries: [], google: [], tooLarge: true });
       return;
     }
-    const entries = parseFontFaces(text).map((face) => ({ face, pick: pickSource(face) }));
-    setResult({ entries, google: parseGoogleFontsLinks(text), tooLarge: false });
+    const entries = parseFontFaces(source).map((face) => ({ face, pick: pickSource(face) }));
+    setResult({ entries, google: parseGoogleFontsLinks(source), tooLarge: false });
+  };
+  const read = () => analyze(text);
+  const readFiles = async (files: FileList | null) => {
+    const list = [...(files ?? [])];
+    if (list.length === 0) return;
+    if (list.reduce((sum, file) => sum + file.size, 0) > MAX_CSS_CHARS * 4) {
+      setResult({ entries: [], google: [], tooLarge: true });
+      return;
+    }
+    const joined = (await Promise.all(list.map((file) => file.text()))).join('\n');
+    setText(joined);
+    analyze(joined);
   };
   const empty =
     result && !result.tooLarge && result.entries.length === 0 && result.google.length === 0;
@@ -80,6 +92,19 @@ export function CssImport({
             spellcheck={false}
             value={text}
             onInput={(event) => setText(event.currentTarget.value)}
+          />
+        </div>
+        <div class="ff-field">
+          <label for="ff-cssimport-files">{t.cssimport_files()}</label>
+          <input
+            id="ff-cssimport-files"
+            type="file"
+            accept=".css,text/css"
+            multiple
+            onChange={(event) => {
+              void readFiles(event.currentTarget.files);
+              event.currentTarget.value = '';
+            }}
           />
         </div>
         <Button disabled={text.trim() === ''} onClick={read}>
