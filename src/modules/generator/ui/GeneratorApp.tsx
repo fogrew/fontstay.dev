@@ -898,6 +898,7 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
                     </div>
                   </div>
                 ))}
+                <p class="ff-muted">{t.fallback_percent_note()}</p>
                 {currentCandidates.length <= currentList.length && (
                   <p class="ff-muted">{t.plan_no_more({ system: systemName(current) })}</p>
                 )}
