@@ -11,6 +11,7 @@ import {
   type StatsResult,
   type UsageStats,
 } from '../lib/stats';
+import { BrowserIcon } from './BrandIcon';
 import { OsPanel } from './OsPanel';
 import './audience.css';
 
@@ -190,7 +191,10 @@ export function AudienceEditor({
           <ul class="ff-audience__list" aria-label={t.audience_list_label()}>
             {state.groups.map((group) => (
               <li key={group.id}>
-                <span>{group.name}</span>
+                <span>
+                  <BrowserIcon id={group.id} />
+                  {group.name}
+                </span>
                 <span class="ff-muted">{group.ranges.join(', ')}</span>
               </li>
             ))}

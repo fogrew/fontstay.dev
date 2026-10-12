@@ -7,6 +7,7 @@ const OS_ICONS: Partial<Record<Os, IconName>> = {
   linux: 'linux',
   android: 'android',
   ios: 'ios',
+  chromeos: 'chromeos',
 };
 
 const BROWSER_ICONS: Record<string, IconName> = {

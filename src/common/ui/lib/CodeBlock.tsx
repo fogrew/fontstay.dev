@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'preact/hooks';
 import { type Locale, messagesFor } from '@/common/i18n';
 import { Button } from './Button';
+import { Icon } from './Icon';
 import { LiveRegion } from './LiveRegion';
 
 export function CodeBlock({
@@ -51,10 +52,12 @@ export function CodeBlock({
               }}
               aria-label={`${t.ui_download()}: ${label}`}
             >
+              <Icon name="download" />
               {t.ui_download()}
             </Button>
           )}
           <Button disabled={pending} onClick={copy} aria-label={`${t.ui_copy_code()}: ${label}`}>
+            <Icon name="copy" />
             {t.ui_copy_code()}
           </Button>
         </span>

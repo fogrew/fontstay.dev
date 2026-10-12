@@ -7,6 +7,7 @@ import {
   Disclosure,
   FitField,
   type FitValue,
+  Icon,
   LiveRegion,
   Select,
 } from '@/common/ui';
@@ -1061,12 +1062,18 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
           <p role="alert">{t.fit_no_coverage()}</p>
         )}
         {selected && !shares && <p class="ff-muted">{t.plan_waiting()}</p>}
-        <Disclosure summary={t.share_heading()}>
+        <Disclosure icon={<Icon name="share" />} summary={t.share_heading()}>
           <div class="ff-share">
             <p class="ff-muted">{t.share_note()}</p>
             <div class="ff-generator__buttons">
-              <Button onClick={() => void copyLink()}>{t.share_copy()}</Button>
-              <Button onClick={() => void forget()}>{t.share_forget()}</Button>
+              <Button onClick={() => void copyLink()}>
+                <Icon name="share" />
+                {t.share_copy()}
+              </Button>
+              <Button onClick={() => void forget()}>
+                <Icon name="forget" />
+                {t.share_forget()}
+              </Button>
             </div>
             <p class="ff-muted" role="status">
               {shareMessage}

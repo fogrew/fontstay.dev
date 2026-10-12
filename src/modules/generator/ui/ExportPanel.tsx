@@ -6,6 +6,9 @@ import { buildExport, EXPORT_FORMATS, type ExportFormat, type ExportInput } from
 type Choice = ExportFormat | 'report';
 
 const FORMAT_ICONS: Partial<Record<Choice, IconName>> = {
+  css: 'css',
+  variables: 'css',
+  preload: 'html',
   tailwind: 'tailwind',
   next: 'next',
   nuxt: 'nuxt',

@@ -1,5 +1,13 @@
 export const ICON_NAMES = [
   'chrome',
+  'chromeos',
+  'css',
+  'html',
+  'save',
+  'share',
+  'download',
+  'copy',
+  'forget',
   'firefox',
   'safari',
   'opera',
