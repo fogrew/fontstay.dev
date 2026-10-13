@@ -13,21 +13,51 @@ export const TAG_BROWSERS = [
   'op_mini',
 ] as const;
 
-export const INCLUDE_TAGS: readonly string[] = [
-  'baseline widely available',
-  'baseline newly available',
-  'defaults',
-  '> 0.5%',
-  '> 1%',
-  'last 2 versions',
-  'cover 95%',
-  ...TAG_BROWSERS.filter((id) => id !== 'op_mini').map((id) => `last 2 ${id} versions`),
-];
+export interface Tag {
+  label: string;
+  include: string;
+  exclude: string;
+  browser?: string;
+}
 
-export const EXCLUDE_TAGS: readonly string[] = [
-  'not dead',
-  'not op_mini all',
-  ...TAG_BROWSERS.filter((id) => id !== 'op_mini').map((id) => `not ${id} > 0`),
+export interface TagGroup {
+  id: 'popularity' | 'baseline' | 'recency' | 'browsers';
+  tags: readonly Tag[];
+}
+
+const plain = (query: string): Tag => ({ label: query, include: query, exclude: `not ${query}` });
+
+export const TAG_GROUPS: readonly TagGroup[] = [
+  {
+    id: 'popularity',
+    tags: ['> 0.1%', '> 0.5%', '> 1%', '> 2%', '> 5%', 'cover 95%', 'cover 99%'].map(plain),
+  },
+  {
+    id: 'baseline',
+    tags: [
+      'baseline widely available',
+      'baseline newly available',
+      'baseline 2022',
+      'baseline 2023',
+      'baseline 2024',
+      'baseline 2025',
+    ].map(plain),
+  },
+  {
+    id: 'recency',
+    tags: ['defaults', 'last 2 versions', 'last 5 versions', 'dead', 'unreleased versions'].map(
+      plain,
+    ),
+  },
+  {
+    id: 'browsers',
+    tags: TAG_BROWSERS.map((id) => ({
+      label: id,
+      include: `last 2 ${id} versions`,
+      exclude: `not ${id} > 0`,
+      browser: id,
+    })),
+  },
 ];
 
 export function splitQuery(query: string): string[] {

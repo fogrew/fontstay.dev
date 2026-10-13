@@ -5,7 +5,7 @@ export { Button, type ButtonProps } from './lib/Button';
 export { CodeBlock } from './lib/CodeBlock';
 export { Collapsible, type CollapsibleProps } from './lib/Collapsible';
 export { Disclosure } from './lib/Disclosure';
-export { Dock, type DockProps } from './lib/Dock';
+export { DOCK_OPEN_EVENT, Dock, type DockProps } from './lib/Dock';
 export { FitField, type FitFieldProps } from './lib/FitField';
 export { displayedFitValue, type FitValue, pinFitValue } from './lib/fit-value';
 export type { CodeLanguage } from './lib/highlight';

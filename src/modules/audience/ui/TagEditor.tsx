@@ -1,16 +1,9 @@
+import { useState } from 'preact/hooks';
 import { type Locale, messagesFor } from '@/common/i18n';
-import {
-  addTag,
-  browserOf,
-  EXCLUDE_TAGS,
-  INCLUDE_TAGS,
-  isExcluded,
-  removeTag,
-  splitQuery,
-} from '../lib/tags';
+import { addTag, browserOf, isExcluded, removeTag, splitQuery, TAG_GROUPS } from '../lib/tags';
 import { BrowserIcon } from './BrandIcon';
 
-function Tag({ tag }: { tag: string }) {
+function Label({ tag }: { tag: string }) {
   const browser = browserOf(tag);
   return (
     <>
@@ -30,15 +23,17 @@ export function TagEditor({
   onChange: (query: string) => void;
 }) {
   const t = messagesFor(locale);
+  const [mode, setMode] = useState<'include' | 'exclude'>('include');
   const parts = splitQuery(query);
   const groups = [
     { label: t.audience_tags_included(), tags: parts.filter((part) => !isExcluded(part)) },
     { label: t.audience_tags_excluded(), tags: parts.filter(isExcluded) },
   ];
-  const suggestions = [
-    { label: t.audience_tags_add_include(), tags: INCLUDE_TAGS },
-    { label: t.audience_tags_add_exclude(), tags: EXCLUDE_TAGS },
-  ];
+  const groupName = (id: (typeof TAG_GROUPS)[number]['id']) => {
+    if (id === 'popularity') return t.audience_tags_group_popularity();
+    if (id === 'baseline') return t.audience_tags_group_baseline();
+    return id === 'recency' ? t.audience_tags_group_recency() : t.audience_tags_group_browsers();
+  };
   return (
     <div class="ff-tags">
       {groups.map((group) => (
@@ -54,7 +49,7 @@ export function TagEditor({
                   aria-label={t.audience_tags_remove({ tag })}
                   onClick={() => onChange(removeTag(query, tag))}
                 >
-                  <Tag tag={tag} />
+                  <Label tag={tag} />
                   <span aria-hidden="true"> ×</span>
                 </button>
               </li>
@@ -62,22 +57,40 @@ export function TagEditor({
           </ul>
         </div>
       ))}
-      {suggestions.map((group) => (
-        <div key={group.label}>
-          <h4>{group.label}</h4>
+      <fieldset class="ff-tags__mode">
+        <legend>{t.audience_tags_mode_label()}</legend>
+        {(['include', 'exclude'] as const).map((value) => (
+          <label key={value}>
+            <input
+              type="radio"
+              name="ff-tags-mode"
+              checked={mode === value}
+              onChange={() => setMode(value)}
+            />{' '}
+            {value === 'include' ? t.audience_tags_included() : t.audience_tags_excluded()}
+          </label>
+        ))}
+      </fieldset>
+      {TAG_GROUPS.map((group) => (
+        <div key={group.id}>
+          <h4>{groupName(group.id)}</h4>
           <ul class="ff-tags__list">
-            {group.tags.map((tag) => (
-              <li key={tag}>
-                <button
-                  type="button"
-                  class="ff-tag ff-tag--suggestion"
-                  disabled={parts.includes(tag)}
-                  onClick={() => onChange(addTag(query, tag))}
-                >
-                  <Tag tag={tag} />
-                </button>
-              </li>
-            ))}
+            {group.tags.map((tag) => {
+              const query_ = mode === 'include' ? tag.include : tag.exclude;
+              return (
+                <li key={tag.label}>
+                  <button
+                    type="button"
+                    class="ff-tag"
+                    disabled={parts.includes(query_)}
+                    onClick={() => onChange(addTag(query, query_))}
+                  >
+                    {tag.browser && <BrowserIcon id={tag.browser} />}
+                    {tag.label}
+                  </button>
+                </li>
+              );
+            })}
           </ul>
         </div>
       ))}

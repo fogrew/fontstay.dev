@@ -517,6 +517,10 @@
   font-weight: 600;
 }
 .ff-article-view .ff-article {
+  --ff-article-heading: system-ui, sans-serif;
+  --ff-article-body: system-ui, sans-serif;
+  --ff-article-size: 18px;
+  --ff-article-line: 1.5;
   box-sizing: border-box;
   display: grid;
   gap: calc(var(--ff-article-size) * 1.5);
@@ -694,13 +698,17 @@
   text-overflow: ellipsis;
 }
 .ff-article-view .ff-article__missing {
+  anchor-name: --ff-mark;
+  anchor-scope: --ff-mark;
   background: color-mix(in srgb, var(--ff-error) 25%, transparent);
   color: inherit;
   text-decoration: underline wavy var(--ff-error);
 }
-.ff-article-view .ff-article__missing:is(:hover, :focus-visible)::after {
-  content: attr(data-note);
+.ff-article-view .ff-article__tip {
+  display: none;
   position: fixed;
+  position-anchor: --ff-mark;
+  position-visibility: always;
   z-index: 5;
   inline-size: max-content;
   max-inline-size: min(18rem, 90vw);
@@ -713,21 +721,37 @@
   font:
     0.8125rem / 1.3 system-ui,
     sans-serif;
+  font-style: normal;
+  font-weight: 400;
+  letter-spacing: normal;
+  word-spacing: normal;
+  text-transform: none;
   -webkit-text-stroke: 0;
   text-decoration: none;
   white-space: normal;
 }
 @supports (position-area: top) {
-  .ff-article-view .ff-article__missing:is(:hover, :focus-visible)::after {
-    position-area: top span-inline-end;
-    position-try-fallbacks:
-      flip-block,
-      flip-inline,
-      flip-block flip-inline;
+  .ff-article-view .ff-article__missing:is(:hover, :focus-visible) > .ff-article__tip {
+    display: block;
+    position-area: top;
+    justify-self: anchor-center;
+    position-try-fallbacks: flip-block;
   }
 }
-@supports not (position-area: top) {
-  .ff-article-view .ff-article__missing:is(:hover, :focus-visible)::after {
-    display: none;
-  }
+.ff-dropzone {
+  position: fixed;
+  inset: var(--ff-space-3);
+  z-index: 100;
+  display: grid;
+  place-items: center;
+  border: 3px dashed var(--ff-accent);
+  border-radius: var(--ff-radius);
+  background: color-mix(in srgb, var(--ff-bg) 85%, transparent);
+  font-size: 1.5rem;
+  font-weight: 700;
+  pointer-events: none;
+}
+.ff-article-view__hint {
+  margin: 0;
+  font-weight: 600;
 }

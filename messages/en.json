@@ -380,8 +380,6 @@
   "catalog_filter_coverage": "Minimum audience coverage, %",
   "audience_tags_included": "Included",
   "audience_tags_excluded": "Excluded",
-  "audience_tags_add_include": "Add to the audience",
-  "audience_tags_add_exclude": "Exclude from the audience",
   "audience_tags_none": "Nothing yet",
   "audience_tags_remove": "Remove: {tag}",
   "col_inputs": "1. Inputs",
@@ -415,5 +413,13 @@
   "article_unsupported": "{chars} is not supported by the font and is drawn with the {font} fallback",
   "article_group_view": "View",
   "article_group_content": "Content",
-  "article_group_fonts": "Fonts"
+  "article_group_fonts": "Fonts",
+  "drop_anywhere": "Drop fonts or CSS files anywhere",
+  "drop_unsupported": "Only font files (WOFF2, WOFF, TTF, OTF, TTC, OTC) and CSS files can be dropped here.",
+  "article_empty_hint": "Choose a web font or drop it anywhere on the page: until then the article is set in the system font stack.",
+  "audience_tags_mode_label": "Add the tags below to the list:",
+  "audience_tags_group_popularity": "Popularity",
+  "audience_tags_group_baseline": "Baseline",
+  "audience_tags_group_recency": "Recency",
+  "audience_tags_group_browsers": "Browsers"
 }

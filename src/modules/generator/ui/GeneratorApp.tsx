@@ -7,6 +7,7 @@ import {
   Collapsible,
   clearLayouts,
   Disclosure,
+  DOCK_OPEN_EVENT,
   Dock,
   FitField,
   type FitValue,
@@ -102,6 +103,10 @@ interface LoadedFont {
   metrics: FontMetrics;
   bytes: ArrayBuffer;
 }
+
+const FONT_EXTENSIONS = /\.(woff2|woff|ttf|otf|ttc|otc)$/i;
+const isFontFile = (file: File) => FONT_EXTENSIONS.test(file.name) || file.type.startsWith('font/');
+const isStyleFile = (file: File) => /\.css$/i.test(file.name) || file.type === 'text/css';
 
 const MAX_FONTS = 8;
 const MIN_SHARE = 1;
@@ -725,6 +730,54 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
     const timer = setTimeout(() => saveSettings(JSON.parse(stateKey) as ShareState), 400);
     return () => clearTimeout(timer);
   }, [stateKey, restored, forgotten]);
+  const [dragging, setDragging] = useState(false);
+  const [cssDrop, setCssDrop] = useState<{ id: number; files: File[] }>();
+  const dropHandler = useRef<(files: File[]) => void>(() => undefined);
+  dropHandler.current = (files) => {
+    const fontFiles = files.filter(isFontFile);
+    const styleFiles = files.filter(isStyleFile);
+    if (fontFiles.length > 0) void addFiles(fontFiles);
+    if (styleFiles.length > 0) setCssDrop({ id: Date.now(), files: styleFiles });
+    if (fontFiles.length > 0 || styleFiles.length > 0) {
+      window.dispatchEvent(new CustomEvent(DOCK_OPEN_EVENT, { detail: 'inputs' }));
+    } else if (files.length > 0) {
+      setError(t.drop_unsupported());
+    }
+  };
+  useEffect(() => {
+    let depth = 0;
+    const hasFiles = (event: DragEvent) => Boolean(event.dataTransfer?.types.includes('Files'));
+    const enter = (event: DragEvent) => {
+      if (!hasFiles(event)) return;
+      depth++;
+      setDragging(true);
+    };
+    const leave = (event: DragEvent) => {
+      if (!hasFiles(event)) return;
+      depth = Math.max(0, depth - 1);
+      if (depth === 0) setDragging(false);
+    };
+    const over = (event: DragEvent) => {
+      if (hasFiles(event)) event.preventDefault();
+    };
+    const drop = (event: DragEvent) => {
+      if (!hasFiles(event)) return;
+      event.preventDefault();
+      depth = 0;
+      setDragging(false);
+      dropHandler.current([...(event.dataTransfer?.files ?? [])]);
+    };
+    window.addEventListener('dragenter', enter);
+    window.addEventListener('dragleave', leave);
+    window.addEventListener('dragover', over);
+    window.addEventListener('drop', drop);
+    return () => {
+      window.removeEventListener('dragenter', enter);
+      window.removeEventListener('dragleave', leave);
+      window.removeEventListener('dragover', over);
+      window.removeEventListener('drop', drop);
+    };
+  }, []);
   const [headerSlot, setHeaderSlot] = useState<HTMLElement | null>(null);
   useEffect(() => setHeaderSlot(document.getElementById('ff-header-actions')), []);
   useEffect(() => {
@@ -1257,6 +1310,11 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
   });
   return (
     <div class="ff-generator">
+      {dragging && (
+        <div class="ff-dropzone" aria-hidden="true">
+          {t.drop_anywhere()}
+        </div>
+      )}
       {headerSlot &&
         createPortal(
           <>
@@ -1295,7 +1353,7 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
                   busy={busy}
                   onFile={(file) => void addFiles([file])}
                 />
-                <CssImport locale={locale} busy={busy} onFiles={addFiles} />
+                <CssImport locale={locale} busy={busy} onFiles={addFiles} dropped={cssDrop} />
                 {error && (
                   <p class="ff-error" role="alert">
                     {error}
@@ -1450,16 +1508,7 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
               )}
             </div>
           )}
-        {previewItems.length > 0 ? (
-          <ArticleView
-            locale={locale}
-            items={previewItems}
-            shift={shiftInput}
-            shiftKey={shiftKey}
-          />
-        ) : (
-          <p class="ff-generator__empty">{t.results_empty()}</p>
-        )}
+        <ArticleView locale={locale} items={previewItems} shift={shiftInput} shiftKey={shiftKey} />
         {!allMode && plan && !output && selected && <p role="alert">{t.css_error()}</p>}
       </div>
     </div>

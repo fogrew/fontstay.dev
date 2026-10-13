@@ -1,4 +1,4 @@
-import { useState } from 'preact/hooks';
+import { useEffect, useState } from 'preact/hooks';
 import { type Locale, messagesFor } from '@/common/i18n';
 import { Button, Disclosure } from '@/common/ui';
 import { displayName } from '../lib/compute';
@@ -47,12 +47,15 @@ export function CssImport({
   locale,
   busy,
   onFiles,
+  dropped,
 }: {
   locale: Locale;
   busy: boolean;
   onFiles: (files: File[]) => void;
+  dropped?: { id: number; files: File[] } | undefined;
 }) {
   const t = messagesFor(locale);
+  const [open, setOpen] = useState(false);
   const [text, setText] = useState('');
   const [result, setResult] = useState<Result>();
 
@@ -65,7 +68,7 @@ export function CssImport({
     setResult({ entries, google: parseGoogleFontsLinks(source), tooLarge: false });
   };
   const read = () => analyze(text);
-  const readFiles = async (files: FileList | null) => {
+  const readFiles = async (files: FileList | File[] | null) => {
     const list = [...(files ?? [])];
     if (list.length === 0) return;
     if (list.reduce((sum, file) => sum + file.size, 0) > MAX_CSS_CHARS * 4) {
@@ -76,11 +79,16 @@ export function CssImport({
     setText(joined);
     analyze(joined);
   };
+  useEffect(() => {
+    if (!dropped) return;
+    setOpen(true);
+    void readFiles(dropped.files);
+  }, [dropped?.id]);
   const empty =
     result && !result.tooLarge && result.entries.length === 0 && result.google.length === 0;
 
   return (
-    <Disclosure summary={t.cssimport_heading()}>
+    <Disclosure summary={t.cssimport_heading()} open={open} onToggle={setOpen}>
       <div class="ff-cssimport">
         <p class="ff-muted">{t.cssimport_note()}</p>
         <div class="ff-field">

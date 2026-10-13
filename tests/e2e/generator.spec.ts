@@ -310,10 +310,12 @@ test('system shares follow the query and the tag controls edit it', async ({ pag
   await page.getByLabel('Browserslist query').fill('firefox 120');
   await expect(shares).toContainText('Windows');
 
-  await page.getByRole('button', { name: 'not firefox > 0', exact: true }).click();
+  await page.getByRole('radio', { name: 'Excluded' }).check();
+  await page.getByRole('button', { name: 'firefox', exact: true }).click();
   await expect(page.getByLabel('Browserslist query')).toHaveValue('firefox 120, not firefox > 0');
   await page.getByRole('button', { name: 'Remove: not firefox > 0' }).click();
   await expect(page.getByLabel('Browserslist query')).toHaveValue('firefox 120');
+  await page.getByRole('radio', { name: 'Included' }).check();
   await page.getByRole('button', { name: '> 1%', exact: true }).click();
   await expect(page.getByLabel('Browserslist query')).toHaveValue('firefox 120, > 1%');
 });
@@ -573,7 +575,10 @@ test('characters missing from the font are highlighted and explained on focus', 
   await choose(view.getByLabel('Sample text'), 'ja');
   const mark = view.locator('.ff-article:not(.ff-article--ghost) .ff-article__missing').first();
   await expect(mark).toBeVisible();
-  await expect(mark).toHaveAttribute('data-note', /is not supported by the font.*Sans-serif/);
+  await expect(mark).toHaveAttribute(
+    'aria-description',
+    /is not supported by the font.*Sans-serif/,
+  );
   const overflow = () =>
     page.evaluate(() => ({
       page: document.documentElement.scrollWidth - document.documentElement.clientWidth,
@@ -588,7 +593,7 @@ test('characters missing from the font are highlighted and explained on focus', 
   await expect(mark).toBeFocused();
   expect(await overflow()).toEqual(before);
   await choose(view.getByLabel('Font for the missing characters'), 'serif');
-  await expect(mark).toHaveAttribute('data-note', /Serif/);
+  await expect(mark).toHaveAttribute('aria-description', /Serif/);
 });
 
 test('the article shows the layout shift measured on this device and ellipsizes without wrapping', async ({
@@ -912,4 +917,51 @@ test('the export code is syntax highlighted without inline styles', async ({ pag
   await expect(next.locator('code span[class^="ff-tok-"]').first()).toBeVisible({
     timeout: 15_000,
   });
+});
+
+test('the article uses the system font stack until a font is added', async ({ page }) => {
+  await page.goto('/en/');
+  await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
+  await closePanels(page);
+  await expect(page.getByText(/Choose a web font or drop it anywhere/)).toBeVisible();
+  await expect(page.locator('.ff-article')).toHaveCSS('font-family', /system-ui/);
+});
+
+test('fonts and CSS files can be dropped anywhere on the page', async ({ page }) => {
+  await page.goto('/en/');
+  await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
+  await closePanels(page);
+  const bytes = [...readFileSync(sourceSans)];
+  const drop = (name: string, type: string, content: number[] | string) =>
+    page.evaluate(
+      ([fileName, mime, data]) => {
+        const transfer = new DataTransfer();
+        const part = typeof data === 'string' ? data : new Uint8Array(data as number[]);
+        transfer.items.add(new File([part], fileName as string, { type: mime as string }));
+        for (const kind of ['dragenter', 'dragover', 'drop']) {
+          window.dispatchEvent(
+            new DragEvent(kind, { dataTransfer: transfer, bubbles: true, cancelable: true }),
+          );
+        }
+      },
+      [name, type, content],
+    );
+  await drop('SourceSansPro-Regular.woff2', 'font/woff2', bytes);
+  await expect(page.locator('.ff-article-view__overlay')).toBeVisible({ timeout: 15_000 });
+  await drop(
+    'fonts.css',
+    'text/css',
+    '@font-face { font-family: "Remote"; src: url(https://example.com/remote.woff2) format("woff2"); }',
+  );
+  await expect(page.getByRole('button', { name: '1. Inputs', exact: true })).toHaveAttribute(
+    'aria-expanded',
+    'true',
+  );
+  await expect(
+    page
+      .getByRole('list', { name: 'Fonts found in the CSS' })
+      .getByRole('link', { name: 'Download the file' }),
+  ).toBeVisible();
+  await drop('notes.txt', 'text/plain', 'hello');
+  await expect(page.getByRole('alert')).toContainText('Only font files');
 });

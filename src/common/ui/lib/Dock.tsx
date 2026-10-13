@@ -24,6 +24,7 @@ interface Saved {
   opened: string[];
 }
 
+export const DOCK_OPEN_EVENT = 'ff-dock-open';
 const MIN_COLUMN_PX = 160;
 const KEY_STEP = 0.03;
 
@@ -50,6 +51,14 @@ export function Dock({ items, storageKey, resizeLabel }: DockProps) {
       setOpened(new Set(saved.opened));
     }
     setReady(true);
+  }, []);
+  useEffect(() => {
+    const open = (event: Event) => {
+      const id = (event as CustomEvent<string>).detail;
+      if (ids.includes(id)) setOpened((current) => new Set(current).add(id));
+    };
+    window.addEventListener(DOCK_OPEN_EVENT, open);
+    return () => window.removeEventListener(DOCK_OPEN_EVENT, open);
   }, []);
   useEffect(() => {
     if (ready) saveLayout(storageKey, { sizes, opened: [...opened] });

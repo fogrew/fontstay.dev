@@ -221,3 +221,26 @@
   opacity: 0.5;
   cursor: default;
 }
+.ff-tags .ff-tags__list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--ff-space-1);
+  padding: 0;
+}
+.ff-tags__mode {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--ff-space-3);
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+.ff-tags__mode legend {
+  padding: 0;
+  font-weight: 600;
+}
+.ff-tags .ff-tag {
+  display: inline-flex;
+  align-items: center;
+  white-space: nowrap;
+}

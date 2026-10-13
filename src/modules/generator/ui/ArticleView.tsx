@@ -50,10 +50,12 @@ function Marked({
             class="ff-article__missing"
             // biome-ignore lint/a11y/noNoninteractiveTabindex: focus reveals why the character is highlighted
             tabIndex={0}
-            title={coverage.note(run.text)}
-            data-note={coverage.note(run.text)}
+            aria-description={coverage.note(run.text)}
           >
             {run.text}
+            <span class="ff-article__tip" aria-hidden="true">
+              {coverage.note(run.text)}
+            </span>
           </mark>
         ),
       )}
@@ -180,6 +182,8 @@ export function ArticleView({
   const [substitute, setSubstitute] = useState<Substitute>('sans-serif');
   const [headingPick, setHeadingPick] = useState<string>();
   const [bodyPick, setBodyPick] = useState<string>();
+  const [hydrated, setHydrated] = useState(false);
+  useEffect(() => setHydrated(true), []);
   const [loadFailed, setLoadFailed] = useState(false);
   const [notInstalled, setNotInstalled] = useState<string[]>([]);
   const article = ARTICLES[articleId];
@@ -272,8 +276,9 @@ export function ArticleView({
   const headingPoints = useMemo(() => pointsOf(headingFamily), [headingFamily, byteKey]);
   const bodyPoints = useMemo(() => pointsOf(bodyFamily), [bodyFamily, byteKey]);
 
-  if (items.length === 0 || !headingFamily || !bodyFamily) return null;
-  const stack = (family: string, kind: 'web' | 'fallback' | 'plain') => {
+  const empty = items.length === 0 || !headingFamily || !bodyFamily;
+  const stack = (family: string | undefined, kind: 'web' | 'fallback' | 'plain') => {
+    if (!family) return 'system-ui, sans-serif';
     const key = keyOf(family);
     if (kind === 'web') return `"${key}", ${substitute}`;
     if (kind === 'fallback') return `"${key} Fallback", ${substitute}`;
@@ -307,11 +312,18 @@ export function ArticleView({
     heading: headingPoints,
     body: bodyPoints,
     plain,
-    note: (char) =>
-      t.article_unsupported({
-        chars: `${char} (${codePointLabel(char)})`,
+    note: (text) => {
+      const chars = [...text];
+      const listed = chars
+        .slice(0, 3)
+        .map((char) => `${char} (${codePointLabel(char)})`)
+        .join(', ');
+      const more = chars.length > 3 ? ` +${chars.length - 3}` : '';
+      return t.article_unsupported({
+        chars: `${listed}${more}`,
         font: substituteLabel(substitute),
-      }),
+      });
+    },
   });
   const page = (kind: 'web' | 'fallback' | 'plain', ghost = false) => (
     <article
@@ -325,6 +337,71 @@ export function ArticleView({
     </article>
   );
   const familyOptions = families.map((family) => ({ value: family, label: family }));
+  const contentGroup = (
+    <fieldset class="ff-article-view__group">
+      <legend>{t.article_group_content()}</legend>
+      <div class="ff-field ff-preview__slider">
+        <div class="ff-preview__label">
+          <label for="ff-article-size">{t.preview_size_label()}</label>
+          <output for="ff-article-size">{size}px</output>
+        </div>
+        <input
+          id="ff-article-size"
+          type="range"
+          min={12}
+          max={32}
+          value={size}
+          onInput={(event) => setSize(event.currentTarget.valueAsNumber)}
+        />
+      </div>
+      <div class="ff-field ff-preview__slider">
+        <div class="ff-preview__label">
+          <label for="ff-article-line">{t.preview_line_height_label()}</label>
+          <output for="ff-article-line">{lineHeight}</output>
+        </div>
+        <input
+          id="ff-article-line"
+          type="range"
+          min={1}
+          max={2.4}
+          step={0.05}
+          value={lineHeight}
+          onInput={(event) => setLineHeight(event.currentTarget.valueAsNumber)}
+        />
+      </div>
+      <Select
+        compact
+        label={t.article_wrap_label()}
+        value={wrap}
+        options={WRAPS.map((value) => ({ value, label: wrapLabel(value) }))}
+        onChange={(value) => setWrap(value as Wrap)}
+      />
+      <Select
+        compact
+        label={t.article_sample_label()}
+        value={articleId}
+        options={ARTICLE_IDS.map((id) => ({ value: id, label: ARTICLES[id].label }))}
+        onChange={(value) => setArticleId(value as ArticleId)}
+      />
+    </fieldset>
+  );
+
+  if (empty) {
+    return (
+      <section class="ff-article-view" aria-label={t.article_heading()}>
+        <p class="ff-article-view__hint">{t.article_empty_hint()}</p>
+        <div class="ff-article-view__controls">{contentGroup}</div>
+        <article
+          class={`ff-article${wrap === 'nowrap' ? ' ff-article--nowrap' : ''}`}
+          lang={article.lang}
+          dir={article.dir}
+          style={hydrated ? pageStyle('web') : undefined}
+        >
+          <ArticleBody article={article} coverage={coverageFor(true)} />
+        </article>
+      </section>
+    );
+  }
 
   return (
     <section class="ff-article-view" aria-label={t.article_heading()}>
@@ -346,52 +423,7 @@ export function ArticleView({
             ))}
           </fieldset>
         </fieldset>
-        <fieldset class="ff-article-view__group">
-          <legend>{t.article_group_content()}</legend>
-          <div class="ff-field ff-preview__slider">
-            <div class="ff-preview__label">
-              <label for="ff-article-size">{t.preview_size_label()}</label>
-              <output for="ff-article-size">{size}px</output>
-            </div>
-            <input
-              id="ff-article-size"
-              type="range"
-              min={12}
-              max={32}
-              value={size}
-              onInput={(event) => setSize(event.currentTarget.valueAsNumber)}
-            />
-          </div>
-          <div class="ff-field ff-preview__slider">
-            <div class="ff-preview__label">
-              <label for="ff-article-line">{t.preview_line_height_label()}</label>
-              <output for="ff-article-line">{lineHeight}</output>
-            </div>
-            <input
-              id="ff-article-line"
-              type="range"
-              min={1}
-              max={2.4}
-              step={0.05}
-              value={lineHeight}
-              onInput={(event) => setLineHeight(event.currentTarget.valueAsNumber)}
-            />
-          </div>
-          <Select
-            compact
-            label={t.article_wrap_label()}
-            value={wrap}
-            options={WRAPS.map((value) => ({ value, label: wrapLabel(value) }))}
-            onChange={(value) => setWrap(value as Wrap)}
-          />
-          <Select
-            compact
-            label={t.article_sample_label()}
-            value={articleId}
-            options={ARTICLE_IDS.map((id) => ({ value: id, label: ARTICLES[id].label }))}
-            onChange={(value) => setArticleId(value as ArticleId)}
-          />
-        </fieldset>
+        {contentGroup}
       </div>
       <div class="ff-article-view__controls">
         <fieldset class="ff-article-view__group">

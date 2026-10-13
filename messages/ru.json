@@ -380,8 +380,6 @@
   "catalog_filter_coverage": "Минимальный охват аудитории, %",
   "audience_tags_included": "Включено",
   "audience_tags_excluded": "Исключено",
-  "audience_tags_add_include": "Добавить в аудиторию",
-  "audience_tags_add_exclude": "Исключить из аудитории",
   "audience_tags_none": "Пока ничего",
   "audience_tags_remove": "Убрать: {tag}",
   "col_inputs": "1. Исходные данные",
@@ -415,5 +413,13 @@
   "article_unsupported": "{chars} не поддерживается шрифтом и отображается запасным шрифтом: {font}",
   "article_group_view": "Вид",
   "article_group_content": "Содержимое",
-  "article_group_fonts": "Шрифты"
+  "article_group_fonts": "Шрифты",
+  "drop_anywhere": "Бросьте шрифты или CSS-файлы в любое место",
+  "drop_unsupported": "Сюда можно бросать только файлы шрифтов (WOFF2, WOFF, TTF, OTF, TTC, OTC) и CSS-файлы.",
+  "article_empty_hint": "Выберите веб-шрифт или перенесите его курсором на страницу: пока статья набрана системным шрифтом.",
+  "audience_tags_mode_label": "Добавлять теги ниже в список:",
+  "audience_tags_group_popularity": "Популярность",
+  "audience_tags_group_baseline": "Baseline",
+  "audience_tags_group_recency": "Свежесть",
+  "audience_tags_group_browsers": "Браузеры"
 }

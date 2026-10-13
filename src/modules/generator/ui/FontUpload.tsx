@@ -1,4 +1,4 @@
-import { useRef, useState } from 'preact/hooks';
+import { useRef } from 'preact/hooks';
 import { type Locale, messagesFor } from '@/common/i18n';
 import { Button } from '@/common/ui';
 
@@ -15,26 +15,8 @@ export function FontUpload({
 }) {
   const t = messagesFor(locale);
   const input = useRef<HTMLInputElement>(null);
-  const [over, setOver] = useState(false);
   return (
-    <section
-      class="ff-drop"
-      data-over={over}
-      aria-labelledby="ff-upload-heading"
-      onDragOver={(event) => {
-        if (!event.dataTransfer?.types.includes('Files')) return;
-        event.preventDefault();
-        setOver(true);
-      }}
-      onDragLeave={(event) => {
-        if (!event.currentTarget.contains(event.relatedTarget as Node | null)) setOver(false);
-      }}
-      onDrop={(event) => {
-        event.preventDefault();
-        setOver(false);
-        if (!busy) onFiles([...(event.dataTransfer?.files ?? [])]);
-      }}
-    >
+    <section class="ff-drop" aria-labelledby="ff-upload-heading">
       <h2 id="ff-upload-heading">{t.upload_heading()}</h2>
       <p class="ff-drop__row">
         <span>{t.upload_drop()}</span>
