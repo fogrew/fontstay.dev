@@ -3,7 +3,7 @@ import { useEffect, useId, useRef, useState } from 'preact/hooks';
 import { loadLayout, parseIds, parseSizes, saveLayout } from './persist';
 import { transition } from './transition';
 
-export interface ColumnsProps {
+export interface DockProps {
   items: readonly { id: string; label: string; weight: number; content: ComponentChildren }[];
   storageKey: string;
   resizeLabel: (left: string, right: string) => string;
@@ -21,17 +21,16 @@ interface Drag {
 
 interface Saved {
   sizes: Sizes | undefined;
-  collapsed: string[];
+  opened: string[];
 }
 
-const MIN_COLUMN_PX = 200;
-const COLLAPSE_PX = 96;
+const MIN_COLUMN_PX = 160;
 const KEY_STEP = 0.03;
 
-export function Columns({ items, storageKey, resizeLabel }: ColumnsProps) {
+export function Dock({ items, storageKey, resizeLabel }: DockProps) {
   const base = useId();
   const ids = items.map((item) => item.id);
-  const [collapsed, setCollapsed] = useState<ReadonlySet<string>>(new Set());
+  const [opened, setOpened] = useState<ReadonlySet<string>>(new Set());
   const [sizes, setSizes] = useState<Sizes>({});
   const [ready, setReady] = useState(false);
   const elements = useRef(new Map<string, HTMLElement>());
@@ -43,35 +42,29 @@ export function Columns({ items, storageKey, resizeLabel }: ColumnsProps) {
       const record = value as Record<string, unknown>;
       return {
         sizes: parseSizes(record.sizes, ids),
-        collapsed: parseIds(record.collapsed, ids),
+        opened: parseIds(record.opened, ids),
       };
     });
     if (saved) {
       if (saved.sizes) setSizes(saved.sizes);
-      setCollapsed(new Set(saved.collapsed));
+      setOpened(new Set(saved.opened));
     }
     setReady(true);
   }, []);
   useEffect(() => {
-    if (ready) saveLayout(storageKey, { sizes, collapsed: [...collapsed] });
-  }, [ready, sizes, collapsed, storageKey]);
+    if (ready) saveLayout(storageKey, { sizes, opened: [...opened] });
+  }, [ready, sizes, opened, storageKey]);
 
-  const openIds = ids.filter((id) => !collapsed.has(id));
   const rtl = typeof document !== 'undefined' && document.documentElement.dir === 'rtl';
   const totalWeight =
-    openIds.reduce(
-      (sum, id) => sum + (sizes[id] ?? items.find((i) => i.id === id)?.weight ?? 1),
-      0,
-    ) || 1;
-  const labelOf = (id: string) => items.find((item) => item.id === id)?.label ?? id;
+    ids.reduce((sum, id) => sum + (sizes[id] ?? items.find((i) => i.id === id)?.weight ?? 1), 0) ||
+    1;
 
   const measure = () => {
-    const widths = openIds.map(
-      (id) => elements.current.get(id)?.getBoundingClientRect().width ?? 0,
-    );
+    const widths = ids.map((id) => elements.current.get(id)?.getBoundingClientRect().width ?? 0);
     const total = widths.reduce((sum, width) => sum + width, 0) || 1;
     const fractions: Sizes = Object.fromEntries(
-      openIds.map((id, index) => [id, (widths[index] ?? 0) / total]),
+      ids.map((id, index) => [id, (widths[index] ?? 0) / total]),
     );
     return { fractions, total };
   };
@@ -79,16 +72,6 @@ export function Columns({ items, storageKey, resizeLabel }: ColumnsProps) {
   const apply = (start: Sizes, total: number, left: string, right: string, delta: number) => {
     const first = (start[left] ?? 0) * total;
     const second = (start[right] ?? 0) * total;
-    if (first + delta < COLLAPSE_PX) {
-      drag.current = undefined;
-      transition(() => setCollapsed((current) => new Set(current).add(left)));
-      return;
-    }
-    if (second - delta < COLLAPSE_PX) {
-      drag.current = undefined;
-      transition(() => setCollapsed((current) => new Set(current).add(right)));
-      return;
-    }
     const bounded = Math.min(Math.max(delta, MIN_COLUMN_PX - first), second - MIN_COLUMN_PX);
     setSizes({
       ...start,
@@ -98,25 +81,25 @@ export function Columns({ items, storageKey, resizeLabel }: ColumnsProps) {
   };
 
   return (
-    <div class="ff-columns">
-      {items.map((item) => {
-        const open = !collapsed.has(item.id);
-        const next = open ? openIds[openIds.indexOf(item.id) + 1] : undefined;
+    <div class="ff-dock">
+      {items.map((item, index) => {
+        const open = opened.has(item.id);
+        const next = items[index + 1];
         const weight = sizes[item.id] ?? item.weight;
         return (
           <Fragment key={item.id}>
             <section
-              class="ff-columns__column"
+              class="ff-dock__column"
               data-open={open}
               data-id={item.id}
+              data-weight={item.weight}
               ref={(element) => {
                 if (element) elements.current.set(item.id, element);
                 else elements.current.delete(item.id);
               }}
-              data-weight={item.weight}
-              style={ready && open ? { flex: `${weight} 1 0` } : undefined}
+              style={ready ? { flex: `${weight} 1 0` } : undefined}
             >
-              <h2 class="ff-columns__heading">
+              <h2 class="ff-dock__heading">
                 <button
                   type="button"
                   id={`${base}-${item.id}-button`}
@@ -124,7 +107,7 @@ export function Columns({ items, storageKey, resizeLabel }: ColumnsProps) {
                   aria-controls={`${base}-${item.id}-panel`}
                   onClick={() =>
                     transition(() =>
-                      setCollapsed((current) => {
+                      setOpened((current) => {
                         const updated = new Set(current);
                         if (!updated.delete(item.id)) updated.add(item.id);
                         return updated;
@@ -135,21 +118,26 @@ export function Columns({ items, storageKey, resizeLabel }: ColumnsProps) {
                   {item.label}
                 </button>
               </h2>
-              <div id={`${base}-${item.id}-panel`} class="ff-columns__panel" hidden={!open}>
+              <div
+                id={`${base}-${item.id}-panel`}
+                class="ff-dock__panel"
+                data-id={item.id}
+                hidden={!open}
+              >
                 {item.content}
               </div>
             </section>
-            {next !== undefined && (
+            {next && (
               // biome-ignore lint/a11y/useSemanticElements: a focusable splitter has no native element
               <div
                 role="separator"
                 aria-orientation="vertical"
-                aria-label={resizeLabel(item.label, labelOf(next))}
+                aria-label={resizeLabel(item.label, next.label)}
                 aria-valuemin={0}
                 aria-valuemax={100}
                 aria-valuenow={Math.round((weight / totalWeight) * 100)}
                 tabIndex={0}
-                class="ff-columns__separator"
+                class="ff-dock__separator"
                 onPointerDown={(event) => {
                   event.preventDefault();
                   event.currentTarget.setPointerCapture(event.pointerId);
@@ -158,7 +146,7 @@ export function Columns({ items, storageKey, resizeLabel }: ColumnsProps) {
                     startX: event.clientX,
                     start: fractions,
                     left: item.id,
-                    right: next,
+                    right: next.id,
                     total,
                   };
                   setSizes(fractions);
@@ -185,7 +173,7 @@ export function Columns({ items, storageKey, resizeLabel }: ColumnsProps) {
                   event.preventDefault();
                   const { fractions, total } = measure();
                   const direction = (event.key === 'ArrowLeft' ? -1 : 1) * (rtl ? -1 : 1);
-                  apply(fractions, total, item.id, next, direction * KEY_STEP * total);
+                  apply(fractions, total, item.id, next.id, direction * KEY_STEP * total);
                 }}
               />
             )}

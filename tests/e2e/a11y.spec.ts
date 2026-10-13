@@ -80,7 +80,8 @@ test('keyboard users can reach the main controls and open the sections', async (
   await expect(section).toHaveAttribute('aria-expanded', 'true');
   await page.keyboard.press('Space');
   await expect(section).toHaveAttribute('aria-expanded', 'false');
-  for (const name of [/^Remove: /]) await expect(page.getByRole('button', { name })).toBeVisible();
+  for (const name of [/^Remove: SourceSans/])
+    await expect(page.getByRole('button', { name })).toBeVisible();
 });
 
 test('forced colors keeps the support states distinguishable by text', async ({ page }) => {

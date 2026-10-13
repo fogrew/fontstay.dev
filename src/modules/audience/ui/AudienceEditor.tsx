@@ -40,11 +40,13 @@ export function AudienceEditor({
   onQueryChange,
   initialQuery,
   active = false,
+  defaultOpen = false,
 }: {
   locale: Locale;
   initialQuery?: string | undefined;
   onQueryChange?: ((query: string) => void) | undefined;
   active?: boolean;
+  defaultOpen?: boolean;
   onEntries?: ((data: AudienceData | undefined) => void) | undefined;
   onShares?: ((shares: OsShares) => void) | undefined;
 }) {
@@ -53,7 +55,7 @@ export function AudienceEditor({
   const messageId = useId();
   const fileInput = useRef<HTMLInputElement>(null);
   const actions = useRef<HTMLDivElement>(null);
-  const [opened, setOpened] = useState(false);
+  const [opened, setOpened] = useState(defaultOpen);
   const [query, setQuery] = useState<string>(initialQuery ?? DEFAULT_QUERY);
   const [state, setState] = useState<State>({ loading: true });
   useEffect(() => {
@@ -125,6 +127,7 @@ export function AudienceEditor({
     <Disclosure
       icon={<Icon name="browserslist" />}
       summary={t.audience_heading()}
+      open={defaultOpen}
       onToggle={(open) => open && setOpened(true)}
     >
       <div class="ff-audience">

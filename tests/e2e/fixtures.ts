@@ -11,6 +11,15 @@ export const test = base.extend({
         );
       });
     });
+    await page.addInitScript(() => {
+      const key = 'fontstay:layout:dock';
+      if (!localStorage.getItem(key)) {
+        localStorage.setItem(
+          key,
+          JSON.stringify({ sizes: {}, opened: ['inputs', 'tuning', 'results'] }),
+        );
+      }
+    });
     await use(page);
     expect(violations).toEqual([]);
   },
@@ -65,4 +74,11 @@ export async function listed(box: Locator): Promise<string> {
   const texts = await box.page().getByRole('listbox').getByRole('option').allInnerTexts();
   await box.page().keyboard.press('Escape');
   return texts.join(' | ');
+}
+
+export async function closePanels(page: Page) {
+  for (const name of ['1. Inputs', '2. Fine-tuning', '3. Results']) {
+    const button = page.getByRole('button', { name, exact: true });
+    if ((await button.getAttribute('aria-expanded')) === 'true') await button.click();
+  }
 }

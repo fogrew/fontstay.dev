@@ -13,6 +13,7 @@ export interface AccordionProps {
   }[];
   resizeLabel: (above: string, below: string) => string;
   storageKey?: string;
+  resizable?: boolean;
 }
 
 type Sizes = Record<string, number>;
@@ -72,7 +73,7 @@ function Splitter({
   // biome-ignore-end lint/a11y/useSemanticElements: a focusable splitter has no native element
 }
 
-export function Accordion({ items, resizeLabel, storageKey }: AccordionProps) {
+export function Accordion({ items, resizeLabel, storageKey, resizable = true }: AccordionProps) {
   const base = useId();
   const [closed, setClosed] = useState<ReadonlySet<string>>(
     () => new Set(items.filter((item) => item.open === false).map((item) => item.id)),
@@ -174,7 +175,7 @@ export function Accordion({ items, resizeLabel, storageKey }: AccordionProps) {
               </div>
               {/* biome-ignore-end lint/a11y/noNoninteractiveTabindex: keyboard users scroll the panel */}
             </section>
-            {below !== undefined && (
+            {below !== undefined && resizable && (
               <Splitter
                 label={resizeLabel(item.label, labelOf(below))}
                 value={sizes[item.id] ?? measure().fractions[item.id] ?? 0}
