@@ -10,12 +10,13 @@ export function webPredictFont(
   web: FontMetrics,
   ranking: Pick<Ranking, 'web'>,
   lineHeightEm?: number,
+  widthFactor = 1,
 ): PredictFont {
   return {
     unitsPerEm: web.unitsPerEm,
     codePoints: web.codePoints,
     advances: web.advances,
-    scale: 1,
+    scale: widthFactor,
     ascent: ranking.web.ascent,
     descent: ranking.web.descent,
     lineGap: ranking.web.lineGap,
@@ -32,8 +33,9 @@ export function variantPredictFont(
   adjustment: Overrides,
   spacing: SpacingEm,
   variant: Variant,
+  widthK = 1,
 ): PredictFont | null {
-  if (variant === 'full') return fallbackPredictFont(candidate, adjustment, spacing);
+  if (variant === 'full') return fallbackPredictFont(candidate, adjustment, spacing, widthK);
   if (!candidate.fit) return null;
   const scale = variant === 'partial' ? adjustment.sizeAdjust : 1;
   const native = candidate.native;
@@ -41,7 +43,7 @@ export function variantPredictFont(
     unitsPerEm: candidate.fit.unitsPerEm,
     codePoints: candidate.fit.codePoints,
     advances: candidate.fit.advances,
-    scale,
+    scale: scale * widthK,
     ascent: native.ascent * scale,
     descent: native.descent * scale,
     lineGap: native.lineGap * scale,
@@ -55,6 +57,7 @@ export function fallbackPredictFont(
   candidate: Candidate,
   adjustment: Overrides,
   spacing: SpacingEm,
+  widthK = 1,
 ): PredictFont | null {
   if (!candidate.fit) return null;
   const scale = adjustment.sizeAdjust;
@@ -62,7 +65,7 @@ export function fallbackPredictFont(
     unitsPerEm: candidate.fit.unitsPerEm,
     codePoints: candidate.fit.codePoints,
     advances: candidate.fit.advances,
-    scale,
+    scale: scale * widthK,
     ascent: adjustment.ascentOverride * scale,
     descent: adjustment.descentOverride * scale,
     lineGap: adjustment.lineGapOverride * scale,

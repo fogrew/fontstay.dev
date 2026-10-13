@@ -755,3 +755,20 @@
   margin: 0;
   font-weight: 600;
 }
+.ff-article-view {
+  position: relative;
+}
+.ff-article-view .ff-article-probe {
+  position: absolute;
+  inset-block-start: 0;
+  inset-inline-start: 0;
+  display: grid;
+  inline-size: 100%;
+  block-size: 0;
+  overflow: hidden;
+  visibility: hidden;
+  pointer-events: none;
+}
+.ff-article-view .ff-article-probe > .ff-article {
+  grid-area: 1 / 1;
+}

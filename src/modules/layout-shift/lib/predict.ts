@@ -91,6 +91,16 @@ class Metrics {
   }
 }
 
+export function textWidth(font: PredictFont, text: string, fontPx = 16): number {
+  const metrics = new Metrics(font);
+  const words = text.split(/\s+/).filter(Boolean);
+  const space = metrics.space(fontPx);
+  return (
+    words.reduce((sum, word) => sum + metrics.word(word, fontPx), 0) +
+    Math.max(0, words.length - 1) * space
+  );
+}
+
 export function wrapLines(words: readonly number[], space: number, available: number): number {
   if (words.length === 0) return 1;
   let lines = 1;

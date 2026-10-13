@@ -135,7 +135,7 @@ for (const { width, height } of [
     await page.goto('/en/');
     await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
     await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(sourceSans);
-    const article = page.locator('.ff-article').first();
+    const article = page.locator('.ff-article:not([data-probe])').first();
     await expect(article).toBeVisible();
     const dock = await page.locator('.ff-dock').boundingBox();
     const body = await article.boundingBox();
@@ -165,17 +165,23 @@ test('the article switches between overlay, side by side, web font and fallback 
   await expect(view.locator('.ff-article-view__side > figure')).toHaveCount(2);
 
   await mode('Web font').click();
-  await expect(view.locator('.ff-article')).toHaveCount(1);
-  await expect(view.locator('.ff-article')).toHaveCSS('font-family', /ff-web-source-sans-pro/);
+  await expect(view.locator('.ff-article:not([data-probe])')).toHaveCount(1);
+  await expect(view.locator('.ff-article:not([data-probe])')).toHaveCSS(
+    'font-family',
+    /ff-web-source-sans-pro/,
+  );
   await mode('Adjusted fallback').click();
-  await expect(view.locator('.ff-article')).toHaveCSS('font-family', /Fallback/);
+  await expect(view.locator('.ff-article:not([data-probe])')).toHaveCSS('font-family', /Fallback/);
   await mode('Plain fallback').click();
-  await expect(view.locator('.ff-article')).toHaveCSS('font-family', /sans-serif/);
+  await expect(view.locator('.ff-article:not([data-probe])')).toHaveCSS(
+    'font-family',
+    /sans-serif/,
+  );
 
   await view.getByLabel(/Text size/).fill('24');
-  await expect(view.locator('.ff-article')).toHaveCSS('font-size', '24px');
+  await expect(view.locator('.ff-article:not([data-probe])')).toHaveCSS('font-size', '24px');
   await view.getByLabel(/Line height/).fill('2');
-  await expect(view.locator('.ff-article')).toHaveCSS('line-height', '48px');
+  await expect(view.locator('.ff-article:not([data-probe])')).toHaveCSS('line-height', '48px');
 });
 
 test('the text wrapping and sample text controls change the article', async ({ page }) => {
@@ -184,7 +190,7 @@ test('the text wrapping and sample text controls change the article', async ({ p
   await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(sourceSans);
   await closePanels(page);
   const view = page.getByRole('region', { name: 'Article' });
-  const article = view.locator('.ff-article').first();
+  const article = view.locator('.ff-article:not([data-probe])').first();
   await choose(view.getByLabel('Text wrapping'), 'balance');
   await expect(article).toHaveCSS('text-wrap-mode', 'wrap');
   await expect(article).toHaveCSS('text-wrap-style', 'balance');
@@ -480,7 +486,7 @@ test('the dock stays pinned to the top while the article scrolls', async ({ page
   await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
   await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(sourceSans);
   await closePanels(page);
-  await expect(page.locator('.ff-article').first()).toBeVisible();
+  await expect(page.locator('.ff-article:not([data-probe])').first()).toBeVisible();
   await page.mouse.wheel(0, 900);
   await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(300);
   const dock = await page.locator('.ff-dock').boundingBox();
@@ -583,7 +589,7 @@ test('characters missing from the font are highlighted and explained on focus', 
     page.evaluate(() => ({
       page: document.documentElement.scrollWidth - document.documentElement.clientWidth,
       article: Math.max(
-        ...[...document.querySelectorAll('.ff-article')].map(
+        ...[...document.querySelectorAll('.ff-article:not([data-probe])')].map(
           (node) => node.scrollWidth - node.clientWidth,
         ),
       ),
@@ -875,7 +881,7 @@ test('several fonts share the article and the export and are tuned one by one', 
   const view = page.getByRole('region', { name: 'Article' });
   await expect(view.getByLabel('Headings font')).toBeVisible();
   await expect(view.getByLabel('Text font')).toBeVisible();
-  await expect(view.locator('.ff-article').first()).toBeVisible();
+  await expect(view.locator('.ff-article:not([data-probe])').first()).toBeVisible();
 });
 
 test('panels animate with view transitions unless reduced motion is requested', async ({
@@ -931,7 +937,7 @@ test('the article uses the system font stack until a font is added', async ({ pa
   await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
   await closePanels(page);
   await expect(page.getByText(/Choose a web font or drop it anywhere/)).toBeVisible();
-  await expect(page.locator('.ff-article')).toHaveCSS('font-family', /system-ui/);
+  await expect(page.locator('.ff-article:not([data-probe])')).toHaveCSS('font-family', /system-ui/);
 });
 
 test('fonts and CSS files can be dropped anywhere on the page', async ({ page }) => {
@@ -971,4 +977,24 @@ test('fonts and CSS files can be dropped anywhere on the page', async ({ page })
   ).toBeVisible();
   await drop('notes.txt', 'text/plain', 'hello');
   await expect(page.getByRole('alert')).toContainText('Only font files');
+});
+
+test('the generator page itself does not shift while it loads', async ({ page }) => {
+  await page.setViewportSize({ width: 1500, height: 900 });
+  await page.addInitScript(() => {
+    (window as unknown as { shifts: number }).shifts = 0;
+    new PerformanceObserver((list) => {
+      for (const entry of list.getEntries() as unknown as {
+        value: number;
+        hadRecentInput: boolean;
+      }[]) {
+        if (!entry.hadRecentInput) (window as unknown as { shifts: number }).shifts += entry.value;
+      }
+    }).observe({ type: 'layout-shift', buffered: true });
+  });
+  await page.goto('/en/');
+  await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
+  await page.waitForTimeout(1500);
+  const total = await page.evaluate(() => (window as unknown as { shifts: number }).shifts);
+  expect(total).toBeLessThan(0.02);
 });

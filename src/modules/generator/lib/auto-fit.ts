@@ -4,6 +4,7 @@ import {
   type PredictFont,
   type PredictModel,
   scoreOf,
+  widthMismatch,
 } from '@/modules/layout-shift';
 import { adjustmentOf, type Overrides } from './css';
 import type { SpacingEm } from './loading';
@@ -16,6 +17,7 @@ export interface AutoFitInput {
   spacing: SpacingEm;
   pinSpacing: { letter: boolean; word: boolean };
   model: PredictModel;
+  widthK?: number;
   signal?: AbortSignal | undefined;
   maxEvaluations?: number;
   maxMs?: number;
@@ -30,11 +32,14 @@ export interface AutoFitResult {
 
 const WORST_WEIGHT = 1;
 const SUM_WEIGHT = 0.1;
+const WIDTH_WEIGHT = 0.05;
 
 const cost = (model: PredictModel, font: PredictFont) => {
   const scores = scoreOf(model, font).map((item) => item.score);
   return (
-    WORST_WEIGHT * Math.max(...scores) + SUM_WEIGHT * scores.reduce((sum, score) => sum + score, 0)
+    WORST_WEIGHT * Math.max(...scores) +
+    SUM_WEIGHT * scores.reduce((sum, score) => sum + score, 0) +
+    WIDTH_WEIGHT * widthMismatch(model, font)
   );
 };
 
@@ -95,6 +100,7 @@ export async function autoFit(input: AutoFitInput): Promise<AutoFitResult | null
         lineGapOverride: v.lineGapOverride ?? base.lineGapOverride,
       },
       { letter: v.letterSpacing ?? 0, word: v.wordSpacing ?? 0 },
+      input.widthK ?? 1,
     );
   if (!fontFor({})) return null;
   let evaluated = 0;

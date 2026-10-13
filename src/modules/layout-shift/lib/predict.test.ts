@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { Block } from './document';
-import { layoutDocument, type PredictFont, predictViewport, wrapLines } from './predict';
+import { widthMismatch } from './model';
+import { layoutDocument, type PredictFont, predictViewport, textWidth, wrapLines } from './predict';
 
 const chars = [...' abcdefghijklmnopqrstuvwxyz'].map((char) => char.codePointAt(0) ?? 0);
 
@@ -141,5 +142,30 @@ describe('spacing and margins', () => {
       16 * 2 + 100,
     );
     expect(cyr.lines[0]).toBeGreaterThan(1);
+  });
+});
+
+describe('textWidth and widthMismatch', () => {
+  const font = {
+    unitsPerEm: 1000,
+    codePoints: [32, 97],
+    advances: [250, 500],
+    scale: 1,
+    ascent: 0.9,
+    descent: 0.2,
+    lineGap: 0,
+    letterEm: 0,
+    wordEm: 0,
+  };
+
+  it('sums glyph and space widths and scales with the font size', () => {
+    expect(textWidth(font, 'aa a', 100)).toBeCloseTo(50 + 50 + 25 + 50);
+    expect(textWidth(font, 'aa a', 200)).toBeCloseTo(2 * textWidth(font, 'aa a', 100));
+  });
+
+  it('reports no mismatch for the same font and the scale difference otherwise', () => {
+    const model = { web: font, language: 'en' as const };
+    expect(widthMismatch(model, font)).toBeCloseTo(0);
+    expect(widthMismatch(model, { ...font, scale: 1.1 })).toBeCloseTo(0.1, 3);
   });
 });

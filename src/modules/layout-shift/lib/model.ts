@@ -1,6 +1,6 @@
 import { sampleBlocks } from './document';
-import { type PredictFont, predictViewport } from './predict';
-import type { SampleLanguage } from './samples';
+import { type PredictFont, predictViewport, textWidth } from './predict';
+import { type SampleLanguage, samples } from './samples';
 import type { ViewportResult } from './score';
 import { DEFAULT_VIEWPORTS } from './simulate';
 
@@ -20,4 +20,11 @@ export function scoreOf(
 
 export function worstShift(model: PredictModel, font: PredictFont): number {
   return Math.max(...scoreOf(model, font).map((result) => result.score));
+}
+
+export function widthMismatch(model: PredictModel, font: PredictFont): number {
+  const sample = samples[model.language];
+  const text = [sample.intro, ...sample.paragraphs, ...sample.items, sample.quote].join(' ');
+  const web = textWidth(model.web, text);
+  return web > 0 ? Math.abs(textWidth(font, text) / web - 1) : 0;
 }

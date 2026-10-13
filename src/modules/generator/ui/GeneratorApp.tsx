@@ -1,4 +1,3 @@
-import { createPortal } from 'preact/compat';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'preact/hooks';
 import { type Locale, messagesFor } from '@/common/i18n';
 import {
@@ -11,7 +10,6 @@ import {
   Dock,
   FitField,
   type FitValue,
-  Icon,
   LiveRegion,
   Select,
 } from '@/common/ui';
@@ -44,6 +42,7 @@ import { LayoutShiftPanel, type PanelInput, ratingOf, worstShift } from '@/modul
 import { type Category, loadVariantMetrics, type OsId, osFontsDataset } from '@/modules/os-fonts';
 import { cssStack, PRESETS, type PresetId, presetName, presetPicks } from '@/modules/presets';
 import { autoFit } from '../lib/auto-fit';
+import { fallbackRatio, webRatio } from '../lib/calibration';
 import { displayName, fitLanguage, isNoCoverage, LOW_COVERAGE } from '../lib/compute';
 import { adjustmentOf, buildCss, fallbackFamilyName, type Overrides } from '../lib/css';
 import { hasSpacing, loadingCss, loadingScript, type SpacingEm } from '../lib/loading';
@@ -337,6 +336,22 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
   });
   const language: Language = fitLanguage(selected?.metrics, locale);
   const [variantsReady, setVariantsReady] = useState(false);
+  const [webK, setWebK] = useState<Record<string, number>>({});
+  const [fallbackK, setFallbackK] = useState<Record<string, number | null>>({});
+  const calibrationKey = (id: string | number, font: LoadedFont) =>
+    `${id}:${fitLanguage(font.metrics, locale)}`;
+  useEffect(() => {
+    for (const font of fonts) {
+      const key = calibrationKey(font.id, font);
+      if (webK[key] !== undefined) continue;
+      void webRatio(font.bytes, font.metrics, fitLanguage(font.metrics, locale)).then((value) =>
+        setWebK((current) => ({ ...current, [key]: value })),
+      );
+    }
+  }, [fonts, locale]);
+  const factorOf = (font: LoadedFont) => webK[calibrationKey(font.id, font)] ?? 1;
+  const fallbackFactor = (candidate: Candidate, font: LoadedFont) =>
+    fallbackK[calibrationKey(candidate.id, font)] ?? 1;
   const styleOf = (font: (typeof fonts)[number]): FontStyleKey =>
     styleChoices[font.id] ?? styleKeyOf(font.metrics.style);
   const styleKey: FontStyleKey = selected ? styleOf(selected) : 'regular';
@@ -772,8 +787,6 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
       window.removeEventListener('drop', drop);
     };
   }, []);
-  const [headerSlot, setHeaderSlot] = useState<HTMLElement | null>(null);
-  useEffect(() => setHeaderSlot(document.getElementById('ff-header-actions')), []);
   useEffect(() => {
     if (!shareMessage) return;
     const timer = setTimeout(() => setShareMessage(''), 5000);
@@ -795,6 +808,26 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
     setForgotten(stateKey);
     setShareMessage(t.share_forgotten());
   };
+  const actions = useRef({ copyLink, forget });
+  actions.current = { copyLink, forget };
+  useEffect(() => {
+    const share = document.getElementById('ff-share') as HTMLButtonElement | null;
+    const reset = document.getElementById('ff-forget') as HTMLButtonElement | null;
+    const onShare = () => void actions.current.copyLink();
+    const onForget = () => void actions.current.forget();
+    share?.addEventListener('click', onShare);
+    reset?.addEventListener('click', onForget);
+    if (share) share.disabled = false;
+    if (reset) reset.disabled = false;
+    return () => {
+      share?.removeEventListener('click', onShare);
+      reset?.removeEventListener('click', onForget);
+    };
+  }, []);
+  useEffect(() => {
+    const status = document.getElementById('ff-header-status');
+    if (status) status.textContent = shareMessage;
+  }, [shareMessage]);
   const winnerOf = (os: OsId) => {
     const winner = plan?.resolution.platforms.find((item) => item.platform === os)?.winner;
     return (
@@ -819,12 +852,14 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
           selected.metrics,
           anyRanking,
           variant === 'partial' ? STRATEGY_LINE_HEIGHT : undefined,
+          factorOf(selected),
         );
         const font = variantPredictFont(
           entry.candidate,
           adjustmentOf(baseOf(entry.candidate), manualOf(entry.candidate.id)),
           spacingEm,
           variant,
+          fallbackFactor(entry.candidate, selected),
         );
         if (font) {
           value = worstShift({ web, language }, font);
@@ -880,6 +915,22 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
         faces: entry.candidates,
       })),
   ];
+  useEffect(() => {
+    const found: Record<string, number | null> = {};
+    for (const job of fitJobs) {
+      for (const candidate of job.faces) {
+        const key = calibrationKey(candidate.id, job.font);
+        if (fallbackK[key] === undefined && found[key] === undefined) {
+          found[key] = fallbackRatio(candidate, fitLanguage(job.font.metrics, locale));
+        }
+      }
+    }
+    if (Object.keys(found).length > 0) setFallbackK((current) => ({ ...current, ...found }));
+  }, [
+    fitJobs
+      .map((job) => `${job.font.id}:${job.faces.map((candidate) => candidate.id).join(',')}`)
+      .join(';'),
+  ]);
   const fitKey = JSON.stringify([
     selected?.id,
     language,
@@ -889,6 +940,8 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
     spacingOn ? [spacingKey, spacingValues] : null,
     fitJobs.map((job) => [
       job.font.id,
+      factorOf(job.font),
+      job.faces.map((candidate) => fallbackFactor(candidate, job.font)),
       job.language,
       styleOf(job.font),
       job.faces.map((candidate) => [candidate.id, manualFor(job.font.id, candidate.id)]),
@@ -911,7 +964,7 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
       let spacingFound: SpacingEm | undefined;
       for (const [jobIndex, job] of fitJobs.entries()) {
         const model = {
-          web: webPredictFont(job.font.metrics, job.anyRanking),
+          web: webPredictFont(job.font.metrics, job.anyRanking, undefined, factorOf(job.font)),
           language: job.language,
         };
         for (const [index, candidate] of job.faces.entries()) {
@@ -919,6 +972,7 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
           const result = await autoFit({
             candidate,
             manual: manualFor(job.font.id, candidate.id),
+            widthK: fallbackFactor(candidate, job.font),
             spacing,
             pinSpacing: { letter: !free || letterManual, word: !free || wordManual },
             model,
@@ -1234,19 +1288,40 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
         ]
       : [],
   );
-  const shiftEntry =
-    overviewReady.find((entry) => entry.font.id === selected?.id) ?? overviewReady[0];
-  const shiftInput: PanelInput | undefined = shiftEntry
-    ? {
-        webBytes: shiftEntry.font.bytes,
-        fallbackFontFaces: shiftEntry.css.fontFaces,
-        fallbackFamilies: shiftEntry.fallbackFamilies,
-        generic: shiftEntry.kind,
-        language: shiftEntry.language,
-        spacing: { letterEm: spacingEm.letter, wordEm: spacingEm.word },
-      }
-    : undefined;
-  const shiftKey = `${shiftEntry?.font.id}|${shiftEntry?.css.fontFaces}|${spacingEm.letter}|${spacingEm.word}`;
+  const warnings = (
+    <>
+      {!allMode && output && selected && coverage < LOW_COVERAGE && (
+        <p class="ff-error" role="status">
+          {t.fit_low_coverage()} {Math.round(coverage * 100)}%
+        </p>
+      )}
+      {!allMode &&
+        plan &&
+        (shadowed.length > 0 || plan.resolution.blockedBy === 'cycle' || uncovered.length > 0) && (
+          <div class="ff-generator__notes" id="ff-notes" tabIndex={-1}>
+            {shadowed.map((item) => (
+              <p key={item.platform} class="ff-error">
+                {t.plan_shadowed({
+                  system: systemName(item.platform.split('#')[0] as OsId),
+                  winner: familyOf(item.winner ?? ''),
+                  font: familyOf(item.preferredFace),
+                })}
+              </p>
+            ))}
+            {plan.resolution.blockedBy === 'cycle' && <p class="ff-error">{t.plan_blocked()}</p>}
+            {uncovered.length > 0 && shares && (
+              <p class="ff-muted">
+                {t.plan_uncovered({
+                  systems: uncovered.map(systemName).join(', '),
+                  share: percent(uncovered.reduce((sum, os) => sum + shares[os], 0)),
+                })}
+              </p>
+            )}
+          </div>
+        )}
+      {!allMode && plan && !output && selected && <p role="alert">{t.css_error()}</p>}
+    </>
+  );
   const showResults = allMode ? overviewReady.length > 0 : Boolean(output && selected);
   const fontDetails = fonts.map((font) => {
     const isOpen = fonts.length === 1 ? fontOpen : !allMode && font.id === selected?.id;
@@ -1309,23 +1384,6 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
           {t.drop_anywhere()}
         </div>
       )}
-      {headerSlot &&
-        createPortal(
-          <>
-            <Button onClick={() => void copyLink()} title={t.share_note()}>
-              <Icon name="share" />
-              {t.share_copy_short()}
-            </Button>
-            <Button onClick={() => void forget()}>
-              <Icon name="forget" />
-              {t.share_forget_short()}
-            </Button>
-            <span class="ff-muted" role="status">
-              {shareMessage}
-            </span>
-          </>,
-          headerSlot,
-        )}
       <Dock
         storageKey="dock"
         resizeLabel={(left, right) => t.columns_resize({ left, right })}
@@ -1379,6 +1437,7 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
             weight: 1,
             content: (
               <div class="ff-generator__settings">
+                {warnings}
                 {preset && (
                   <section class="ff-generator__section" aria-label={t.preset_applied_heading()}>
                     <p>{t.preset_applied({ name: presetName(t, preset.id) })}</p>
@@ -1469,41 +1528,8 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
         ]}
       />
       <div class="ff-generator__stage">
-        {!allMode && output && selected && coverage < LOW_COVERAGE && (
-          <p class="ff-error" role="status">
-            {t.fit_low_coverage()} {Math.round(coverage * 100)}%
-          </p>
-        )}
         <LiveRegion>{fitting ? t.fit_running() : ''}</LiveRegion>
-        {fitting && <p class="ff-muted">{t.fit_running()}</p>}
-        {!allMode &&
-          plan &&
-          (shadowed.length > 0 ||
-            plan.resolution.blockedBy === 'cycle' ||
-            uncovered.length > 0) && (
-            <div class="ff-generator__notes" id="ff-notes" tabIndex={-1}>
-              {shadowed.map((item) => (
-                <p key={item.platform} class="ff-error">
-                  {t.plan_shadowed({
-                    system: systemName(item.platform.split('#')[0] as OsId),
-                    winner: familyOf(item.winner ?? ''),
-                    font: familyOf(item.preferredFace),
-                  })}
-                </p>
-              ))}
-              {plan.resolution.blockedBy === 'cycle' && <p class="ff-error">{t.plan_blocked()}</p>}
-              {uncovered.length > 0 && shares && (
-                <p class="ff-muted">
-                  {t.plan_uncovered({
-                    systems: uncovered.map(systemName).join(', '),
-                    share: percent(uncovered.reduce((sum, os) => sum + shares[os], 0)),
-                  })}
-                </p>
-              )}
-            </div>
-          )}
-        <ArticleView locale={locale} items={previewItems} shift={shiftInput} shiftKey={shiftKey} />
-        {!allMode && plan && !output && selected && <p role="alert">{t.css_error()}</p>}
+        <ArticleView locale={locale} items={previewItems} fitting={fitting} />
       </div>
     </div>
   );

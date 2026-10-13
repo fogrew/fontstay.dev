@@ -1,8 +1,8 @@
 import { Fragment } from 'preact';
-import { useEffect, useMemo, useState } from 'preact/hooks';
+import { useEffect, useMemo, useRef, useState } from 'preact/hooks';
 import { type Locale, messagesFor } from '@/common/i18n';
 import { Icon, Select } from '@/common/ui';
-import type { PanelInput } from '@/modules/layout-shift';
+import { measureShift, type WidthShift } from '../lib/article-shift';
 import { ARTICLE_IDS, ARTICLES, type Article, type ArticleId, type Run } from '../lib/articles';
 import { buildCss } from '../lib/css';
 import { isInstalledOnDevice } from '../lib/installed';
@@ -165,13 +165,11 @@ function ArticleBody({ article, coverage }: { article: Article; coverage: Covera
 export function ArticleView({
   locale,
   items,
-  shift,
-  shiftKey,
+  fitting = false,
 }: {
   locale: Locale;
   items: readonly PreviewItem[];
-  shift: PanelInput | undefined;
-  shiftKey: string;
+  fitting?: boolean;
 }) {
   const t = messagesFor(locale);
   const [articleId, setArticleId] = useState<ArticleId>(locale === 'ru' ? 'ru' : 'en');
@@ -185,6 +183,9 @@ export function ArticleView({
   const [hydrated, setHydrated] = useState(false);
   useEffect(() => setHydrated(true), []);
   const [loadFailed, setLoadFailed] = useState(false);
+  const [fontsReady, setFontsReady] = useState(false);
+  const [shiftResults, setShiftResults] = useState<WidthShift[]>();
+  const probe = useRef<HTMLDivElement>(null);
   const [notInstalled, setNotInstalled] = useState<string[]>([]);
   const article = ARTICLES[articleId];
 
@@ -215,6 +216,7 @@ export function ArticleView({
 
   const byteKey = items.map((item) => item.id).join(',');
   useEffect(() => {
+    setFontsReady(false);
     let cancelled = false;
     const faces = items.map(
       (item) =>
@@ -228,6 +230,7 @@ export function ArticleView({
         if (cancelled) return;
         for (const face of faces) document.fonts.add(face);
         setLoadFailed(false);
+        setFontsReady(true);
       })
       .catch(() => {
         if (!cancelled) setLoadFailed(true);
@@ -275,6 +278,34 @@ export function ArticleView({
   };
   const headingPoints = useMemo(() => pointsOf(headingFamily), [headingFamily, byteKey]);
   const bodyPoints = useMemo(() => pointsOf(bodyFamily), [bodyFamily, byteKey]);
+
+  useEffect(() => {
+    if (!fontsReady) return;
+    let cancelled = false;
+    setShiftResults(undefined);
+    const timer = setTimeout(() => {
+      void document.fonts.ready.then(() => {
+        const wrapper = probe.current;
+        const [web, fallback] = wrapper?.querySelectorAll('article') ?? [];
+        if (cancelled || !wrapper || !web || !fallback) return;
+        setShiftResults(measureShift(wrapper, web, fallback));
+      });
+    }, 300);
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
+    };
+  }, [
+    fontsReady,
+    fontFaces,
+    size,
+    lineHeight,
+    wrap,
+    articleId,
+    headingFamily,
+    bodyFamily,
+    substitute,
+  ]);
 
   const empty = items.length === 0 || !headingFamily || !bodyFamily;
   const stack = (family: string | undefined, kind: 'web' | 'fallback' | 'plain') => {
@@ -405,6 +436,20 @@ export function ArticleView({
 
   return (
     <section class="ff-article-view" aria-label={t.article_heading()}>
+      <div class="ff-article-probe" ref={probe} aria-hidden="true" {...{ inert: true }}>
+        {(['web', 'fallback'] as const).map((kind) => (
+          <article
+            key={kind}
+            data-probe=""
+            class={`ff-article${wrap === 'nowrap' ? ' ff-article--nowrap' : ''}`}
+            lang={article.lang}
+            dir={article.dir}
+            style={pageStyle(kind)}
+          >
+            <ArticleBody article={article} coverage={coverageFor(true)} />
+          </article>
+        ))}
+      </div>
       <div class="ff-article-view__controls">
         <fieldset class="ff-article-view__group">
           <legend>{t.article_group_view()}</legend>
@@ -454,7 +499,8 @@ export function ArticleView({
             onChange={(value) => setSubstitute(value as Substitute)}
           />
         </fieldset>
-        {shift && <DeviceShift locale={locale} input={shift} signature={shiftKey} />}
+        <DeviceShift locale={locale} results={shiftResults} />
+        {fitting && <p class="ff-muted ff-article-view__fitting">{t.fit_running()}</p>}
       </div>
       {loadFailed && (
         <p class="ff-error" role="alert">

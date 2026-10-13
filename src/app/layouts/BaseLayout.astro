@@ -96,7 +96,17 @@ const indexable = !process.env.WORKERS_CI_BRANCH || process.env.WORKERS_CI_BRANC
         </ul>
       </nav>
       <div class="ff-header__end">
-        {headerActions && <div class="ff-header__actions" id="ff-header-actions"></div>}
+        {headerActions && (
+          <div class="ff-header__actions">
+            <button type="button" class="ff-button ff-button--secondary" id="ff-share" title={t.share_note()} disabled>
+              <Icon name="share" />{t.share_copy_short()}
+            </button>
+            <button type="button" class="ff-button ff-button--secondary" id="ff-forget" disabled>
+              <Icon name="forget" />{t.share_forget_short()}
+            </button>
+            <span class="ff-muted" id="ff-header-status" role="status"></span>
+          </div>
+        )}
         <InstallButton locale={locale} client:idle />
         <LocaleSwitcher current={locale} {path} />
         <a class="ff-header__link" href="https://github.com/fogrew/fontstay.dev"><Icon name="github" />{t.header_github()}</a>
