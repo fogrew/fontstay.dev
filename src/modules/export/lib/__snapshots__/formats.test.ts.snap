@@ -23,6 +23,42 @@ export default defineConfig({
 }
 `;
 
+exports[`buildExport > produces a stable astro export for several families 1`] = `
+{
+  "fileName": "astro.config.mjs",
+  "language": "js",
+  "text": "// Add the @font-face rules from the CSS export to your global styles.
+import { defineConfig } from 'astro/config';
+
+export default defineConfig({
+  fonts: [
+    {
+      name: 'Inter',
+      cssVariable: '--font-inter',
+      provider: 'local',
+      options: {
+        variants: [{ weight: 400, style: 'normal', src: ['./src/assets/fonts/Inter-Regular.woff2'] }],
+      },
+      fallbacks: ['Inter Fallback Arial', 'sans-serif'],
+    },
+    {
+      name: 'Merriweather',
+      cssVariable: '--font-merriweather',
+      provider: 'local',
+      options: {
+        variants: [
+          { weight: 400, style: 'normal', src: ['./src/assets/fonts/Merriweather-Regular.woff2'] },
+          { weight: 700, style: 'normal', src: ['./src/assets/fonts/Merriweather-Bold.woff2'] },
+          { weight: 400, style: 'italic', src: ['./src/assets/fonts/Merriweather-Italic.woff2'] },
+        ],
+      },
+      fallbacks: ['Merriweather Fallback Georgia', 'serif'],
+    },
+  ],
+});",
+}
+`;
+
 exports[`buildExport > produces a stable css export 1`] = `
 {
   "fileName": "fallback-fonts.css",
@@ -31,7 +67,23 @@ exports[`buildExport > produces a stable css export 1`] = `
 }
 `;
 
+exports[`buildExport > produces a stable css export for several families 1`] = `
+{
+  "fileName": "fallback-fonts.css",
+  "language": "css",
+  "text": "CSS-TEXT",
+}
+`;
+
 exports[`buildExport > produces a stable loading export 1`] = `
+{
+  "fileName": "font-loading.js",
+  "language": "js",
+  "text": "document.fonts.load("1em Inter");",
+}
+`;
+
+exports[`buildExport > produces a stable loading export for several families 1`] = `
 {
   "fileName": "font-loading.js",
   "language": "js",
@@ -56,6 +108,35 @@ export const font = localFont({
 }
 `;
 
+exports[`buildExport > produces a stable next export for several families 1`] = `
+{
+  "fileName": "font.ts",
+  "language": "ts",
+  "text": "// Put Inter-Regular.woff2, Merriweather-Regular.woff2, Merriweather-Bold.woff2, Merriweather-Italic.woff2 into ./fonts/ and the @font-face rules from the CSS export into your global CSS.
+import localFont from 'next/font/local';
+
+export const inter = localFont({
+  src: './fonts/Inter-Regular.woff2',
+  display: 'swap',
+  adjustFontFallback: false,
+  fallback: ['Inter Fallback Arial', 'sans-serif'],
+  variable: '--font-inter',
+});
+
+export const merriweather = localFont({
+  src: [
+    { path: './fonts/Merriweather-Regular.woff2', weight: '400', style: 'normal' },
+    { path: './fonts/Merriweather-Bold.woff2', weight: '700', style: 'normal' },
+    { path: './fonts/Merriweather-Italic.woff2', weight: '400', style: 'italic' },
+  ],
+  display: 'swap',
+  adjustFontFallback: false,
+  fallback: ['Merriweather Fallback Georgia', 'serif'],
+  variable: '--font-merriweather',
+});",
+}
+`;
+
 exports[`buildExport > produces a stable nuxt export 1`] = `
 {
   "fileName": "nuxt.config.ts",
@@ -76,11 +157,51 @@ export default defineNuxtConfig({
 }
 `;
 
+exports[`buildExport > produces a stable nuxt export for several families 1`] = `
+{
+  "fileName": "nuxt.config.ts",
+  "language": "ts",
+  "text": "// Add the @font-face rules from the CSS export to a stylesheet listed in \`css\`.
+export default defineNuxtConfig({
+  modules: ['@nuxt/fonts'],
+  fonts: {
+    families: [
+      {
+        name: 'Inter',
+        src: '/fonts/Inter-Regular.woff2',
+        fallbacks: ['Inter Fallback Arial', 'sans-serif'],
+      },
+      {
+        name: 'Merriweather',
+        src: [
+          { src: '/fonts/Merriweather-Regular.woff2', weight: 400, style: 'normal' },
+          { src: '/fonts/Merriweather-Bold.woff2', weight: 700, style: 'normal' },
+          { src: '/fonts/Merriweather-Italic.woff2', weight: 400, style: 'italic' },
+        ],
+        fallbacks: ['Merriweather Fallback Georgia', 'serif'],
+      },
+    ],
+  },
+});",
+}
+`;
+
 exports[`buildExport > produces a stable preload export 1`] = `
 {
   "fileName": "preload.html",
   "language": "html",
   "text": "<link rel="preload" href="/fonts/Inter-Regular.woff2" as="font" type="font/woff2" crossorigin>",
+}
+`;
+
+exports[`buildExport > produces a stable preload export for several families 1`] = `
+{
+  "fileName": "preload.html",
+  "language": "html",
+  "text": "<link rel="preload" href="/fonts/Inter-Regular.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/fonts/Merriweather-Regular.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/fonts/Merriweather-Bold.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/fonts/Merriweather-Italic.woff2" as="font" type="font/woff2" crossorigin>",
 }
 `;
 
@@ -102,6 +223,25 @@ exports[`buildExport > produces a stable tailwind export 1`] = `
 }
 `;
 
+exports[`buildExport > produces a stable tailwind export for several families 1`] = `
+{
+  "fileName": "app.css",
+  "language": "css",
+  "text": "@import "tailwindcss";
+
+@font-face {
+  font-family: "Inter Fallback Arial";
+  src: local("Arial");
+  size-adjust: 107.1194%;
+}
+
+@theme {
+  --font-inter: "Inter", "Inter Fallback Arial", sans-serif;
+  --font-merriweather: "Merriweather", "Merriweather Fallback Georgia", serif;
+}",
+}
+`;
+
 exports[`buildExport > produces a stable variables export 1`] = `
 {
   "fileName": "fallback-fonts.css",
@@ -118,6 +258,29 @@ exports[`buildExport > produces a stable variables export 1`] = `
 
 body {
   font-family: var(--font-body);
+  font-size-adjust: 0.4877;
+  line-height: 1.4;
+}",
+}
+`;
+
+exports[`buildExport > produces a stable variables export for several families 1`] = `
+{
+  "fileName": "fallback-fonts.css",
+  "language": "css",
+  "text": "@font-face {
+  font-family: "Inter Fallback Arial";
+  src: local("Arial");
+  size-adjust: 107.1194%;
+}
+
+:root {
+  --font-inter: "Inter", "Inter Fallback Arial", sans-serif;
+  --font-merriweather: "Merriweather", "Merriweather Fallback Georgia", serif;
+}
+
+body {
+  font-family: var(--font-inter);
   font-size-adjust: 0.4877;
   line-height: 1.4;
 }",

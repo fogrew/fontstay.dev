@@ -858,6 +858,13 @@ test('several fonts share the article and the export and are tuned one by one', 
   await expect(code).toContainText('Fira Sans Fallback');
   await expect(code).toContainText('.source-sans-pro {');
   await expect(page.getByLabel('Fallback font 1', { exact: true })).toHaveCount(0);
+  await choose(page.getByLabel('Format'), { label: 'Next.js (next/font/local)' });
+  const next = page.getByRole('region', { name: 'font.ts' });
+  await expect(next).toContainText('export const sourceSansPro = localFont');
+  await expect(next).toContainText('export const firaSans = localFont');
+  await expect(next).toContainText('SourceSansPro-Regular.woff2');
+  await expect(next).toContainText('FiraSans-Regular.ttf');
+  await choose(page.getByLabel('Format'), 'css');
 
   const fira = page.getByRole('button', { name: /^Fira Sans/ }).first();
   await fira.click();

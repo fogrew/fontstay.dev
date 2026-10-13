@@ -30,7 +30,7 @@ export function ExportPanel({
 }) {
   const t = messagesFor(locale);
   const [chosen, setFormat] = useState<Choice>('css');
-  const format: Choice = multi ? 'css' : chosen;
+  const format: Choice = multi && chosen === 'report' ? 'css' : chosen;
   const labels: Record<Choice, string> = {
     report: t.export_report(),
     css: t.export_css(),
@@ -51,12 +51,10 @@ export function ExportPanel({
       <Select
         label={t.export_format_label()}
         value={format}
-        options={(multi ? (['css'] as const) : [...EXPORT_FORMATS, 'report' as const]).map(
-          (value) => {
-            const name = FORMAT_ICONS[value];
-            return { value, label: labels[value], icon: name && <Icon name={name} /> };
-          },
-        )}
+        options={(multi ? EXPORT_FORMATS : [...EXPORT_FORMATS, 'report' as const]).map((value) => {
+          const name = FORMAT_ICONS[value];
+          return { value, label: labels[value], icon: name && <Icon name={name} /> };
+        })}
         onChange={(value) => setFormat(value as Choice)}
       />
       {format === 'css' && (

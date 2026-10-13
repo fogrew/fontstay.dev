@@ -27,6 +27,13 @@ describe('loadingScript', () => {
     expect(script).toContain('.then(done, done)');
   });
 
+  it('waits for every family when there are several', () => {
+    const script = loadingScript(['A', 'B']);
+    expect(script).toContain(
+      `Promise.all([document.fonts.load('1em "A"'), document.fonts.load('1em "B"')]).then(done, done);`,
+    );
+  });
+
   it('escapes quotes and backslashes in the family name', () => {
     const script = loadingScript('A"B\\C');
     expect(script).toContain('A\\\\"B');

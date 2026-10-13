@@ -45,15 +45,9 @@ import { type Category, loadVariantMetrics, type OsId, osFontsDataset } from '@/
 import { cssStack, PRESETS, type PresetId, presetName, presetPicks } from '@/modules/presets';
 import { autoFit } from '../lib/auto-fit';
 import { displayName, fitLanguage, isNoCoverage, LOW_COVERAGE } from '../lib/compute';
-import {
-  adjustmentOf,
-  buildCss,
-  fallbackFamilyName,
-  fallbackRule,
-  type Overrides,
-} from '../lib/css';
+import { adjustmentOf, buildCss, fallbackFamilyName, type Overrides } from '../lib/css';
 import { hasSpacing, loadingCss, loadingScript, type SpacingEm } from '../lib/loading';
-import { currentFallback, mergeOutputs } from '../lib/overview';
+import { currentFallback, type FontOutput, groupFonts, mergeOutputs } from '../lib/overview';
 import { ownOs } from '../lib/own-os';
 import {
   type Candidate,
@@ -574,6 +568,11 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
     }
     return rankCache.current.get(cacheKey) ?? null;
   };
+  const strategyOf = (font: LoadedFont) => {
+    const lacking = audience ? lacksVerticalOverrides(descriptorSupport(audience.entries)) : 0;
+    const ratio = aspectOf(font.metrics);
+    return ratio !== null && lacking > 0.05 ? safariStrategyCss(ratio, STRATEGY_LINE_HEIGHT) : '';
+  };
   const outputOfFont = (font: LoadedFont) => {
     if (!shares) return undefined;
     const lang: Language = fitLanguage(font.metrics, locale);
@@ -643,6 +642,7 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
       kind: fontKind,
       language: lang,
       range,
+      strategy: strategyOf(font),
       fallbackFamilies: faces.map((face) => fallbackFamilyName(family, face.family, faces.length)),
       css,
       fallback,
@@ -661,35 +661,29 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
   const safariCss =
     aspect !== null && vertical > 0.05 ? safariStrategyCss(aspect, STRATEGY_LINE_HEIGHT) : '';
 
-  const cssText = output
-    ? [output.fontFaces, fallbackRule(output.fontFamily, safariCss), loadingCss(spacingEm)]
-        .filter(Boolean)
-        .join('\n\n')
-    : '';
   const exportFamily = selected?.metrics.names.family?.trim().slice(0, 200) || 'Custom font';
-  const firstOverview = overviewReady[0];
+  const exportEntries = allMode
+    ? overviewReady
+    : overviewReady.filter((entry) => entry.font.id === selected?.id);
+  const exportOutputs: FontOutput[] = exportEntries.map((entry) => ({
+    targetFamily: entry.family,
+    generic: entry.kind,
+    fontFaces: entry.css.fontFaces,
+    families: entry.css.families,
+    strategy: entry.strategy,
+    fileName: entry.font.fileName,
+    weight: styleOf(entry.font).includes('bold') ? 700 : 400,
+    style: styleOf(entry.font).includes('italic') ? 'italic' : 'normal',
+  }));
+  const exportFamilies = groupFonts(exportOutputs);
   const exportInput: ExportInput = {
-    targetFamily: allMode ? (firstOverview?.family ?? exportFamily) : exportFamily,
-    generic: allMode ? (firstOverview?.kind ?? kind) : kind,
-    fontFaces: allMode
-      ? overviewReady.map((entry) => entry.css.fontFaces).join('\n\n')
-      : (output?.fontFaces ?? ''),
-    families: allMode ? (firstOverview?.css.families ?? []) : (output?.families ?? []),
-    strategy: safariCss,
-    css: allMode
-      ? mergeOutputs(
-          overviewReady.map((entry) => ({
-            targetFamily: entry.family,
-            generic: entry.kind,
-            fontFaces: entry.css.fontFaces,
-            families: entry.css.families,
-          })),
-          safariCss,
-          loadingCss(spacingEm),
-        )
-      : cssText,
-    loadingScript: loadingScript(exportFamily),
-    fileName: selected?.fileName ?? 'font.woff2',
+    families: exportFamilies,
+    fontFaces: [
+      ...new Set(exportOutputs.flatMap((entry) => entry.fontFaces.split('\n\n')).filter(Boolean)),
+    ].join('\n\n'),
+    strategy: exportEntries[0]?.strategy ?? '',
+    css: mergeOutputs(exportOutputs, loadingCss(spacingEm)),
+    loadingScript: loadingScript(exportFamilies.map((family) => family.targetFamily)),
   };
   const anyRanking = Object.values(rankings.result).find(Boolean);
   const currentShareState = (): ShareState => {

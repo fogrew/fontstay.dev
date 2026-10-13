@@ -2,7 +2,9 @@ export { generateFallbackCss } from './lib/css';
 export {
   buildExport,
   EXPORT_FORMATS,
+  type ExportFamily,
   type ExportFile,
+  type ExportFont,
   type ExportFormat,
   type ExportInput,
 } from './lib/formats';

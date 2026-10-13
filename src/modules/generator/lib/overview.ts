@@ -1,3 +1,4 @@
+import type { ExportFamily, ExportFont } from '@/modules/export';
 import type { OsId } from '@/modules/os-fonts';
 import { RULE_SELECTOR } from './css';
 import type { Candidate, Plan } from './per-os';
@@ -7,6 +8,10 @@ export interface FontOutput {
   generic: string;
   fontFaces: string;
   families: readonly string[];
+  strategy: string;
+  fileName: string;
+  weight: number;
+  style: 'normal' | 'italic';
 }
 
 export function slugOf(family: string): string {
@@ -33,32 +38,41 @@ export function currentFallback(
   );
 }
 
-export function mergeOutputs(
-  outputs: readonly FontOutput[],
-  strategy: string,
-  extra: string,
-): string {
+export function groupFonts(outputs: readonly FontOutput[]): ExportFamily[] {
+  const groups = new Map<string, { generic: string; families: string[]; fonts: ExportFont[] }>();
+  for (const output of outputs) {
+    const group = groups.get(output.targetFamily) ?? {
+      generic: output.generic,
+      families: [],
+      fonts: [],
+    };
+    for (const family of output.families) {
+      if (!group.families.includes(family)) group.families.push(family);
+    }
+    group.fonts.push({ fileName: output.fileName, weight: output.weight, style: output.style });
+    groups.set(output.targetFamily, group);
+  }
+  return [...groups.entries()].map(([targetFamily, group]) => ({ targetFamily, ...group }));
+}
+
+export function mergeOutputs(outputs: readonly FontOutput[], extra: string): string {
   const blocks = new Set<string>();
   for (const output of outputs) {
     for (const block of output.fontFaces.split('\n\n')) if (block) blocks.add(block);
   }
-  const groups = new Map<string, { families: string[]; generic: string }>();
-  for (const output of outputs) {
-    const group = groups.get(output.targetFamily) ?? { families: [], generic: output.generic };
-    for (const family of output.families) {
-      if (!group.families.includes(family)) group.families.push(family);
-    }
-    groups.set(output.targetFamily, group);
-  }
-  const single = groups.size === 1;
+  const families = groupFonts(outputs);
+  const single = families.length === 1;
   const used = new Set<string>();
-  const rules = [...groups.entries()].map(([family, group]) => {
-    let slug = slugOf(family);
-    for (let count = 2; used.has(slug); count++) slug = `${slugOf(family)}-${count}`;
+  const rules = families.map((family) => {
+    let slug = slugOf(family.targetFamily);
+    for (let count = 2; used.has(slug); count++) slug = `${slugOf(family.targetFamily)}-${count}`;
     used.add(slug);
+    const strategy = outputs.find(
+      (output) => output.targetFamily === family.targetFamily,
+    )?.strategy;
     const lines = [
-      `font-family: ${group.families.join(', ')}, ${group.generic};`,
-      ...(single ? strategy.split('\n').filter(Boolean) : []),
+      `font-family: ${family.families.join(', ')}, ${family.generic};`,
+      ...(strategy ?? '').split('\n').filter(Boolean),
     ];
     return [
       `${single ? RULE_SELECTOR : `.${slug}`} {`,

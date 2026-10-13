@@ -20,10 +20,18 @@ export function loadingCss(spacing: SpacingEm): string {
   return `.${LOADING_CLASS} {\n${lines.join('\n')}\n}`;
 }
 
-export function loadingScript(family: string): string {
-  const font = `'${`1em ${JSON.stringify(family)}`.replace(/[\\']/g, '\\$&')}'`;
+const fontQuery = (family: string) =>
+  `'${`1em ${JSON.stringify(family)}`.replace(/[\\']/g, '\\$&')}'`;
+
+export function loadingScript(families: string | readonly string[]): string {
+  const list = typeof families === 'string' ? [families] : families;
+  const [only] = list;
+  const wait =
+    list.length === 1 && only !== undefined
+      ? `document.fonts.load(${fontQuery(only)})`
+      : `Promise.all([${list.map((family) => `document.fonts.load(${fontQuery(family)})`).join(', ')}])`;
   return `const root = document.documentElement;
 const done = () => root.classList.remove('${LOADING_CLASS}');
 root.classList.add('${LOADING_CLASS}');
-document.fonts.load(${font}).then(done, done);`;
+${wait}.then(done, done);`;
 }
