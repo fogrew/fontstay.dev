@@ -1,4 +1,5 @@
 import type { IconName } from '@/common/ui';
+import type { Block } from '@/modules/layout-shift';
 
 export type Run =
   | string
@@ -516,3 +517,22 @@ const ja: Article = {
 };
 
 export const ARTICLES: Record<ArticleId, Article> = { en, ru, ar, ja };
+
+const plain = (runs: readonly Run[]) =>
+  runs.map((run) => (typeof run === 'string' ? run : Object.values(run)[0])).join('');
+
+export function articleBlocks(article: Article): Block[] {
+  return [
+    { tag: 'h1', text: article.title },
+    { tag: 'p', text: article.lead },
+    ...article.factors.flatMap((factor): Block[] => [
+      { tag: 'h3', text: factor.title },
+      { tag: 'p', text: factor.text },
+    ]),
+    { tag: 'h2', text: article.columnsHeading },
+    ...article.columns.map((runs): Block => ({ tag: 'p', text: plain(runs) })),
+    { tag: 'blockquote', text: article.quote.text },
+    { tag: 'h2', text: article.listHeading },
+    ...article.list.map((runs): Block => ({ tag: 'li', text: plain(runs) })),
+  ];
+}

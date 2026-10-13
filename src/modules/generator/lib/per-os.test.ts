@@ -1,13 +1,13 @@
 import { beforeAll, describe, expect, it } from 'vitest';
 import { loadVariantMetrics } from '@/modules/os-fonts';
 import { font } from './font.test-util';
-import { planStack, rankFor, styleKeyOf, systemsWithFonts } from './per-os';
+import { consolidate, planStack, rankFor, styleKeyOf, systemsWithFonts } from './per-os';
 
 const ascii = Array.from({ length: 95 }, (_, index) => 0x20 + index);
 const cyrillic = Array.from({ length: 64 }, (_, index) => 0x410 + index);
 
 describe('rankFor', () => {
-  it('lists only fonts preinstalled on the system, closest width first within full coverage', () => {
+  it('lists only fonts preinstalled on the system, lowest predicted shift first within full coverage', () => {
     const windows = rankFor(font(ascii, 520), 'windows', 'en').candidates.map((item) => item.id);
     expect(windows).toContain('arial');
     expect(windows).toContain('segoe-ui');
@@ -18,10 +18,27 @@ describe('rankFor', () => {
     expect(android).toContain('roboto');
     expect(android).not.toContain('arial');
 
-    const sizes = rankFor(font(ascii, 520), 'windows', 'en').candidates.map((item) =>
-      Math.abs(Math.log(item.adjustment.sizeAdjust)),
+    const ranked = rankFor(font(ascii, 520), 'windows', 'en').candidates;
+    const full = ranked.filter((item) => item.coverage >= 0.95);
+    const costs = full.map((item) => item.cost);
+    expect(costs).toEqual([...costs].sort((a, b) => a - b));
+    expect(ranked.slice(0, full.length)).toEqual(full);
+  });
+
+  it('shares one fallback between systems when it is nearly as good as the best of each', () => {
+    const web = font(ascii, 520);
+    const lists = {
+      windows: rankFor(web, 'windows', 'en').candidates,
+      macos: rankFor(web, 'macos', 'en').candidates,
+      android: rankFor(web, 'android', 'en').candidates,
+    };
+    const picks = consolidate(lists, { windows: 50, macos: 30, android: 20 });
+    expect(picks.android?.id).toBe(lists.android[0]?.id);
+    expect(picks.windows?.id).toBe(picks.macos?.id);
+    const windowsBest = lists.windows[0]?.cost ?? 0;
+    expect((picks.windows?.cost ?? 0) - windowsBest).toBeLessThanOrEqual(
+      Math.max(0.004, windowsBest * 0.5) + 1e-9,
     );
-    expect(sizes).toEqual([...sizes].sort((a, b) => a - b));
   });
 
   it('offers the Latin-only Helvetica on Apple systems for English only', () => {

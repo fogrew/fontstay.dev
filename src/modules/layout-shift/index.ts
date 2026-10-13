@@ -1,4 +1,4 @@
-export { sampleBlocks } from './lib/document';
+export { type Block, sampleBlocks } from './lib/document';
 export { type PredictModel, scoreOf, widthMismatch, worstShift } from './lib/model';
 export { compassSearch, type Dimension } from './lib/optimize';
 export { type PredictFont, predictViewport, textWidth } from './lib/predict';

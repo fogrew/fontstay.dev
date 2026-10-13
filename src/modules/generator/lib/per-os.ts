@@ -11,6 +11,14 @@ import {
 } from '@/modules/fallback-fit';
 import type { FontMetrics } from '@/modules/font-metrics';
 import {
+  type Block,
+  DEFAULT_VIEWPORTS,
+  type PredictModel,
+  predictViewport,
+  sampleBlocks,
+  widthMismatch,
+} from '@/modules/layout-shift';
+import {
   type Category,
   type OsFont,
   type OsId,
@@ -19,6 +27,8 @@ import {
   osFontsDataset,
   type StyleVariant,
 } from '@/modules/os-fonts';
+import { ARTICLES, articleBlocks } from './articles';
+import { fallbackPredictFont, webPredictFont } from './predict-input';
 
 export type Language = 'en' | 'ru';
 export type FontStyleKey = 'regular' | StyleVariant;
@@ -78,6 +88,7 @@ export interface Candidate {
   fit: FitFont | null;
   native: Vertical;
   style: FontStyleKey;
+  cost: number;
 }
 
 export interface Ranking {
@@ -152,6 +163,34 @@ export function systemsWithFonts(): OsId[] {
   );
 }
 
+const WIDTH_WEIGHT = 0.05;
+const SIZE_WEIGHT = 0.05;
+
+const documents = new Map<Language, Block[][]>();
+
+function documentsFor(language: Language): Block[][] {
+  const cached = documents.get(language);
+  if (cached) return cached;
+  const list = [sampleBlocks(language), articleBlocks(ARTICLES[language === 'ru' ? 'ru' : 'en'])];
+  documents.set(language, list);
+  return list;
+}
+
+function predictedCost(candidate: Candidate, model: PredictModel): number {
+  const font = fallbackPredictFont(candidate, candidate.adjustment, { letter: 0, word: 0 });
+  if (!font) return 1;
+  const scores = documentsFor(model.language).flatMap((blocks) =>
+    DEFAULT_VIEWPORTS.map((viewport) => predictViewport(model.web, font, blocks, viewport).score),
+  );
+  const mean = scores.reduce((sum, score) => sum + score, 0) / scores.length;
+  return (
+    Math.max(...scores) +
+    mean +
+    WIDTH_WEIGHT * widthMismatch(model, font) +
+    SIZE_WEIGHT * Math.abs(Math.log(candidate.adjustment.sizeAdjust))
+  );
+}
+
 export function rankFor(
   web: FontMetrics,
   os: OsId,
@@ -160,6 +199,16 @@ export function rankFor(
 ): Ranking {
   const weights = languageWeights(language);
   const own = fitFont(web, web, weights);
+  const model = {
+    web: webPredictFont(web, {
+      web: {
+        ascent: own.ascentOverride,
+        descent: own.descentOverride,
+        lineGap: own.lineGapOverride,
+      },
+    }),
+    language,
+  };
   const candidates: Candidate[] = [];
   for (const base of fonts()) {
     if (!preinstalledOn(base.dataset, os)) continue;
@@ -168,7 +217,7 @@ export function rankFor(
     try {
       if (font.fit) {
         const result = fitFont(web, font.fit, weights);
-        candidates.push({
+        const candidate: Candidate = {
           id: font.id,
           family: font.family,
           localNames: font.localNames,
@@ -179,7 +228,10 @@ export function rankFor(
           fit: font.fit,
           native: font.native,
           style: variant ? style : 'regular',
-        });
+          cost: 1,
+        };
+        candidate.cost = predictedCost(candidate, model);
+        candidates.push(candidate);
       } else if (font.latinWidthEm !== null && language === 'en') {
         candidates.push({
           id: font.id,
@@ -192,6 +244,7 @@ export function rankFor(
           fit: null,
           native: font.native,
           style: 'regular',
+          cost: 1,
         });
       }
     } catch (failure) {
@@ -201,6 +254,7 @@ export function rankFor(
   candidates.sort(
     (a, b) =>
       Number(b.coverage >= 0.95) - Number(a.coverage >= 0.95) ||
+      a.cost - b.cost ||
       Math.abs(Math.log(a.adjustment.sizeAdjust)) - Math.abs(Math.log(b.adjustment.sizeAdjust)),
   );
   return {
@@ -263,4 +317,56 @@ export function planStack(picks: readonly SystemPick[], order?: readonly string[
 
 export function candidateById(id: string) {
   return fonts().find((font) => font.id === id);
+}
+
+const COST_TOLERANCE = 0.004;
+const COST_RELATIVE = 0.5;
+
+export function consolidate(
+  lists: Partial<Record<OsId, readonly Candidate[]>>,
+  shares: Partial<Record<OsId, number>>,
+): Partial<Record<OsId, Candidate>> {
+  const best = new Map<OsId, Candidate>();
+  for (const [os, list] of Object.entries(lists) as [OsId, readonly Candidate[]][]) {
+    const first = list[0];
+    if (first) best.set(os, first);
+  }
+  const acceptable = (os: OsId, candidate: Candidate) => {
+    const top = best.get(os);
+    return (
+      top !== undefined &&
+      candidate.coverage >= 0.95 &&
+      candidate.cost <= top.cost + Math.max(COST_TOLERANCE, top.cost * COST_RELATIVE)
+    );
+  };
+  const options = new Map<string, Candidate>();
+  for (const list of Object.values(lists))
+    for (const item of list ?? []) options.set(item.id, item);
+  const result: Partial<Record<OsId, Candidate>> = {};
+  let pending = [...best.keys()];
+  while (pending.length > 0) {
+    let choice: { candidate: Candidate; covers: OsId[]; share: number } | undefined;
+    for (const candidate of options.values()) {
+      const covers = pending.filter(
+        (os) => lists[os]?.some((item) => item.id === candidate.id) && acceptable(os, candidate),
+      );
+      if (covers.length === 0) continue;
+      const share = covers.reduce((sum, os) => sum + (shares[os] ?? 0), 0);
+      if (
+        !choice ||
+        share > choice.share ||
+        (share === choice.share && candidate.cost < choice.candidate.cost)
+      ) {
+        choice = { candidate, covers, share };
+      }
+    }
+    if (!choice) break;
+    for (const os of choice.covers) {
+      const match = lists[os]?.find((item) => item.id === choice?.candidate.id);
+      if (match) result[os] = match;
+    }
+    pending = pending.filter((os) => !choice?.covers.includes(os));
+  }
+  for (const [os, candidate] of best) result[os] ??= candidate;
+  return result;
 }

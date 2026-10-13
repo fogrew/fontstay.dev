@@ -50,6 +50,7 @@ import { currentFallback, type FontOutput, groupFonts, mergeOutputs } from '../l
 import { ownOs } from '../lib/own-os';
 import {
   type Candidate,
+  consolidate,
   type FontStyleKey,
   type Language,
   planStack,
@@ -406,12 +407,19 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
     return { result, noCoverage };
   }, [selected, systems, language, styleKey, variantsReady]);
 
+  const isEnabled = (os: OsId) => enabledSystems[os] !== false;
   const candidatesOf = (os: OsId): Candidate[] =>
     (rankings.result[os]?.candidates ?? []).filter((item) => item.category === kind);
+  const defaultPicks = consolidate(
+    Object.fromEntries(systems.filter(isEnabled).map((os) => [os, candidatesOf(os)])),
+    shares ?? {},
+  );
   const listFor = (os: OsId): Candidate[] => {
     const all = candidatesOf(os);
     const explicit = (picks[os] ?? []).flatMap((id) => all.find((item) => item.id === id) ?? []);
-    return explicit.length > 0 ? explicit : all.slice(0, 1);
+    const fallback = defaultPicks[os];
+    if (explicit.length > 0) return explicit;
+    return fallback ? [fallback] : all.slice(0, 1);
   };
 
   const [own, setOwn] = useState<OsId>();
@@ -448,7 +456,6 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
   };
   const manualOf = (id: string): Partial<Overrides> => manualFor(selected?.id ?? 0, id);
 
-  const isEnabled = (os: OsId) => enabledSystems[os] !== false;
   const chosen = systems
     .filter(isEnabled)
     .flatMap((os) =>
@@ -596,20 +603,30 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
       kindChoices[font.id] ?? preset?.kind ?? font.metrics.style.category ?? 'sans-serif';
     const fontPicks = picksByFont[font.id] ?? presetMap ?? NO_PICKS;
     let anyFontRanking: Ranking | undefined;
-    const fontChosen = systems.filter(isEnabled).flatMap((os) => {
+    const enabledSystems = systems.filter(isEnabled);
+    const listsByOs: Partial<Record<OsId, Candidate[]>> = {};
+    for (const os of enabledSystems) {
       const ranking = rankOf(font, os, lang, fontStyle);
-      if (!ranking) return [];
+      if (!ranking) continue;
       anyFontRanking ??= ranking;
-      const all = ranking.candidates.filter((item) => item.category === fontKind);
+      listsByOs[os] = ranking.candidates.filter((item) => item.category === fontKind);
+    }
+    const fontDefaults = consolidate(listsByOs, shares);
+    const fontChosen = enabledSystems.flatMap((os) => {
+      const all = listsByOs[os];
+      if (!all) return [];
       const explicit = (fontPicks[os] ?? []).flatMap(
         (id) => all.find((item) => item.id === id) ?? [],
       );
-      return (explicit.length > 0 ? explicit : all.slice(0, 1)).map((pick) => ({
-        os,
-        share: shares[os],
-        faceId: pick.id,
-        candidate: pick,
-      }));
+      const fallback = fontDefaults[os];
+      return (explicit.length > 0 ? explicit : fallback ? [fallback] : all.slice(0, 1)).map(
+        (pick) => ({
+          os,
+          share: shares[os],
+          faceId: pick.id,
+          candidate: pick,
+        }),
+      );
     });
     if (fontChosen.length === 0 || !anyFontRanking) return undefined;
     let fontPlan: ReturnType<typeof planStack>;
