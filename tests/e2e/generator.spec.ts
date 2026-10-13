@@ -574,8 +574,19 @@ test('characters missing from the font are highlighted and explained on focus', 
   const mark = view.locator('.ff-article:not(.ff-article--ghost) .ff-article__missing').first();
   await expect(mark).toBeVisible();
   await expect(mark).toHaveAttribute('data-note', /is not supported by the font.*Sans-serif/);
+  const overflow = () =>
+    page.evaluate(() => ({
+      page: document.documentElement.scrollWidth - document.documentElement.clientWidth,
+      article: Math.max(
+        ...[...document.querySelectorAll('.ff-article')].map(
+          (node) => node.scrollWidth - node.clientWidth,
+        ),
+      ),
+    }));
+  const before = await overflow();
   await mark.focus();
   await expect(mark).toBeFocused();
+  expect(await overflow()).toEqual(before);
   await choose(view.getByLabel('Font for the missing characters'), 'serif');
   await expect(mark).toHaveAttribute('data-note', /Serif/);
 });

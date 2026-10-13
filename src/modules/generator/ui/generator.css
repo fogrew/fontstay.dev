@@ -484,11 +484,10 @@
   margin-block-start: var(--ff-space-3);
 }
 .ff-article-view__controls .ff-field {
-  flex: 0 1 11rem;
-  min-inline-size: 8rem;
+  flex: 0 0 auto;
 }
 .ff-article-view__controls .ff-preview__slider {
-  flex: 1 1 8rem;
+  flex: 0 0 7.5rem;
 }
 .ff-article-view__controls input[type="range"] {
   inline-size: 100%;
@@ -643,23 +642,30 @@
   font-size: 0.9em;
 }
 .ff-article-view__controls {
-  display: grid;
+  display: flex;
+  flex-wrap: wrap;
   gap: var(--ff-space-2);
-  grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
-}
-.ff-article-view__controls > :first-child {
-  grid-column: 1 / -1;
+  align-items: stretch;
 }
 .ff-article-view__group {
+  flex: 0 0 auto;
   min-inline-size: 0;
   margin: 0;
   display: flex;
-  flex-wrap: wrap;
   gap: var(--ff-space-3);
   align-items: end;
   padding: var(--ff-space-2) var(--ff-space-3);
   border: 1px solid var(--ff-border);
   border-radius: var(--ff-radius);
+}
+.ff-article-view__group .ff-select > span {
+  white-space: nowrap;
+}
+@media (max-width: 64rem) {
+  .ff-article-view__group {
+    flex: 1 1 100%;
+    flex-wrap: wrap;
+  }
 }
 .ff-article-view__group legend {
   padding-inline: var(--ff-space-1);
@@ -667,6 +673,7 @@
   font-weight: 600;
 }
 .ff-article-view__shift {
+  align-self: end;
   display: flex;
   flex-wrap: wrap;
   gap: var(--ff-space-2);
@@ -687,19 +694,17 @@
   text-overflow: ellipsis;
 }
 .ff-article-view .ff-article__missing {
-  position: relative;
   background: color-mix(in srgb, var(--ff-error) 25%, transparent);
   color: inherit;
   text-decoration: underline wavy var(--ff-error);
 }
 .ff-article-view .ff-article__missing:is(:hover, :focus-visible)::after {
   content: attr(data-note);
-  position: absolute;
-  inset-block-end: 100%;
-  inset-inline-start: 0;
+  position: fixed;
   z-index: 5;
   inline-size: max-content;
-  max-inline-size: 18rem;
+  max-inline-size: min(18rem, 90vw);
+  margin: var(--ff-space-1);
   padding: var(--ff-space-1) var(--ff-space-2);
   border: 1px solid var(--ff-error);
   border-radius: var(--ff-radius);
@@ -711,4 +716,18 @@
   -webkit-text-stroke: 0;
   text-decoration: none;
   white-space: normal;
+}
+@supports (position-area: top) {
+  .ff-article-view .ff-article__missing:is(:hover, :focus-visible)::after {
+    position-area: top span-inline-end;
+    position-try-fallbacks:
+      flip-block,
+      flip-inline,
+      flip-block flip-inline;
+  }
+}
+@supports not (position-area: top) {
+  .ff-article-view .ff-article__missing:is(:hover, :focus-visible)::after {
+    display: none;
+  }
 }

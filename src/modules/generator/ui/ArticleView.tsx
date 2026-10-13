@@ -345,6 +345,9 @@ export function ArticleView({
               </button>
             ))}
           </fieldset>
+        </fieldset>
+        <fieldset class="ff-article-view__group">
+          <legend>{t.article_group_content()}</legend>
           <div class="ff-field ff-preview__slider">
             <div class="ff-preview__label">
               <label for="ff-article-size">{t.preview_size_label()}</label>
@@ -381,9 +384,6 @@ export function ArticleView({
             options={WRAPS.map((value) => ({ value, label: wrapLabel(value) }))}
             onChange={(value) => setWrap(value as Wrap)}
           />
-        </fieldset>
-        <fieldset class="ff-article-view__group">
-          <legend>{t.article_group_content()}</legend>
           <Select
             compact
             label={t.article_sample_label()}
@@ -392,6 +392,8 @@ export function ArticleView({
             onChange={(value) => setArticleId(value as ArticleId)}
           />
         </fieldset>
+      </div>
+      <div class="ff-article-view__controls">
         <fieldset class="ff-article-view__group">
           <legend>{t.article_group_fonts()}</legend>
           {families.length > 1 && (
@@ -420,8 +422,8 @@ export function ArticleView({
             onChange={(value) => setSubstitute(value as Substitute)}
           />
         </fieldset>
+        {shift && <DeviceShift locale={locale} input={shift} signature={shiftKey} />}
       </div>
-      {shift && <DeviceShift locale={locale} input={shift} signature={shiftKey} />}
       {loadFailed && (
         <p class="ff-error" role="alert">
           {t.preview_load_failed()}
