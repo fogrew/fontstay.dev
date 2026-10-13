@@ -638,6 +638,7 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
       kind: fontKind,
       language: lang,
       range,
+      fallbackFamilies: faces.map((face) => fallbackFamilyName(family, face.family, faces.length)),
       css,
       fallback,
       adjustment: fallback ? adjust(fallback) : undefined,
@@ -1186,6 +1187,19 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
         ]
       : [],
   );
+  const shiftEntry =
+    overviewReady.find((entry) => entry.font.id === selected?.id) ?? overviewReady[0];
+  const shiftInput: PanelInput | undefined = shiftEntry
+    ? {
+        webBytes: shiftEntry.font.bytes,
+        fallbackFontFaces: shiftEntry.css.fontFaces,
+        fallbackFamilies: shiftEntry.fallbackFamilies,
+        generic: shiftEntry.kind,
+        language: shiftEntry.language,
+        spacing: { letterEm: spacingEm.letter, wordEm: spacingEm.word },
+      }
+    : undefined;
+  const shiftKey = `${shiftEntry?.font.id}|${shiftEntry?.css.fontFaces}|${spacingEm.letter}|${spacingEm.word}`;
   const showResults = allMode ? overviewReady.length > 0 : Boolean(output && selected);
   const fontDetails = fonts.map((font) => {
     const isOpen = fonts.length === 1 ? fontOpen : !allMode && font.id === selected?.id;
@@ -1437,7 +1451,12 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
             </div>
           )}
         {previewItems.length > 0 ? (
-          <ArticleView locale={locale} items={previewItems} />
+          <ArticleView
+            locale={locale}
+            items={previewItems}
+            shift={shiftInput}
+            shiftKey={shiftKey}
+          />
         ) : (
           <p class="ff-generator__empty">{t.results_empty()}</p>
         )}

@@ -408,5 +408,12 @@
   "article_heading_font": "Headings font",
   "article_body_font": "Text font",
   "preview_sample_default": "The quick brown fox jumps over the lazy dog",
-  "preview_tab": "Preview"
+  "preview_tab": "Preview",
+  "article_shift_label": "Layout shift on this device:",
+  "article_shift_measuring": "measuring…",
+  "article_shift_failed": "could not be measured",
+  "article_unsupported": "{chars} is not supported by the font and is drawn with the {font} fallback",
+  "article_group_view": "View",
+  "article_group_content": "Content",
+  "article_group_fonts": "Fonts"
 }

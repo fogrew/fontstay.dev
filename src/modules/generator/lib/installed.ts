@@ -18,3 +18,23 @@ export function canvasMeasure(): Measure | null {
     return context.measureText(PROBE_TEXT).width;
   };
 }
+
+async function localFaceExists(name: string): Promise<boolean> {
+  try {
+    await new FontFace('ff-probe', `local(${JSON.stringify(name)})`).load();
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+export async function isInstalledOnDevice(names: readonly string[]): Promise<boolean> {
+  if (typeof FontFace === 'undefined') {
+    const measure = canvasMeasure();
+    return measure ? isInstalled(names, measure) : true;
+  }
+  const found = await Promise.all(names.map(localFaceExists));
+  if (found.some(Boolean)) return true;
+  const measure = canvasMeasure();
+  return measure ? isInstalled(names, measure) : false;
+}

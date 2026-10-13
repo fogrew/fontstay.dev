@@ -408,5 +408,12 @@
   "article_heading_font": "Шрифт заголовков",
   "article_body_font": "Шрифт текста",
   "preview_sample_default": "The quick brown fox jumps over the lazy dog",
-  "preview_tab": "Предпросмотр"
+  "preview_tab": "Предпросмотр",
+  "article_shift_label": "Сдвиг вёрстки на этом устройстве:",
+  "article_shift_measuring": "измеряется…",
+  "article_shift_failed": "не удалось измерить",
+  "article_unsupported": "{chars} не поддерживается шрифтом и отображается запасным шрифтом: {font}",
+  "article_group_view": "Вид",
+  "article_group_content": "Содержимое",
+  "article_group_fonts": "Шрифты"
 }

@@ -201,7 +201,6 @@
 .ff-accordion {
   display: flex;
   flex-direction: column;
-  min-block-size: 0;
 }
 .ff-accordion__item {
   margin-block-end: var(--ff-space-2);
@@ -212,7 +211,6 @@
 .ff-accordion__item {
   display: flex;
   flex-direction: column;
-  min-block-size: 0;
   border: 1px solid var(--ff-border);
   border-radius: var(--ff-radius);
   background: var(--ff-surface);
@@ -246,9 +244,7 @@
 .ff-accordion__panel {
   position: relative;
   flex: 1 1 auto;
-  min-block-size: 0;
   padding: var(--ff-space-2) var(--ff-space-3) var(--ff-space-3);
-  overflow: auto;
 }
 .ff-accordion__panel[hidden] {
   display: none;

@@ -228,7 +228,7 @@ test('a font with few Latin glyphs warns about coverage and previews its own gly
   });
   await expect(page.getByRole('status').filter({ hasText: 'Covered share' })).toBeVisible();
   await closePanels(page);
-  await expect(page.getByText(/are not in this font/)).toBeVisible();
+  await expect(page.locator('.ff-article__missing').first()).toBeVisible();
 });
 
 test('the audience editor resolves presets and reports invalid queries', async ({ page }) => {
@@ -562,17 +562,39 @@ test('a font collection is split into separate fonts', async ({ page }) => {
   await expect(page.getByRole('button', { name: 'Remove: pair.ttc #2' })).toBeVisible();
 });
 
-test('characters missing from the font are listed and can use another font', async ({ page }) => {
+test('characters missing from the font are highlighted and explained on focus', async ({
+  page,
+}) => {
   await page.goto('/en/');
   await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
   await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(sourceSans);
   await closePanels(page);
   const view = page.getByRole('region', { name: 'Article' });
   await choose(view.getByLabel('Sample text'), 'ja');
-  const missing = view.getByRole('status').filter({ hasText: 'are not in this font' });
-  await expect(missing).toContainText('U+');
+  const mark = view.locator('.ff-article:not(.ff-article--ghost) .ff-article__missing').first();
+  await expect(mark).toBeVisible();
+  await expect(mark).toHaveAttribute('data-note', /is not supported by the font.*Sans-serif/);
+  await mark.focus();
+  await expect(mark).toBeFocused();
   await choose(view.getByLabel('Font for the missing characters'), 'serif');
-  await expect(missing).toContainText('Serif');
+  await expect(mark).toHaveAttribute('data-note', /Serif/);
+});
+
+test('the article shows the layout shift measured on this device and ellipsizes without wrapping', async ({
+  page,
+}) => {
+  await page.goto('/en/');
+  await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
+  await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(sourceSans);
+  await closePanels(page);
+  const view = page.getByRole('region', { name: 'Article' });
+  await expect(view.getByText(/Layout shift on this device:/)).toBeVisible();
+  await expect(view.getByRole('status').filter({ hasText: /\d\.\d{3} ·/ })).toBeVisible({
+    timeout: 20_000,
+  });
+  await choose(view.getByLabel('Text wrapping'), 'nowrap');
+  await expect(view.locator('.ff-article__lead').first()).toHaveCSS('text-overflow', 'ellipsis');
+  await expect(view.locator('.ff-article__lead').first()).toHaveCSS('overflow', 'hidden');
 });
 
 test('a font embedded in pasted CSS can be added and other sources are only linked', async ({
