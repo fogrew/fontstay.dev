@@ -33,6 +33,8 @@ export interface AudienceData {
   released: Record<string, string[]>;
 }
 
+export const AUDIENCE_SET_EVENT = 'ff-audience-set';
+
 export function AudienceEditor({
   locale,
   onShares,
@@ -61,6 +63,14 @@ export function AudienceEditor({
   useEffect(() => {
     onQueryChange?.(query);
   }, [query, onQueryChange]);
+  useEffect(() => {
+    const apply = (event: Event) => {
+      const detail = (event as CustomEvent<unknown>).detail;
+      if (typeof detail === 'string' && detail.trim()) setQuery(detail.trim().slice(0, 500));
+    };
+    window.addEventListener(AUDIENCE_SET_EVENT, apply);
+    return () => window.removeEventListener(AUDIENCE_SET_EVENT, apply);
+  }, []);
   const [stats, setStats] = useState<StatsInfo>();
   const [statsError, setStatsError] = useState('');
   const userStats: UsageStats | undefined = stats?.stats;

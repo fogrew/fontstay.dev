@@ -243,6 +243,65 @@ test('the inspect tools draw, fade and compare the web font and the fallback', a
   await expect.poll(guides).toContain('--ff-guide-cap');
 });
 
+test('WebMCP tools drive the generator when the browser offers modelContext', async ({ page }) => {
+  await page.addInitScript(() => {
+    const tools: Record<
+      string,
+      { execute: (input: object) => Promise<{ content: { text: string }[] }> }
+    > = {};
+    (window as unknown as { __tools: typeof tools }).__tools = tools;
+    (document as unknown as { modelContext: unknown }).modelContext = {
+      registerTool: (tool: { name: string; execute: never }) => {
+        tools[tool.name] = tool;
+      },
+    };
+  });
+  await page.goto('/en/');
+  await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
+  await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(sourceSans);
+  const call = (name: string, input: object = {}) =>
+    page.evaluate(
+      async ([toolName, toolInput]) => {
+        const tools = (
+          window as unknown as {
+            __tools: Record<
+              string,
+              { execute: (i: object) => Promise<{ content: { text: string }[] }> }
+            >;
+          }
+        ).__tools;
+        return (
+          (await tools[toolName as string]?.execute(toolInput as object))?.content[0]?.text ?? ''
+        );
+      },
+      [name, input] as const,
+    );
+  await expect.poll(() => call('list-fonts')).toContain('Source Sans Pro');
+  const fontsList = JSON.parse(await call('list-fonts'));
+  expect(fontsList[0].scripts).toContain('latin');
+  await expect.poll(() => call('get-css')).toContain('@font-face');
+  expect(await call('get-export', { format: 'tailwind' })).toContain('@theme');
+  expect(await call('explain-setting', { topic: 'layout-shift' })).toContain('CLS');
+  expect(
+    await call('set-fallbacks', {
+      fontId: fontsList[0].id,
+      system: 'windows',
+      fonts: 'arial,segoe-ui',
+    }),
+  ).toContain('were set');
+  await expect.poll(() => call('get-css')).toContain('Source Sans Pro Fallback Segoe UI');
+  expect(
+    await call('set-fallbacks', {
+      fontId: fontsList[0].id,
+      system: 'windows',
+      fonts: 'not-a-font',
+    }),
+  ).toContain('Unknown');
+  await call('set-audience', { query: 'chrome 120' });
+  await openStep(page, 'audience');
+  await expect(page.getByLabel('Browserslist query')).toHaveValue('chrome 120');
+});
+
 test('the loupe shows the comparison only under the lens', async ({ page }) => {
   await page.goto('/en/');
   await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));

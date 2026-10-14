@@ -14,6 +14,7 @@ import {
   Select,
 } from '@/common/ui';
 import {
+  AUDIENCE_SET_EVENT,
   type AudienceData,
   AudienceEditor,
   buildMatrix,
@@ -25,7 +26,13 @@ import {
   SupportMatrix,
   type SystemInfo,
 } from '@/modules/audience';
-import { CssExportError, type ExportInput } from '@/modules/export';
+import {
+  buildExport,
+  CssExportError,
+  EXPORT_FORMATS,
+  type ExportFormat,
+  type ExportInput,
+} from '@/modules/export';
 import { compactRanges, formatUnicodeRange, StackResolveError } from '@/modules/fallback-fit';
 import {
   collectionMemberIndices,
@@ -49,6 +56,7 @@ import {
   SiteImportPanel,
   takePending,
 } from '@/modules/site-import';
+import { buildTools, registerWebMcp, type ShiftReport, type ToolHost } from '@/modules/webmcp';
 import { autoFit } from '../lib/auto-fit';
 import { fallbackRatio, webRatio } from '../lib/calibration';
 import { displayName, fitLanguage, isNoCoverage, LOW_COVERAGE } from '../lib/compute';
@@ -740,6 +748,11 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
       font,
       family,
       kind: fontKind,
+      picks: fontChosen.map((item) => ({
+        system: item.os,
+        share: item.share,
+        family: item.candidate.family,
+      })),
       language: lang,
       range,
       strategy: strategyOf(font),
@@ -787,6 +800,110 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
     loadingScript: loadingScript(exportFamilies.map((family) => family.targetFamily)),
   };
   const anyRanking = Object.values(rankings.result).find(Boolean);
+  const shiftReport = useRef<ShiftReport>();
+  const toolHost = useRef<ToolHost>();
+  toolHost.current = {
+    listFonts: () =>
+      fonts.map((font) => ({
+        id: font.id,
+        fileName: displayName(font.fileName),
+        family: displayName(font.metrics.names.family ?? ''),
+        weight: font.metrics.style.weight,
+        italic: font.metrics.style.italic,
+        variable: font.metrics.isVariable,
+        kind: kindChoices[font.id] ?? preset?.kind ?? font.metrics.style.category ?? 'sans-serif',
+        scripts: detectScripts(font.metrics.codePoints),
+        glyphs: font.metrics.codePoints.length,
+        selected: font.id === selected?.id,
+      })),
+    selectFont: (id) => {
+      const found = fonts.find((font) => font.id === id);
+      if (found) setSelectedId(found.id);
+      return Boolean(found);
+    },
+    analyzeFont: (id) => {
+      const font = fonts.find((item) => item.id === id);
+      if (!font) return undefined;
+      const { metrics } = font;
+      return {
+        names: metrics.names,
+        unitsPerEm: metrics.unitsPerEm,
+        verticalMetrics: { hhea: metrics.hhea, typo: metrics.typo, win: metrics.win },
+        capHeight: metrics.capHeight,
+        xHeight: metrics.xHeight,
+        style: metrics.style,
+        variable: metrics.isVariable,
+        glyphs: metrics.codePoints.length,
+        scripts: detectScripts(metrics.codePoints),
+      };
+    },
+    getAudience: () => ({
+      query: query ?? '',
+      shares: Object.fromEntries(
+        Object.entries(shares ?? {}).map(([os, value]) => [os, Math.round(value * 10) / 10]),
+      ),
+    }),
+    setAudience: (next) => {
+      window.dispatchEvent(new CustomEvent(AUDIENCE_SET_EVENT, { detail: next }));
+      return {
+        ok: true,
+        message:
+          'The audience query was applied. The Audience step shows an error if it is invalid.',
+      };
+    },
+    suggest: () =>
+      overviewReady.map((entry) => ({
+        font: entry.family,
+        kind: entry.kind,
+        coverage: Math.round(entry.anyRanking.coverage * 100) / 100,
+        picks: [...new Set(entry.picks.map((pick) => pick.system))].map((system) => ({
+          system,
+          share: shares?.[system as OsId] ?? 0,
+          fonts: entry.picks.filter((pick) => pick.system === system).map((pick) => pick.family),
+        })),
+      })),
+    setFallbacks: ({ fontId, system, fonts: ids }) => {
+      const font = fonts.find((item) => item.id === fontId);
+      if (!font) return { ok: false, message: 'There is no font with this id.' };
+      if (!ALL_SYSTEMS.includes(system as OsId)) return { ok: false, message: 'Unknown system.' };
+      const ranking = rankOf(
+        font,
+        system as OsId,
+        fitLanguage(font.metrics, locale),
+        styleOf(font),
+      );
+      const known = new Set(ranking?.candidates.map((item) => item.id));
+      const unknown = ids.filter((id) => !known.has(id));
+      if (ids.length === 0 || unknown.length > 0) {
+        return {
+          ok: false,
+          message: `Unknown fallback fonts for this system: ${unknown.join(', ') || 'none given'}. Valid ids: ${[...known].join(', ')}.`,
+        };
+      }
+      setSelectedId(font.id);
+      setPicksByFont((all) => ({
+        ...all,
+        [font.id]: { ...(all[font.id] ?? presetMap ?? NO_PICKS), [system]: ids },
+      }));
+      return { ok: true, message: `The fallbacks of ${system} were set to ${ids.join(', ')}.` };
+    },
+    setKind: (fontId, kindValue) => {
+      const font = fonts.find((item) => item.id === fontId);
+      if (!font || !['sans-serif', 'serif', 'monospace'].includes(kindValue)) return false;
+      setKindChoices((all) => ({ ...all, [font.id]: kindValue as Category }));
+      setPicksByFont((all) => ({ ...all, [font.id]: {} }));
+      resetOptimization();
+      return true;
+    },
+    getCss: () => exportInput.css,
+    getExport: (format) =>
+      (EXPORT_FORMATS as readonly string[]).includes(format)
+        ? buildExport(format as ExportFormat, exportInput).text
+        : undefined,
+    exportFormats: () => EXPORT_FORMATS,
+    getShift: () => shiftReport.current,
+  };
+  useEffect(() => registerWebMcp(buildTools(() => toolHost.current as ToolHost)), []);
   const manualValuesOf = (fontId: number) => {
     const manual: NonNullable<ShareState['manual']> = {};
     for (const [key, entry] of Object.entries(values)) {
@@ -1676,7 +1793,15 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
       />
       <div class="ff-generator__stage">
         <LiveRegion>{fitting ? t.fit_running() : ''}</LiveRegion>
-        <ArticleView locale={locale} items={previewItems} fitting={fitting} site={site} />
+        <ArticleView
+          locale={locale}
+          items={previewItems}
+          fitting={fitting}
+          site={site}
+          onShift={(report) => {
+            shiftReport.current = report;
+          }}
+        />
       </div>
     </div>
   );

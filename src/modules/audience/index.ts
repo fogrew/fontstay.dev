@@ -12,6 +12,6 @@ export {
   lacksVerticalOverrides,
   supportData,
 } from './lib/support';
-export { type AudienceData, AudienceEditor } from './ui/AudienceEditor';
+export { AUDIENCE_SET_EVENT, type AudienceData, AudienceEditor } from './ui/AudienceEditor';
 export { BrowserIcon, OsIcon } from './ui/BrandIcon';
 export { SupportMatrix } from './ui/SupportMatrix';

@@ -211,11 +211,15 @@ export function ArticleView({
   items,
   fitting = false,
   site,
+  onShift,
 }: {
   locale: Locale;
   items: readonly PreviewItem[];
   fitting?: boolean;
   site?: SiteData | undefined;
+  onShift?:
+    | ((report: { adjusted: WidthShift[]; plain: WidthShift[] } | undefined) => void)
+    | undefined;
 }) {
   const t = messagesFor(locale);
   const [articleId, setArticleId] = useState<ArticleKey>(locale === 'ru' ? 'ru' : 'en');
@@ -380,10 +384,12 @@ export function ArticleView({
         const wrapper = probe.current;
         const [web, fallback, plain] = wrapper?.querySelectorAll('article') ?? [];
         if (cancelled || !wrapper || !web || !fallback || !plain) return;
-        setShiftResults({
+        const report = {
           adjusted: measureShift(wrapper, web, fallback),
           plain: measureShift(wrapper, web, plain),
-        });
+        };
+        setShiftResults(report);
+        onShift?.(report);
       });
     }, 300);
     return () => {
