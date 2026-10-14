@@ -11,6 +11,7 @@ export { displayedFitValue, type FitValue, pinFitValue } from './lib/fit-value';
 export type { CodeLanguage } from './lib/highlight';
 export { Icon, type IconName } from './lib/Icon';
 export { LiveRegion } from './lib/LiveRegion';
+export { Popover, type PopoverProps } from './lib/Popover';
 export { clearLayouts } from './lib/persist';
 export { Select, type SelectProps } from './lib/Select';
 export { Tabs, type TabsProps } from './lib/Tabs';

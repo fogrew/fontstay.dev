@@ -945,3 +945,102 @@
     flex-wrap: wrap;
   }
 }
+
+.ff-guide-list {
+  display: grid;
+  gap: var(--ff-space-1);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.ff-guide-list__swatch {
+  display: inline-block;
+  inline-size: 1.5rem;
+  block-size: 3px;
+  vertical-align: middle;
+  background: var(--ff-guide);
+}
+.ff-guide-list label[data-guide="ascender"] {
+  --ff-guide: var(--ff-guide-ascender);
+}
+.ff-guide-list label[data-guide="cap"] {
+  --ff-guide: var(--ff-guide-cap);
+}
+.ff-guide-list label[data-guide="x"] {
+  --ff-guide: var(--ff-guide-x);
+}
+.ff-guide-list label[data-guide="baseline"] {
+  --ff-guide: var(--ff-guide-baseline);
+}
+.ff-guide-list label[data-guide="descender"] {
+  --ff-guide: var(--ff-guide-descender);
+}
+.ff-inspect__section {
+  min-inline-size: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  display: grid;
+  gap: var(--ff-space-1);
+}
+.ff-inspect__section legend {
+  padding: 0;
+  font-weight: 600;
+}
+.ff-preview__arrange {
+  display: inline-flex;
+  gap: var(--ff-space-1);
+}
+.ff-preview__arrange[data-active="false"] {
+  opacity: 0.45;
+}
+.ff-preview__modes .ff-preview__arrange-button {
+  min-inline-size: 2rem;
+  padding-inline: 0.375rem;
+}
+.ff-arrange-icon {
+  display: inline-block;
+  inline-size: 1.125rem;
+  block-size: 0.875rem;
+  vertical-align: middle;
+  border: 2px solid currentcolor;
+  border-radius: 2px;
+}
+.ff-arrange-icon[data-kind="horizontal"] {
+  background: linear-gradient(
+    to right,
+    transparent calc(50% - 1px),
+    currentcolor calc(50% - 1px),
+    currentcolor calc(50% + 1px),
+    transparent calc(50% + 1px)
+  );
+}
+.ff-arrange-icon[data-kind="stacked"] {
+  background: linear-gradient(
+    to bottom,
+    transparent calc(50% - 1px),
+    currentcolor calc(50% - 1px),
+    currentcolor calc(50% + 1px),
+    transparent calc(50% + 1px)
+  );
+}
+
+.ff-shift .ff-shift__baseline {
+  margin: 0;
+  font-size: 0.75rem;
+}
+
+.ff-shift .ff-shift__body {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--ff-space-1) var(--ff-space-3);
+  min-block-size: 2.5rem;
+}
+
+.ff-article-view__tool {
+  align-self: center;
+}
+.ff-article-view .ff-popover__panel .ff-layers__row {
+  flex-wrap: nowrap;
+}

@@ -191,16 +191,21 @@ test('the article switches between overlay, side by side, web font and fallback 
   await expect(view.locator('.ff-article:not([data-probe])')).toHaveCSS('line-height', '48px');
 });
 
-test('the layer tools draw, fade and compare the web font and the fallback', async ({ page }) => {
+test('the inspect tools draw, fade and compare the web font and the fallback', async ({ page }) => {
   await page.goto('/en/');
   await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
   await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(sourceSans);
   await closePanels(page);
   const view = page.getByRole('region', { name: 'Article' });
+  const inspect = view.getByRole('button', { name: /^Inspect/ });
+  const openInspect = async () => {
+    if ((await inspect.getAttribute('aria-expanded')) !== 'true') await inspect.click();
+  };
   const layer = (name: string) => view.getByRole('group', { name, exact: true });
   const ghost = view.locator('.ff-article--ghost');
   await expect(ghost).toHaveAttribute('data-render', 'outline');
 
+  await openInspect();
   await choose(layer('Adjusted fallback').getByLabel('Drawing'), 'fill');
   await expect(ghost).toHaveAttribute('data-render', 'fill');
   await choose(layer('Adjusted fallback').getByLabel('Drawing'), 'outline');
@@ -215,6 +220,8 @@ test('the layer tools draw, fade and compare the web font and the fallback', asy
   await expect(view.locator('.ff-article:not([data-probe]) canvas.ff-article__boxes')).toHaveCount(
     2,
   );
+  await page.keyboard.press('Escape');
+  await expect(inspect).toHaveAttribute('aria-expanded', 'false');
 
   await view.getByRole('button', { name: 'Side by side', exact: true }).click();
   const side = view.locator('.ff-article-view__side');
@@ -223,16 +230,17 @@ test('the layer tools draw, fade and compare the web font and the fallback', asy
       (node) => new Set([...node.children].map((child) => child.getBoundingClientRect().top)).size,
     );
   await expect.poll(rows).toBe(1);
-  await choose(view.getByLabel('Arrangement'), 'stacked');
+  await view.getByRole('button', { name: 'Top and bottom', exact: true }).click();
   await expect.poll(rows).toBe(2);
-  await view.getByRole('checkbox', { name: 'Guide lines' }).check();
-  await expect(view.getByRole('list', { name: 'Guide lines' }).getByRole('listitem')).toHaveCount(
-    5,
-  );
+  await openInspect();
   const body = view.locator('.ff-article:not([data-probe])').first();
-  await expect
-    .poll(() => body.evaluate((node) => node.style.getPropertyValue('--ff-guides')))
-    .toContain('linear-gradient');
+  const guides = () => body.evaluate((node) => node.style.getPropertyValue('--ff-guides'));
+  await expect.poll(guides).toBe('');
+  await view.getByRole('checkbox', { name: 'Baseline' }).check();
+  await expect.poll(guides).toContain('--ff-guide-baseline');
+  expect(await guides()).not.toContain('--ff-guide-cap');
+  await view.getByRole('checkbox', { name: 'Cap height' }).check();
+  await expect.poll(guides).toContain('--ff-guide-cap');
 });
 
 test('dropdowns and their options show a hover state', async ({ page }) => {

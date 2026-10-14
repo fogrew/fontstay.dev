@@ -1,7 +1,7 @@
 import { Fragment } from 'preact';
 import { useEffect, useMemo, useRef, useState } from 'preact/hooks';
 import { type Locale, messagesFor } from '@/common/i18n';
-import { Icon, Select } from '@/common/ui';
+import { Icon, Popover, Select } from '@/common/ui';
 import { measureShift, type WidthShift } from '../lib/article-shift';
 import {
   ARTICLE_IDS,
@@ -13,7 +13,7 @@ import {
 } from '../lib/articles';
 import { buildCss } from '../lib/css';
 import { drawGlyphBoxes } from '../lib/glyph-boxes';
-import { GUIDES, guideImage, guideOffsets } from '../lib/guides';
+import { GUIDES, type GuideId, type GuideOffsets, guideImage, guideOffsets } from '../lib/guides';
 import { isInstalledOnDevice } from '../lib/installed';
 import { codePointLabel, textRuns } from '../lib/missing';
 import { slugOf } from '../lib/overview';
@@ -53,12 +53,13 @@ const MODES: readonly Mode[] = ['overlay', 'side', 'web', 'fallback', 'plain'];
 const WRAPS: readonly Wrap[] = ['wrap', 'balance', 'pretty', 'stable', 'nowrap'];
 const SUBSTITUTES: readonly Substitute[] = ['sans-serif', 'serif', 'monospace', 'system-ui'];
 const KEY_PREFIX = 'ff-web-';
+const SYSTEM = '__system__';
 
 const keyOf = (family: string) => `${KEY_PREFIX}${slugOf(family)}`;
 
 interface Coverage {
-  heading: Uint32Array;
-  body: Uint32Array;
+  heading: Uint32Array | 'all';
+  body: Uint32Array | 'all';
   note: (char: string) => string;
   plain: boolean;
 }
@@ -69,10 +70,10 @@ function Marked({
   coverage,
 }: {
   text: string;
-  points: Uint32Array;
+  points: Uint32Array | 'all';
   coverage: Coverage;
 }) {
-  if (coverage.plain) return <>{text}</>;
+  if (coverage.plain || points === 'all') return <>{text}</>;
   return (
     <>
       {textRuns(text, points).map((run, index) =>
@@ -226,15 +227,26 @@ export function ArticleView({
   const [bodyPick, setBodyPick] = useState<string>();
   const [layers, setLayers] = useState(DEFAULT_LAYERS);
   const [stacked, setStacked] = useState(false);
-  const [guides, setGuides] = useState(false);
+  const [guideOn, setGuideOn] = useState<Record<GuideId, boolean>>({
+    ascender: false,
+    cap: false,
+    x: false,
+    baseline: false,
+    descender: false,
+  });
   const [boxes, setBoxes] = useState(false);
-  const [guideImages, setGuideImages] = useState<Partial<Record<Layer, string>>>({});
+  const [guideMetrics, setGuideMetrics] = useState<Partial<Record<Layer, GuideOffsets>>>({});
+  const activeGuides = GUIDES.filter((id) => guideOn[id]);
+  const guides = activeGuides.length > 0;
   const view = useRef<HTMLElement>(null);
   const [hydrated, setHydrated] = useState(false);
   useEffect(() => setHydrated(true), []);
   const [loadFailed, setLoadFailed] = useState(false);
   const [fontsReady, setFontsReady] = useState(false);
-  const [shiftResults, setShiftResults] = useState<WidthShift[]>();
+  const [shiftResults, setShiftResults] = useState<{
+    adjusted: WidthShift[];
+    plain: WidthShift[];
+  }>();
   const probe = useRef<HTMLDivElement>(null);
   const [notInstalled, setNotInstalled] = useState<string[]>([]);
   useEffect(() => {
@@ -260,10 +272,10 @@ export function ArticleView({
             .toLowerCase() === family.toLowerCase(),
       ),
     );
-  const headingFamily = families.includes(headingPick ?? '')
+  const headingFamily = [...families, SYSTEM].includes(headingPick ?? '')
     ? headingPick
     : (siteFamily(site?.headingStack) ?? families[0]);
-  const bodyFamily = families.includes(bodyPick ?? '')
+  const bodyFamily = [...families, SYSTEM].includes(bodyPick ?? '')
     ? bodyPick
     : (siteFamily(site?.bodyStack) ?? families[1] ?? families[0]);
   const categoryOf = (family: string | undefined) =>
@@ -344,7 +356,8 @@ export function ArticleView({
     };
   }, [fontFaces]);
 
-  const pointsOf = (family: string | undefined) => {
+  const pointsOf = (family: string | undefined): Uint32Array | 'all' => {
+    if (family === SYSTEM) return 'all';
     const merged = new Set<number>();
     for (const item of items) {
       if (item.family === family) for (const point of item.codePoints) merged.add(point);
@@ -361,9 +374,12 @@ export function ArticleView({
     const timer = setTimeout(() => {
       void document.fonts.ready.then(() => {
         const wrapper = probe.current;
-        const [web, fallback] = wrapper?.querySelectorAll('article') ?? [];
-        if (cancelled || !wrapper || !web || !fallback) return;
-        setShiftResults(measureShift(wrapper, web, fallback));
+        const [web, fallback, plain] = wrapper?.querySelectorAll('article') ?? [];
+        if (cancelled || !wrapper || !web || !fallback || !plain) return;
+        setShiftResults({
+          adjusted: measureShift(wrapper, web, fallback),
+          plain: measureShift(wrapper, web, plain),
+        });
       });
     }, 300);
     return () => {
@@ -384,7 +400,7 @@ export function ArticleView({
 
   const empty = items.length === 0 || !headingFamily || !bodyFamily;
   const stack = (family: string | undefined, kind: 'web' | 'fallback' | 'plain') => {
-    if (!family) return 'system-ui, sans-serif';
+    if (!family || family === SYSTEM) return 'system-ui, sans-serif';
     const key = keyOf(family);
     if (kind === 'web') return `"${key}", ${substitute}`;
     if (kind === 'fallback') return `"${key} Fallback", ${substitute}`;
@@ -394,7 +410,8 @@ export function ArticleView({
     const layer = kind === 'plain' ? undefined : layers[kind];
     const styled = layer && mode === 'overlay';
     const inspecting = mode !== 'plain';
-    const image = kind === 'plain' ? undefined : guideImages[kind];
+    const metrics = kind === 'plain' ? undefined : guideMetrics[kind];
+    const image = metrics ? guideImage(metrics, activeGuides) : undefined;
     return {
       '--ff-article-heading': stack(headingFamily, kind),
       '--ff-article-body': stack(bodyFamily, kind),
@@ -414,14 +431,14 @@ export function ArticleView({
     if (!guides || mode === 'plain' || !fontsReady || !bodyFamily) return;
     let cancelled = false;
     void (async () => {
-      const next: Partial<Record<Layer, string>> = {};
+      const next: Partial<Record<Layer, GuideOffsets>> = {};
       for (const layer of LAYERS) {
         const family = stack(bodyFamily, layer);
         await document.fonts.load(`${size}px ${family}`).catch(() => []);
         const offsets = guideOffsets(family, size, lineHeight);
-        if (offsets) next[layer] = guideImage(offsets);
+        if (offsets) next[layer] = offsets;
       }
-      if (!cancelled) setGuideImages(next);
+      if (!cancelled) setGuideMetrics(next);
     })();
     return () => {
       cancelled = true;
@@ -532,52 +549,37 @@ export function ArticleView({
   const setLayer = (layer: Layer, change: Partial<LayerStyle>) =>
     setLayers((all) => ({ ...all, [layer]: { ...all[layer], ...change } }));
   const inspectable = mode !== 'plain';
-  const layerControls = (
+  const inspectContent = (
     <>
-      <fieldset class="ff-article-view__group">
-        <legend>{t.article_group_inspect()}</legend>
-        <Select
-          compact
-          label={t.side_arrangement()}
-          value={stacked ? 'stacked' : 'horizontal'}
-          disabled={mode !== 'side'}
-          options={[
-            { value: 'horizontal', label: t.side_horizontal() },
-            { value: 'stacked', label: t.side_stacked() },
-          ]}
-          onChange={(value) => setStacked(value === 'stacked')}
-        />
-        <label>
-          <input
-            type="checkbox"
-            checked={guides}
-            disabled={!inspectable}
-            onChange={(event) => setGuides(event.currentTarget.checked)}
-          />{' '}
-          {t.guides_enable()}
-        </label>
+      <fieldset class="ff-inspect__section" disabled={!inspectable}>
+        <legend>{t.guides_enable()}</legend>
+        <ul class="ff-guide-list">
+          {GUIDES.map((id) => (
+            <li key={id}>
+              <label data-guide={id}>
+                <input
+                  type="checkbox"
+                  checked={guideOn[id]}
+                  onChange={(event) => {
+                    const checked = event.currentTarget.checked;
+                    setGuideOn((all) => ({ ...all, [id]: checked }));
+                  }}
+                />{' '}
+                <span class="ff-guide-list__swatch" aria-hidden="true" /> {guideLabel(id)}
+              </label>
+            </li>
+          ))}
+        </ul>
         <label>
           <input
             type="checkbox"
             checked={boxes}
-            disabled={!inspectable}
             onChange={(event) => setBoxes(event.currentTarget.checked)}
           />{' '}
           {t.boxes_enable()}
         </label>
-        <ul
-          class="ff-article-view__guides ff-muted"
-          aria-label={t.guides_enable()}
-          data-off={!guides || !inspectable}
-        >
-          {GUIDES.map((id) => (
-            <li key={id} data-guide={id}>
-              {guideLabel(id)}
-            </li>
-          ))}
-        </ul>
       </fieldset>
-      <fieldset class="ff-article-view__group ff-layers" disabled={mode !== 'overlay'}>
+      <fieldset class="ff-inspect__section ff-layers" disabled={mode !== 'overlay'}>
         <legend>{t.article_group_layers()}</legend>
         {LAYERS.map((layer, row) => {
           const name = layer === 'web' ? t.preview_web_label() : t.preview_fallback_label();
@@ -653,7 +655,10 @@ export function ArticleView({
       </fieldset>
     </>
   );
-  const familyOptions = families.map((family) => ({ value: family, label: family }));
+  const familyOptions = [
+    ...families.map((family) => ({ value: family, label: family })),
+    { value: SYSTEM, label: t.article_font_system() },
+  ];
   const contentGroup = (
     <fieldset class="ff-article-view__group">
       <legend>{t.article_group_content()}</legend>
@@ -726,7 +731,7 @@ export function ArticleView({
   return (
     <section class="ff-article-view" aria-label={t.article_heading()} ref={view}>
       <div class="ff-article-probe" ref={probe} aria-hidden="true" {...{ inert: true }}>
-        {(['web', 'fallback'] as const).map((kind) => (
+        {(['web', 'fallback', 'plain'] as const).map((kind) => (
           <article
             key={kind}
             data-probe=""
@@ -745,42 +750,65 @@ export function ArticleView({
           <fieldset class="ff-preview__modes">
             <legend class="ff-sr-only">{t.preview_mode_label()}</legend>
             {MODES.map((value) => (
-              <button
-                key={value}
-                type="button"
-                class="ff-button ff-button--secondary"
-                aria-pressed={mode === value}
-                onClick={() => setMode(value)}
-              >
-                {modeLabel(value)}
-              </button>
+              <Fragment key={value}>
+                <button
+                  type="button"
+                  class="ff-button ff-button--secondary"
+                  aria-pressed={mode === value}
+                  onClick={() => setMode(value)}
+                >
+                  {modeLabel(value)}
+                </button>
+                {value === 'side' && (
+                  <span class="ff-preview__arrange" data-active={mode === 'side'}>
+                    {(['horizontal', 'stacked'] as const).map((kind) => (
+                      <button
+                        key={kind}
+                        type="button"
+                        class="ff-button ff-button--secondary ff-preview__arrange-button"
+                        aria-pressed={stacked === (kind === 'stacked')}
+                        aria-label={kind === 'stacked' ? t.side_stacked() : t.side_horizontal()}
+                        title={kind === 'stacked' ? t.side_stacked() : t.side_horizontal()}
+                        disabled={mode !== 'side'}
+                        onClick={() => setStacked(kind === 'stacked')}
+                      >
+                        <span class="ff-arrange-icon" data-kind={kind} aria-hidden="true" />
+                      </button>
+                    ))}
+                  </span>
+                )}
+              </Fragment>
             ))}
           </fieldset>
         </fieldset>
         {contentGroup}
-        <DeviceShift locale={locale} results={shiftResults} fitting={fitting} />
+        <div class="ff-article-view__tool">
+          <Popover
+            label={t.article_group_inspect()}
+            badge={activeGuides.length + (boxes ? 1 : 0)}
+            align="end"
+          >
+            {inspectContent}
+          </Popover>
+        </div>
       </div>
       <div class="ff-article-view__controls">
         <fieldset class="ff-article-view__group">
           <legend>{t.article_group_fonts()}</legend>
-          {families.length > 1 && (
-            <>
-              <Select
-                compact
-                label={t.article_heading_font()}
-                value={headingFamily}
-                options={familyOptions}
-                onChange={setHeadingPick}
-              />
-              <Select
-                compact
-                label={t.article_body_font()}
-                value={bodyFamily}
-                options={familyOptions}
-                onChange={setBodyPick}
-              />
-            </>
-          )}
+          <Select
+            compact
+            label={t.article_heading_font()}
+            value={headingFamily ?? SYSTEM}
+            options={familyOptions}
+            onChange={setHeadingPick}
+          />
+          <Select
+            compact
+            label={t.article_body_font()}
+            value={bodyFamily ?? SYSTEM}
+            options={familyOptions}
+            onChange={setBodyPick}
+          />
           <Select
             compact
             label={t.article_missing_font()}
@@ -789,7 +817,12 @@ export function ArticleView({
             onChange={(value) => setSubstitute(value as Substitute)}
           />
         </fieldset>
-        {layerControls}
+        <DeviceShift
+          locale={locale}
+          results={shiftResults?.adjusted}
+          baseline={shiftResults?.plain}
+          fitting={fitting}
+        />
       </div>
       {loadFailed && (
         <p class="ff-error" role="alert">

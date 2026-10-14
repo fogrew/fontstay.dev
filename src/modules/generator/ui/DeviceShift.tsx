@@ -7,10 +7,12 @@ const SYMBOLS = { good: '🟢', 'needs-improvement': '🟡', poor: '🔴' } as c
 export function DeviceShift({
   locale,
   results,
+  baseline,
   fitting = false,
 }: {
   locale: Locale;
   results: readonly WidthShift[] | undefined;
+  baseline?: readonly WidthShift[] | undefined;
   fitting?: boolean;
 }) {
   const t = messagesFor(locale);
@@ -24,6 +26,12 @@ export function DeviceShift({
   };
   const worst = results ? Math.max(...results.map((item) => item.score)) : undefined;
   const rating = worst === undefined ? undefined : ratingOf(worst);
+  const before = baseline ? Math.max(...baseline.map((item) => item.score)) : undefined;
+  const delta = new Intl.NumberFormat(locale, {
+    minimumFractionDigits: 3,
+    maximumFractionDigits: 3,
+    signDisplay: 'always',
+  });
   return (
     <fieldset class="ff-article-view__group ff-shift">
       <legend>{t.article_shift_label()}</legend>
@@ -38,6 +46,15 @@ export function DeviceShift({
               <span aria-hidden="true">{SYMBOLS[rating]}</span> CLS {format.format(worst)}
               <span class="ff-shift__rating"> · {label(rating)}</span>
             </strong>
+            {before !== undefined && (
+              <p class="ff-shift__baseline" data-rating={ratingOf(before)}>
+                <span aria-hidden="true">{SYMBOLS[ratingOf(before)]}</span>{' '}
+                {t.article_shift_plain({
+                  score: format.format(before),
+                  delta: delta.format(worst - before),
+                })}
+              </p>
+            )}
             <ul class="ff-shift__widths">
               {(results ?? []).map((item) => {
                 const level = ratingOf(item.score);

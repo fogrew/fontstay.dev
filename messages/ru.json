@@ -434,7 +434,6 @@
   "layer_color_red": "Красный",
   "layer_color_blue": "Синий",
   "layer_color_amber": "Янтарный",
-  "side_arrangement": "Расположение",
   "side_horizontal": "Слева и справа",
   "side_stacked": "Сверху и снизу",
   "guides_enable": "Направляющие",
@@ -485,5 +484,7 @@
   "import_done": "Импортировано файлов шрифтов: {count}, источник: {origin}.",
   "article_site": "Ваш сайт",
   "article_group_inspect": "Проверка",
-  "article_missing_font": "Недостающие символы"
+  "article_missing_font": "Недостающие символы",
+  "article_font_system": "Системный шрифт",
+  "article_shift_plain": "Без подогнанного запасного шрифта: {score} ({delta})"
 }

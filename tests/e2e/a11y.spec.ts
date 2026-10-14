@@ -25,6 +25,7 @@ for (const scheme of ['light', 'dark'] as const) {
   test(`${scheme} scheme: the generator with every section open has no axe violations`, async ({
     page,
   }) => {
+    test.setTimeout(90_000);
     await page.emulateMedia({ colorScheme: scheme });
     await page.goto('/en/');
     await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));

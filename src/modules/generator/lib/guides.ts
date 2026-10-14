@@ -23,8 +23,9 @@ export function guideOffsets(stack: string, size: number, lineHeight: number): G
   };
 }
 
-export function guideImage(offsets: GuideOffsets): string {
-  const stops = GUIDES.map((id) => ({ id, y: offsets[id] }))
+export function guideImage(offsets: GuideOffsets, enabled: readonly GuideId[] = GUIDES): string {
+  const stops = enabled
+    .map((id) => ({ id, y: offsets[id] }))
     .sort((a, b) => a.y - b.y)
     .map(({ id, y }) => {
       const top = y.toFixed(2);

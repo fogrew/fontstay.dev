@@ -434,7 +434,6 @@
   "layer_color_red": "Red",
   "layer_color_blue": "Blue",
   "layer_color_amber": "Amber",
-  "side_arrangement": "Arrangement",
   "side_horizontal": "Left and right",
   "side_stacked": "Top and bottom",
   "guides_enable": "Guide lines",
@@ -485,5 +484,7 @@
   "import_done": "Imported {count} font files from {origin}.",
   "article_site": "Your site",
   "article_group_inspect": "Inspect",
-  "article_missing_font": "Missing characters"
+  "article_missing_font": "Missing characters",
+  "article_font_system": "System font",
+  "article_shift_plain": "Without the adjusted fallback: {score} ({delta})"
 }
