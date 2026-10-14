@@ -558,6 +558,7 @@ test('the unicode-range toggle limits the fallbacks to the covered characters', 
   await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(sourceSans);
   const code = page.getByRole('region', { name: 'Generated CSS' });
   await expect(code).toContainText('size-adjust');
+  await page.getByRole('checkbox', { name: 'Fit each script separately' }).uncheck();
   await expect(code).not.toContainText('unicode-range');
   await page.getByRole('checkbox', { name: /Limit the fallbacks to the characters/ }).check();
   await expect(code).toContainText('unicode-range: U+');
