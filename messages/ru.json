@@ -407,7 +407,7 @@
   "article_body_font": "Шрифт текста",
   "preview_sample_default": "The quick brown fox jumps over the lazy dog",
   "preview_tab": "Предпросмотр",
-  "article_shift_label": "Сдвиг вёрстки на этом устройстве:",
+  "article_shift_label": "Сдвиг вёрстки на этом устройстве",
   "article_shift_measuring": "измеряется…",
   "article_shift_failed": "не удалось измерить",
   "article_unsupported": "{chars} не поддерживается шрифтом и отображается запасным шрифтом: {font}",
@@ -427,7 +427,7 @@
   "layer_render_fill": "Заливка",
   "layer_render_outline": "Контур",
   "layer_color": "Цвет",
-  "layer_width": "Толщина контура",
+  "layer_width": "Толщина",
   "layer_opacity": "Непрозрачность",
   "layer_color_text": "Цвет текста",
   "layer_color_green": "Зелёный",
@@ -483,5 +483,7 @@
   "import_accept": "Импортировать",
   "import_discard": "Отклонить",
   "import_done": "Импортировано файлов шрифтов: {count}, источник: {origin}.",
-  "article_site": "Ваш сайт"
+  "article_site": "Ваш сайт",
+  "article_group_inspect": "Проверка",
+  "article_missing_font": "Недостающие символы"
 }

@@ -407,7 +407,7 @@
   "article_body_font": "Text font",
   "preview_sample_default": "The quick brown fox jumps over the lazy dog",
   "preview_tab": "Preview",
-  "article_shift_label": "Layout shift on this device:",
+  "article_shift_label": "Layout shift on this device",
   "article_shift_measuring": "measuring…",
   "article_shift_failed": "could not be measured",
   "article_unsupported": "{chars} is not supported by the font and is drawn with the {font} fallback",
@@ -427,7 +427,7 @@
   "layer_render_fill": "Fill",
   "layer_render_outline": "Outline",
   "layer_color": "Colour",
-  "layer_width": "Outline width",
+  "layer_width": "Width",
   "layer_opacity": "Opacity",
   "layer_color_text": "Text colour",
   "layer_color_green": "Green",
@@ -483,5 +483,7 @@
   "import_accept": "Import",
   "import_discard": "Discard",
   "import_done": "Imported {count} font files from {origin}.",
-  "article_site": "Your site"
+  "article_site": "Your site",
+  "article_group_inspect": "Inspect",
+  "article_missing_font": "Missing characters"
 }

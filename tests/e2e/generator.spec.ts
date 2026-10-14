@@ -206,7 +206,7 @@ test('the layer tools draw, fade and compare the web font and the fallback', asy
   await choose(layer('Adjusted fallback').getByLabel('Drawing'), 'outline');
   await layer('Adjusted fallback').getByLabel('Opacity').fill('40');
   await expect(ghost).toHaveCSS('opacity', '0.4');
-  await layer('Adjusted fallback').getByLabel('Outline width').fill('3');
+  await layer('Adjusted fallback').getByLabel('Width').fill('3');
   await expect(ghost).toHaveCSS('--ff-layer-stroke', '3px');
   await choose(layer('Adjusted fallback').getByLabel('Colour'), 'red');
   await expect(ghost).toHaveCSS('-webkit-text-stroke-color', /^rgb/);
@@ -693,7 +693,7 @@ test('characters missing from the font are highlighted and explained on focus', 
   await mark.focus();
   await expect(mark).toBeFocused();
   expect(await overflow()).toEqual(before);
-  await choose(view.getByLabel('Font for the missing characters'), 'serif');
+  await choose(view.getByLabel('Missing characters'), 'serif');
   await expect(mark).toHaveAttribute('aria-description', /Serif/);
 });
 
@@ -705,8 +705,8 @@ test('the article shows the layout shift measured on this device and ellipsizes 
   await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(sourceSans);
   await closePanels(page);
   const view = page.getByRole('region', { name: 'Article' });
-  await expect(view.getByText(/Layout shift on this device:/)).toBeVisible();
-  await expect(view.getByRole('status').filter({ hasText: /\d\.\d{3} ·/ })).toBeVisible({
+  await expect(view.getByRole('group', { name: 'Layout shift on this device' })).toBeVisible();
+  await expect(view.getByRole('status').filter({ hasText: /CLS \d\.\d{3} ·/ })).toBeVisible({
     timeout: 20_000,
   });
   await choose(view.getByLabel('Text wrapping'), 'nowrap');

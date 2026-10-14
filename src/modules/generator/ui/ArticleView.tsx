@@ -393,6 +393,7 @@ export function ArticleView({
   const pageStyle = (kind: 'web' | 'fallback' | 'plain') => {
     const layer = kind === 'plain' ? undefined : layers[kind];
     const styled = layer && mode === 'overlay';
+    const inspecting = mode !== 'plain';
     const image = kind === 'plain' ? undefined : guideImages[kind];
     return {
       '--ff-article-heading': stack(headingFamily, kind),
@@ -405,12 +406,12 @@ export function ArticleView({
           }
         : {}),
       ...(styled ? { '--ff-layer-stroke': `${layer.width}px`, opacity: layer.opacity / 100 } : {}),
-      ...(image && guides && mode === 'side' ? { '--ff-guides': image } : {}),
+      ...(image && guides && inspecting ? { '--ff-guides': image } : {}),
       textWrap: wrap,
     };
   };
   useEffect(() => {
-    if (!guides || mode !== 'side' || !fontsReady || !bodyFamily) return;
+    if (!guides || mode === 'plain' || !fontsReady || !bodyFamily) return;
     let cancelled = false;
     void (async () => {
       const next: Partial<Record<Layer, string>> = {};
@@ -429,7 +430,7 @@ export function ArticleView({
 
   useEffect(() => {
     const root = view.current;
-    if (!boxes || !root || !fontsReady || (mode !== 'overlay' && mode !== 'side')) return;
+    if (!boxes || !root || !fontsReady || mode === 'plain') return;
     const pages = [...root.querySelectorAll<HTMLElement>('.ff-article:not([data-probe])')];
     const draw = () => {
       for (const element of pages) {
@@ -506,11 +507,11 @@ export function ArticleView({
       dir={article.dir}
       aria-hidden={ghost ? 'true' : undefined}
       data-render={mode === 'overlay' && kind !== 'plain' ? layers[kind].render : undefined}
-      data-guides={guides && mode === 'side' ? '' : undefined}
+      data-guides={guides && mode !== 'plain' ? '' : undefined}
       style={pageStyle(kind)}
     >
       <ArticleBody article={article} coverage={coverageFor(ghost || kind !== 'web')} />
-      {boxes && kind !== 'plain' && (mode === 'overlay' || mode === 'side') && (
+      {boxes && kind !== 'plain' && mode !== 'plain' && (
         // biome-ignore lint/a11y/noAriaHiddenOnFocusable: a decorative canvas without fallback content
         <canvas class="ff-article__boxes" aria-hidden="true" />
       )}
@@ -530,66 +531,89 @@ export function ArticleView({
   };
   const setLayer = (layer: Layer, change: Partial<LayerStyle>) =>
     setLayers((all) => ({ ...all, [layer]: { ...all[layer], ...change } }));
+  const inspectable = mode !== 'plain';
   const layerControls = (
-    <div class="ff-article-view__controls">
+    <>
       <fieldset class="ff-article-view__group">
-        <legend>{t.article_group_layers()}</legend>
-        {mode === 'side' && (
-          <>
-            <Select
-              compact
-              label={t.side_arrangement()}
-              value={stacked ? 'stacked' : 'horizontal'}
-              options={[
-                { value: 'horizontal', label: t.side_horizontal() },
-                { value: 'stacked', label: t.side_stacked() },
-              ]}
-              onChange={(value) => setStacked(value === 'stacked')}
-            />
-            <label>
-              <input
-                type="checkbox"
-                checked={guides}
-                onChange={(event) => setGuides(event.currentTarget.checked)}
-              />{' '}
-              {t.guides_enable()}
-            </label>
-          </>
-        )}
+        <legend>{t.article_group_inspect()}</legend>
+        <Select
+          compact
+          label={t.side_arrangement()}
+          value={stacked ? 'stacked' : 'horizontal'}
+          disabled={mode !== 'side'}
+          options={[
+            { value: 'horizontal', label: t.side_horizontal() },
+            { value: 'stacked', label: t.side_stacked() },
+          ]}
+          onChange={(value) => setStacked(value === 'stacked')}
+        />
+        <label>
+          <input
+            type="checkbox"
+            checked={guides}
+            disabled={!inspectable}
+            onChange={(event) => setGuides(event.currentTarget.checked)}
+          />{' '}
+          {t.guides_enable()}
+        </label>
         <label>
           <input
             type="checkbox"
             checked={boxes}
+            disabled={!inspectable}
             onChange={(event) => setBoxes(event.currentTarget.checked)}
           />{' '}
           {t.boxes_enable()}
         </label>
+        <ul
+          class="ff-article-view__guides ff-muted"
+          aria-label={t.guides_enable()}
+          data-off={!guides || !inspectable}
+        >
+          {GUIDES.map((id) => (
+            <li key={id} data-guide={id}>
+              {guideLabel(id)}
+            </li>
+          ))}
+        </ul>
       </fieldset>
-      {mode === 'overlay' &&
-        LAYERS.map((layer) => (
-          <fieldset key={layer} class="ff-article-view__group">
-            <legend>{layer === 'web' ? t.preview_web_label() : t.preview_fallback_label()}</legend>
-            <Select
-              compact
-              label={t.layer_render()}
-              value={layers[layer].render}
-              options={RENDERS.map((value) => ({
-                value,
-                label: value === 'fill' ? t.layer_render_fill() : t.layer_render_outline(),
-              }))}
-              onChange={(value) => setLayer(layer, { render: value as Render })}
-            />
-            <Select
-              compact
-              label={t.layer_color()}
-              value={layers[layer].color}
-              options={COLORS.map((value) => ({ value, label: colorLabel(value) }))}
-              onChange={(value) => setLayer(layer, { color: value as LayerColor })}
-            />
-            {layers[layer].render === 'outline' && (
+      <fieldset class="ff-article-view__group ff-layers" disabled={mode !== 'overlay'}>
+        <legend>{t.article_group_layers()}</legend>
+        {LAYERS.map((layer, row) => {
+          const name = layer === 'web' ? t.preview_web_label() : t.preview_fallback_label();
+          const caption = row === 0 ? undefined : 'ff-sr-only';
+          return (
+            <fieldset class="ff-layers__row" key={layer}>
+              <legend class="ff-sr-only">{name}</legend>
+              <span class="ff-layers__name" aria-hidden="true">
+                {name}
+              </span>
+              <Select
+                compact
+                hideLabel={row > 0}
+                label={t.layer_render()}
+                value={layers[layer].render}
+                disabled={mode !== 'overlay'}
+                options={RENDERS.map((value) => ({
+                  value,
+                  label: value === 'fill' ? t.layer_render_fill() : t.layer_render_outline(),
+                }))}
+                onChange={(value) => setLayer(layer, { render: value as Render })}
+              />
+              <Select
+                compact
+                hideLabel={row > 0}
+                label={t.layer_color()}
+                value={layers[layer].color}
+                disabled={mode !== 'overlay'}
+                options={COLORS.map((value) => ({ value, label: colorLabel(value) }))}
+                onChange={(value) => setLayer(layer, { color: value as LayerColor })}
+              />
               <div class="ff-field ff-preview__slider">
                 <div class="ff-preview__label">
-                  <label for={`ff-layer-${layer}-width`}>{t.layer_width()}</label>
+                  <label class={caption} for={`ff-layer-${layer}-width`}>
+                    {t.layer_width()}
+                  </label>
                   <output for={`ff-layer-${layer}-width`}>{layers[layer].width}px</output>
                 </div>
                 <input
@@ -599,37 +623,35 @@ export function ArticleView({
                   max={4}
                   step={0.5}
                   value={layers[layer].width}
+                  disabled={mode !== 'overlay' || layers[layer].render !== 'outline'}
                   onInput={(event) => setLayer(layer, { width: event.currentTarget.valueAsNumber })}
                 />
               </div>
-            )}
-            <div class="ff-field ff-preview__slider">
-              <div class="ff-preview__label">
-                <label for={`ff-layer-${layer}-opacity`}>{t.layer_opacity()}</label>
-                <output for={`ff-layer-${layer}-opacity`}>{layers[layer].opacity}%</output>
+              <div class="ff-field ff-preview__slider">
+                <div class="ff-preview__label">
+                  <label class={caption} for={`ff-layer-${layer}-opacity`}>
+                    {t.layer_opacity()}
+                  </label>
+                  <output for={`ff-layer-${layer}-opacity`}>{layers[layer].opacity}%</output>
+                </div>
+                <input
+                  id={`ff-layer-${layer}-opacity`}
+                  type="range"
+                  min={0}
+                  max={100}
+                  step={5}
+                  value={layers[layer].opacity}
+                  disabled={mode !== 'overlay'}
+                  onInput={(event) =>
+                    setLayer(layer, { opacity: event.currentTarget.valueAsNumber })
+                  }
+                />
               </div>
-              <input
-                id={`ff-layer-${layer}-opacity`}
-                type="range"
-                min={0}
-                max={100}
-                step={5}
-                value={layers[layer].opacity}
-                onInput={(event) => setLayer(layer, { opacity: event.currentTarget.valueAsNumber })}
-              />
-            </div>
-          </fieldset>
-        ))}
-      {mode === 'side' && guides && (
-        <ul class="ff-article-view__guides ff-muted" aria-label={t.guides_enable()}>
-          {GUIDES.map((id) => (
-            <li key={id} data-guide={id}>
-              {guideLabel(id)}
-            </li>
-          ))}
-        </ul>
-      )}
-    </div>
+            </fieldset>
+          );
+        })}
+      </fieldset>
+    </>
   );
   const familyOptions = families.map((family) => ({ value: family, label: family }));
   const contentGroup = (
@@ -736,6 +758,7 @@ export function ArticleView({
           </fieldset>
         </fieldset>
         {contentGroup}
+        <DeviceShift locale={locale} results={shiftResults} fitting={fitting} />
       </div>
       <div class="ff-article-view__controls">
         <fieldset class="ff-article-view__group">
@@ -760,16 +783,14 @@ export function ArticleView({
           )}
           <Select
             compact
-            label={t.missing_label()}
+            label={t.article_missing_font()}
             value={substitute}
             options={SUBSTITUTES.map((value) => ({ value, label: substituteLabel(value) }))}
             onChange={(value) => setSubstitute(value as Substitute)}
           />
         </fieldset>
-        <DeviceShift locale={locale} results={shiftResults} />
-        {fitting && <p class="ff-muted ff-article-view__fitting">{t.fit_running()}</p>}
+        {layerControls}
       </div>
-      {(mode === 'overlay' || mode === 'side') && layerControls}
       {loadFailed && (
         <p class="ff-error" role="alert">
           {t.preview_load_failed()}
