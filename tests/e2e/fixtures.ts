@@ -100,3 +100,11 @@ export async function closePanels(page: Page) {
     if ((await button.getAttribute('aria-expanded')) === 'true') await button.click();
   }
 }
+
+export async function openPopover(scope: Locator | Page, name: string) {
+  const button = scope.getByRole('button', { name: new RegExp(`^${name}`) }).first();
+  await expect(async () => {
+    if ((await button.getAttribute('aria-expanded')) !== 'true') await button.click();
+    await expect(button).toHaveAttribute('aria-expanded', 'true', { timeout: 1000 });
+  }).toPass();
+}

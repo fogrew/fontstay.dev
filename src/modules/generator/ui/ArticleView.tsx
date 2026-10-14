@@ -493,6 +493,12 @@ export function ArticleView({
     substitute,
   ]);
 
+  const modeShort = (value: Mode) => {
+    if (value === 'web') return t.mode_web_short();
+    if (value === 'fallback') return t.mode_fallback_short();
+    if (value === 'plain') return t.mode_plain_short();
+    return modeLabel(value);
+  };
   const modeLabel = (value: Mode) => {
     if (value === 'overlay') return t.mode_overlay();
     if (value === 'loupe') return t.mode_loupe();
@@ -791,57 +797,44 @@ export function ArticleView({
           </article>
         ))}
       </div>
-      <div class="ff-article-view__controls">
-        <fieldset class="ff-article-view__group">
-          <legend>{t.article_group_view()}</legend>
-          <fieldset class="ff-preview__modes">
-            <legend class="ff-sr-only">{t.preview_mode_label()}</legend>
-            {MODES.map((value) => (
-              <Fragment key={value}>
-                <button
-                  type="button"
-                  class="ff-button ff-button--secondary"
-                  aria-pressed={mode === value}
-                  onClick={() => setMode(value)}
-                >
-                  {modeLabel(value)}
-                </button>
-                {value === 'side' && (
-                  <span class="ff-preview__arrange" data-active={mode === 'side'}>
-                    {(['horizontal', 'stacked'] as const).map((kind) => (
-                      <button
-                        key={kind}
-                        type="button"
-                        class="ff-button ff-button--secondary ff-preview__arrange-button"
-                        aria-pressed={stacked === (kind === 'stacked')}
-                        aria-label={kind === 'stacked' ? t.side_stacked() : t.side_horizontal()}
-                        title={kind === 'stacked' ? t.side_stacked() : t.side_horizontal()}
-                        disabled={mode !== 'side'}
-                        onClick={() => setStacked(kind === 'stacked')}
-                      >
-                        <span class="ff-arrange-icon" data-kind={kind} aria-hidden="true" />
-                      </button>
-                    ))}
-                  </span>
-                )}
-              </Fragment>
-            ))}
-          </fieldset>
+      <div class="ff-article-view__controls ff-toolbar">
+        <fieldset class="ff-preview__modes ff-toolbar__modes">
+          <legend class="ff-sr-only">{t.preview_mode_label()}</legend>
+          {MODES.map((value) => (
+            <Fragment key={value}>
+              <button
+                type="button"
+                class="ff-button ff-button--secondary"
+                aria-pressed={mode === value}
+                aria-label={modeLabel(value)}
+                title={modeLabel(value)}
+                onClick={() => setMode(value)}
+              >
+                {modeShort(value)}
+              </button>
+              {value === 'side' && (
+                <span class="ff-preview__arrange" data-active={mode === 'side'}>
+                  {(['horizontal', 'stacked'] as const).map((kind) => (
+                    <button
+                      key={kind}
+                      type="button"
+                      class="ff-button ff-button--secondary ff-preview__arrange-button"
+                      aria-pressed={stacked === (kind === 'stacked')}
+                      aria-label={kind === 'stacked' ? t.side_stacked() : t.side_horizontal()}
+                      title={kind === 'stacked' ? t.side_stacked() : t.side_horizontal()}
+                      disabled={mode !== 'side'}
+                      onClick={() => setStacked(kind === 'stacked')}
+                    >
+                      <span class="ff-arrange-icon" data-kind={kind} aria-hidden="true" />
+                    </button>
+                  ))}
+                </span>
+              )}
+            </Fragment>
+          ))}
         </fieldset>
-        {contentGroup}
-        <div class="ff-article-view__tool">
-          <Popover
-            label={t.article_group_inspect()}
-            badge={activeGuides.length + (boxes ? 1 : 0)}
-            align="end"
-          >
-            {inspectContent}
-          </Popover>
-        </div>
-      </div>
-      <div class="ff-article-view__controls">
-        <fieldset class="ff-article-view__group">
-          <legend>{t.article_group_fonts()}</legend>
+        <Popover label={t.article_group_content()}>{contentGroup}</Popover>
+        <Popover label={t.article_group_fonts()}>
           <Select
             compact
             label={t.article_heading_font()}
@@ -863,7 +856,10 @@ export function ArticleView({
             options={SUBSTITUTES.map((value) => ({ value, label: substituteLabel(value) }))}
             onChange={(value) => setSubstitute(value as Substitute)}
           />
-        </fieldset>
+        </Popover>
+        <Popover label={t.article_group_inspect()} badge={activeGuides.length + (boxes ? 1 : 0)}>
+          {inspectContent}
+        </Popover>
         <DeviceShift
           locale={locale}
           results={shiftResults?.adjusted}

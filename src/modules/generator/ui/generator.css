@@ -1081,3 +1081,33 @@
   outline: 3px solid var(--ff-focus);
   outline-offset: 2px;
 }
+
+.ff-article-view__controls.ff-toolbar {
+  gap: var(--ff-space-2);
+  align-items: center;
+}
+.ff-toolbar .ff-shift {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--ff-space-1) var(--ff-space-3);
+  align-items: center;
+  margin-inline-start: auto;
+}
+.ff-toolbar .ff-popover__panel .ff-article-view__group {
+  padding: 0;
+  border: 0;
+}
+@media (min-width: 75rem) {
+  .ff-article-view__controls.ff-toolbar {
+    flex-wrap: nowrap;
+  }
+}
+.ff-article-view .ff-toolbar .ff-button {
+  white-space: nowrap;
+}
+
+@media (min-width: 75rem) {
+  .ff-toolbar .ff-preview__modes {
+    flex-wrap: nowrap;
+  }
+}

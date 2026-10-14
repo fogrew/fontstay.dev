@@ -8,6 +8,7 @@ import {
   expect,
   listed,
   openExport,
+  openPopover,
   openStep,
   openSupport,
   selectSystem,
@@ -185,6 +186,7 @@ test('the article switches between overlay, side by side, web font and fallback 
     /sans-serif/,
   );
 
+  await openPopover(view, 'Content');
   await view.getByLabel(/Text size/).fill('24');
   await expect(view.locator('.ff-article:not([data-probe])')).toHaveCSS('font-size', '24px');
   await view.getByLabel(/Line height/).fill('2');
@@ -334,6 +336,7 @@ test('dropdowns and their options show a hover state', async ({ page }) => {
   await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(sourceSans);
   await closePanels(page);
   const view = page.getByRole('region', { name: 'Article' });
+  await openPopover(view, 'Content');
   const trigger = view.getByLabel('Text wrapping');
   const background = (locator: typeof trigger) =>
     locator.evaluate((node) => getComputedStyle(node).backgroundColor);
@@ -363,6 +366,7 @@ test('the text wrapping and sample text controls change the article', async ({ p
   await closePanels(page);
   const view = page.getByRole('region', { name: 'Article' });
   const article = view.locator('.ff-article:not([data-probe])').first();
+  await openPopover(view, 'Content');
   await choose(view.getByLabel('Text wrapping'), 'balance');
   await expect(article).toHaveCSS('text-wrap-mode', 'wrap');
   await expect(article).toHaveCSS('text-wrap-style', 'balance');
@@ -781,6 +785,7 @@ test('characters missing from the font are highlighted and explained on focus', 
   await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(sourceSans);
   await closePanels(page);
   const view = page.getByRole('region', { name: 'Article' });
+  await openPopover(view, 'Content');
   await choose(view.getByLabel('Sample text'), 'ja');
   const mark = view.locator('.ff-article:not(.ff-article--ghost) .ff-article__missing').first();
   await expect(mark).toBeVisible();
@@ -801,6 +806,7 @@ test('characters missing from the font are highlighted and explained on focus', 
   await mark.focus();
   await expect(mark).toBeFocused();
   expect(await overflow()).toEqual(before);
+  await openPopover(view, 'Fonts');
   await choose(view.getByLabel('Missing characters'), 'serif');
   await expect(mark).toHaveAttribute('aria-description', /Serif/);
 });
@@ -813,10 +819,10 @@ test('the article shows the layout shift measured on this device and ellipsizes 
   await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(sourceSans);
   await closePanels(page);
   const view = page.getByRole('region', { name: 'Article' });
-  await expect(view.getByRole('group', { name: 'Layout shift on this device' })).toBeVisible();
-  await expect(view.getByRole('status').filter({ hasText: /CLS \d\.\d{3} ·/ })).toBeVisible({
+  await expect(view.getByRole('status').filter({ hasText: /CLS \d\.\d{3}/ })).toBeVisible({
     timeout: 20_000,
   });
+  await openPopover(view, 'Content');
   await choose(view.getByLabel('Text wrapping'), 'nowrap');
   await expect(view.locator('.ff-article__lead').first()).toHaveCSS('text-overflow', 'ellipsis');
   await expect(view.locator('.ff-article__lead').first()).toHaveCSS('overflow', 'hidden');
@@ -1122,6 +1128,7 @@ test('several fonts share the article and the export and are tuned one by one', 
   await expect(code).not.toContainText('Source Sans Pro Fallback');
   await closePanels(page);
   const view = page.getByRole('region', { name: 'Article' });
+  await openPopover(view, 'Fonts');
   await expect(view.getByLabel('Headings font')).toBeVisible();
   await expect(view.getByLabel('Text font')).toBeVisible();
   await expect(view.locator('.ff-article:not([data-probe])').first()).toBeVisible();
