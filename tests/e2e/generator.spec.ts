@@ -545,6 +545,21 @@ test('values are optimized automatically and pinned values stay', async ({ page 
   await expect(page.getByRole('checkbox', { name: 'Auto' }).nth(1)).toBeChecked();
 });
 
+test('opening and closing a step does not move the page content', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto('/en/');
+  await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
+  await closePanels(page);
+  const article = page.locator('.ff-article:not([data-probe])').first();
+  await expect(article).toBeVisible();
+  const top = async () => Math.round((await article.boundingBox())?.y ?? -1);
+  const closed = await top();
+  await openStep(page, 'audience');
+  expect(await top()).toBe(closed);
+  await closePanels(page);
+  expect(await top()).toBe(closed);
+});
+
 test('the open step and the support section are collapsible and remembered', async ({ page }) => {
   await page.goto('/en/');
   await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
