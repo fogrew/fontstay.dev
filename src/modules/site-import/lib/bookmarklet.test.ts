@@ -26,7 +26,7 @@ describe('bookmarklet', () => {
 
   it('builds a javascript: URL that round-trips', () => {
     const href = bookmarkletHref(options);
-    expect(href.startsWith('javascript:')).toBe(true);
+    expect(new URL(href).protocol).toBe('javascript:');
     expect(decodeURIComponent(href.slice('javascript:'.length))).toBe(bookmarkletSource(options));
     expect(href.length).toBeLessThan(8000);
     expect(href).not.toContain('#');
