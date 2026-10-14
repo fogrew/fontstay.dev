@@ -486,5 +486,9 @@
   "article_group_inspect": "Проверка",
   "article_missing_font": "Недостающие символы",
   "article_font_system": "Системный шрифт",
-  "article_shift_plain": "Без подогнанного запасного шрифта: {score} ({delta})"
+  "article_shift_plain": "Без подогнанного запасного шрифта: {score} ({delta})",
+  "mode_loupe": "Лупа",
+  "loupe_label": "Лупа: двигайте указатель или используйте стрелки, чтобы сравнить шрифты под линзой",
+  "loupe_shows": "Линза показывает",
+  "loupe_size": "Размер линзы"
 }

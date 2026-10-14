@@ -243,6 +243,32 @@ test('the inspect tools draw, fade and compare the web font and the fallback', a
   await expect.poll(guides).toContain('--ff-guide-cap');
 });
 
+test('the loupe shows the comparison only under the lens', async ({ page }) => {
+  await page.goto('/en/');
+  await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
+  await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(sourceSans);
+  await closePanels(page);
+  const view = page.getByRole('region', { name: 'Article' });
+  await view.getByRole('button', { name: 'Loupe', exact: true }).click();
+  const loupe = view.getByRole('application', { name: /^Loupe:/ });
+  await expect(loupe).toBeVisible();
+  const radius = () =>
+    loupe.evaluate((node) => Number.parseFloat(node.style.getPropertyValue('--ff-lens-r') || '0'));
+  expect(await radius()).toBe(0);
+  const box = await loupe.boundingBox();
+  if (!box) throw new Error('no loupe');
+  await page.mouse.move(box.x + 200, box.y + 150);
+  await expect.poll(radius).toBe(100);
+  await expect(loupe.locator('.ff-article-view__lens')).toHaveCSS('pointer-events', 'none');
+  await page.mouse.move(1, 1);
+  await expect.poll(radius).toBe(0);
+  await loupe.focus();
+  await expect.poll(radius).toBe(100);
+  await page.keyboard.press('ArrowRight');
+  await page.keyboard.press('Escape');
+  await expect.poll(radius).toBe(0);
+});
+
 test('dropdowns and their options show a hover state', async ({ page }) => {
   await page.goto('/en/');
   await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));

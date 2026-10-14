@@ -486,5 +486,9 @@
   "article_group_inspect": "Inspect",
   "article_missing_font": "Missing characters",
   "article_font_system": "System font",
-  "article_shift_plain": "Without the adjusted fallback: {score} ({delta})"
+  "article_shift_plain": "Without the adjusted fallback: {score} ({delta})",
+  "mode_loupe": "Loupe",
+  "loupe_label": "Loupe: move the pointer or use the arrow keys to compare the fonts under the lens",
+  "loupe_shows": "The lens shows",
+  "loupe_size": "Lens size"
 }

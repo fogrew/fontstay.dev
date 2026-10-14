@@ -1044,3 +1044,40 @@
 .ff-article-view .ff-popover__panel .ff-layers__row {
   flex-wrap: nowrap;
 }
+
+.ff-article-view__loupe {
+  --ff-lens-r: 0px;
+  --ff-lens-x: 50%;
+  --ff-lens-y: 50%;
+  position: relative;
+  display: grid;
+  cursor: crosshair;
+  touch-action: pan-y;
+}
+.ff-article-view .ff-article-view__loupe > .ff-article {
+  grid-area: 1 / 1;
+}
+.ff-article-view__lens {
+  grid-area: 1 / 1;
+  background: var(--ff-surface);
+  clip-path: circle(var(--ff-lens-r) at var(--ff-lens-x) var(--ff-lens-y));
+  pointer-events: none;
+}
+.ff-article-view__ring {
+  position: absolute;
+  inset-inline-start: calc(var(--ff-lens-x) - var(--ff-lens-r));
+  inset-block-start: calc(var(--ff-lens-y) - var(--ff-lens-r));
+  box-sizing: border-box;
+  inline-size: calc(var(--ff-lens-r) * 2);
+  block-size: calc(var(--ff-lens-r) * 2);
+  border: 2px solid var(--ff-accent);
+  border-radius: 50%;
+  box-shadow:
+    0 0 0 1px var(--ff-surface),
+    0 6px 20px rgb(0 0 0 / 30%);
+  pointer-events: none;
+}
+.ff-article-view__loupe:focus-visible {
+  outline: 3px solid var(--ff-focus);
+  outline-offset: 2px;
+}

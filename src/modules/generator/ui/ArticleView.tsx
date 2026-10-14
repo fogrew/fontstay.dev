@@ -20,7 +20,7 @@ import { slugOf } from '../lib/overview';
 import type { PreviewItem, SiteData } from '../lib/preview-item';
 import { DeviceShift } from './DeviceShift';
 
-type Mode = 'overlay' | 'side' | 'web' | 'fallback' | 'plain';
+type Mode = 'overlay' | 'side' | 'loupe' | 'web' | 'fallback' | 'plain';
 type Wrap = 'wrap' | 'balance' | 'pretty' | 'stable' | 'nowrap';
 type Substitute = 'sans-serif' | 'serif' | 'monospace' | 'system-ui';
 type Layer = 'web' | 'fallback';
@@ -49,7 +49,8 @@ const DEFAULT_LAYERS: Record<Layer, LayerStyle> = {
   fallback: { render: 'outline', color: 'green', width: 1, opacity: 100 },
 };
 
-const MODES: readonly Mode[] = ['overlay', 'side', 'web', 'fallback', 'plain'];
+const MODES: readonly Mode[] = ['overlay', 'side', 'loupe', 'web', 'fallback', 'plain'];
+const LENS_STEP = 24;
 const WRAPS: readonly Wrap[] = ['wrap', 'balance', 'pretty', 'stable', 'nowrap'];
 const SUBSTITUTES: readonly Substitute[] = ['sans-serif', 'serif', 'monospace', 'system-ui'];
 const KEY_PREFIX = 'ff-web-';
@@ -227,6 +228,9 @@ export function ArticleView({
   const [bodyPick, setBodyPick] = useState<string>();
   const [layers, setLayers] = useState(DEFAULT_LAYERS);
   const [stacked, setStacked] = useState(false);
+  const [lensShows, setLensShows] = useState<'overlay' | 'fallback'>('overlay');
+  const [lensSize, setLensSize] = useState(200);
+  const loupe = useRef<HTMLDivElement>(null);
   const [guideOn, setGuideOn] = useState<Record<GuideId, boolean>>({
     ascender: false,
     cap: false,
@@ -485,6 +489,7 @@ export function ArticleView({
 
   const modeLabel = (value: Mode) => {
     if (value === 'overlay') return t.mode_overlay();
+    if (value === 'loupe') return t.mode_loupe();
     if (value === 'side') return t.mode_side();
     if (value === 'web') return t.preview_web_label();
     return value === 'fallback' ? t.preview_fallback_label() : t.article_view_plain();
@@ -549,8 +554,44 @@ export function ArticleView({
   const setLayer = (layer: Layer, change: Partial<LayerStyle>) =>
     setLayers((all) => ({ ...all, [layer]: { ...all[layer], ...change } }));
   const inspectable = mode !== 'plain';
+  const moveLens = (x: number, y: number) => {
+    const element = loupe.current;
+    if (!element) return;
+    element.style.setProperty('--ff-lens-x', `${x}px`);
+    element.style.setProperty('--ff-lens-y', `${y}px`);
+    element.style.setProperty('--ff-lens-r', `${lensSize / 2}px`);
+  };
+  const hideLens = () => loupe.current?.style.setProperty('--ff-lens-r', '0px');
   const inspectContent = (
     <>
+      <fieldset class="ff-inspect__section" disabled={mode !== 'loupe'}>
+        <legend>{t.mode_loupe()}</legend>
+        <Select
+          compact
+          label={t.loupe_shows()}
+          value={lensShows}
+          options={[
+            { value: 'overlay', label: t.mode_overlay() },
+            { value: 'fallback', label: t.preview_fallback_label() },
+          ]}
+          onChange={(value) => setLensShows(value as 'overlay' | 'fallback')}
+        />
+        <div class="ff-field ff-preview__slider">
+          <div class="ff-preview__label">
+            <label for="ff-lens-size">{t.loupe_size()}</label>
+            <output for="ff-lens-size">{lensSize}px</output>
+          </div>
+          <input
+            id="ff-lens-size"
+            type="range"
+            min={80}
+            max={400}
+            step={10}
+            value={lensSize}
+            onInput={(event) => setLensSize(event.currentTarget.valueAsNumber)}
+          />
+        </div>
+      </fieldset>
       <fieldset class="ff-inspect__section" disabled={!inspectable}>
         <legend>{t.guides_enable()}</legend>
         <ul class="ff-guide-list">
@@ -852,6 +893,57 @@ export function ArticleView({
             <figcaption>{t.preview_fallback_label()}</figcaption>
             {page('fallback')}
           </figure>
+        </div>
+      )}
+      {mode === 'loupe' && (
+        <div
+          class="ff-article-view__loupe"
+          ref={loupe}
+          // biome-ignore lint/a11y/noNoninteractiveTabindex: the lens follows the arrow keys
+          tabIndex={0}
+          role="application"
+          aria-label={t.loupe_label()}
+          onPointerMove={(event) => {
+            const box = event.currentTarget.getBoundingClientRect();
+            moveLens(event.clientX - box.left, event.clientY - box.top);
+          }}
+          onPointerLeave={hideLens}
+          onFocus={(event) => {
+            const box = event.currentTarget.getBoundingClientRect();
+            moveLens(box.width / 2, Math.min(box.height / 2, 240));
+          }}
+          onBlur={hideLens}
+          onKeyDown={(event) => {
+            const element = event.currentTarget;
+            const x = Number.parseFloat(element.style.getPropertyValue('--ff-lens-x')) || 0;
+            const y = Number.parseFloat(element.style.getPropertyValue('--ff-lens-y')) || 0;
+            const moves: Record<string, [number, number]> = {
+              ArrowLeft: [-LENS_STEP, 0],
+              ArrowRight: [LENS_STEP, 0],
+              ArrowUp: [0, -LENS_STEP],
+              ArrowDown: [0, LENS_STEP],
+            };
+            const move = moves[event.key];
+            if (move) {
+              event.preventDefault();
+              moveLens(x + move[0], y + move[1]);
+            } else if (event.key === 'Escape') {
+              hideLens();
+            }
+          }}
+        >
+          {page('web')}
+          <div class="ff-article-view__lens" aria-hidden="true" {...{ inert: true }}>
+            {lensShows === 'overlay' ? (
+              <div class="ff-article-view__overlay">
+                {page('web')}
+                {page('fallback', true)}
+              </div>
+            ) : (
+              page('fallback')
+            )}
+          </div>
+          <span class="ff-article-view__ring" aria-hidden="true" />
         </div>
       )}
       {(mode === 'web' || mode === 'fallback' || mode === 'plain') && page(mode)}
