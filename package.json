@@ -32,6 +32,7 @@
     "compat:build": "node scripts/compat/build-descriptors.ts",
     "os-fonts:import": "node scripts/os-fonts/import.ts",
     "google-fonts:catalog": "node scripts/font-sources/import-google-catalog.mjs",
+    "extension:build": "node scripts/extension/build.mjs",
     "fontsource:catalog": "node scripts/font-sources/import-fontsource-catalog.mjs",
     "perf": "node scripts/check-budget.mjs",
     "icons:build": "node scripts/pwa/build-icons.mjs",

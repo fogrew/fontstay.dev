@@ -3,14 +3,21 @@ import { useEffect, useMemo, useRef, useState } from 'preact/hooks';
 import { type Locale, messagesFor } from '@/common/i18n';
 import { Icon, Select } from '@/common/ui';
 import { measureShift, type WidthShift } from '../lib/article-shift';
-import { ARTICLE_IDS, ARTICLES, type Article, type ArticleId, type Run } from '../lib/articles';
+import {
+  ARTICLE_IDS,
+  ARTICLES,
+  type Article,
+  type ArticleKey,
+  type Run,
+  siteArticle,
+} from '../lib/articles';
 import { buildCss } from '../lib/css';
 import { drawGlyphBoxes } from '../lib/glyph-boxes';
 import { GUIDES, guideImage, guideOffsets } from '../lib/guides';
 import { isInstalledOnDevice } from '../lib/installed';
 import { codePointLabel, textRuns } from '../lib/missing';
 import { slugOf } from '../lib/overview';
-import type { PreviewItem } from '../lib/preview-item';
+import type { PreviewItem, SiteData } from '../lib/preview-item';
 import { DeviceShift } from './DeviceShift';
 
 type Mode = 'overlay' | 'side' | 'web' | 'fallback' | 'plain';
@@ -115,6 +122,14 @@ function ArticleBody({ article, coverage }: { article: Article; coverage: Covera
   const heading = (value: string) => (
     <Marked text={value} points={coverage.heading} coverage={coverage} />
   );
+  if (article.id === 'site') {
+    return (
+      <header class="ff-article__hero">
+        {article.title && <h3 class="ff-article__title">{heading(article.title)}</h3>}
+        {article.lead && <p class="ff-article__lead">{body(article.lead)}</p>}
+      </header>
+    );
+  }
   return (
     <>
       <header class="ff-article__hero">
@@ -193,13 +208,15 @@ export function ArticleView({
   locale,
   items,
   fitting = false,
+  site,
 }: {
   locale: Locale;
   items: readonly PreviewItem[];
   fitting?: boolean;
+  site?: SiteData | undefined;
 }) {
   const t = messagesFor(locale);
-  const [articleId, setArticleId] = useState<ArticleId>(locale === 'ru' ? 'ru' : 'en');
+  const [articleId, setArticleId] = useState<ArticleKey>(locale === 'ru' ? 'ru' : 'en');
   const [mode, setMode] = useState<Mode>('overlay');
   const [size, setSize] = useState(18);
   const [lineHeight, setLineHeight] = useState(1.5);
@@ -220,11 +237,35 @@ export function ArticleView({
   const [shiftResults, setShiftResults] = useState<WidthShift[]>();
   const probe = useRef<HTMLDivElement>(null);
   const [notInstalled, setNotInstalled] = useState<string[]>([]);
-  const article = ARTICLES[articleId];
+  useEffect(() => {
+    if (!site) return;
+    setArticleId('site');
+    if (site.size) setSize(Math.min(32, Math.max(12, Math.round(site.size))));
+    if (site.lineHeight)
+      setLineHeight(Math.min(2.4, Math.max(1, Math.round(site.lineHeight * 20) / 20)));
+  }, [site]);
+  const article =
+    articleId === 'site' && site
+      ? siteArticle({ heading: site.heading, body: site.body }, t.article_site(), locale)
+      : ARTICLES[articleId === 'site' ? 'en' : articleId];
 
   const families = useMemo(() => [...new Set(items.map((item) => item.family))], [items]);
-  const headingFamily = families.includes(headingPick ?? '') ? headingPick : families[0];
-  const bodyFamily = families.includes(bodyPick ?? '') ? bodyPick : (families[1] ?? families[0]);
+  const siteFamily = (stack: string | undefined) =>
+    families.find((family) =>
+      (stack ?? '').split(',').some(
+        (name) =>
+          name
+            .trim()
+            .replace(/^["']|["']$/g, '')
+            .toLowerCase() === family.toLowerCase(),
+      ),
+    );
+  const headingFamily = families.includes(headingPick ?? '')
+    ? headingPick
+    : (siteFamily(site?.headingStack) ?? families[0]);
+  const bodyFamily = families.includes(bodyPick ?? '')
+    ? bodyPick
+    : (siteFamily(site?.bodyStack) ?? families[1] ?? families[0]);
   const categoryOf = (family: string | undefined) =>
     items.find((item) => item.family === family)?.fallback.category ?? 'sans-serif';
 
@@ -634,8 +675,11 @@ export function ArticleView({
         compact
         label={t.article_sample_label()}
         value={articleId}
-        options={ARTICLE_IDS.map((id) => ({ value: id, label: ARTICLES[id].label }))}
-        onChange={(value) => setArticleId(value as ArticleId)}
+        options={[
+          ...(site ? [{ value: 'site', label: t.article_site() }] : []),
+          ...ARTICLE_IDS.map((id) => ({ value: id, label: ARTICLES[id].label })),
+        ]}
+        onChange={(value) => setArticleId(value as ArticleKey)}
       />
     </fieldset>
   );

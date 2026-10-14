@@ -16,7 +16,7 @@ export interface Factor {
 }
 
 export interface Article {
-  id: ArticleId;
+  id: ArticleKey;
   label: string;
   lang: string;
   dir: 'ltr' | 'rtl';
@@ -40,6 +40,7 @@ export interface Article {
 
 export const ARTICLE_IDS = ['en', 'ru', 'ar', 'ja'] as const;
 export type ArticleId = (typeof ARTICLE_IDS)[number];
+export type ArticleKey = ArticleId | 'site';
 
 const en: Article = {
   id: 'en',
@@ -535,4 +536,37 @@ export function articleBlocks(article: Article): Block[] {
     { tag: 'h2', text: article.listHeading },
     ...article.list.map((runs): Block => ({ tag: 'li', text: plain(runs) })),
   ];
+}
+
+export interface SiteText {
+  heading?: string | undefined;
+  body?: string | undefined;
+}
+
+const RTL = /[֐-ࣿ]/u;
+
+export function siteArticle(text: SiteText, label: string, lang: string): Article {
+  const sample = `${text.heading ?? ''}${text.body ?? ''}`;
+  return {
+    id: 'site',
+    label,
+    lang,
+    dir: RTL.test(sample) ? 'rtl' : 'ltr',
+    kicker: '',
+    title: text.heading ?? '',
+    lead: text.body ?? '',
+    meta: '',
+    factors: [],
+    columnsHeading: '',
+    columns: [],
+    quote: { text: '', cite: '' },
+    listHeading: '',
+    list: [],
+    tableHeading: '',
+    tableHead: ['', ''],
+    tableRows: [],
+    glyphsHeading: '',
+    glyphs: '',
+    footer: '',
+  };
 }

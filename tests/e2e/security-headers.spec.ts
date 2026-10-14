@@ -10,6 +10,22 @@ test('pages carry the baseline security headers', async ({ page }) => {
   expect(headers['content-security-policy']).toContain("frame-ancestors 'self'");
 });
 
+test('only the import page can keep its opener and it has no app code', async ({ page }) => {
+  const response = await page.goto('/en/import/');
+  const headers = response?.headers() ?? {};
+  expect(headers['cross-origin-opener-policy']).toBeUndefined();
+  expect(headers['content-security-policy']).toContain("frame-ancestors 'self'");
+  const policy = await page
+    .locator('meta[http-equiv="content-security-policy"]')
+    .getAttribute('content');
+  expect(policy).toContain("default-src 'self'");
+  expect(policy).not.toContain('unsafe-inline');
+  const scripts = await page
+    .locator('script[src]')
+    .evaluateAll((nodes) => nodes.map((node) => node.getAttribute('src')));
+  expect(scripts.length).toBeLessThanOrEqual(2);
+});
+
 test('the hashed CSP allows no unsafe sources', async ({ page }) => {
   await page.goto('/en/');
   const policy = await page

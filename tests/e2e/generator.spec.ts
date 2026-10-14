@@ -998,6 +998,59 @@ test('scripts with different widths get their own fallback faces', async ({ page
   await expect(code).not.toContainText('unicode-range: U+400-52F');
 });
 
+const DEMO_SITE = `<!doctype html><title>Demo site</title>
+<style>
+@font-face { font-family: "Demo Sans"; src: url(/font.woff2) format("woff2"); font-weight: 400; }
+body { font-family: "Demo Sans", sans-serif; font-size: 17px; line-height: 1.6; }
+h1 { font-family: "Demo Sans", sans-serif; font-size: 34px; }
+</style>
+<h1>Hello from the demo site</h1>
+<p>This paragraph is long enough to be taken as the body text sample of the page.</p>`;
+
+test('the bookmarklet hands the fonts and text of a page to the generator after a confirmation', async ({
+  page,
+  context,
+}) => {
+  await context.route('https://site.test/**', (route) => {
+    const font = new URL(route.request().url()).pathname === '/font.woff2';
+    return route.fulfill({
+      status: 200,
+      headers: { 'content-type': font ? 'font/woff2' : 'text/html' },
+      body: font ? readFileSync(sourceSans) : DEMO_SITE,
+    });
+  });
+  await page.goto('/en/');
+  await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
+  await page.getByText('Import from a website', { exact: true }).click();
+  const link = page.getByRole('link', { name: 'Send to fontstay' });
+  const href = (await link.getAttribute('href')) ?? '';
+  expect(href).toMatch(/^javascript:/);
+  expect(href.length).toBeLessThan(8000);
+
+  const site = await context.newPage();
+  await site.goto('https://site.test/');
+  const popup = site.waitForEvent('popup');
+  await site.evaluate(decodeURIComponent(href.slice('javascript:'.length)));
+  const generator = await popup;
+  await generator.waitForURL(/\/en\/(#.*)?$/);
+  const confirm = generator.getByRole('region', { name: 'Import from https://site.test?' });
+  await expect(confirm).toBeVisible();
+  await expect(confirm).toContainText('1 font files');
+  await expect(confirm).toContainText('The browser confirmed where the data came from.');
+  await confirm.getByRole('button', { name: 'Import' }).click();
+  await expect(generator.getByRole('button', { name: /^Remove: font\.woff2/ })).toBeVisible();
+  await expect(generator.getByText('Hello from the demo site')).toBeVisible();
+  expect(generator.url()).not.toContain('#');
+});
+
+test('an import page without a valid handshake explains that nothing was received', async ({
+  page,
+}) => {
+  await page.goto('/en/import/');
+  await expect(page.getByText(/Nothing was received/)).toBeVisible();
+  await expect(page.getByRole('link', { name: 'Open the generator' })).toBeVisible();
+});
+
 test('panels animate with view transitions unless reduced motion is requested', async ({
   page,
 }) => {

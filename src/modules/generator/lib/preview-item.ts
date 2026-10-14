@@ -16,3 +16,13 @@ export interface PreviewItem {
   fontWeight?: number | undefined;
   fontStyle?: 'italic' | undefined;
 }
+
+export interface SiteData {
+  origin: string;
+  heading?: string | undefined;
+  body?: string | undefined;
+  size?: number | undefined;
+  lineHeight?: number | undefined;
+  headingStack?: string | undefined;
+  bodyStack?: string | undefined;
+}

@@ -34,10 +34,15 @@ function parseHeaders(source) {
       const escaped = line.trim().replace(/[.+?^${}()|[\]\\]/g, '\\$&');
       rules.push({ pattern: new RegExp(`^${escaped.replaceAll('*', '.*')}$`), headers: [] });
     } else {
+      const detach = line.trim().startsWith('!');
       const separator = line.indexOf(':');
       rules
         .at(-1)
-        ?.headers.push([line.slice(0, separator).trim(), line.slice(separator + 1).trim()]);
+        ?.headers.push(
+          detach
+            ? [line.trim().slice(1).trim(), null]
+            : [line.slice(0, separator).trim(), line.slice(separator + 1).trim()],
+        );
     }
   }
   return rules;
@@ -52,6 +57,10 @@ function headersFor(pathname) {
     if (!rule.pattern.test(pathname)) continue;
     for (const [name, value] of rule.headers) {
       const key = name.toLowerCase();
+      if (value === null) {
+        delete result[key];
+        continue;
+      }
       result[key] = result[key] ? `${result[key]}, ${value}` : value;
     }
   }

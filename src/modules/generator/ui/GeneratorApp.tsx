@@ -41,6 +41,14 @@ import { FontsourcePicker, GoogleFontsPicker } from '@/modules/font-sources';
 import { LayoutShiftPanel, type PanelInput, ratingOf, worstShift } from '@/modules/layout-shift';
 import { type Category, loadVariantMetrics, type OsId, osFontsDataset } from '@/modules/os-fonts';
 import { cssStack, PRESETS, type PresetId, presetName, presetPicks } from '@/modules/presets';
+import {
+  discardPending,
+  ImportConfirm,
+  PENDING_HASH,
+  type SiteImport,
+  SiteImportPanel,
+  takePending,
+} from '@/modules/site-import';
 import { autoFit } from '../lib/auto-fit';
 import { fallbackRatio, webRatio } from '../lib/calibration';
 import { displayName, fitLanguage, isNoCoverage, LOW_COVERAGE } from '../lib/compute';
@@ -65,7 +73,7 @@ import {
   variantPredictFont,
   webPredictFont,
 } from '../lib/predict-input';
-import type { PreviewItem } from '../lib/preview-item';
+import type { PreviewItem, SiteData } from '../lib/preview-item';
 import { buildReport } from '../lib/report';
 import { aspectOf, safariStrategyCss } from '../lib/safari';
 import { detectScripts, type ScriptId, scriptFaces } from '../lib/scripts';
@@ -181,6 +189,34 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
   const [planNote, setPlanNote] = useState('');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
+  const [incoming, setIncoming] = useState<SiteImport | null>(null);
+  const [site, setSite] = useState<SiteData>();
+  useEffect(() => {
+    if (location.hash !== PENDING_HASH) return;
+    history.replaceState(null, '', location.pathname + location.search);
+    void takePending().then(setIncoming);
+  }, []);
+  const acceptImport = () => {
+    if (!incoming) return;
+    const value = incoming;
+    setIncoming(null);
+    const body = value.used.find((item) => item.role === 'body');
+    const heading = value.used.find((item) => ['h1', 'h2', 'h3'].includes(item.role));
+    setSite({
+      origin: value.origin,
+      heading: value.samples.find((item) => item.role === 'heading')?.text,
+      body: value.samples.find((item) => item.role === 'body')?.text,
+      size: body?.size,
+      lineHeight: body?.lineHeight,
+      headingStack: heading?.family,
+      bodyStack: body?.family,
+    });
+    if (value.files.length > 0) {
+      void addFiles(value.files.map((file) => new File([file.bytes], file.name)));
+      setAnnouncement(t.import_done({ count: value.files.length, origin: value.origin }));
+    }
+  };
+
   const [announcement, setAnnouncement] = useState('');
   useEffect(() => () => parser.current?.dispose(), []);
   useEffect(() => {
@@ -1498,6 +1534,18 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
                   onFile={(file) => void addFiles([file])}
                 />
                 <CssImport locale={locale} busy={busy} onFiles={addFiles} dropped={cssDrop} />
+                <SiteImportPanel locale={locale} onImport={setIncoming} />
+                {incoming && (
+                  <ImportConfirm
+                    locale={locale}
+                    value={incoming}
+                    onAccept={acceptImport}
+                    onDiscard={() => {
+                      setIncoming(null);
+                      void discardPending();
+                    }}
+                  />
+                )}
                 {error && (
                   <p class="ff-error" role="alert">
                     {error}
@@ -1621,7 +1669,7 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
       />
       <div class="ff-generator__stage">
         <LiveRegion>{fitting ? t.fit_running() : ''}</LiveRegion>
-        <ArticleView locale={locale} items={previewItems} fitting={fitting} />
+        <ArticleView locale={locale} items={previewItems} fitting={fitting} site={site} />
       </div>
     </div>
   );

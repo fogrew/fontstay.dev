@@ -1,0 +1,16 @@
+{
+  "manifest_version": 3,
+  "name": "fontstay import",
+  "version": "0.1.0",
+  "description": "Send the fonts, text and sizes of the current page to fontstay.dev.",
+  "action": { "default_title": "Send this page to fontstay" },
+  "permissions": ["activeTab", "scripting"],
+  "background": { "service_worker": "background.js" },
+  "content_scripts": [
+    {
+      "matches": ["https://fontstay.dev/*/import/*"],
+      "js": ["relay.js"],
+      "run_at": "document_start"
+    }
+  ]
+}
