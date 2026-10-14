@@ -11,6 +11,7 @@ import {
   ANDROID_TAGS,
   APPLE_SOURCE,
   CHROMEOS_SOURCE,
+  DEBIAN_MANIFESTS,
   FAMILIES,
   OS_FONT_LIST_MACOS,
   UBUNTU_MANIFESTS,
@@ -99,7 +100,7 @@ for (const [version, tag] of ANDROID_TAGS) {
   }
 }
 
-for (const [version, url] of UBUNTU_MANIFESTS) {
+for (const [version, url] of [...UBUNTU_MANIFESTS, ...DEBIAN_MANIFESTS]) {
   const packages = parseUbuntuManifest(await fetchText(url));
   expectAtLeast(`${version} packages`, packages.size, 500);
   for (const spec of FAMILIES) {
@@ -159,7 +160,9 @@ const dataset: OsFontsDataset = {
       versions: ANDROID_TAGS.map(([version]) => version),
       note: 'AOSP fonts only; vendor builds add or replace fonts, and local() support depends on the browser.',
     },
-    linux: { versions: UBUNTU_MANIFESTS.map(([version]) => version) },
+    linux: {
+      versions: [...UBUNTU_MANIFESTS, ...DEBIAN_MANIFESTS].map(([version]) => version),
+    },
     chromeos: {
       versions: [CHROMEOS_SOURCE[0]],
       note: 'Chromium OS font packages; devices differ by board and Chrome OS version.',

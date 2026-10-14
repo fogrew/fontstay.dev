@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "generated": "2026-10-11",
+  "generated": "2026-10-14",
   "platforms": {
     "windows": {
       "versions": ["10", "11"]
@@ -17,7 +17,14 @@
       "note": "AOSP fonts only; vendor builds add or replace fonts, and local() support depends on the browser."
     },
     "linux": {
-      "versions": ["ubuntu-20.04", "ubuntu-22.04", "ubuntu-24.04", "ubuntu-26.04"]
+      "versions": [
+        "ubuntu-20.04",
+        "ubuntu-22.04",
+        "ubuntu-24.04",
+        "ubuntu-26.04",
+        "debian-12",
+        "debian-13"
+      ]
     },
     "chromeos": {
       "versions": ["current"],
@@ -645,6 +652,18 @@
           "source": "https://releases.ubuntu.com/26.04/ubuntu-26.04.1-desktop-amd64.manifest"
         },
         {
+          "os": "linux",
+          "versions": ["debian-12"],
+          "status": "preinstalled",
+          "source": "https://cdimage.debian.org/cdimage/archive/12.15.0-live/amd64/iso-hybrid/debian-live-12.15.0-amd64-gnome.iso.packages"
+        },
+        {
+          "os": "linux",
+          "versions": ["debian-13"],
+          "status": "preinstalled",
+          "source": "https://cdimage.debian.org/cdimage/archive/13.6.0-live/amd64/iso-hybrid/debian-live-13.6.0-amd64-gnome.iso.packages"
+        },
+        {
           "os": "chromeos",
           "versions": ["current"],
           "status": "preinstalled",
@@ -668,6 +687,18 @@
           "versions": ["ubuntu-26.04"],
           "status": "preinstalled",
           "source": "https://releases.ubuntu.com/26.04/ubuntu-26.04.1-desktop-amd64.manifest"
+        },
+        {
+          "os": "linux",
+          "versions": ["debian-12"],
+          "status": "preinstalled",
+          "source": "https://cdimage.debian.org/cdimage/archive/12.15.0-live/amd64/iso-hybrid/debian-live-12.15.0-amd64-gnome.iso.packages"
+        },
+        {
+          "os": "linux",
+          "versions": ["debian-13"],
+          "status": "preinstalled",
+          "source": "https://cdimage.debian.org/cdimage/archive/13.6.0-live/amd64/iso-hybrid/debian-live-13.6.0-amd64-gnome.iso.packages"
         },
         {
           "os": "chromeos",
@@ -754,6 +785,18 @@
           "versions": ["ubuntu-26.04"],
           "status": "preinstalled",
           "source": "https://releases.ubuntu.com/26.04/ubuntu-26.04.1-desktop-amd64.manifest"
+        },
+        {
+          "os": "linux",
+          "versions": ["debian-12"],
+          "status": "preinstalled",
+          "source": "https://cdimage.debian.org/cdimage/archive/12.15.0-live/amd64/iso-hybrid/debian-live-12.15.0-amd64-gnome.iso.packages"
+        },
+        {
+          "os": "linux",
+          "versions": ["debian-13"],
+          "status": "preinstalled",
+          "source": "https://cdimage.debian.org/cdimage/archive/13.6.0-live/amd64/iso-hybrid/debian-live-13.6.0-amd64-gnome.iso.packages"
         }
       ]
     },
@@ -785,6 +828,18 @@
           "versions": ["ubuntu-26.04"],
           "status": "preinstalled",
           "source": "https://releases.ubuntu.com/26.04/ubuntu-26.04.1-desktop-amd64.manifest"
+        },
+        {
+          "os": "linux",
+          "versions": ["debian-12"],
+          "status": "preinstalled",
+          "source": "https://cdimage.debian.org/cdimage/archive/12.15.0-live/amd64/iso-hybrid/debian-live-12.15.0-amd64-gnome.iso.packages"
+        },
+        {
+          "os": "linux",
+          "versions": ["debian-13"],
+          "status": "preinstalled",
+          "source": "https://cdimage.debian.org/cdimage/archive/13.6.0-live/amd64/iso-hybrid/debian-live-13.6.0-amd64-gnome.iso.packages"
         }
       ]
     },
@@ -816,6 +871,18 @@
           "versions": ["ubuntu-26.04"],
           "status": "preinstalled",
           "source": "https://releases.ubuntu.com/26.04/ubuntu-26.04.1-desktop-amd64.manifest"
+        },
+        {
+          "os": "linux",
+          "versions": ["debian-12"],
+          "status": "preinstalled",
+          "source": "https://cdimage.debian.org/cdimage/archive/12.15.0-live/amd64/iso-hybrid/debian-live-12.15.0-amd64-gnome.iso.packages"
+        },
+        {
+          "os": "linux",
+          "versions": ["debian-13"],
+          "status": "preinstalled",
+          "source": "https://cdimage.debian.org/cdimage/archive/13.6.0-live/amd64/iso-hybrid/debian-live-13.6.0-amd64-gnome.iso.packages"
         }
       ]
     },
@@ -847,6 +914,18 @@
           "versions": ["ubuntu-26.04"],
           "status": "preinstalled",
           "source": "https://releases.ubuntu.com/26.04/ubuntu-26.04.1-desktop-amd64.manifest"
+        },
+        {
+          "os": "linux",
+          "versions": ["debian-12"],
+          "status": "preinstalled",
+          "source": "https://cdimage.debian.org/cdimage/archive/12.15.0-live/amd64/iso-hybrid/debian-live-12.15.0-amd64-gnome.iso.packages"
+        },
+        {
+          "os": "linux",
+          "versions": ["debian-13"],
+          "status": "preinstalled",
+          "source": "https://cdimage.debian.org/cdimage/archive/13.6.0-live/amd64/iso-hybrid/debian-live-13.6.0-amd64-gnome.iso.packages"
         }
       ]
     },
@@ -878,6 +957,18 @@
           "versions": ["ubuntu-26.04"],
           "status": "preinstalled",
           "source": "https://releases.ubuntu.com/26.04/ubuntu-26.04.1-desktop-amd64.manifest"
+        },
+        {
+          "os": "linux",
+          "versions": ["debian-12"],
+          "status": "preinstalled",
+          "source": "https://cdimage.debian.org/cdimage/archive/12.15.0-live/amd64/iso-hybrid/debian-live-12.15.0-amd64-gnome.iso.packages"
+        },
+        {
+          "os": "linux",
+          "versions": ["debian-13"],
+          "status": "preinstalled",
+          "source": "https://cdimage.debian.org/cdimage/archive/13.6.0-live/amd64/iso-hybrid/debian-live-13.6.0-amd64-gnome.iso.packages"
         }
       ]
     },
@@ -909,6 +1000,18 @@
           "versions": ["ubuntu-26.04"],
           "status": "preinstalled",
           "source": "https://releases.ubuntu.com/26.04/ubuntu-26.04.1-desktop-amd64.manifest"
+        },
+        {
+          "os": "linux",
+          "versions": ["debian-12"],
+          "status": "preinstalled",
+          "source": "https://cdimage.debian.org/cdimage/archive/12.15.0-live/amd64/iso-hybrid/debian-live-12.15.0-amd64-gnome.iso.packages"
+        },
+        {
+          "os": "linux",
+          "versions": ["debian-13"],
+          "status": "preinstalled",
+          "source": "https://cdimage.debian.org/cdimage/archive/13.6.0-live/amd64/iso-hybrid/debian-live-13.6.0-amd64-gnome.iso.packages"
         }
       ]
     },

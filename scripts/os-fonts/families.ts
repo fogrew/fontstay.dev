@@ -161,6 +161,17 @@ export const UBUNTU_MANIFESTS = [
   ['ubuntu-26.04', 'https://releases.ubuntu.com/26.04/ubuntu-26.04.1-desktop-amd64.manifest'],
 ] as const;
 
+export const DEBIAN_MANIFESTS = [
+  [
+    'debian-12',
+    'https://cdimage.debian.org/cdimage/archive/12.15.0-live/amd64/iso-hybrid/debian-live-12.15.0-amd64-gnome.iso.packages',
+  ],
+  [
+    'debian-13',
+    'https://cdimage.debian.org/cdimage/archive/13.6.0-live/amd64/iso-hybrid/debian-live-13.6.0-amd64-gnome.iso.packages',
+  ],
+] as const;
+
 export const WINDOWS_LISTS = [
   ['10', 'https://learn.microsoft.com/en-us/typography/fonts/windows_10_font_list'],
   ['11', 'https://learn.microsoft.com/en-us/typography/fonts/windows_11_font_list'],

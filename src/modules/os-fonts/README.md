@@ -13,10 +13,10 @@ The dataset covers a curated list of fallback-relevant families (`scripts/os-fon
 | macOS | 10.15, current | adrg/os-font-list (MIT), Apple system fonts page |
 | iOS | current | Apple system fonts page |
 | Android | 10 to 16 | AOSP `fonts.xml` at release tags |
-| Linux | Ubuntu 20.04 to 26.04 | desktop ISO manifests, mapped from package to families |
+| Linux | Ubuntu 20.04 to 26.04, Debian 12 and 13 | desktop ISO manifests and the Debian GNOME live image package lists, mapped from package to families |
 | ChromeOS | none yet | |
 
-Gaps to fill: macOS 11 to the current release, ChromeOS, vendor Android builds and per-font local names.
+Gaps to fill (#94 follow-ups): macOS 11 to the release before the current one, iOS releases before the current one, ChromeOS versions, vendor Android builds, Fedora and other distributions.
 
 ## Metrics
 
