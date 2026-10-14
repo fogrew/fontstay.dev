@@ -14,10 +14,7 @@ export const test = base.extend({
     await page.addInitScript(() => {
       const key = 'fontstay:layout:dock';
       if (!localStorage.getItem(key)) {
-        localStorage.setItem(
-          key,
-          JSON.stringify({ sizes: {}, opened: ['inputs', 'tuning', 'results'] }),
-        );
+        localStorage.setItem(key, JSON.stringify({ opened: ['tuning'] }));
       }
     });
     await use(page);
@@ -36,17 +33,38 @@ const SYSTEM_NAMES: Record<string, RegExp> = {
   chromeos: /^Chrome ?OS/,
 };
 
+export const STEPS = {
+  inputs: '1. Inputs',
+  audience: '2. Audience',
+  tuning: '3. Fine-tuning',
+  results: '4. Results',
+} as const;
+
+const stepButton = (page: Page, step: keyof typeof STEPS) =>
+  page.locator(`.ff-dock__column[data-id="${step}"] .ff-dock__heading button`);
+
+export async function openStep(page: Page, step: keyof typeof STEPS) {
+  const button = stepButton(page, step);
+  await expect(async () => {
+    if ((await button.getAttribute('aria-expanded')) !== 'true') await button.click();
+    await expect(button).toHaveAttribute('aria-expanded', 'true', { timeout: 1000 });
+  }).toPass();
+}
+
 export async function selectSystem(page: Page, os: string) {
+  await openStep(page, 'tuning');
   const button = page.getByRole('button', { name: SYSTEM_NAMES[os] ?? os });
   if ((await button.getAttribute('aria-expanded')) === 'false') await button.click();
 }
 
 export async function openSupport(page: Page) {
+  await openStep(page, 'results');
   const button = page.getByRole('button', { name: 'Browser support', exact: true });
   if ((await button.getAttribute('aria-expanded')) === 'false') await button.click();
 }
 
 export async function openExport(page: Page) {
+  await openStep(page, 'results');
   const button = page.getByRole('button', { name: 'Export', exact: true });
   if ((await button.getAttribute('aria-expanded')) === 'false') await button.click();
 }
@@ -77,8 +95,8 @@ export async function listed(box: Locator): Promise<string> {
 }
 
 export async function closePanels(page: Page) {
-  for (const name of ['1. Inputs', '2. Fine-tuning', '3. Results']) {
-    const button = page.getByRole('button', { name, exact: true });
+  for (const step of Object.keys(STEPS) as (keyof typeof STEPS)[]) {
+    const button = stepButton(page, step);
     if ((await button.getAttribute('aria-expanded')) === 'true') await button.click();
   }
 }

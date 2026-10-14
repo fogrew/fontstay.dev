@@ -8,6 +8,7 @@ import {
   expect,
   listed,
   openExport,
+  openStep,
   openSupport,
   selectSystem,
   test,
@@ -28,7 +29,7 @@ test('uploading a font produces per-system fallbacks, editable values and CSS', 
 
   const fallback = page.getByLabel('Fallback font 1', { exact: true });
   await expect(fallback).toBeVisible();
-  const code = page.getByRole('region', { name: 'Generated CSS' });
+  const code = page.getByRole('region', { name: 'Generated CSS', includeHidden: true });
   await expect(code).toContainText('@font-face');
   await expect(code).toContainText('size-adjust');
   await expect(code).toContainText('"Source Sans Pro Fallback');
@@ -61,7 +62,9 @@ test('serif and monospace fallbacks are available by font type', async ({ page }
   expect(await listed(page.getByLabel('Fallback font 1', { exact: true }))).toContain(
     'Times New Roman',
   );
-  await expect(page.getByRole('region', { name: 'Generated CSS' })).toContainText('serif;');
+  await expect(
+    page.getByRole('region', { name: 'Generated CSS', includeHidden: true }),
+  ).toContainText('serif;');
 });
 
 test('the fallback list follows the selected system and reports shadowing with a fix', async ({
@@ -79,11 +82,13 @@ test('the fallback list follows the selected system and reports shadowing with a
   expect(await listed(fallback)).toContain('Segoe UI');
   expect(await listed(fallback)).not.toContain('Roboto');
 
+  await openStep(page, 'audience');
   await page.getByLabel('Browserslist query').fill('safari 17, chrome 120');
   await selectSystem(page, 'macos');
   await choose(fallback, 'helvetica');
   await selectSystem(page, 'windows');
   await choose(fallback, 'arial');
+  await openStep(page, 'results');
   await expect(page.getByText('The fallback order was changed automatically')).toBeVisible();
   await expect(page.locator('p.ff-error', { hasText: /would be used instead of/ })).toHaveCount(0);
 });
@@ -106,6 +111,7 @@ test('an invalid file is rejected with an announced error', async ({ page }) => 
     mimeType: 'font/woff2',
     buffer: Buffer.from('not a font at all, just text'),
   });
+  await openStep(page, 'inputs');
   await expect(page.getByRole('alert')).toContainText('broken.woff2');
 });
 
@@ -142,7 +148,7 @@ for (const { width, height } of [
     const body = await article.boundingBox();
     expect(dock?.y).toBeLessThan(150);
     expect(body?.width).toBeGreaterThan(width * 0.85);
-    for (const name of ['1. Inputs', '2. Fine-tuning', '3. Results']) {
+    for (const name of ['1. Inputs', '2. Audience', '3. Fine-tuning', '4. Results']) {
       await expect(page.getByRole('button', { name, exact: true })).toBeVisible();
     }
   });
@@ -280,7 +286,8 @@ test('the CSS stays reachable while the article is large', async ({ page }) => {
   await page.goto('/en/');
   await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
   await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(sourceSans);
-  const code = page.getByRole('region', { name: 'Generated CSS' });
+  await openStep(page, 'results');
+  const code = page.getByRole('region', { name: 'Generated CSS', includeHidden: true });
   await expect(code).toBeInViewport();
   const box = await code.boundingBox();
   expect(box?.height).toBeGreaterThan(40);
@@ -313,6 +320,7 @@ test('a font with few Latin glyphs warns about coverage and previews its own gly
 test('the audience editor resolves presets and reports invalid queries', async ({ page }) => {
   await page.goto('/en/');
   await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
+  await openStep(page, 'audience');
   const list = page.getByRole('list', { name: 'Resolved browsers' });
   await expect(list).toContainText('Chrome');
   await expect(page.getByText(/\d+ browser versions/)).toBeVisible();
@@ -335,6 +343,7 @@ test('the audience editor resolves presets and reports invalid queries', async (
 test('the audience editor passes axe when open', async ({ page }) => {
   await page.goto('/ru/');
   await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
+  await openStep(page, 'audience');
   await expect(page.getByRole('list', { name: 'Подходящие браузеры' })).toBeVisible();
   const results = await new AxeBuilder({ page })
     .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'])
@@ -347,6 +356,7 @@ test('imported usage statistics enable "in my stats" queries and report ignored 
 }) => {
   await page.goto('/en/');
   await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
+  await openStep(page, 'audience');
   const upload = (content: string) =>
     page.locator('input[type="file"][accept*="json"]').setInputFiles({
       name: 'browserslist-stats.json',
@@ -380,6 +390,7 @@ test('imported usage statistics enable "in my stats" queries and report ignored 
 test('system shares follow the query and the tag controls edit it', async ({ page }) => {
   await page.goto('/en/');
   await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
+  await openStep(page, 'audience');
   await page.getByLabel('Browserslist query').fill('safari 17, ios_saf 17.0-17.1');
   const shares = page.getByRole('list', { name: 'Estimated audience by system' });
   await expect(shares).toContainText('macOS');
@@ -403,9 +414,8 @@ test('a system can have several ordered fallbacks', async ({ page }) => {
   await page.goto('/en/');
   await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
   await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(sourceSans);
-  await openSupport(page);
   await selectSystem(page, 'windows');
-  const code = page.getByRole('region', { name: 'Generated CSS' });
+  const code = page.getByRole('region', { name: 'Generated CSS', includeHidden: true });
   await choose(page.getByLabel('Fallback font 1', { exact: true }), 'segoe-ui');
   await expect(page.getByLabel('Fallback font 2', { exact: true })).toHaveCount(0);
 
@@ -415,9 +425,11 @@ test('a system can have several ordered fallbacks', async ({ page }) => {
   await choose(second, 'arial');
   await expect(code).toContainText('"Source Sans Pro Fallback Segoe UI"');
   await expect(code).toContainText('"Source Sans Pro Fallback Arial"');
+  await openSupport(page);
   await expect(
     page.getByRole('region', { name: 'Browser support' }).getByText('Segoe UI, Arial'),
   ).toBeVisible();
+  await selectSystem(page, 'windows');
   await expect(
     page.getByLabel('Fallback font 1', { exact: true }).locator('option[value="arial"]'),
   ).toHaveCount(0);
@@ -430,6 +442,7 @@ test('a system can have several ordered fallbacks', async ({ page }) => {
 
   await page.getByRole('button', { name: 'Remove: Fallback font 2' }).click();
   await expect(second).toHaveCount(0);
+  await openSupport(page);
   await expect(
     page.getByRole('region', { name: 'Browser support' }).getByText(/^Segoe UI$/),
   ).toBeVisible();
@@ -442,7 +455,7 @@ test('the support matrix shows the audience by system with ranges, states and sh
   await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
   await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(sourceSans);
   await openSupport(page);
-  const code = page.getByRole('region', { name: 'Generated CSS' });
+  const code = page.getByRole('region', { name: 'Generated CSS', includeHidden: true });
   await expect(code).toContainText('font-size-adjust');
   await expect(code).toContainText('line-height: 1.4');
 
@@ -453,7 +466,9 @@ test('the support matrix shows the audience by system with ranges, states and sh
   await expect(matrix).toContainText(/\d+–\d+/);
   await expect(matrix.getByText(/CLS \d/).first()).toBeVisible();
 
+  await openStep(page, 'audience');
   await page.getByLabel('Browserslist query').fill('chrome 120');
+  await openSupport(page);
   await expect(matrix.getByRole('heading', { level: 4, name: /^Chrome/ }).first()).toBeVisible();
   await expect(matrix.getByRole('heading', { level: 4, name: /^Safari/ })).toHaveCount(0);
   await expect(code).not.toContainText('font-size-adjust');
@@ -463,13 +478,17 @@ test('a system can be switched off and then falls back to the generic family', a
   await page.goto('/en/');
   await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
   await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(sourceSans);
-  await openSupport(page);
   const matrix = page.getByRole('region', { name: 'Browser support' });
+  await openSupport(page);
   await expect(matrix).not.toContainText('Generic fallback');
+  await openStep(page, 'tuning');
   await page.getByRole('checkbox', { name: 'Include Android in the stack' }).uncheck();
+  await openSupport(page);
   await expect(matrix).toContainText('Generic fallback');
   await expect(matrix.locator('[data-state="none"]').first()).toBeVisible();
+  await openStep(page, 'tuning');
   await page.getByRole('checkbox', { name: 'Include Android in the stack' }).check();
+  await openSupport(page);
   await expect(matrix).not.toContainText('Generic fallback');
 });
 
@@ -493,7 +512,7 @@ test('spacing adds the fonts-loading CSS and script', async ({ page }) => {
   await page.goto('/en/');
   await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
   await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(sourceSans);
-  const code = page.getByRole('region', { name: 'Generated CSS' });
+  const code = page.getByRole('region', { name: 'Generated CSS', includeHidden: true });
   await expect(code).not.toContainText('fonts-loading');
   await page.getByText('Spacing while fonts load').click();
   await page.getByRole('checkbox', { name: 'Compensate spacing while the font loads' }).check();
@@ -502,6 +521,7 @@ test('spacing adds the fonts-loading CSS and script', async ({ page }) => {
   await letter.press('Enter');
   await expect(code).toContainText('.fonts-loading');
   await expect(code).toContainText('letter-spacing: 0.002em');
+  await openExport(page);
   await choose(page.getByLabel('Format'), { label: 'Font Loading API script' });
   const script = page.getByRole('region', { name: 'font-loading.js' });
   await expect(script).toContainText("classList.add('fonts-loading')");
@@ -515,7 +535,7 @@ test('values are optimized automatically and pinned values stay', async ({ page 
   await selectSystem(page, 'windows');
   await choose(page.getByLabel('Fallback font 1', { exact: true }), 'arial');
   await expect(page.getByRole('button', { name: 'Optimize for CLS' })).toHaveCount(0);
-  const code = page.getByRole('region', { name: 'Generated CSS' });
+  const code = page.getByRole('region', { name: 'Generated CSS', includeHidden: true });
   const size = page.getByRole('spinbutton', { name: /Size adjust/ });
   await size.fill('108');
   await size.press('Enter');
@@ -525,13 +545,12 @@ test('values are optimized automatically and pinned values stay', async ({ page 
   await expect(page.getByRole('checkbox', { name: 'Auto' }).nth(1)).toBeChecked();
 });
 
-test('the columns and the support section can be collapsed and the layout is remembered', async ({
-  page,
-}) => {
+test('the open step and the support section are collapsible and remembered', async ({ page }) => {
   await page.goto('/en/');
   await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
   const inputs = page.getByRole('button', { name: '1. Inputs' });
-  await expect(inputs).toHaveAttribute('aria-expanded', 'true');
+  await openStep(page, 'inputs');
+  await expect(page.locator('#ff-settings')).toBeVisible();
   await inputs.click();
   await expect(inputs).toHaveAttribute('aria-expanded', 'false');
   await expect(page.locator('#ff-settings')).toBeHidden();
@@ -541,10 +560,11 @@ test('the columns and the support section can be collapsed and the layout is rem
     'aria-expanded',
     'false',
   );
-  await page.getByRole('button', { name: '1. Inputs' }).click();
+  await openStep(page, 'inputs');
   await expect(page.locator('#ff-settings')).toBeVisible();
   await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(sourceSans);
 
+  await openStep(page, 'results');
   const support = page.getByRole('button', { name: 'Browser support', exact: true });
   await expect(support).toHaveAttribute('aria-expanded', 'false');
   await support.click();
@@ -564,7 +584,7 @@ test('the dock stays pinned to the top while the article scrolls', async ({ page
   await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(300);
   const dock = await page.locator('.ff-dock').boundingBox();
   expect(dock?.y).toBeLessThan(2);
-  await expect(page.getByRole('button', { name: '3. Results', exact: true })).toBeInViewport();
+  await expect(page.getByRole('button', { name: '4. Results', exact: true })).toBeInViewport();
 });
 
 test('a system with a single known font explains why no fallback can be added', async ({
@@ -584,7 +604,7 @@ test('the unicode-range toggle limits the fallbacks to the covered characters', 
   await page.goto('/en/');
   await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
   await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(sourceSans);
-  const code = page.getByRole('region', { name: 'Generated CSS' });
+  const code = page.getByRole('region', { name: 'Generated CSS', includeHidden: true });
   await expect(code).toContainText('size-adjust');
   await page.getByRole('checkbox', { name: 'Fit each script separately' }).uncheck();
   await expect(code).not.toContainText('unicode-range');
@@ -598,6 +618,7 @@ test('the coverage section shows a Unicode map and a per-block table', async ({ 
   await page.goto('/en/');
   await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
   await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(sourceSans);
+  await openStep(page, 'results');
   await page.getByRole('button', { name: 'Glyph coverage', exact: true }).click();
   await expect(page.getByText(/code points in \d+ Unicode blocks/)).toBeVisible();
   const table = page.getByRole('table', { name: 'Glyph coverage per Unicode block' });
@@ -621,7 +642,7 @@ test('the style select switches a system to the bold face and adds the descripto
   await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
   await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(sourceSans);
   await selectSystem(page, 'windows');
-  const code = page.getByRole('region', { name: 'Generated CSS' });
+  const code = page.getByRole('region', { name: 'Generated CSS', includeHidden: true });
   await expect(code).not.toContainText('font-weight');
   await choose(page.getByLabel('Font style'), 'bold');
   await expect(code).toContainText('font-weight: 700;');
@@ -698,6 +719,7 @@ test('a font embedded in pasted CSS can be added and other sources are only link
 }) => {
   await page.goto('/en/');
   await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
+  await openStep(page, 'inputs');
   const encoded = readFileSync(sourceSans).toString('base64');
   const css = `@font-face { font-family: "Embedded"; font-weight: 700; src: url(data:font/woff2;base64,${encoded}) format("woff2"); }
 @font-face { font-family: "Remote"; src: url(https://example.com/remote.woff2) format("woff2"); }
@@ -712,6 +734,7 @@ test('a font embedded in pasted CSS can be added and other sources are only link
   );
   await expect(list.getByText('Source not supported')).toBeVisible();
   await list.getByRole('button', { name: 'Add to the fonts' }).click();
+  await openStep(page, 'tuning');
   await expect(page.getByRole('button', { name: /^Remove: Embedded/ })).toBeVisible();
 });
 
@@ -720,6 +743,7 @@ test('CSS files can be chosen and their font declarations are found automaticall
 }) => {
   await page.goto('/en/');
   await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
+  await openStep(page, 'inputs');
   await page.getByText('Import from CSS').click();
   await page.getByLabel('CSS files').setInputFiles({
     name: 'fonts.css',
@@ -758,6 +782,7 @@ test('a Google Fonts family can be searched and downloaded through the two allow
   );
   await page.goto('/en/');
   await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
+  await openStep(page, 'inputs');
   const google = picker(page, 'Google Fonts');
   await google.getByText('Google Fonts', { exact: true }).click();
   await google.getByLabel('Search families').fill('open sans');
@@ -769,6 +794,7 @@ test('a Google Fonts family can be searched and downloaded through the two allow
   await expect(google.getByLabel('Script subset')).toHaveAttribute('data-value', 'latin');
   await google.getByRole('button', { name: 'Add to the fonts' }).click();
   await expect(page.getByText('Downloaded Open Sans.')).toBeVisible();
+  await openStep(page, 'tuning');
   await expect(page.getByRole('button', { name: /^Remove: Open-Sans-400-latin/ })).toBeVisible();
 });
 
@@ -782,6 +808,7 @@ test('a Fontsource family is downloaded from jsDelivr', async ({ page }) => {
   );
   await page.goto('/en/');
   await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
+  await openStep(page, 'inputs');
   const fontsource = picker(page, 'Fontsource: other open fonts');
   await fontsource.getByText('Fontsource: other open fonts', { exact: true }).click();
   await fontsource.getByLabel('Search families').fill('aileron');
@@ -791,6 +818,7 @@ test('a Fontsource family is downloaded from jsDelivr', async ({ page }) => {
     .click();
   await fontsource.getByRole('button', { name: 'Add to the fonts' }).click();
   await expect(page.getByText('Downloaded Aileron.')).toBeVisible();
+  await openStep(page, 'tuning');
   await expect(page.getByRole('button', { name: /^Remove: Aileron-400-latin/ })).toBeVisible();
 });
 
@@ -798,6 +826,7 @@ test('a failed Google Fonts download is explained', async ({ page }) => {
   await page.route('https://fonts.googleapis.com/**', (route) => route.abort());
   await page.goto('/en/');
   await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
+  await openStep(page, 'inputs');
   const google = picker(page, 'Google Fonts');
   await google.getByText('Google Fonts', { exact: true }).click();
   await google.getByLabel('Search families').fill('lora');
@@ -867,6 +896,7 @@ test('fonts and settings survive a reload and the share link restores the settin
 
   await page.reload();
   await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
+  await openStep(page, 'tuning');
   await expect(page.getByRole('button', { name: /^Remove: SourceSansPro-Regular/ })).toBeVisible();
   await expect(
     page.getByRole('checkbox', { name: 'Include Android in the stack' }),
@@ -883,7 +913,7 @@ test('fonts and settings survive a reload and the share link restores the settin
   await other.goto(link);
   await other.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
   await other.locator('input[type="file"][accept*="woff2"]').setInputFiles(sourceSans);
-  await other.getByRole('button', { name: '2. Fine-tuning', exact: true }).click();
+  await openStep(other, 'tuning');
   await expect(
     other.getByRole('checkbox', { name: 'Include Android in the stack' }),
   ).not.toBeChecked();
@@ -899,6 +929,7 @@ test('fonts and settings survive a reload and the share link restores the settin
 test('a corrupt share link is ignored', async ({ page }) => {
   await page.goto('/en/#s=!!!not-a-state');
   await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
+  await openStep(page, 'inputs');
   await expect(page.getByRole('region', { name: 'Fonts to adapt' })).toHaveCount(0);
   await expect(page.getByText('Your web font')).toBeVisible();
 });
@@ -930,28 +961,27 @@ test('the dropdown works from the keyboard, with typeahead, and has no axe viola
   await expect(format).toHaveAttribute('data-value', 'nuxt');
 });
 
-test('a dock separator resizes the panels with the keyboard and the pointer', async ({ page }) => {
+test('the steps are equal columns and only one is open at a time', async ({ page }) => {
   await page.setViewportSize({ width: 1453, height: 1000 });
   await page.goto('/en/');
   await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
-  const widthOf = (name: string) =>
-    page
-      .getByRole('button', { name })
-      .evaluate((button) => button.closest('section')?.getBoundingClientRect().width ?? 0);
-  const separator = page.locator('.ff-dock__separator').first();
-  const before = await widthOf('1. Inputs');
-  await separator.focus();
-  await page.keyboard.press('ArrowRight');
-  expect(await widthOf('1. Inputs')).toBeGreaterThan(before);
+  const widths = await page
+    .locator('.ff-dock__column')
+    .evaluateAll((nodes) => nodes.map((node) => Math.round(node.getBoundingClientRect().width)));
+  expect(widths).toHaveLength(4);
+  expect(Math.max(...widths) - Math.min(...widths)).toBeLessThanOrEqual(1);
+  await expect(page.locator('.ff-dock__separator')).toHaveCount(0);
 
-  const box = await separator.boundingBox();
-  if (!box) throw new Error('no separator');
-  const wide = await widthOf('1. Inputs');
-  await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
-  await page.mouse.down();
-  await page.mouse.move(box.x - 60, box.y + box.height / 2, { steps: 8 });
-  await page.mouse.up();
-  expect(await widthOf('1. Inputs')).toBeLessThan(wide);
+  await openStep(page, 'inputs');
+  await openStep(page, 'results');
+  await expect(page.getByRole('button', { name: '1. Inputs', exact: true })).toHaveAttribute(
+    'aria-expanded',
+    'false',
+  );
+  const dock = await page.locator('.ff-dock').boundingBox();
+  const panel = await page.locator('.ff-dock__panel:not([hidden])').boundingBox();
+  expect(Math.abs((panel?.width ?? 0) - (dock?.width ?? 1))).toBeLessThanOrEqual(1);
+  await expect(page.locator('.ff-dock__panel:not([hidden])')).toHaveCount(1);
 });
 
 test('several fonts share the article and the export and are tuned one by one', async ({
@@ -962,11 +992,12 @@ test('several fonts share the article and the export and are tuned one by one', 
   await page
     .locator('input[type="file"][accept*="woff2"]')
     .setInputFiles([sourceSans, `${fonts}FiraSans-Regular.ttf`]);
-  const code = page.getByRole('region', { name: 'Generated CSS' });
+  const code = page.getByRole('region', { name: 'Generated CSS', includeHidden: true });
   await expect(code).toContainText('Source Sans Pro Fallback');
   await expect(code).toContainText('Fira Sans Fallback');
   await expect(code).toContainText('.source-sans-pro {');
   await expect(page.getByLabel('Fallback font 1', { exact: true })).toHaveCount(0);
+  await openExport(page);
   await choose(page.getByLabel('Format'), { label: 'Next.js (next/font/local)' });
   const next = page.getByRole('region', { name: 'font.ts' });
   await expect(next).toContainText('export const sourceSansPro = localFont');
@@ -975,6 +1006,7 @@ test('several fonts share the article and the export and are tuned one by one', 
   await expect(next).toContainText('FiraSans-Regular.ttf');
   await choose(page.getByLabel('Format'), 'css');
 
+  await openStep(page, 'tuning');
   const fira = page.getByRole('button', { name: /^Fira Sans/ }).first();
   await fira.click();
   await expect(fira).toHaveAttribute('aria-expanded', 'true');
@@ -993,7 +1025,7 @@ test('each font keeps its own style across a reload', async ({ page }) => {
   await page
     .locator('input[type="file"][accept*="woff2"]')
     .setInputFiles([sourceSans, `${fonts}FiraSans-Regular.ttf`]);
-  const code = page.getByRole('region', { name: 'Generated CSS' });
+  const code = page.getByRole('region', { name: 'Generated CSS', includeHidden: true });
   const open = async (name: RegExp) => {
     const header = page.getByRole('button', { name }).first();
     await header.click();
@@ -1020,7 +1052,7 @@ test('scripts with different widths get their own fallback faces', async ({ page
   await page
     .locator('input[type="file"][accept*="woff2"]')
     .setInputFiles(`${fonts}FiraSans-Regular.ttf`);
-  const code = page.getByRole('region', { name: 'Generated CSS' });
+  const code = page.getByRole('region', { name: 'Generated CSS', includeHidden: true });
   await expect(code).toContainText('unicode-range: U+400-52F');
   await page.getByRole('checkbox', { name: 'Fit each script separately' }).uncheck();
   await expect(code).not.toContainText('unicode-range: U+400-52F');
@@ -1049,6 +1081,7 @@ test('the bookmarklet hands the fonts and text of a page to the generator after 
   });
   await page.goto('/en/');
   await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
+  await openStep(page, 'inputs');
   await page.getByText('Import from a website', { exact: true }).click();
   const link = page.getByRole('link', { name: 'Send to fontstay' });
   const href = (await link.getAttribute('href')) ?? '';
@@ -1066,6 +1099,7 @@ test('the bookmarklet hands the fonts and text of a page to the generator after 
   await expect(confirm).toContainText('1 font files');
   await expect(confirm).toContainText('The browser confirmed where the data came from.');
   await confirm.getByRole('button', { name: 'Import' }).click();
+  await openStep(generator, 'tuning');
   await expect(generator.getByRole('button', { name: /^Remove: font\.woff2/ })).toBeVisible();
   await expect(
     generator
@@ -1100,7 +1134,7 @@ test('panels animate with view transitions unless reduced motion is requested', 
   });
   await page.goto('/en/');
   await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
-  const inputs = page.getByRole('button', { name: '1. Inputs' });
+  const inputs = page.getByRole('button', { name: '3. Fine-tuning' });
   await inputs.click();
   await expect(inputs).toHaveAttribute('aria-expanded', 'false');
   expect(
@@ -1119,7 +1153,8 @@ test('the export code is syntax highlighted without inline styles', async ({ pag
   await page.goto('/en/');
   await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
   await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(sourceSans);
-  const code = page.getByRole('region', { name: 'Generated CSS' });
+  await openExport(page);
+  const code = page.getByRole('region', { name: 'Generated CSS', includeHidden: true });
   await expect(code.locator('code span[class^="ff-tok-"]').first()).toBeVisible({
     timeout: 15_000,
   });

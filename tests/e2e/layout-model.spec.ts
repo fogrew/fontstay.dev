@@ -61,11 +61,11 @@ test('the layout model agrees with the browser measurement', async ({ page }) =>
   await page.goto('/en/');
   await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
   await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(sourceSans);
-  await openSupport(page);
   await selectSystem(page, 'windows');
   await choose(page.getByLabel('Fallback font 1', { exact: true }), 'arial');
 
   const pin = async (sizeAdjust?: number) => {
+    await selectSystem(page, 'windows');
     const values: [RegExp, number][] = [
       [/Size adjust/, sizeAdjust ?? arial.adjustment.sizeAdjust],
       [/Ascent override/, arial.adjustment.ascentOverride],
@@ -80,6 +80,7 @@ test('the layout model agrees with the browser measurement', async ({ page }) =>
   };
 
   const measure = async () => {
+    await openSupport(page);
     await page.getByRole('button', { name: 'Verify on this device' }).click();
     const message = page.getByText(/Measured in the browser/);
     await expect(message).toBeVisible({ timeout: 25_000 });

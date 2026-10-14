@@ -196,6 +196,9 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
     history.replaceState(null, '', location.pathname + location.search);
     void takePending().then(setIncoming);
   }, []);
+  useEffect(() => {
+    if (incoming) window.dispatchEvent(new CustomEvent(DOCK_OPEN_EVENT, { detail: 'inputs' }));
+  }, [incoming]);
   const acceptImport = () => {
     if (!incoming) return;
     const value = incoming;
@@ -1509,12 +1512,10 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
       )}
       <Dock
         storageKey="dock"
-        resizeLabel={(left, right) => t.columns_resize({ left, right })}
         items={[
           {
             id: 'inputs',
             label: t.col_inputs(),
-            weight: 1,
             content: (
               <div class="ff-generator__settings" id="ff-settings">
                 <FontUpload
@@ -1557,6 +1558,14 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
                   <p role="alert">{t.fit_no_coverage()}</p>
                 )}
                 {selected && !shares && <p class="ff-muted">{t.plan_waiting()}</p>}
+              </div>
+            ),
+          },
+          {
+            id: 'audience',
+            label: t.col_audience(),
+            content: (
+              <div class="ff-generator__settings">
                 {restored && (
                   <AudienceEditor
                     defaultOpen
@@ -1574,7 +1583,6 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
           {
             id: 'tuning',
             label: t.col_tuning(),
-            weight: 1,
             content: (
               <div class="ff-generator__settings">
                 {warnings}
@@ -1608,7 +1616,6 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
           {
             id: 'results',
             label: t.col_results(),
-            weight: 2,
             content: showResults ? (
               <Accordion
                 storageKey="results"

@@ -1,5 +1,5 @@
 import AxeBuilder from '@axe-core/playwright';
-import { expect, openSupport, test } from './fixtures';
+import { expect, openStep, openSupport, STEPS, test } from './fixtures';
 
 const fontFile = new URL(
   '../fixtures/fonts/SourceSansPro-Regular.woff2',
@@ -29,13 +29,23 @@ for (const scheme of ['light', 'dark'] as const) {
     await page.goto('/en/');
     await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
     await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(fontFile);
-    await page.getByRole('button', { name: 'Glyph coverage', exact: true }).click();
-    for (const summary of ['Spacing while fonts load', 'Import from CSS', 'Google Fonts']) {
-      await page.getByText(summary, { exact: false }).first().click();
+    for (const step of Object.keys(STEPS) as (keyof typeof STEPS)[]) {
+      await openStep(page, step);
+      if (step === 'inputs') {
+        for (const summary of ['Import from CSS', 'Google Fonts', 'Import from a website']) {
+          await page.getByText(summary, { exact: true }).first().click();
+        }
+      }
+      if (step === 'tuning') {
+        await page.getByText('Spacing while fonts load', { exact: false }).first().click();
+      }
+      if (step === 'results') {
+        await page.getByRole('button', { name: 'Glyph coverage', exact: true }).click();
+      }
+      await page.waitForTimeout(800);
+      const results = await new AxeBuilder({ page }).withTags(tags).analyze();
+      expect(results.violations, step).toEqual([]);
     }
-    await page.waitForTimeout(1500);
-    const results = await new AxeBuilder({ page }).withTags(tags).analyze();
-    expect(results.violations).toEqual([]);
   });
 }
 
@@ -73,6 +83,7 @@ test('keyboard users can reach the main controls and open the sections', async (
   await page.keyboard.press('Enter');
   await expect(page.locator('#main-content')).toBeFocused();
   await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(fontFile);
+  await openStep(page, 'results');
   const section = page.getByRole('button', { name: 'Browser support', exact: true });
   await section.focus();
   await expect(section).toHaveAttribute('aria-expanded', 'false');
@@ -80,8 +91,8 @@ test('keyboard users can reach the main controls and open the sections', async (
   await expect(section).toHaveAttribute('aria-expanded', 'true');
   await page.keyboard.press('Space');
   await expect(section).toHaveAttribute('aria-expanded', 'false');
-  for (const name of [/^Remove: SourceSans/])
-    await expect(page.getByRole('button', { name })).toBeVisible();
+  await openStep(page, 'tuning');
+  await expect(page.getByRole('button', { name: /^Remove: SourceSans/ })).toBeVisible();
 });
 
 test('forced colors keeps the support states distinguishable by text', async ({ page }) => {

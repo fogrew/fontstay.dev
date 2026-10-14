@@ -172,7 +172,9 @@ test('a preset stays applied to every uploaded font until it is cleared', async 
     .locator('input[type="file"][accept*="woff2"]')
     .setInputFiles([`${fonts}SourceSansPro-Regular.woff2`, `${fonts}FiraSans-Regular.ttf`]);
   await expect(page.getByText('Stack preset applied: Classic serif')).toBeVisible();
-  await expect(page.getByRole('region', { name: 'Generated CSS' })).toContainText('serif;', {
+  await expect(
+    page.getByRole('region', { name: 'Generated CSS', includeHidden: true }),
+  ).toContainText('serif;', {
     timeout: 15_000,
   });
   await page.getByRole('button', { name: 'Clear the preset' }).click();
