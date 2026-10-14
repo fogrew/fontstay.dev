@@ -62,8 +62,8 @@ export function SourcePicker({
     if (name === 'Serif') return t.type_serif();
     if (name === 'Monospace') return t.type_mono();
     if (name === 'Sans Serif') return t.type_sans();
-    if (name === 'Display') return t.google_category_display();
-    return name === 'Other' ? t.google_category_other() : t.google_category_handwriting();
+    if (name === 'Display') return t.source_category_display();
+    return name === 'Other' ? t.source_category_other() : t.source_category_handwriting();
   };
   const styleLabel = (key: string) => {
     const { weight, italic } = parseStyle(key);
@@ -81,18 +81,18 @@ export function SourcePicker({
   const add = async () => {
     if (!chosen) return;
     setDownloading(true);
-    setMessage(t.google_downloading());
+    setMessage(t.source_downloading());
     try {
       onFile(await source.download(chosen, style, subset));
-      setMessage(t.google_downloaded({ name: chosen.name }));
+      setMessage(t.source_downloaded({ name: chosen.name }));
     } catch (failure) {
       const code = failure instanceof FontSourceError ? failure.code : 'network';
       setMessage(
         code === 'no-subset'
-          ? t.google_error_subset()
+          ? t.source_error_subset()
           : code === 'too-large' || code === 'bad-file'
-            ? t.google_error_file()
-            : t.google_error_network(),
+            ? t.source_error_file()
+            : t.source_error_network(),
       );
     } finally {
       setDownloading(false);
@@ -105,10 +105,10 @@ export function SourcePicker({
       summary={source.heading}
       onToggle={(open) => open && setOpened(true)}
     >
-      <div class="ff-google">
+      <div class="ff-source">
         <p class="ff-muted">{source.note}</p>
         <div class="ff-field">
-          <label for={`ff-${source.id}-search`}>{t.google_search_label()}</label>
+          <label for={`ff-${source.id}-search`}>{t.source_search_label()}</label>
           <input
             id={`ff-${source.id}-search`}
             class="ff-input"
@@ -120,28 +120,28 @@ export function SourcePicker({
           />
         </div>
         <Select
-          label={t.google_category_label()}
+          label={t.source_category_label()}
           value={category}
           options={[
-            { value: '', label: t.google_category_all() },
+            { value: '', label: t.source_category_all() },
             ...source.categories.map((name) => ({ value: name, label: categoryLabel(name) })),
           ]}
           onChange={setCategory}
         />
         <div role="status">
-          {catalog.state === 'loading-catalog' && <p class="ff-muted">{t.google_loading()}</p>}
-          {catalog.state === 'failed' && <p class="ff-error">{t.google_error_catalog()}</p>}
+          {catalog.state === 'loading-catalog' && <p class="ff-muted">{t.source_loading()}</p>}
+          {catalog.state === 'failed' && <p class="ff-error">{t.source_error_catalog()}</p>}
           {catalog.state === 'ready' && (
-            <p class="ff-muted">{t.google_results({ count: results.length })}</p>
+            <p class="ff-muted">{t.source_results({ count: results.length })}</p>
           )}
         </div>
         {results.length > 0 && (
-          <ul class="ff-google__list" aria-label={source.listLabel}>
+          <ul class="ff-source__list" aria-label={source.listLabel}>
             {results.map((family) => (
               <li key={family.id}>
                 <button
                   type="button"
-                  class="ff-google__item"
+                  class="ff-source__item"
                   aria-pressed={chosen?.id === family.id}
                   onClick={() => choose(family)}
                 >
@@ -153,18 +153,18 @@ export function SourcePicker({
           </ul>
         )}
         {chosen && (
-          <div class="ff-google__chosen">
+          <div class="ff-source__chosen">
             <p>
               <strong>{chosen.name}</strong>
             </p>
             <Select
-              label={t.google_style_label()}
+              label={t.source_style_label()}
               value={style}
               options={chosen.styles.map((key) => ({ value: key, label: styleLabel(key) }))}
               onChange={setStyle}
             />
             <Select
-              label={t.google_subset_label()}
+              label={t.source_subset_label()}
               value={subset}
               options={chosen.subsets
                 .filter((name) => !CJK_SUBSETS.has(name))
@@ -172,7 +172,7 @@ export function SourcePicker({
               onChange={setSubset}
             />
             <Button variant="primary" disabled={busy || downloading} onClick={() => void add()}>
-              {t.google_add()}
+              {t.source_add()}
             </Button>
           </div>
         )}

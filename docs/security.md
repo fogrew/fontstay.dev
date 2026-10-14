@@ -16,7 +16,7 @@ The app reads font files that users choose and builds CSS and previews from them
 | `worker-src` | `'self'` | The font parser worker is a same-origin bundled module; no blob workers. |
 | `frame-src` | `'self'` | Same-origin frames only (planned CLS simulator). |
 | `font-src` | `'self' blob: data:` | Uploaded fonts are loaded from bytes in memory. |
-| `connect-src` | `'self' https://fonts.googleapis.com https://fonts.gstatic.com https://cdn.jsdelivr.net` | Only the font pickers: Google Fonts (stylesheet and font file downloads) and Fontsource (font files from jsDelivr); fonts are then loaded from memory. |
+| `connect-src` | `'self' https://fonts.googleapis.com https://fonts.gstatic.com https://cdn.jsdelivr.net` | Only the font pickers (jsDelivr hosts arbitrary npm and GitHub packages and CSP cannot restrict a path, so the code checks the host and the `/fontsource/fonts/` path and pins the package version from the bundled catalog): Google Fonts (stylesheet and font file downloads) and Fontsource (font files from jsDelivr); fonts are then loaded from memory. |
 | `img-src` | `'self' data: blob:` | |
 | `object-src`, `base-uri` | `'none'` | |
 | `form-action` | `'self'` | |

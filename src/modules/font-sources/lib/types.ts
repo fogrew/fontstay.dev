@@ -4,6 +4,7 @@ export interface FontFamily {
   category: string;
   subsets: string[];
   styles: string[];
+  version?: string;
 }
 
 export const CJK_SUBSETS = new Set([

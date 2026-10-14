@@ -4,22 +4,24 @@ import { decodeCatalog, downloadFont, fileUrl } from './fontsource';
 
 const [aileron] = decodeCatalog({
   categories: ['Sans Serif', 'Other'],
-  families: [['aileron', 'Aileron', 0, ['latin'], ['400', '400i']]],
+  families: [['aileron', 'Aileron', 0, ['latin'], ['400', '400i'], '5.3.0']],
 });
 
 describe('fileUrl', () => {
   it('builds the jsDelivr path of a style', () => {
-    expect(fileUrl('aileron', '400', 'latin')).toBe(
-      'https://cdn.jsdelivr.net/fontsource/fonts/aileron@latest/latin-400-normal.woff2',
+    expect(fileUrl('aileron', '5.3.0', '400', 'latin')).toBe(
+      'https://cdn.jsdelivr.net/fontsource/fonts/aileron@5.3.0/latin-400-normal.woff2',
     );
-    expect(fileUrl('aileron', '700i', 'latin')).toContain('latin-700-italic.woff2');
+    expect(fileUrl('aileron', '5.3.0', '700i', 'latin')).toContain('latin-700-italic.woff2');
   });
 
   it('rejects ids and subsets that could change the path', () => {
-    expect(fileUrl('../x', '400', 'latin')).toBeNull();
-    expect(fileUrl('a/b', '400', 'latin')).toBeNull();
-    expect(fileUrl('aileron', '400', '../latin')).toBeNull();
-    expect(fileUrl('aileron@1', '400', 'latin')).toBeNull();
+    expect(fileUrl('../x', '5.3.0', '400', 'latin')).toBeNull();
+    expect(fileUrl('a/b', '5.3.0', '400', 'latin')).toBeNull();
+    expect(fileUrl('aileron', '5.3.0', '400', '../latin')).toBeNull();
+    expect(fileUrl('aileron', 'latest', '400', 'latin')).toBeNull();
+    expect(fileUrl('aileron', undefined, '400', 'latin')).toBeNull();
+    expect(fileUrl('aileron@1', '5.3.0', '400', 'latin')).toBeNull();
   });
 });
 
@@ -30,7 +32,7 @@ describe('downloadFont', () => {
       '400',
       'latin',
       async (url) => {
-        expect(url).toBe(fileUrl('aileron', '400', 'latin'));
+        expect(url).toBe(fileUrl('aileron', '5.3.0', '400', 'latin'));
         return new Response(new Uint8Array([1, 2, 3]));
       },
     );

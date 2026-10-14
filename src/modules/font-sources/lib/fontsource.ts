@@ -11,17 +11,19 @@ import { type FontFamily, parseStyle } from './types';
 
 interface RawCatalog {
   categories: string[];
-  families: [string, string, number, string[], string[]][];
+  families: [string, string, number, string[], string[], string][];
 }
 
 const FILE_HOST = 'cdn.jsdelivr.net';
 const FILE_PATH = '/fontsource/fonts/';
 const ID = /^[a-z0-9-]{1,80}$/;
 const SUBSET = /^[a-z0-9-]{1,40}$/;
+const VERSION = /^\d{1,4}\.\d{1,4}\.\d{1,4}$/;
 
 export function decodeCatalog(raw: RawCatalog): FontFamily[] {
-  return raw.families.map(([id, name, category, subsets, styles]) => ({
+  return raw.families.map(([id, name, category, subsets, styles, version]) => ({
     id,
+    version,
     name,
     category: raw.categories[category] ?? 'Sans Serif',
     subsets,
@@ -34,10 +36,15 @@ export async function loadCatalog(): Promise<FontFamily[]> {
   return decodeCatalog(module.default as unknown as RawCatalog);
 }
 
-export function fileUrl(id: string, style: string, subset: string): string | null {
-  if (!ID.test(id) || !SUBSET.test(subset)) return null;
+export function fileUrl(
+  id: string,
+  version: string | undefined,
+  style: string,
+  subset: string,
+): string | null {
+  if (!ID.test(id) || !SUBSET.test(subset) || !version || !VERSION.test(version)) return null;
   const { weight, italic } = parseStyle(style);
-  const url = `https://${FILE_HOST}${FILE_PATH}${id}@latest/${subset}-${weight}-${italic ? 'italic' : 'normal'}.woff2`;
+  const url = `https://${FILE_HOST}${FILE_PATH}${id}@${version}/${subset}-${weight}-${italic ? 'italic' : 'normal'}.woff2`;
   return isHttpsUrl(url, FILE_HOST, FILE_PATH) ? url : null;
 }
 
@@ -47,7 +54,7 @@ export async function downloadFont(
   subset: string,
   fetchImpl: Fetch = defaultFetch,
 ): Promise<File> {
-  const url = fileUrl(family.id, style, subset);
+  const url = fileUrl(family.id, family.version, style, subset);
   if (!url) throw new FontSourceError('bad-file');
   return fetchFile(
     url,

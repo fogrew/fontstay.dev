@@ -368,15 +368,15 @@
   gap: var(--ff-space-1);
 }
 
-.ff-google,
-.ff-google__chosen {
+.ff-source,
+.ff-source__chosen {
   display: grid;
   gap: var(--ff-space-2);
 }
-.ff-google p {
+.ff-source p {
   margin: 0;
 }
-.ff-google__list {
+.ff-source__list {
   display: grid;
   gap: 1px;
   max-block-size: 14rem;
@@ -385,7 +385,7 @@
   padding: 0;
   list-style: none;
 }
-.ff-google__item {
+.ff-source__item {
   display: flex;
   inline-size: 100%;
   justify-content: space-between;
@@ -399,7 +399,7 @@
   text-align: start;
   cursor: pointer;
 }
-.ff-google__item[aria-pressed="true"] {
+.ff-source__item[aria-pressed="true"] {
   background: var(--ff-state-full);
 }
 

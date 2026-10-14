@@ -12,13 +12,22 @@ const list = (await response.json()).filter((item) => item.type === 'other');
 if (list.length < 50)
   throw new Error(`Fontsource catalog: expected at least 50 fonts, got ${list.length}`);
 
+const ID = /^[a-z0-9-]{1,80}$/;
+const SUBSET = /^[a-z0-9-]{1,40}$/;
+const VERSION = /^\d{1,4}\.\d{1,4}\.\d{1,4}$/;
 const CATEGORIES = ['Sans Serif', 'Serif', 'Monospace', 'Display', 'Handwriting', 'Other'];
 const NAMES = { 'sans-serif': 0, serif: 1, monospace: 2, display: 3, handwriting: 4 };
 const families = [];
 for (const item of list.sort((a, b) => a.family.localeCompare(b.family))) {
-  const detail = await (
-    await fetch(`${API}/${item.id}`, { headers: { 'user-agent': 'fontstay-catalog/1.0' } })
-  ).json();
+  if (!ID.test(item.id)) continue;
+  const reply = await fetch(`${API}/${item.id}`, {
+    headers: { 'user-agent': 'fontstay-catalog/1.0' },
+  });
+  if (!reply.ok) throw new Error(`${API}/${item.id}: HTTP ${reply.status}`);
+  const detail = await reply.json();
+  if (!VERSION.test(detail.npmVersion ?? '')) {
+    throw new Error(`${item.id}: bad version ${detail.npmVersion}`);
+  }
   const styles = [];
   for (const [weight, byStyle] of Object.entries(detail.variants ?? {})) {
     for (const style of Object.keys(byStyle)) {
@@ -28,7 +37,14 @@ for (const item of list.sort((a, b) => a.family.localeCompare(b.family))) {
   }
   styles.sort((a, b) => Number.parseInt(a, 10) - Number.parseInt(b, 10) || a.length - b.length);
   if (styles.length === 0) continue;
-  families.push([item.id, item.family, NAMES[item.category] ?? 5, item.subsets, styles]);
+  families.push([
+    item.id,
+    item.family,
+    NAMES[item.category] ?? 5,
+    item.subsets.filter((subset) => SUBSET.test(subset)),
+    styles,
+    detail.npmVersion,
+  ]);
 }
 
 writeFileSync(output, `${JSON.stringify({ source: API, categories: CATEGORIES, families })}\n`);
