@@ -71,6 +71,7 @@ import { aspectOf, safariStrategyCss } from '../lib/safari';
 import {
   decodeShareState,
   encodeShareState,
+  type FontState,
   HASH_KEY,
   payloadFromHash,
   SHARE_VERSION,
@@ -310,23 +311,27 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
     }
     pending.current = null;
     setSelectedId(fonts.length > 1 ? target.id : undefined);
-    const restoredPicks = state.picks ?? {};
-    setPicksByFont((all) => ({ ...all, [target.id]: restoredPicks }));
-    const restoredKind = state.kind;
-    if (restoredKind) setKindChoices((all) => ({ ...all, [target.id]: restoredKind }));
-    const restoredStyle = state.style;
-    if (restoredStyle) setStyleChoices((choices) => ({ ...choices, [target.id]: restoredStyle }));
-    if (state.manual) {
-      const restoredValues: Record<string, Values> = {};
-      for (const [faceId, entry] of Object.entries(state.manual)) {
+    const restoredValues: Record<string, Values> = {};
+    const apply = (font: LoadedFont, saved: FontState) => {
+      setPicksByFont((all) => ({ ...all, [font.id]: saved.picks ?? {} }));
+      const savedKind = saved.kind;
+      if (savedKind) setKindChoices((all) => ({ ...all, [font.id]: savedKind }));
+      const savedStyle = saved.style;
+      if (savedStyle) setStyleChoices((all) => ({ ...all, [font.id]: savedStyle }));
+      for (const [faceId, entry] of Object.entries(saved.manual ?? {})) {
         const next: Values = { ...AUTO };
         for (const [key, value] of Object.entries(entry)) {
           next[key as Field] = { mode: 'manual', value };
         }
-        restoredValues[`${target.id}:${faceId}`] = next;
+        restoredValues[`${font.id}:${faceId}`] = next;
       }
-      setValues(restoredValues);
+    };
+    apply(target, state);
+    for (const font of fonts) {
+      const saved = font === target ? undefined : state.others?.[font.fileName];
+      if (saved) apply(font, saved);
     }
+    setValues(restoredValues);
   }, [fonts, restored]);
 
   const selected = fonts.find((font) => font.id === selectedId) ?? fonts[0];
@@ -718,11 +723,11 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
     loadingScript: loadingScript(exportFamilies.map((family) => family.targetFamily)),
   };
   const anyRanking = Object.values(rankings.result).find(Boolean);
-  const currentShareState = (): ShareState => {
+  const manualValuesOf = (fontId: number) => {
     const manual: NonNullable<ShareState['manual']> = {};
     for (const [key, entry] of Object.entries(values)) {
-      if (!selected || !key.startsWith(`${selected.id}:`)) continue;
-      const faceId = key.slice(String(selected.id).length + 1);
+      if (!key.startsWith(`${fontId}:`)) continue;
+      const faceId = key.slice(String(fontId).length + 1);
       const numbers: Partial<Record<Field, number>> = {};
       for (const { key: field } of FIELDS) {
         const item = entry[field];
@@ -730,6 +735,28 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
       }
       if (Object.keys(numbers).length > 0) manual[faceId] = numbers;
     }
+    return manual;
+  };
+  const othersOf = (): Record<string, FontState> =>
+    Object.fromEntries(
+      fonts
+        .filter((font) => font.id !== selected?.id)
+        .map((font): [string, FontState] => {
+          const manual = manualValuesOf(font.id);
+          return [
+            font.fileName,
+            {
+              ...(kindChoices[font.id] ? { kind: kindChoices[font.id] } : {}),
+              ...(styleChoices[font.id] ? { style: styleChoices[font.id] } : {}),
+              ...(picksByFont[font.id] ? { picks: picksByFont[font.id] } : {}),
+              ...(Object.keys(manual).length > 0 ? { manual } : {}),
+            },
+          ];
+        })
+        .filter(([, saved]) => Object.keys(saved).length > 0),
+    );
+  const currentShareState = (): ShareState => {
+    const manual = selected ? manualValuesOf(selected.id) : {};
     const letter = spacingValues.letter;
     const word = spacingValues.word;
     return {
@@ -742,6 +769,7 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
       disabled: ALL_SYSTEMS.filter((os) => enabledSystems[os] === false),
       picks,
       manual,
+      others: othersOf(),
       range: rangeOn,
       spacing: {
         on: spacingOn,

@@ -884,6 +884,33 @@ test('several fonts share the article and the export and are tuned one by one', 
   await expect(view.locator('.ff-article:not([data-probe])').first()).toBeVisible();
 });
 
+test('each font keeps its own style across a reload', async ({ page }) => {
+  await page.goto('/en/');
+  await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
+  await page
+    .locator('input[type="file"][accept*="woff2"]')
+    .setInputFiles([sourceSans, `${fonts}FiraSans-Regular.ttf`]);
+  const code = page.getByRole('region', { name: 'Generated CSS' });
+  const open = async (name: RegExp) => {
+    const header = page.getByRole('button', { name }).first();
+    await header.click();
+    await expect(header).toHaveAttribute('aria-expanded', 'true');
+  };
+  await open(/^Source Sans/);
+  await choose(page.getByLabel('Font style').nth(0), 'bold');
+  await open(/^Fira Sans/);
+  await choose(page.getByLabel('Font style').nth(1), 'italic');
+  await page.waitForTimeout(800);
+
+  await page.reload();
+  await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
+  await open(/^Source Sans/);
+  await expect(code).toContainText('font-weight: 700;');
+  await open(/^Fira Sans/);
+  await expect(code).toContainText('font-style: italic;');
+  await expect(code).not.toContainText('font-weight: 700;');
+});
+
 test('panels animate with view transitions unless reduced motion is requested', async ({
   page,
 }) => {

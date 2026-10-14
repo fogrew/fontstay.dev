@@ -13,16 +13,20 @@ export const MANUAL_KEYS = [
 ] as const;
 export type ManualKey = (typeof MANUAL_KEYS)[number];
 
-export interface ShareState {
+export interface FontState {
+  kind?: Category;
+  style?: FontStyleKey;
+  picks?: Partial<Record<OsId, string[]>>;
+  manual?: Record<string, Partial<Record<ManualKey, number>>>;
+}
+
+export interface ShareState extends FontState {
   v: number;
   query?: string;
   fontName?: string;
-  kind?: Category;
   preset?: string;
-  style?: FontStyleKey;
+  others?: Record<string, FontState>;
   disabled?: OsId[];
-  picks?: Partial<Record<OsId, string[]>>;
-  manual?: Record<string, Partial<Record<ManualKey, number>>>;
   range?: boolean;
   spacing?: { on: boolean; letter?: number; word?: number };
 }
@@ -61,24 +65,12 @@ function migrate(
   return current.v === SHARE_VERSION ? current : null;
 }
 
-export function parseShareState(
-  raw: unknown,
-  migrations: Readonly<Record<number, Migration>> = MIGRATIONS,
-): ShareState | null {
-  if (!isRecord(raw)) return null;
-  const input = migrate(raw, migrations);
-  if (!input) return null;
-  const state: ShareState = { v: SHARE_VERSION };
-  if (typeof input.query === 'string' && input.query.length <= 500) state.query = input.query;
-  if (typeof input.fontName === 'string' && input.fontName.length <= 200) {
-    state.fontName = input.fontName;
-  }
+const MAX_OTHER_FONTS = 32;
+
+function parseFontState(input: Record<string, unknown>): FontState {
+  const state: FontState = {};
   if (KINDS.includes(input.kind as Category)) state.kind = input.kind as Category;
-  if (typeof input.preset === 'string' && ID.test(input.preset)) state.preset = input.preset;
   if (STYLES.includes(input.style as FontStyleKey)) state.style = input.style as FontStyleKey;
-  if (Array.isArray(input.disabled)) {
-    state.disabled = input.disabled.filter((os): os is OsId => OS_LIST.includes(os as OsId));
-  }
   if (isRecord(input.picks)) {
     const picks: NonNullable<ShareState['picks']> = {};
     for (const os of OS_LIST) {
@@ -103,6 +95,34 @@ export function parseShareState(
       manual[faceId] = entry;
     }
     state.manual = manual;
+  }
+  return state;
+}
+
+export function parseShareState(
+  raw: unknown,
+  migrations: Readonly<Record<number, Migration>> = MIGRATIONS,
+): ShareState | null {
+  if (!isRecord(raw)) return null;
+  const input = migrate(raw, migrations);
+  if (!input) return null;
+  const state: ShareState = { v: SHARE_VERSION };
+  if (typeof input.query === 'string' && input.query.length <= 500) state.query = input.query;
+  if (typeof input.fontName === 'string' && input.fontName.length <= 200) {
+    state.fontName = input.fontName;
+  }
+  Object.assign(state, parseFontState(input));
+  if (typeof input.preset === 'string' && ID.test(input.preset)) state.preset = input.preset;
+  if (Array.isArray(input.disabled)) {
+    state.disabled = input.disabled.filter((os): os is OsId => OS_LIST.includes(os as OsId));
+  }
+  if (isRecord(input.others)) {
+    const others: NonNullable<ShareState['others']> = {};
+    for (const [name, value] of Object.entries(input.others).slice(0, MAX_OTHER_FONTS)) {
+      if (name.length <= 200 && name !== '__proto__' && isRecord(value))
+        others[name] = parseFontState(value);
+    }
+    state.others = others;
   }
   if (typeof input.range === 'boolean') state.range = input.range;
   if (isRecord(input.spacing) && typeof input.spacing.on === 'boolean') {

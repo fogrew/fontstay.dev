@@ -18,11 +18,26 @@ const sample: ShareState = {
   disabled: ['linux'],
   picks: { windows: ['arial', 'segoe-ui'] },
   manual: { arial: { sizeAdjust: 110.5 } },
+  others: {
+    'Inter-Bold.woff2': {
+      style: 'bold',
+      picks: { macos: ['arial'] },
+      manual: { arial: { sizeAdjust: 99 } },
+    },
+  },
   range: true,
   spacing: { on: true, letter: 0.1 },
 };
 
 describe('share state', () => {
+  it('keeps the state of every font and drops hostile names', () => {
+    const parsed = parseShareState({
+      v: 1,
+      others: { 'A.woff2': { kind: 'serif', style: 'nope' }, ['__proto__']: { kind: 'serif' } },
+    });
+    expect(parsed?.others).toEqual({ 'A.woff2': { kind: 'serif' } });
+  });
+
   it('round-trips through the compressed hash payload', async () => {
     const payload = await encodeShareState(sample);
     expect(payload).toMatch(/^[A-Za-z0-9_-]+$/);
