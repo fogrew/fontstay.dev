@@ -68,6 +68,7 @@ import {
 import type { PreviewItem } from '../lib/preview-item';
 import { buildReport } from '../lib/report';
 import { aspectOf, safariStrategyCss } from '../lib/safari';
+import { detectScripts, type ScriptId, scriptFaces } from '../lib/scripts';
 import {
   decodeShareState,
   encodeShareState,
@@ -159,6 +160,7 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
   const [spacingResult, setSpacingResult] = useState<{ key: string; value: SpacingEm }>();
   const [spacingOn, setSpacingOn] = useState(false);
   const [rangeOn, setRangeOn] = useState(false);
+  const [perScript, setPerScript] = useState(true);
   const [openSystem, setOpenSystem] = useState<OsId | null | undefined>();
   const [fitting, setFitting] = useState(false);
   const [spacingValues, setSpacingValues] = useState<{ letter: FitValue; word: FitValue }>({
@@ -269,6 +271,7 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
         setInitialQuery(state.query);
         setEnabledSystems(Object.fromEntries((state.disabled ?? []).map((os) => [os, false])));
         setRangeOn(state.range ?? false);
+        setPerScript(state.scripts ?? true);
         setPresetId(PRESETS.find((item) => item.id === state.preset)?.id);
         if (state.spacing) {
           setSpacingOn(state.spacing.on);
@@ -544,6 +547,20 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
     () => (selected ? compactRanges(selected.metrics.codePoints) : []),
     [selected],
   );
+  const scriptsOf = (font: LoadedFont, candidate: Candidate, lang: Language, applied: Overrides) =>
+    perScript
+      ? scriptFaces(font.metrics, candidate.fit, lang, candidate.adjustment, applied).map(
+          ({ unicodeRange, adjustment }) => ({ unicodeRange, adjustment }),
+        )
+      : undefined;
+  const detectedScripts = useMemo(
+    () => (selected ? detectScripts(selected.metrics.codePoints) : []),
+    [selected],
+  );
+  const scriptLabel = (script: ScriptId) => {
+    if (script === 'cyrillic') return t.script_cyrillic();
+    return script === 'greek' ? t.script_greek() : t.script_latin();
+  };
   const coverageRange = coverageRanges.length > 0 ? formatUnicodeRange(coverageRanges) : undefined;
   let simulation: PanelInput | undefined;
   let output: ReturnType<typeof buildCss> | undefined;
@@ -556,6 +573,12 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
               family: candidate.family,
               localNames: candidate.localNames,
               adjustment: adjustmentOf(baseOf(candidate), manualOf(id)),
+              scripts: scriptsOf(
+                selected,
+                candidate,
+                language,
+                adjustmentOf(baseOf(candidate), manualOf(id)),
+              ),
               unicodeRange: rangeOn ? coverageRange : undefined,
               ...descriptorsOf(candidate.style),
             },
@@ -658,6 +681,7 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
               family: candidate.family,
               localNames: candidate.localNames,
               adjustment: adjust(candidate),
+              scripts: scriptsOf(font, candidate, lang, adjust(candidate)),
               unicodeRange: range,
               ...descriptorsOf(candidate.style),
             },
@@ -684,6 +708,7 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
       css,
       fallback,
       adjustment: fallback ? adjust(fallback) : undefined,
+      scripts: fallback ? scriptsOf(font, fallback, lang, adjust(fallback)) : undefined,
       anyRanking: anyFontRanking,
       candidates: [
         ...new Map(fontChosen.map((item) => [item.candidate.id, item.candidate])).values(),
@@ -771,6 +796,7 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
       manual,
       others: othersOf(),
       range: rangeOn,
+      ...(perScript ? {} : { scripts: false }),
       spacing: {
         on: spacingOn,
         ...(letter.mode === 'manual' ? { letter: letter.value } : {}),
@@ -1120,6 +1146,21 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
           {t.range_enable()}
         </label>
         <p class="ff-muted">{t.range_note({ count: coverageRanges.length })}</p>
+        {detectedScripts.length > 1 && (
+          <>
+            <label>
+              <input
+                type="checkbox"
+                checked={perScript}
+                onChange={(event) => setPerScript(event.currentTarget.checked)}
+              />{' '}
+              {t.script_enable()}
+            </label>
+            <p class="ff-muted">
+              {t.script_note({ scripts: detectedScripts.map(scriptLabel).join(', ') })}
+            </p>
+          </>
+        )}
         {styleKey !== 'regular' && unmatchedFonts.length > 0 && (
           <p class="ff-muted">{t.style_unmatched({ fonts: unmatchedFonts.join(', ') })}</p>
         )}
@@ -1328,6 +1369,7 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
             fallback: entry.fallback,
             adjustment: entry.adjustment,
             unicodeRange: entry.range,
+            scripts: entry.scripts,
             ...descriptorsOf(entry.fallback.style),
           },
         ]

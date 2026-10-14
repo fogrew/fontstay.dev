@@ -985,6 +985,18 @@ test('each font keeps its own style across a reload', async ({ page }) => {
   await expect(code).not.toContainText('font-weight: 700;');
 });
 
+test('scripts with different widths get their own fallback faces', async ({ page }) => {
+  await page.goto('/en/');
+  await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
+  await page
+    .locator('input[type="file"][accept*="woff2"]')
+    .setInputFiles(`${fonts}FiraSans-Regular.ttf`);
+  const code = page.getByRole('region', { name: 'Generated CSS' });
+  await expect(code).toContainText('unicode-range: U+0400-052F');
+  await page.getByRole('checkbox', { name: 'Fit each script separately' }).uncheck();
+  await expect(code).not.toContainText('unicode-range: U+0400-052F');
+});
+
 test('panels animate with view transitions unless reduced motion is requested', async ({
   page,
 }) => {

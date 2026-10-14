@@ -11,6 +11,7 @@ export interface PreviewItem {
   metrics: FontMetrics;
   fallback: { family: string; localNames: readonly string[]; category: Category };
   adjustment: Overrides;
+  scripts?: readonly { unicodeRange: string; adjustment: Overrides }[] | undefined;
   unicodeRange?: string | undefined;
   fontWeight?: number | undefined;
   fontStyle?: 'italic' | undefined;

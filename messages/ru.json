@@ -447,5 +447,10 @@
   "source_category_other": "Прочие",
   "fontsource_heading": "Fontsource: другие открытые шрифты",
   "fontsource_note": "Открытые шрифты Velvetyne, Collletttivo и других студий, которых нет в Google Fonts, через Fontsource. Одно начертание скачивается с cdn.jsdelivr.net; jsDelivr видит ваш IP-адрес, но не адрес страницы.",
-  "fontsource_list_label": "Семейства Fontsource"
+  "fontsource_list_label": "Семейства Fontsource",
+  "script_enable": "Подгонять каждую письменность отдельно",
+  "script_note": "Шрифт содержит {scripts}. Если буквы письменности шире или уже латинских, для неё создаётся отдельное начертание запасного шрифта со своими size-adjust и unicode-range.",
+  "script_latin": "латиницу",
+  "script_cyrillic": "кириллицу",
+  "script_greek": "греческий алфавит"
 }

@@ -13,6 +13,7 @@ export interface CssFace {
   family: string;
   localNames: readonly string[];
   adjustment: Overrides;
+  scripts?: readonly { unicodeRange: string; adjustment: Overrides }[] | undefined;
   unicodeRange?: string | undefined;
   fontWeight?: number | undefined;
   fontStyle?: 'italic' | undefined;
@@ -49,6 +50,7 @@ export function buildCss(targetFamily: string, faces: readonly CssFace[], generi
       family: fallbackFamilyName(targetFamily, face.family, faces.length),
       localNames: face.localNames,
       adjustment: face.adjustment,
+      scripts: face.scripts,
       unicodeRange: face.unicodeRange,
       fontWeight: face.fontWeight,
       fontStyle: face.fontStyle,

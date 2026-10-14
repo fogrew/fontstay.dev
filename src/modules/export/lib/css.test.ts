@@ -162,4 +162,35 @@ describe('fallback CSS export', () => {
       generateFallbackCss({ ...input, genericFamily: 'serif; color:red' as 'serif' }),
     ).toThrow('invalid-generic');
   });
+
+  it('adds a face per script with its own descriptors and unicode-range after the main face', () => {
+    const { fontFaces, families } = generateFallbackCss({
+      targetFamily: 'Inter',
+      fallbacks: [
+        {
+          ...face,
+          scripts: [
+            {
+              unicodeRange: 'U+0400-04FF',
+              adjustment: { ...face.adjustment, sizeAdjust: 1.1 },
+            },
+          ],
+        },
+      ],
+      genericFamily: 'sans-serif',
+    });
+    expect(families).toHaveLength(2);
+    const rules = fontFaces.split('\n\n');
+    expect(rules).toHaveLength(2);
+    expect(rules[0]).not.toContain('unicode-range');
+    expect(rules[1]).toContain('size-adjust: 110%;');
+    expect(rules[1]).toContain('unicode-range: U+0400-04FF;');
+    expect(() =>
+      generateFallbackCss({
+        targetFamily: 'Inter',
+        fallbacks: [{ ...face, scripts: [{ unicodeRange: 'nope', adjustment: face.adjustment }] }],
+        genericFamily: 'sans-serif',
+      }),
+    ).toThrowError();
+  });
 });

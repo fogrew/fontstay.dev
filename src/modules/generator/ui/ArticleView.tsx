@@ -284,6 +284,7 @@ export function ArticleView({
               family: item.fallback.family,
               localNames: item.fallback.localNames,
               adjustment: item.adjustment,
+              scripts: item.scripts,
               unicodeRange: item.unicodeRange,
               fontWeight: item.fontWeight,
               fontStyle: item.fontStyle,

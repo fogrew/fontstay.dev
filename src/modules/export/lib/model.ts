@@ -20,10 +20,16 @@ export interface CssAdjustment {
   lineGapOverride: number;
 }
 
+export interface ScriptFace {
+  unicodeRange: string;
+  adjustment: CssAdjustment;
+}
+
 export interface FallbackFace {
   family: string;
   localNames: readonly string[];
   adjustment: CssAdjustment;
+  scripts?: readonly ScriptFace[] | undefined;
   unicodeRange?: string | undefined;
   fontWeight?: number | undefined;
   fontStyle?: 'italic' | undefined;

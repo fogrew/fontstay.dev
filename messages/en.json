@@ -447,5 +447,10 @@
   "source_category_other": "Other",
   "fontsource_heading": "Fontsource: other open fonts",
   "fontsource_note": "Open fonts from Velvetyne, Collletttivo and other foundries that are not on Google Fonts, served by Fontsource. Download one style from cdn.jsdelivr.net; jsDelivr sees your IP address and no referrer.",
-  "fontsource_list_label": "Fontsource families"
+  "fontsource_list_label": "Fontsource families",
+  "script_enable": "Fit each script separately",
+  "script_note": "The font covers {scripts}. A script whose letters are wider or narrower than Latin ones gets its own fallback face with its own size-adjust and unicode-range.",
+  "script_latin": "Latin",
+  "script_cyrillic": "Cyrillic",
+  "script_greek": "Greek"
 }

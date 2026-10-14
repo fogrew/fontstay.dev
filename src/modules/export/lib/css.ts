@@ -1,4 +1,9 @@
-import { CssExportError, type FallbackCss, type FallbackCssInput } from './model';
+import {
+  type CssAdjustment,
+  CssExportError,
+  type FallbackCss,
+  type FallbackCssInput,
+} from './model';
 
 const genericFamilies = new Set([
   'serif',
@@ -79,8 +84,7 @@ export function generateFallbackCss(input: FallbackCssInput): FallbackCss {
     if (face.localNames.length === 0 || face.localNames.length > 16)
       throw new CssExportError('invalid-name');
     const localNames = [...new Set(face.localNames.map(quoteName))];
-    const { adjustment } = face;
-    rules.push(
+    const rule = (adjustment: CssAdjustment, range: string | undefined) =>
       [
         '@font-face {',
         `  font-family: ${family};`,
@@ -91,10 +95,12 @@ export function generateFallbackCss(input: FallbackCssInput): FallbackCss {
         `  line-gap-override: ${percentage(adjustment.lineGapOverride)};`,
         ...fontWeight(face.fontWeight),
         ...(face.fontStyle === 'italic' ? ['  font-style: italic;'] : []),
-        ...unicodeRange(face.unicodeRange),
+        ...unicodeRange(range),
         '}',
-      ].join('\n'),
-    );
+      ].join('\n');
+    rules.push(rule(face.adjustment, face.unicodeRange));
+    for (const script of face.scripts ?? [])
+      rules.push(rule(script.adjustment, script.unicodeRange));
     families.push(family);
   }
   return {
