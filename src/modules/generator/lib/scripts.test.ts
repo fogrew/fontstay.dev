@@ -45,7 +45,10 @@ describe('scriptFaces', () => {
     const [face] = faces;
     expect(faces).toHaveLength(1);
     expect(face?.script).toBe('cyrillic');
-    expect(face?.unicodeRange).toContain('U+0400-052F');
+    expect(face?.unicodeRange).toContain('U+400-52F');
+    expect(
+      scriptFaces(web, arial.fit, 'ru', arial.adjustment, arial.adjustment)[0]?.unicodeRange,
+    ).toMatch(/^U\+41-5A, U\+61-7A/);
     expect(face?.adjustment.sizeAdjust).toBeGreaterThan(arial.adjustment.sizeAdjust * 1.01);
     const ratio = arial.adjustment.sizeAdjust / (face?.adjustment.sizeAdjust ?? 1);
     expect(face?.adjustment.ascentOverride).toBeCloseTo(arial.adjustment.ascentOverride * ratio, 6);
@@ -71,6 +74,13 @@ describe('scriptFaces', () => {
       1.1,
       6,
     );
+  });
+
+  it('limits the script range to the characters of the font when asked to', () => {
+    const web = mixed(520, 760);
+    const arial = candidateFor(web);
+    const [face] = scriptFaces(web, arial.fit, 'en', arial.adjustment, arial.adjustment, true);
+    expect(face?.unicodeRange).toBe('U+410-44F');
   });
 
   it('uses Cyrillic as the primary script for Russian', () => {

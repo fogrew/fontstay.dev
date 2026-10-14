@@ -549,7 +549,7 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
   );
   const scriptsOf = (font: LoadedFont, candidate: Candidate, lang: Language, applied: Overrides) =>
     perScript
-      ? scriptFaces(font.metrics, candidate.fit, lang, candidate.adjustment, applied).map(
+      ? scriptFaces(font.metrics, candidate.fit, lang, candidate.adjustment, applied, rangeOn).map(
           ({ unicodeRange, adjustment }) => ({ unicodeRange, adjustment }),
         )
       : undefined;

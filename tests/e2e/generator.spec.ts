@@ -993,9 +993,9 @@ test('scripts with different widths get their own fallback faces', async ({ page
     .locator('input[type="file"][accept*="woff2"]')
     .setInputFiles(`${fonts}FiraSans-Regular.ttf`);
   const code = page.getByRole('region', { name: 'Generated CSS' });
-  await expect(code).toContainText('unicode-range: U+0400-052F');
+  await expect(code).toContainText('unicode-range: U+400-52F');
   await page.getByRole('checkbox', { name: 'Fit each script separately' }).uncheck();
-  await expect(code).not.toContainText('unicode-range: U+0400-052F');
+  await expect(code).not.toContainText('unicode-range: U+400-52F');
 });
 
 test('panels animate with view transitions unless reduced motion is requested', async ({
