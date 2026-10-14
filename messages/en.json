@@ -231,7 +231,7 @@
   "cssimport_open_google": "Open on Google Fonts",
   "cssimport_too_large": "The CSS is too large to read here.",
   "google_heading": "Google Fonts",
-  "google_note": "Pick a family and download one style and one script subset from Google. This is the only feature that contacts another server (fonts.googleapis.com and fonts.gstatic.com); Google sees your IP address and no referrer.",
+  "google_note": "Pick a family and download one style and one script subset from Google. Only the font pickers contact other servers (fonts.googleapis.com and fonts.gstatic.com); Google sees your IP address and no referrer.",
   "google_search_label": "Search families",
   "google_category_label": "Category",
   "google_category_all": "All",
@@ -245,8 +245,8 @@
   "google_subset_label": "Script subset",
   "google_add": "Add to the fonts",
   "google_downloading": "Downloading…",
-  "google_error_network": "Could not download the font. Check the connection and that fonts.googleapis.com is reachable.",
-  "google_error_subset": "Google has no file for this script subset and style.",
+  "google_error_network": "Could not download the font. Check the connection and that the font server is reachable.",
+  "google_error_subset": "There is no file for this script subset and style.",
   "google_error_file": "The downloaded file was rejected.",
   "google_downloaded": "Downloaded {name}.",
   "ui_download": "Download",
@@ -443,5 +443,9 @@
   "guide_cap": "Cap height",
   "guide_x": "x-height",
   "guide_baseline": "Baseline",
-  "guide_descender": "Descender"
+  "guide_descender": "Descender",
+  "google_category_other": "Other",
+  "fontsource_heading": "Fontsource: other open fonts",
+  "fontsource_note": "Open fonts from Velvetyne, Collletttivo and other foundries that are not on Google Fonts, served by Fontsource. Download one style from cdn.jsdelivr.net; jsDelivr sees your IP address and no referrer.",
+  "fontsource_list_label": "Fontsource families"
 }

@@ -37,7 +37,7 @@ import {
   isFontCollection,
   MAX_FONT_BYTES,
 } from '@/modules/font-metrics';
-import { GoogleFontsPicker } from '@/modules/google-fonts';
+import { FontsourcePicker, GoogleFontsPicker } from '@/modules/font-sources';
 import { LayoutShiftPanel, type PanelInput, ratingOf, worstShift } from '@/modules/layout-shift';
 import { type Category, loadVariantMetrics, type OsId, osFontsDataset } from '@/modules/os-fonts';
 import { cssStack, PRESETS, type PresetId, presetName, presetPicks } from '@/modules/presets';
@@ -1446,6 +1446,11 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
                   onFiles={addFiles}
                 />
                 <GoogleFontsPicker
+                  locale={locale}
+                  busy={busy}
+                  onFile={(file) => void addFiles([file])}
+                />
+                <FontsourcePicker
                   locale={locale}
                   busy={busy}
                   onFile={(file) => void addFiles([file])}

@@ -1,5 +1,6 @@
 import { readFileSync } from 'node:fs';
 import AxeBuilder from '@axe-core/playwright';
+import type { Page } from '@playwright/test';
 import { buildCollection, buildFont } from '../../src/modules/font-metrics/lib/forged.test-util';
 import {
   choose,
@@ -705,6 +706,9 @@ test('CSS files can be chosen and their font declarations are found automaticall
   );
 });
 
+const picker = (page: Page, name: string) =>
+  page.locator('details').filter({ has: page.getByText(name, { exact: true }) });
+
 test('a Google Fonts family can be searched and downloaded through the two allowed origins', async ({
   page,
 }) => {
@@ -725,28 +729,54 @@ test('a Google Fonts family can be searched and downloaded through the two allow
   );
   await page.goto('/en/');
   await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
-  await page.getByText('Google Fonts', { exact: true }).click();
-  await page.getByLabel('Search families').fill('open sans');
-  await expect(page.getByText(/\d+ families shown/)).toBeVisible();
-  const list = page.getByRole('list', { name: 'Google Fonts families' });
-  await list.getByRole('button', { name: /^Open Sans/ }).click();
-  await expect(page.getByLabel('Script subset')).toHaveAttribute('data-value', 'latin');
-  await page.getByRole('button', { name: 'Add to the fonts' }).last().click();
+  const google = picker(page, 'Google Fonts');
+  await google.getByText('Google Fonts', { exact: true }).click();
+  await google.getByLabel('Search families').fill('open sans');
+  await expect(google.getByText(/\d+ families shown/)).toBeVisible();
+  await google
+    .getByRole('list', { name: 'Google Fonts families' })
+    .getByRole('button', { name: /^Open Sans/ })
+    .click();
+  await expect(google.getByLabel('Script subset')).toHaveAttribute('data-value', 'latin');
+  await google.getByRole('button', { name: 'Add to the fonts' }).click();
   await expect(page.getByText('Downloaded Open Sans.')).toBeVisible();
   await expect(page.getByRole('button', { name: /^Remove: Open-Sans-400-latin/ })).toBeVisible();
+});
+
+test('a Fontsource family is downloaded from jsDelivr', async ({ page }) => {
+  await page.route('https://cdn.jsdelivr.net/fontsource/fonts/**', (route) =>
+    route.fulfill({
+      status: 200,
+      headers: { 'access-control-allow-origin': '*', 'content-type': 'font/woff2' },
+      body: readFileSync(sourceSans),
+    }),
+  );
+  await page.goto('/en/');
+  await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
+  const fontsource = picker(page, 'Fontsource: other open fonts');
+  await fontsource.getByText('Fontsource: other open fonts', { exact: true }).click();
+  await fontsource.getByLabel('Search families').fill('aileron');
+  await fontsource
+    .getByRole('list', { name: 'Fontsource families' })
+    .getByRole('button', { name: /^Aileron/ })
+    .click();
+  await fontsource.getByRole('button', { name: 'Add to the fonts' }).click();
+  await expect(page.getByText('Downloaded Aileron.')).toBeVisible();
+  await expect(page.getByRole('button', { name: /^Remove: Aileron-400-latin/ })).toBeVisible();
 });
 
 test('a failed Google Fonts download is explained', async ({ page }) => {
   await page.route('https://fonts.googleapis.com/**', (route) => route.abort());
   await page.goto('/en/');
   await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
-  await page.getByText('Google Fonts', { exact: true }).click();
-  await page.getByLabel('Search families').fill('lora');
-  await page
+  const google = picker(page, 'Google Fonts');
+  await google.getByText('Google Fonts', { exact: true }).click();
+  await google.getByLabel('Search families').fill('lora');
+  await google
     .getByRole('list', { name: 'Google Fonts families' })
     .getByRole('button', { name: /^Lora/ })
     .click();
-  await page.getByRole('button', { name: 'Add to the fonts' }).last().click();
+  await google.getByRole('button', { name: 'Add to the fonts' }).click();
   await expect(page.getByText(/Could not download the font/)).toBeVisible();
 });
 

@@ -1,19 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import {
-  cssUrl,
-  decodeCatalog,
-  downloadFont,
-  GoogleFontsError,
-  isFileUrl,
-  parseGoogleCss,
-  parseStyle,
-  searchFamilies,
-} from './google-fonts';
+import { FontSourceError } from './download';
+import { cssUrl, decodeCatalog, downloadFont, isFileUrl, parseGoogleCss } from './google';
+import { parseStyle, searchFamilies } from './types';
 
 const families = decodeCatalog({
   categories: ['Sans Serif', 'Serif', 'Monospace'],
   families: [
-    ['Open Sans', 0, ['latin', 'cyrillic'], ['400', '700', '400i'], ['wght']],
+    ['Open Sans', 0, ['latin', 'cyrillic'], ['400', '700', '400i'], []],
     ['Lora', 1, ['latin'], ['400'], []],
     ['Fira Code', 2, ['latin'], ['400'], ['wght']],
   ],
@@ -132,7 +125,7 @@ describe('downloadFont', () => {
       downloadFont('Open Sans', '400', 'latin', async () => {
         throw new Error('offline');
       }),
-    ).rejects.toBeInstanceOf(GoogleFontsError);
+    ).rejects.toBeInstanceOf(FontSourceError);
     await expect(
       downloadFont(
         'Open Sans',

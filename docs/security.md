@@ -16,7 +16,7 @@ The app reads font files that users choose and builds CSS and previews from them
 | `worker-src` | `'self'` | The font parser worker is a same-origin bundled module; no blob workers. |
 | `frame-src` | `'self'` | Same-origin frames only (planned CLS simulator). |
 | `font-src` | `'self' blob: data:` | Uploaded fonts are loaded from bytes in memory. |
-| `connect-src` | `'self' https://fonts.googleapis.com https://fonts.gstatic.com` | Only the Google Fonts picker (stylesheet and font file downloads); fonts are then loaded from memory. |
+| `connect-src` | `'self' https://fonts.googleapis.com https://fonts.gstatic.com https://cdn.jsdelivr.net` | Only the font pickers: Google Fonts (stylesheet and font file downloads) and Fontsource (font files from jsDelivr); fonts are then loaded from memory. |
 | `img-src` | `'self' data: blob:` | |
 | `object-src`, `base-uri` | `'none'` | |
 | `form-action` | `'self'` | |
@@ -36,7 +36,7 @@ The app reads font files that users choose and builds CSS and previews from them
 - No `eval`, no inline event handlers, no `dangerouslySetInnerHTML`.
 - New origins, `blob:` or `data:` sources, or any `'unsafe-*'` keyword must be justified in the PR and listed in the table above.
 - Same-origin iframes (CLS simulator) are allowed by `frame-ancestors 'self'`; framing by other origins is not.
-- Features that load external resources add their origin to the matching directive in the PR that introduces them (the Google Fonts picker adds `https://fonts.googleapis.com` and `https://fonts.gstatic.com` to `connect-src`).
+- Features that load external resources add their origin to the matching directive in the PR that introduces them (the Google Fonts picker adds `https://fonts.googleapis.com` and `https://fonts.gstatic.com`, the Fontsource picker `https://cdn.jsdelivr.net`, to `connect-src`).
 - The service worker (`/sw.js`, generated after the build by `scripts/pwa/build-pwa.mjs`) is same-origin, covered by `worker-src 'self'`, and served with `Cache-Control: no-cache`; it precaches only same-origin files and never handles cross-origin requests.
 
 ## Testing

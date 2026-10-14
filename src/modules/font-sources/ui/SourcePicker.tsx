@@ -1,31 +1,36 @@
+import type { ComponentChildren } from 'preact';
 import { useEffect, useMemo, useState } from 'preact/hooks';
 import { type Locale, messagesFor } from '@/common/i18n';
-import { Button, Disclosure, Icon, Select } from '@/common/ui';
-import {
-  CJK_SUBSETS,
-  downloadFont,
-  type GoogleFamily,
-  GoogleFontsError,
-  loadCatalog,
-  parseStyle,
-  searchFamilies,
-} from '../lib/google-fonts';
+import { Button, Disclosure, Select } from '@/common/ui';
+import { FontSourceError } from '../lib/download';
+import { CJK_SUBSETS, type FontFamily, parseStyle, searchFamilies } from '../lib/types';
 
 type State =
   | { state: 'idle' }
   | { state: 'loading-catalog' }
-  | { state: 'ready'; families: GoogleFamily[] }
+  | { state: 'ready'; families: FontFamily[] }
   | { state: 'failed' };
 
-const CATEGORIES = ['Sans Serif', 'Serif', 'Monospace', 'Display', 'Handwriting'] as const;
+export interface FontSource {
+  id: string;
+  icon: ComponentChildren;
+  heading: string;
+  note: string;
+  listLabel: string;
+  categories: readonly string[];
+  loadCatalog: () => Promise<FontFamily[]>;
+  download: (family: FontFamily, style: string, subset: string) => Promise<File>;
+}
 
-export function GoogleFontsPicker({
+export function SourcePicker({
   locale,
   busy,
+  source,
   onFile,
 }: {
   locale: Locale;
   busy: boolean;
+  source: FontSource;
   onFile: (file: File) => void;
 }) {
   const t = messagesFor(locale);
@@ -33,7 +38,7 @@ export function GoogleFontsPicker({
   const [catalog, setCatalog] = useState<State>({ state: 'idle' });
   const [query, setQuery] = useState('');
   const [category, setCategory] = useState('');
-  const [chosen, setChosen] = useState<GoogleFamily>();
+  const [chosen, setChosen] = useState<FontFamily>();
   const [style, setStyle] = useState('400');
   const [subset, setSubset] = useState('latin');
   const [message, setMessage] = useState('');
@@ -42,7 +47,7 @@ export function GoogleFontsPicker({
   useEffect(() => {
     if (!opened || catalog.state !== 'idle') return;
     setCatalog({ state: 'loading-catalog' });
-    loadCatalog().then(
+    source.loadCatalog().then(
       (families) => setCatalog({ state: 'ready', families }),
       () => setCatalog({ state: 'failed' }),
     );
@@ -57,14 +62,15 @@ export function GoogleFontsPicker({
     if (name === 'Serif') return t.type_serif();
     if (name === 'Monospace') return t.type_mono();
     if (name === 'Sans Serif') return t.type_sans();
-    return name === 'Display' ? t.google_category_display() : t.google_category_handwriting();
+    if (name === 'Display') return t.google_category_display();
+    return name === 'Other' ? t.google_category_other() : t.google_category_handwriting();
   };
   const styleLabel = (key: string) => {
     const { weight, italic } = parseStyle(key);
     return italic ? `${weight} ${t.style_italic()}` : String(weight);
   };
 
-  const choose = (family: GoogleFamily) => {
+  const choose = (family: FontFamily) => {
     setChosen(family);
     setStyle(family.styles.includes('400') ? '400' : (family.styles[0] ?? '400'));
     const subsets = family.subsets.filter((name) => !CJK_SUBSETS.has(name));
@@ -77,10 +83,10 @@ export function GoogleFontsPicker({
     setDownloading(true);
     setMessage(t.google_downloading());
     try {
-      onFile(await downloadFont(chosen.name, style, subset));
+      onFile(await source.download(chosen, style, subset));
       setMessage(t.google_downloaded({ name: chosen.name }));
     } catch (failure) {
-      const code = failure instanceof GoogleFontsError ? failure.code : 'network';
+      const code = failure instanceof FontSourceError ? failure.code : 'network';
       setMessage(
         code === 'no-subset'
           ? t.google_error_subset()
@@ -95,16 +101,16 @@ export function GoogleFontsPicker({
 
   return (
     <Disclosure
-      icon={<Icon name="googlefonts" />}
-      summary={t.google_heading()}
+      icon={source.icon}
+      summary={source.heading}
       onToggle={(open) => open && setOpened(true)}
     >
       <div class="ff-google">
-        <p class="ff-muted">{t.google_note()}</p>
+        <p class="ff-muted">{source.note}</p>
         <div class="ff-field">
-          <label for="ff-google-search">{t.google_search_label()}</label>
+          <label for={`ff-${source.id}-search`}>{t.google_search_label()}</label>
           <input
-            id="ff-google-search"
+            id={`ff-${source.id}-search`}
             class="ff-input"
             type="search"
             autocomplete="off"
@@ -118,7 +124,7 @@ export function GoogleFontsPicker({
           value={category}
           options={[
             { value: '', label: t.google_category_all() },
-            ...CATEGORIES.map((name) => ({ value: name, label: categoryLabel(name) })),
+            ...source.categories.map((name) => ({ value: name, label: categoryLabel(name) })),
           ]}
           onChange={setCategory}
         />
@@ -130,13 +136,13 @@ export function GoogleFontsPicker({
           )}
         </div>
         {results.length > 0 && (
-          <ul class="ff-google__list" aria-label={t.google_list_label()}>
+          <ul class="ff-google__list" aria-label={source.listLabel}>
             {results.map((family) => (
-              <li key={family.name}>
+              <li key={family.id}>
                 <button
                   type="button"
                   class="ff-google__item"
-                  aria-pressed={chosen?.name === family.name}
+                  aria-pressed={chosen?.id === family.id}
                   onClick={() => choose(family)}
                 >
                   <span>{family.name}</span>

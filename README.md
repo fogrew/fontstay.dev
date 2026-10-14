@@ -63,7 +63,8 @@ Generated data is committed; the scripts need network access (and, for Windows m
 | `pnpm os-fonts:import` | `src/modules/os-fonts/data/os-fonts.json` (availability per OS from vendor sources) |
 | `pnpm os-fonts:metrics` | `metrics.json` and `variants.json` (glyph advances and vertical metrics) |
 | `pnpm compat:build` | `src/modules/audience/data/descriptor-support.json` (MDN browser-compat-data) |
-| `pnpm google-fonts:catalog` | `src/modules/google-fonts/data/catalog.json` |
+| `pnpm google-fonts:catalog` | `src/modules/font-sources/data/google-catalog.json` |
+| `pnpm fontsource:catalog` | `src/modules/font-sources/data/fontsource-catalog.json` |
 | `pnpm unicode:blocks` | `src/modules/font-metrics/data/blocks.json` |
 | `pnpm og:build` | `public/og.png` (needs Playwright Chromium) |
 

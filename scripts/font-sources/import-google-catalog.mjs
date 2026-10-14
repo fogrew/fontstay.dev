@@ -3,7 +3,7 @@ import { fileURLToPath } from 'node:url';
 
 const SOURCE = 'https://fonts.google.com/metadata/fonts';
 const output = fileURLToPath(
-  new URL('../../src/modules/google-fonts/data/catalog.json', import.meta.url),
+  new URL('../../src/modules/font-sources/data/google-catalog.json', import.meta.url),
 );
 
 const response = await fetch(SOURCE, { headers: { 'user-agent': 'fontstay-catalog/1.0' } });

@@ -231,7 +231,7 @@
   "cssimport_open_google": "Открыть в Google Fonts",
   "cssimport_too_large": "CSS слишком большой, чтобы прочитать его здесь.",
   "google_heading": "Google Fonts",
-  "google_note": "Выберите семейство и скачайте одно начертание и один набор символов (subset) с серверов Google. Это единственная функция, которая обращается к другому серверу (fonts.googleapis.com и fonts.gstatic.com); Google видит ваш IP-адрес, но не адрес страницы.",
+  "google_note": "Выберите семейство и скачайте одно начертание и один набор символов (subset) с серверов Google. Только выбор шрифтов обращается к другим серверам (fonts.googleapis.com и fonts.gstatic.com); Google видит ваш IP-адрес, но не адрес страницы.",
   "google_search_label": "Поиск семейства",
   "google_category_label": "Категория",
   "google_category_all": "Все",
@@ -245,8 +245,8 @@
   "google_subset_label": "Набор символов",
   "google_add": "Добавить в шрифты",
   "google_downloading": "Скачиваю…",
-  "google_error_network": "Не удалось скачать шрифт. Проверьте соединение и доступность fonts.googleapis.com.",
-  "google_error_subset": "У Google нет файла для этого набора символов и начертания.",
+  "google_error_network": "Не удалось скачать шрифт. Проверьте соединение и доступность сервера шрифтов.",
+  "google_error_subset": "Для этого набора символов и начертания файла нет.",
   "google_error_file": "Скачанный файл отклонён.",
   "google_downloaded": "Скачано: {name}.",
   "ui_download": "Скачать",
@@ -443,5 +443,9 @@
   "guide_cap": "Высота прописных",
   "guide_x": "Высота строчных",
   "guide_baseline": "Базовая линия",
-  "guide_descender": "Нижний выносной элемент"
+  "guide_descender": "Нижний выносной элемент",
+  "google_category_other": "Прочие",
+  "fontsource_heading": "Fontsource: другие открытые шрифты",
+  "fontsource_note": "Открытые шрифты Velvetyne, Collletttivo и других студий, которых нет в Google Fonts, через Fontsource. Одно начертание скачивается с cdn.jsdelivr.net; jsDelivr видит ваш IP-адрес, но не адрес страницы.",
+  "fontsource_list_label": "Семейства Fontsource"
 }
