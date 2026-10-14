@@ -1,5 +1,6 @@
 import type { IconName } from '@/common/ui';
 import type { Block } from '@/modules/layout-shift';
+import type { SiteBlock } from './preview-item';
 
 export type Run =
   | string
@@ -322,7 +323,7 @@ const plain = (runs: readonly Run[]) =>
   runs.map((run) => (typeof run === 'string' ? run : Object.values(run)[0])).join('');
 
 export function articleBlocks(article: Article): Block[] {
-  return [
+  const blocks: Block[] = [
     { tag: 'h1', text: article.title },
     { tag: 'p', text: article.lead },
     ...article.factors.flatMap((factor): Block[] => [
@@ -335,32 +336,41 @@ export function articleBlocks(article: Article): Block[] {
     { tag: 'h2', text: article.listHeading },
     ...article.list.map((runs): Block => ({ tag: 'li', text: plain(runs) })),
   ];
+  return blocks.filter((block) => block.text);
 }
 
-export interface SiteText {
-  heading?: string | undefined;
-  body?: string | undefined;
+export const SITE_MIN_CHARS = 600;
+export const SITE_MIN_BLOCKS = 3;
+
+export function siteIsMeaningful(blocks: readonly SiteBlock[]): boolean {
+  const total = blocks.reduce((sum, block) => sum + block.text.length, 0);
+  return blocks.length >= SITE_MIN_BLOCKS && total >= SITE_MIN_CHARS;
 }
 
 const RTL = /[֐-ࣿ]/u;
 
-export function siteArticle(text: SiteText, label: string, lang: string): Article {
-  const sample = `${text.heading ?? ''}${text.body ?? ''}`;
+export function siteArticle(blocks: readonly SiteBlock[], label: string, lang: string): Article {
+  const texts = (role: SiteBlock['role']) =>
+    blocks.filter((block) => block.role === role).map((block) => block.text);
+  const [title = ''] = texts('heading');
+  const [columnsHeading = ''] = texts('subheading');
+  const [lead = '', ...rest] = texts('body');
+  const [quote = ''] = texts('quote');
   return {
     id: 'site',
     label,
     lang,
-    dir: RTL.test(sample) ? 'rtl' : 'ltr',
+    dir: RTL.test(blocks.map((block) => block.text).join('')) ? 'rtl' : 'ltr',
     kicker: '',
-    title: text.heading ?? '',
-    lead: text.body ?? '',
+    title,
+    lead,
     meta: '',
     factors: [],
-    columnsHeading: '',
-    columns: [],
-    quote: { text: '', cite: '' },
+    columnsHeading,
+    columns: rest.map((text): Run[] => [text]),
+    quote: { text: quote, cite: '' },
     listHeading: '',
-    list: [],
+    list: texts('item').map((text): Run[] => [text]),
     tableHeading: '',
     tableHead: ['', ''],
     tableRows: [],

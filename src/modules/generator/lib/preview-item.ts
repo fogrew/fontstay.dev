@@ -17,10 +17,17 @@ export interface PreviewItem {
   fontStyle?: 'italic' | undefined;
 }
 
+export type SiteRole = 'heading' | 'subheading' | 'body' | 'quote' | 'item';
+
+export interface SiteBlock {
+  role: SiteRole;
+  text: string;
+}
+
 export interface SiteData {
   origin: string;
-  heading?: string | undefined;
-  body?: string | undefined;
+  blocks: SiteBlock[];
+  meaningful: boolean;
   size?: number | undefined;
   lineHeight?: number | undefined;
   headingStack?: string | undefined;

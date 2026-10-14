@@ -4,6 +4,7 @@ export type {
   ImportedFile,
   ImportedSample,
   ImportedUse,
+  SampleRole,
   SiteImport,
 } from './lib/payload';
 export { parseClipboardImport } from './lib/payload';

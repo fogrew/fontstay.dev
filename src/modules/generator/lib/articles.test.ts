@@ -1,6 +1,13 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import { ARTICLE_LANGUAGES, type ArticleId, loadArticle } from './articles';
+import {
+  ARTICLE_LANGUAGES,
+  type ArticleId,
+  loadArticle,
+  siteArticle,
+  siteIsMeaningful,
+} from './articles';
+import type { SiteBlock } from './preview-item';
 
 const SUBSET: Record<string, string> = {
   ar: 'arabic',
@@ -94,5 +101,43 @@ describe('article languages', () => {
       expect((await loadArticle(id))?.dir).toBe('rtl');
     }
     expect((await loadArticle('th'))?.dir).toBe('ltr');
+  });
+});
+
+describe('site articles', () => {
+  const block = (role: SiteBlock['role'], length: number): SiteBlock => ({
+    role,
+    text: 'x'.repeat(length),
+  });
+
+  it('needs enough blocks and text to stand in for the built-in article', () => {
+    expect(siteIsMeaningful([block('heading', 20), block('body', 300)])).toBe(false);
+    expect(siteIsMeaningful([block('heading', 20), block('body', 300), block('body', 300)])).toBe(
+      true,
+    );
+    expect(siteIsMeaningful([block('body', 100), block('body', 100), block('body', 100)])).toBe(
+      false,
+    );
+  });
+
+  it('maps blocks to article parts', () => {
+    const article = siteArticle(
+      [
+        block('heading', 5),
+        block('body', 10),
+        block('subheading', 6),
+        block('body', 12),
+        block('quote', 8),
+        block('item', 4),
+      ],
+      'Site',
+      'en',
+    );
+    expect(article.title).toHaveLength(5);
+    expect(article.lead).toHaveLength(10);
+    expect(article.columnsHeading).toHaveLength(6);
+    expect(article.columns).toHaveLength(1);
+    expect(article.quote.text).toHaveLength(8);
+    expect(article.list).toHaveLength(1);
   });
 });

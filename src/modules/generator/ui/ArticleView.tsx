@@ -133,6 +133,32 @@ function ArticleBody({ article, coverage }: { article: Article; coverage: Covera
       <header class="ff-article__hero">
         {article.title && <h3 class="ff-article__title">{heading(article.title)}</h3>}
         {article.lead && <p class="ff-article__lead">{body(article.lead)}</p>}
+        {article.columnsHeading && (
+          <h4 class="ff-article__heading">{heading(article.columnsHeading)}</h4>
+        )}
+        {article.columns.length > 0 && (
+          <div class="ff-article__columns">
+            {article.columns.map((paragraph, index) => (
+              <p key={index}>
+                <Runs runs={paragraph} coverage={coverage} />
+              </p>
+            ))}
+          </div>
+        )}
+        {article.quote.text && (
+          <figure class="ff-article__quote">
+            <blockquote>{body(article.quote.text)}</blockquote>
+          </figure>
+        )}
+        {article.list.length > 0 && (
+          <ul>
+            {article.list.map((item, index) => (
+              <li key={index}>
+                <Runs runs={item} coverage={coverage} />
+              </li>
+            ))}
+          </ul>
+        )}
       </header>
     );
   }
@@ -269,7 +295,7 @@ export function ArticleView({
   const [notInstalled, setNotInstalled] = useState<string[]>([]);
   useEffect(() => {
     if (!site) return;
-    setArticleId('site');
+    if (site.meaningful) setArticleId('site');
     if (site.size) setSize(Math.min(32, Math.max(12, Math.round(site.size))));
     if (site.lineHeight)
       setLineHeight(Math.min(2.4, Math.max(1, Math.round(site.lineHeight * 20) / 20)));
@@ -292,8 +318,8 @@ export function ArticleView({
         ? BUILT_IN[articleId]
         : (loaded[articleId] ?? BUILT_IN.en);
   const article =
-    articleId === 'site' && site
-      ? siteArticle({ heading: site.heading, body: site.body }, t.article_site(), locale)
+    articleId === 'site' && site?.meaningful
+      ? siteArticle(site.blocks, t.article_site(), locale)
       : (shown ?? BUILT_IN.en);
 
   const families = useMemo(() => [...new Set(items.map((item) => item.family))], [items]);
@@ -783,7 +809,7 @@ export function ArticleView({
         label={t.article_sample_label()}
         value={articleId}
         options={[
-          ...(site ? [{ value: 'site', label: t.article_site() }] : []),
+          ...(site?.meaningful ? [{ value: 'site', label: t.article_site() }] : []),
           ...ARTICLE_LANGUAGES.map(([id, label]) => ({ value: id, label })),
         ]}
         onChange={(value) => setArticleId(value as ArticleKey)}
@@ -791,9 +817,16 @@ export function ArticleView({
     </fieldset>
   );
 
+  const fewText = site && !site.meaningful && (
+    <p class="ff-muted" role="status">
+      {t.import_few_text({ origin: site.origin })}
+    </p>
+  );
+
   if (empty) {
     return (
       <section class="ff-article-view" aria-label={t.article_heading()}>
+        {fewText}
         <IntroGuide locale={locale} />
         <p class="ff-article-view__hint">{t.article_empty_hint()}</p>
         <div class="ff-article-view__controls">{contentGroup}</div>
@@ -811,6 +844,7 @@ export function ArticleView({
 
   return (
     <section class="ff-article-view" aria-label={t.article_heading()} ref={view}>
+      {fewText}
       <div class="ff-article-probe" ref={probe} aria-hidden="true" {...{ inert: true }}>
         {(['web', 'fallback', 'plain'] as const).map((kind) => (
           <article

@@ -57,6 +57,7 @@ import {
   takePending,
 } from '@/modules/site-import';
 import type { ShiftReport, ToolHost } from '@/modules/webmcp';
+import { siteIsMeaningful } from '../lib/articles';
 import { autoFit } from '../lib/auto-fit';
 import { fallbackRatio, webRatio } from '../lib/calibration';
 import { displayName, fitLanguage, isNoCoverage, LOW_COVERAGE } from '../lib/compute';
@@ -215,8 +216,8 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
     const heading = value.used.find((item) => ['h1', 'h2', 'h3'].includes(item.role));
     setSite({
       origin: value.origin,
-      heading: value.samples.find((item) => item.role === 'heading')?.text,
-      body: value.samples.find((item) => item.role === 'body')?.text,
+      blocks: value.samples,
+      meaningful: siteIsMeaningful(value.samples),
       size: body?.size,
       lineHeight: body?.lineHeight,
       headingStack: heading?.family,

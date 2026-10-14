@@ -177,3 +177,25 @@ describe('parseClipboardImport', () => {
     expect(parseClipboardImport(JSON.stringify({ v: 1, faces: [{ family: 'A' }] }))).toBeNull();
   });
 });
+
+describe('sample blocks', () => {
+  it('keeps structural roles and bounds the total text', () => {
+    const roles = ['heading', 'subheading', 'body', 'quote', 'item'];
+    const result = sanitizeImport(
+      { v: 1, samples: roles.map((role) => ({ role, text: 'word' })) },
+      'https://example.com',
+      false,
+    );
+    expect(result?.samples.map((item) => item.role)).toEqual(roles);
+    const many = sanitizeImport(
+      {
+        v: 1,
+        samples: Array.from({ length: 40 }, () => ({ role: 'body', text: 'y'.repeat(1200) })),
+      },
+      'https://example.com',
+      false,
+    );
+    const total = many?.samples.reduce((sum, item) => sum + item.text.length, 0) ?? 0;
+    expect(total).toBeLessThanOrEqual(12_000);
+  });
+});

@@ -4,7 +4,8 @@ export const MAX_FILE_BYTES = 10 * 1024 * 1024;
 export const MAX_TOTAL_BYTES = 30 * 1024 * 1024;
 export const MAX_FACES = 64;
 export const MAX_USED = 16;
-export const MAX_SAMPLES = 8;
+export const MAX_SAMPLES = 40;
+export const MAX_SAMPLE_CHARS = 12_000;
 export const MAX_TEXT = 1200;
 export const MAX_URL = 2000;
 export const MAX_METADATA_BYTES = 200_000;
@@ -27,8 +28,11 @@ export interface ImportedUse {
   weight: number;
 }
 
+export const SAMPLE_ROLES = ['heading', 'subheading', 'body', 'quote', 'item'] as const;
+export type SampleRole = (typeof SAMPLE_ROLES)[number];
+
 export interface ImportedSample {
-  role: 'heading' | 'body';
+  role: SampleRole;
   text: string;
 }
 
@@ -140,10 +144,13 @@ function used(raw: unknown): ImportedUse[] {
 function samples(raw: unknown): ImportedSample[] {
   if (!Array.isArray(raw)) return [];
   const result: ImportedSample[] = [];
+  let total = 0;
   for (const item of raw.slice(0, MAX_SAMPLES)) {
-    if (!isRecord(item) || (item.role !== 'heading' && item.role !== 'body')) continue;
+    if (!isRecord(item) || !SAMPLE_ROLES.includes(item.role as SampleRole)) continue;
     const text = cleanText(item.text, MAX_TEXT);
-    if (text) result.push({ role: item.role, text });
+    if (!text || total + text.length > MAX_SAMPLE_CHARS) continue;
+    total += text.length;
+    result.push({ role: item.role as SampleRole, text });
   }
   return result;
 }

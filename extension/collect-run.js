@@ -96,13 +96,27 @@ async function fontstayCollect(win, doc, options = {}) {
   }
 
   const samples = [];
-  const heading = doc.querySelector('h1') || doc.querySelector('h2');
-  if (heading?.innerText) samples.push({ role: 'heading', text: heading.innerText.slice(0, 1200) });
-  const paragraphs = Array.from(doc.querySelectorAll('main p, article p, p')).slice(0, 12);
-  const longest = paragraphs
-    .map((element) => element.innerText || '')
-    .sort((a, b) => b.length - a.length)[0];
-  if (longest && longest.length >= 40) samples.push({ role: 'body', text: longest.slice(0, 1200) });
+  const SAMPLE_ROLES = {
+    h1: 'heading',
+    h2: 'subheading',
+    h3: 'subheading',
+    p: 'body',
+    li: 'item',
+    blockquote: 'quote',
+  };
+  const root = doc.querySelector('main, article, [role="main"]') || doc.body;
+  let chars = 0;
+  for (const element of root.querySelectorAll('h1,h2,h3,p,li,blockquote')) {
+    if (samples.length >= 40 || chars >= 9000) break;
+    const tag = element.tagName.toLowerCase();
+    if (element.closest('nav,header,footer,aside,form,[hidden],[aria-hidden="true"]')) continue;
+    if (tag === 'p' && element.closest('blockquote')) continue;
+    if (element.getClientRects().length === 0) continue;
+    const text = (element.innerText || '').replace(/\s+/g, ' ').trim().slice(0, 600);
+    if (text.length < (tag === 'li' || tag[0] === 'h' ? 3 : 25)) continue;
+    samples.push({ role: SAMPLE_ROLES[tag], text });
+    chars += text.length;
+  }
 
   const families = new Set(
     used.flatMap((item) => item.family.split(',').map((name) => unquote(name).toLowerCase())),

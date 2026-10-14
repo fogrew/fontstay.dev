@@ -511,5 +511,6 @@
   "intro_step_tuning_text": "Check the fallback chosen for each system or adjust the values by hand.",
   "intro_step_results": "4. Take the result",
   "intro_step_results_text": "Copy the CSS or export it for your framework, and see how much the shift dropped.",
-  "intro_open": "Open"
+  "intro_open": "Open",
+  "import_few_text": "{origin} has too little text to use as a preview article, so the built-in article stays. The fonts and sizes were still imported."
 }
