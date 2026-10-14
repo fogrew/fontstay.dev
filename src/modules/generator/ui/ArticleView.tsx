@@ -5,6 +5,8 @@ import { Icon, Select } from '@/common/ui';
 import { measureShift, type WidthShift } from '../lib/article-shift';
 import { ARTICLE_IDS, ARTICLES, type Article, type ArticleId, type Run } from '../lib/articles';
 import { buildCss } from '../lib/css';
+import { drawGlyphBoxes } from '../lib/glyph-boxes';
+import { GUIDES, guideImage, guideOffsets } from '../lib/guides';
 import { isInstalledOnDevice } from '../lib/installed';
 import { codePointLabel, textRuns } from '../lib/missing';
 import { slugOf } from '../lib/overview';
@@ -14,6 +16,31 @@ import { DeviceShift } from './DeviceShift';
 type Mode = 'overlay' | 'side' | 'web' | 'fallback' | 'plain';
 type Wrap = 'wrap' | 'balance' | 'pretty' | 'stable' | 'nowrap';
 type Substitute = 'sans-serif' | 'serif' | 'monospace' | 'system-ui';
+type Layer = 'web' | 'fallback';
+type Render = 'fill' | 'outline';
+type LayerColor = 'text' | 'green' | 'red' | 'blue' | 'amber';
+
+interface LayerStyle {
+  render: Render;
+  color: LayerColor;
+  width: number;
+  opacity: number;
+}
+
+const LAYERS: readonly Layer[] = ['web', 'fallback'];
+const RENDERS: readonly Render[] = ['fill', 'outline'];
+const COLORS: readonly LayerColor[] = ['text', 'green', 'red', 'blue', 'amber'];
+const COLOR_TOKENS: Record<LayerColor, string> = {
+  text: '--ff-text',
+  green: '--ff-accent',
+  red: '--ff-error',
+  blue: '--ff-focus',
+  amber: '--ff-rating-needs',
+};
+const DEFAULT_LAYERS: Record<Layer, LayerStyle> = {
+  web: { render: 'fill', color: 'text', width: 1, opacity: 100 },
+  fallback: { render: 'outline', color: 'green', width: 1, opacity: 100 },
+};
 
 const MODES: readonly Mode[] = ['overlay', 'side', 'web', 'fallback', 'plain'];
 const WRAPS: readonly Wrap[] = ['wrap', 'balance', 'pretty', 'stable', 'nowrap'];
@@ -180,6 +207,12 @@ export function ArticleView({
   const [substitute, setSubstitute] = useState<Substitute>('sans-serif');
   const [headingPick, setHeadingPick] = useState<string>();
   const [bodyPick, setBodyPick] = useState<string>();
+  const [layers, setLayers] = useState(DEFAULT_LAYERS);
+  const [stacked, setStacked] = useState(false);
+  const [guides, setGuides] = useState(false);
+  const [boxes, setBoxes] = useState(false);
+  const [guideImages, setGuideImages] = useState<Partial<Record<Layer, string>>>({});
+  const view = useRef<HTMLElement>(null);
   const [hydrated, setHydrated] = useState(false);
   useEffect(() => setHydrated(true), []);
   const [loadFailed, setLoadFailed] = useState(false);
@@ -315,13 +348,81 @@ export function ArticleView({
     if (kind === 'fallback') return `"${key} Fallback", ${substitute}`;
     return categoryOf(family);
   };
-  const pageStyle = (kind: 'web' | 'fallback' | 'plain') => ({
-    '--ff-article-heading': stack(headingFamily, kind),
-    '--ff-article-body': stack(bodyFamily, kind),
-    '--ff-article-size': `${size}px`,
-    '--ff-article-line': String(lineHeight),
-    textWrap: wrap,
-  });
+  const pageStyle = (kind: 'web' | 'fallback' | 'plain') => {
+    const layer = kind === 'plain' ? undefined : layers[kind];
+    const styled = layer && mode === 'overlay';
+    const image = kind === 'plain' ? undefined : guideImages[kind];
+    return {
+      '--ff-article-heading': stack(headingFamily, kind),
+      '--ff-article-body': stack(bodyFamily, kind),
+      '--ff-article-size': `${size}px`,
+      '--ff-article-line': String(lineHeight),
+      ...(kind !== 'plain' && layer
+        ? {
+            '--ff-layer-color': `var(${COLOR_TOKENS[styled ? layer.color : DEFAULT_LAYERS[kind].color]})`,
+          }
+        : {}),
+      ...(styled ? { '--ff-layer-stroke': `${layer.width}px`, opacity: layer.opacity / 100 } : {}),
+      ...(image && guides && mode === 'side' ? { '--ff-guides': image } : {}),
+      textWrap: wrap,
+    };
+  };
+  useEffect(() => {
+    if (!guides || mode !== 'side' || !fontsReady || !bodyFamily) return;
+    let cancelled = false;
+    void (async () => {
+      const next: Partial<Record<Layer, string>> = {};
+      for (const layer of LAYERS) {
+        const family = stack(bodyFamily, layer);
+        await document.fonts.load(`${size}px ${family}`).catch(() => []);
+        const offsets = guideOffsets(family, size, lineHeight);
+        if (offsets) next[layer] = guideImage(offsets);
+      }
+      if (!cancelled) setGuideImages(next);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [guides, mode, fontsReady, fontFaces, size, lineHeight, bodyFamily, substitute]);
+
+  useEffect(() => {
+    const root = view.current;
+    if (!boxes || !root || !fontsReady || (mode !== 'overlay' && mode !== 'side')) return;
+    const pages = [...root.querySelectorAll<HTMLElement>('.ff-article:not([data-probe])')];
+    const draw = () => {
+      for (const element of pages) {
+        const canvas = element.querySelector<HTMLCanvasElement>('canvas.ff-article__boxes');
+        if (canvas) drawGlyphBoxes(element, canvas);
+      }
+    };
+    let frame = 0;
+    const schedule = () => {
+      cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(draw);
+    };
+    void document.fonts.ready.then(schedule);
+    const observer = new ResizeObserver(schedule);
+    for (const element of pages) observer.observe(element);
+    return () => {
+      cancelAnimationFrame(frame);
+      observer.disconnect();
+    };
+  }, [
+    boxes,
+    mode,
+    stacked,
+    layers,
+    fontsReady,
+    fontFaces,
+    size,
+    lineHeight,
+    wrap,
+    articleId,
+    headingFamily,
+    bodyFamily,
+    substitute,
+  ]);
+
   const modeLabel = (value: Mode) => {
     if (value === 'overlay') return t.mode_overlay();
     if (value === 'side') return t.mode_side();
@@ -362,10 +463,131 @@ export function ArticleView({
       lang={article.lang}
       dir={article.dir}
       aria-hidden={ghost ? 'true' : undefined}
+      data-render={mode === 'overlay' && kind !== 'plain' ? layers[kind].render : undefined}
+      data-guides={guides && mode === 'side' ? '' : undefined}
       style={pageStyle(kind)}
     >
       <ArticleBody article={article} coverage={coverageFor(ghost || kind !== 'web')} />
+      {boxes && kind !== 'plain' && (mode === 'overlay' || mode === 'side') && (
+        // biome-ignore lint/a11y/noAriaHiddenOnFocusable: a decorative canvas without fallback content
+        <canvas class="ff-article__boxes" aria-hidden="true" />
+      )}
     </article>
+  );
+  const colorLabel = (value: LayerColor) => {
+    if (value === 'text') return t.layer_color_text();
+    if (value === 'green') return t.layer_color_green();
+    if (value === 'red') return t.layer_color_red();
+    return value === 'blue' ? t.layer_color_blue() : t.layer_color_amber();
+  };
+  const guideLabel = (id: (typeof GUIDES)[number]) => {
+    if (id === 'ascender') return t.guide_ascender();
+    if (id === 'cap') return t.guide_cap();
+    if (id === 'x') return t.guide_x();
+    return id === 'baseline' ? t.guide_baseline() : t.guide_descender();
+  };
+  const setLayer = (layer: Layer, change: Partial<LayerStyle>) =>
+    setLayers((all) => ({ ...all, [layer]: { ...all[layer], ...change } }));
+  const layerControls = (
+    <div class="ff-article-view__controls">
+      <fieldset class="ff-article-view__group">
+        <legend>{t.article_group_layers()}</legend>
+        {mode === 'side' && (
+          <>
+            <Select
+              compact
+              label={t.side_arrangement()}
+              value={stacked ? 'stacked' : 'horizontal'}
+              options={[
+                { value: 'horizontal', label: t.side_horizontal() },
+                { value: 'stacked', label: t.side_stacked() },
+              ]}
+              onChange={(value) => setStacked(value === 'stacked')}
+            />
+            <label>
+              <input
+                type="checkbox"
+                checked={guides}
+                onChange={(event) => setGuides(event.currentTarget.checked)}
+              />{' '}
+              {t.guides_enable()}
+            </label>
+          </>
+        )}
+        <label>
+          <input
+            type="checkbox"
+            checked={boxes}
+            onChange={(event) => setBoxes(event.currentTarget.checked)}
+          />{' '}
+          {t.boxes_enable()}
+        </label>
+      </fieldset>
+      {mode === 'overlay' &&
+        LAYERS.map((layer) => (
+          <fieldset key={layer} class="ff-article-view__group">
+            <legend>{layer === 'web' ? t.preview_web_label() : t.preview_fallback_label()}</legend>
+            <Select
+              compact
+              label={t.layer_render()}
+              value={layers[layer].render}
+              options={RENDERS.map((value) => ({
+                value,
+                label: value === 'fill' ? t.layer_render_fill() : t.layer_render_outline(),
+              }))}
+              onChange={(value) => setLayer(layer, { render: value as Render })}
+            />
+            <Select
+              compact
+              label={t.layer_color()}
+              value={layers[layer].color}
+              options={COLORS.map((value) => ({ value, label: colorLabel(value) }))}
+              onChange={(value) => setLayer(layer, { color: value as LayerColor })}
+            />
+            {layers[layer].render === 'outline' && (
+              <div class="ff-field ff-preview__slider">
+                <div class="ff-preview__label">
+                  <label for={`ff-layer-${layer}-width`}>{t.layer_width()}</label>
+                  <output for={`ff-layer-${layer}-width`}>{layers[layer].width}px</output>
+                </div>
+                <input
+                  id={`ff-layer-${layer}-width`}
+                  type="range"
+                  min={0.5}
+                  max={4}
+                  step={0.5}
+                  value={layers[layer].width}
+                  onInput={(event) => setLayer(layer, { width: event.currentTarget.valueAsNumber })}
+                />
+              </div>
+            )}
+            <div class="ff-field ff-preview__slider">
+              <div class="ff-preview__label">
+                <label for={`ff-layer-${layer}-opacity`}>{t.layer_opacity()}</label>
+                <output for={`ff-layer-${layer}-opacity`}>{layers[layer].opacity}%</output>
+              </div>
+              <input
+                id={`ff-layer-${layer}-opacity`}
+                type="range"
+                min={0}
+                max={100}
+                step={5}
+                value={layers[layer].opacity}
+                onInput={(event) => setLayer(layer, { opacity: event.currentTarget.valueAsNumber })}
+              />
+            </div>
+          </fieldset>
+        ))}
+      {mode === 'side' && guides && (
+        <ul class="ff-article-view__guides ff-muted" aria-label={t.guides_enable()}>
+          {GUIDES.map((id) => (
+            <li key={id} data-guide={id}>
+              {guideLabel(id)}
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
   );
   const familyOptions = families.map((family) => ({ value: family, label: family }));
   const contentGroup = (
@@ -435,7 +657,7 @@ export function ArticleView({
   }
 
   return (
-    <section class="ff-article-view" aria-label={t.article_heading()}>
+    <section class="ff-article-view" aria-label={t.article_heading()} ref={view}>
       <div class="ff-article-probe" ref={probe} aria-hidden="true" {...{ inert: true }}>
         {(['web', 'fallback'] as const).map((kind) => (
           <article
@@ -502,6 +724,7 @@ export function ArticleView({
         <DeviceShift locale={locale} results={shiftResults} />
         {fitting && <p class="ff-muted ff-article-view__fitting">{t.fit_running()}</p>}
       </div>
+      {(mode === 'overlay' || mode === 'side') && layerControls}
       {loadFailed && (
         <p class="ff-error" role="alert">
           {t.preview_load_failed()}
@@ -521,7 +744,7 @@ export function ArticleView({
         </div>
       )}
       {mode === 'side' && (
-        <div class="ff-article-view__side">
+        <div class="ff-article-view__side" data-stacked={stacked ? '' : undefined}>
           <figure>
             <figcaption>{t.preview_web_label()}</figcaption>
             {page('web')}

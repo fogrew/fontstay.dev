@@ -479,6 +479,11 @@
   cursor: pointer;
 }
 .ff-article-view {
+  --ff-guide-ascender: var(--ff-rating-needs);
+  --ff-guide-cap: var(--ff-focus);
+  --ff-guide-x: var(--ff-accent);
+  --ff-guide-baseline: var(--ff-error);
+  --ff-guide-descender: var(--ff-muted);
   display: grid;
   gap: var(--ff-space-3);
   margin-block-start: var(--ff-space-3);
@@ -508,6 +513,9 @@
   gap: var(--ff-space-3);
   grid-template-columns: repeat(auto-fit, minmax(24rem, 1fr));
 }
+.ff-article-view__side[data-stacked] {
+  grid-template-columns: minmax(0, 1fr);
+}
 .ff-article-view__side figure {
   min-inline-size: 0;
   margin: 0;
@@ -521,6 +529,9 @@
   --ff-article-body: system-ui, sans-serif;
   --ff-article-size: 18px;
   --ff-article-line: 1.5;
+  --ff-layer-color: var(--ff-text);
+  --ff-layer-stroke: 1px;
+  position: relative;
   box-sizing: border-box;
   display: grid;
   gap: calc(var(--ff-article-size) * 1.5);
@@ -537,11 +548,59 @@
 .ff-article-view .ff-article--ghost {
   border-color: transparent;
   background: transparent;
-  color: transparent;
   pointer-events: none;
-  -webkit-text-stroke: 1px var(--ff-accent);
-  text-decoration: underline dotted var(--ff-accent) 2px;
+  text-decoration: underline dotted var(--ff-layer-color) 2px;
   text-underline-offset: 0.15em;
+}
+.ff-article-view .ff-article[data-render="fill"] {
+  color: var(--ff-layer-color);
+}
+.ff-article-view .ff-article[data-render="outline"] {
+  color: transparent;
+  -webkit-text-stroke: var(--ff-layer-stroke) var(--ff-layer-color);
+}
+.ff-article-view .ff-article[data-guides] :is(p, li) {
+  background-image: var(--ff-guides, none);
+  background-size: 100% calc(var(--ff-article-size) * var(--ff-article-line));
+}
+.ff-article__boxes {
+  position: absolute;
+  inset-block-start: -1px;
+  inset-inline-start: -1px;
+  pointer-events: none;
+}
+.ff-article-view__guides {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--ff-space-1) var(--ff-space-3);
+  align-self: end;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.ff-article-view__guides li::before {
+  content: "";
+  display: inline-block;
+  inline-size: 1.5rem;
+  block-size: 3px;
+  margin-inline-end: var(--ff-space-1);
+  vertical-align: middle;
+  background: var(--ff-guide);
+}
+.ff-article-view__guides li[data-guide="ascender"] {
+  --ff-guide: var(--ff-guide-ascender);
+}
+.ff-article-view__guides li[data-guide="cap"] {
+  --ff-guide: var(--ff-guide-cap);
+}
+.ff-article-view__guides li[data-guide="x"] {
+  --ff-guide: var(--ff-guide-x);
+}
+.ff-article-view__guides li[data-guide="baseline"] {
+  --ff-guide: var(--ff-guide-baseline);
+}
+.ff-article-view__guides li[data-guide="descender"] {
+  --ff-guide: var(--ff-guide-descender);
 }
 .ff-article-view .ff-article p,
 .ff-article-view .ff-article ol,

@@ -184,6 +184,50 @@ test('the article switches between overlay, side by side, web font and fallback 
   await expect(view.locator('.ff-article:not([data-probe])')).toHaveCSS('line-height', '48px');
 });
 
+test('the layer tools draw, fade and compare the web font and the fallback', async ({ page }) => {
+  await page.goto('/en/');
+  await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
+  await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(sourceSans);
+  await closePanels(page);
+  const view = page.getByRole('region', { name: 'Article' });
+  const layer = (name: string) => view.getByRole('group', { name, exact: true });
+  const ghost = view.locator('.ff-article--ghost');
+  await expect(ghost).toHaveAttribute('data-render', 'outline');
+
+  await choose(layer('Adjusted fallback').getByLabel('Drawing'), 'fill');
+  await expect(ghost).toHaveAttribute('data-render', 'fill');
+  await choose(layer('Adjusted fallback').getByLabel('Drawing'), 'outline');
+  await layer('Adjusted fallback').getByLabel('Opacity').fill('40');
+  await expect(ghost).toHaveCSS('opacity', '0.4');
+  await layer('Adjusted fallback').getByLabel('Outline width').fill('3');
+  await expect(ghost).toHaveCSS('--ff-layer-stroke', '3px');
+  await choose(layer('Adjusted fallback').getByLabel('Colour'), 'red');
+  await expect(ghost).toHaveCSS('-webkit-text-stroke-color', /^rgb/);
+
+  await view.getByRole('checkbox', { name: 'Glyph boxes' }).check();
+  await expect(view.locator('.ff-article:not([data-probe]) canvas.ff-article__boxes')).toHaveCount(
+    2,
+  );
+
+  await view.getByRole('button', { name: 'Side by side', exact: true }).click();
+  const side = view.locator('.ff-article-view__side');
+  const rows = () =>
+    side.evaluate(
+      (node) => new Set([...node.children].map((child) => child.getBoundingClientRect().top)).size,
+    );
+  await expect.poll(rows).toBe(1);
+  await choose(view.getByLabel('Arrangement'), 'stacked');
+  await expect.poll(rows).toBe(2);
+  await view.getByRole('checkbox', { name: 'Guide lines' }).check();
+  await expect(view.getByRole('list', { name: 'Guide lines' }).getByRole('listitem')).toHaveCount(
+    5,
+  );
+  const body = view.locator('.ff-article:not([data-probe])').first();
+  await expect
+    .poll(() => body.evaluate((node) => node.style.getPropertyValue('--ff-guides')))
+    .toContain('linear-gradient');
+});
+
 test('the text wrapping and sample text controls change the article', async ({ page }) => {
   await page.goto('/en/');
   await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));

@@ -153,15 +153,14 @@ test('copy uses the clipboard and reports permission failures accessibly', async
   );
 });
 
-test('native select and disclosure work with the keyboard and text stays escaped', async ({
-  page,
-}) => {
+test('select and disclosure work with the keyboard and text stays escaped', async ({ page }) => {
   await openFixture(page);
   const select = page.getByRole('combobox', { name: 'Fallback font' });
   await select.focus();
   await page.keyboard.press('ArrowDown');
+  await page.keyboard.press('ArrowDown');
   await page.keyboard.press('Enter');
-  await expect(select).toHaveValue('helvetica');
+  await expect(select).toHaveAttribute('data-value', 'helvetica');
   const summary = page.getByText('How it works', { exact: true });
   await summary.focus();
   await page.keyboard.press('Enter');
