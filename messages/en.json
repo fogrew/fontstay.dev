@@ -466,7 +466,7 @@
   "import_bookmarklet_copied": "Copied. Create a bookmark and paste the code as its address.",
   "import_bookmarklet_copy_failed": "Could not copy. Allow clipboard access and try again.",
   "import_bookmarklet_drag": "Drag this link to the bookmarks bar instead of clicking it.",
-  "import_bookmarklet_alert_copied": "The data was copied. Open fontstay.dev, choose Import from a website and paste it.",
+  "import_bookmarklet_alert_copied": "The data was copied to the clipboard: font names and sizes, the page title and a text sample. Open fontstay.dev, choose Import from a website and paste it.",
   "import_bookmarklet_alert_failed": "Could not copy the data. Allow clipboard access and try again.",
   "import_extension_label": "Browser extension",
   "import_extension_note": "Load the extension folder in developer mode. It asks for no access to websites until you click its button.",

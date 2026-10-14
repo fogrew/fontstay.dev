@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'preact/hooks';
 import { type Locale, messagesFor } from '@/common/i18n';
 import { Button, Disclosure } from '@/common/ui';
-import type { SiteImport } from '../lib/payload';
+import type { SiteImport } from '@/modules/import-receiver';
 
 const EXTENSION_URL = 'https://github.com/fogrew/fontstay.dev/tree/develop/extension';
 
@@ -40,7 +40,7 @@ export function SiteImportPanel({
     }
   };
   const read = async () => {
-    const { parseClipboardImport } = await import('../lib/payload');
+    const { parseClipboardImport } = await import('../lib/pending');
     const value = parseClipboardImport(pasted);
     if (value) {
       setMessage('');

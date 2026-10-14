@@ -109,6 +109,24 @@ describe('startReceiver', () => {
     expect(onImport).not.toHaveBeenCalled();
   });
 
+  it('keeps announcing until it stops and then stops announcing', () => {
+    vi.useFakeTimers();
+    const { win, posted, opener, send } = setup();
+    startReceiver(win, {
+      token: TOKEN,
+      onImport: vi.fn(),
+      onFailure: vi.fn(),
+      announceEveryMs: 100,
+    });
+    vi.advanceTimersByTime(350);
+    expect(posted.length).toBeGreaterThanOrEqual(4);
+    send({ data: message(), source: opener, origin: 'https://a.example' });
+    const count = posted.length;
+    vi.advanceTimersByTime(1000);
+    expect(posted).toHaveLength(count);
+    vi.useRealTimers();
+  });
+
   it('fails after the timeout', () => {
     vi.useFakeTimers();
     const { win } = setup();

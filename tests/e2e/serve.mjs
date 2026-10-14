@@ -32,7 +32,8 @@ function parseHeaders(source) {
     if (line.trim() === '' || line.startsWith('#')) continue;
     if (!/^\s/.test(line)) {
       const escaped = line.trim().replace(/[.+?^${}()|[\]\\]/g, '\\$&');
-      rules.push({ pattern: new RegExp(`^${escaped.replaceAll('*', '.*')}$`), headers: [] });
+      const pattern = escaped.replaceAll('*', '.*').replace(/:[A-Za-z]\w*/g, '[^/]+');
+      rules.push({ pattern: new RegExp(`^${pattern}$`), headers: [] });
     } else {
       const detach = line.trim().startsWith('!');
       const separator = line.indexOf(':');

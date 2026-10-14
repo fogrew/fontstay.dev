@@ -1,5 +1,5 @@
+import { DATA_TYPE, importPath, PROTOCOL_VERSION, READY_TYPE } from '@/modules/import-receiver';
 import collector from '../collector/collect.js?raw';
-import { DATA_TYPE, importPath, PROTOCOL_VERSION, READY_TYPE } from './protocol';
 
 const compact = (source: string) =>
   source
@@ -44,14 +44,14 @@ export interface BookmarkletOptions {
 }
 
 export function bookmarkletSource(options: BookmarkletOptions): string {
-  const wrapper = WRAPPER.replace('__TARGET__', JSON.stringify(options.origin))
-    .replace('__PATH__', JSON.stringify(importPath(options.locale)))
-    .replace('__COPIED__', JSON.stringify(options.copied))
-    .replace('__FAILED__', JSON.stringify(options.failed));
+  const wrapper = WRAPPER.replace('__TARGET__', () => JSON.stringify(options.origin))
+    .replace('__PATH__', () => JSON.stringify(importPath(options.locale)))
+    .replace('__COPIED__', () => JSON.stringify(options.copied))
+    .replace('__FAILED__', () => JSON.stringify(options.failed));
   const body = collector.replace(/^export /m, '');
   return compact(`(() => { ${body}\n${wrapper} })();`);
 }
 
 export function bookmarkletHref(options: BookmarkletOptions): string {
-  return `javascript:${encodeURIComponent(bookmarkletSource(options))}`;
+  return `javascript:${encodeURI(bookmarkletSource(options)).replace(/#/g, '%23')}`;
 }

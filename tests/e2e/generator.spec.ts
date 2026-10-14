@@ -1039,7 +1039,12 @@ test('the bookmarklet hands the fonts and text of a page to the generator after 
   await expect(confirm).toContainText('The browser confirmed where the data came from.');
   await confirm.getByRole('button', { name: 'Import' }).click();
   await expect(generator.getByRole('button', { name: /^Remove: font\.woff2/ })).toBeVisible();
-  await expect(generator.getByText('Hello from the demo site')).toBeVisible();
+  await expect(
+    generator
+      .locator('.ff-article:not([data-probe])')
+      .getByText('Hello from the demo site')
+      .first(),
+  ).toBeVisible();
   expect(generator.url()).not.toContain('#');
 });
 

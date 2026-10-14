@@ -38,6 +38,7 @@ import {
   MAX_FONT_BYTES,
 } from '@/modules/font-metrics';
 import { FontsourcePicker, GoogleFontsPicker } from '@/modules/font-sources';
+import type { SiteImport } from '@/modules/import-receiver';
 import { LayoutShiftPanel, type PanelInput, ratingOf, worstShift } from '@/modules/layout-shift';
 import { type Category, loadVariantMetrics, type OsId, osFontsDataset } from '@/modules/os-fonts';
 import { cssStack, PRESETS, type PresetId, presetName, presetPicks } from '@/modules/presets';
@@ -45,7 +46,6 @@ import {
   discardPending,
   ImportConfirm,
   PENDING_HASH,
-  type SiteImport,
   SiteImportPanel,
   takePending,
 } from '@/modules/site-import';

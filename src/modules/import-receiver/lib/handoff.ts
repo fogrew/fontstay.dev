@@ -23,9 +23,11 @@ async function run<T>(mode: IDBTransactionMode, work: (store: IDBObjectStore) =>
   const db = await open();
   try {
     return await new Promise<T>((resolve, reject) => {
-      const request = work(db.transaction(STORE, mode).objectStore(STORE));
-      request.onsuccess = () => resolve(request.result);
-      request.onerror = () => reject(request.error);
+      const transaction = db.transaction(STORE, mode);
+      const request = work(transaction.objectStore(STORE));
+      transaction.oncomplete = () => resolve(request.result);
+      transaction.onerror = () => reject(transaction.error);
+      transaction.onabort = () => reject(transaction.error);
     });
   } finally {
     db.close();

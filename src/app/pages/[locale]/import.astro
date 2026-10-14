@@ -19,12 +19,12 @@ const t = messagesFor(locale);
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
   </head>
   <body>
-    <main class="ff-page" data-import data-locale={locale} data-failed={t.import_nothing()}>
+    <main class="ff-page" data-import data-after={`/${locale}/#import`} data-failed={t.import_nothing()}>
       <p role="status" data-status>{t.import_receiving()}</p>
       <p hidden data-home><a href={localizeHref('/', { locale })}>{t.import_back()}</a></p>
     </main>
     <script>
-      import { runReceivePage } from '@/modules/site-import';
+      import { runReceivePage } from '@/modules/import-receiver';
 
       const root = document.querySelector<HTMLElement>('[data-import]');
       if (root) runReceivePage(root);

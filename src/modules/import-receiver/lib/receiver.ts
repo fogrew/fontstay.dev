@@ -36,7 +36,12 @@ export function startReceiver(win: ReceiverWindow, options: ReceiverOptions): ()
     if (message.token !== options.token) return;
     stop();
     const claimed = fromSelf && typeof message.origin === 'string' ? message.origin : event.origin;
-    const value = sanitizeImport(message.payload, claimed, true);
+    let value: SiteImport | null = null;
+    try {
+      value = sanitizeImport(message.payload, claimed, true);
+    } catch {
+      value = null;
+    }
     if (value) options.onImport(value);
     else options.onFailure();
   };

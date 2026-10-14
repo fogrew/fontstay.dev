@@ -52,14 +52,15 @@ const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' && value !== null && !Array.isArray(value);
 
 const CONTROL = /[\p{Cc}\p{Cf}\p{Zl}\p{Zp}]/gu;
-const KEEP_FORMAT = /^[\u200c\u200d]$/u;
+const KEEP_FORMAT = new Set(String.fromCodePoint(0x200c, 0x200d, 0x200e, 0x200f, 0x61c));
 
 export function cleanText(value: unknown, limit: number): string {
   if (typeof value !== 'string') return '';
   const wellFormed = value.length > limit * 4 ? value.slice(0, limit * 4) : value;
   const stripped = wellFormed
     .toWellFormed()
-    .replace(CONTROL, (char) => (KEEP_FORMAT.test(char) ? char : ' '))
+    .replace(CONTROL, (char) => (KEEP_FORMAT.has(char) ? char : ' '))
+    .replace(/(\p{M}{3})\p{M}+/gu, '$1')
     .replace(/\s+/gu, ' ')
     .trim();
   return [...stripped].slice(0, limit).join('');

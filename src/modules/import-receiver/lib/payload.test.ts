@@ -26,6 +26,11 @@ describe('cleanText', () => {
     expect(cleanText('\ud800 lone', 20)).not.toContain('\ud800');
   });
 
+  it('collapses stacks of combining marks', () => {
+    const marks = String.fromCodePoint(0x301);
+    expect(cleanText(`a${marks.repeat(50)}b`, 100)).toBe(`a${marks.repeat(3)}b`);
+  });
+
   it('rejects non-strings', () => {
     expect(cleanText(42, 10)).toBe('');
     expect(cleanText({ toString: () => 'x' }, 10)).toBe('');

@@ -849,6 +849,7 @@
   resize: vertical;
 }
 .ff-site-import__confirm {
+  overflow: hidden;
   display: grid;
   gap: var(--ff-space-2);
   padding: var(--ff-space-3);

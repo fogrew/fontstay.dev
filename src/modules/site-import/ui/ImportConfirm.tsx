@@ -1,6 +1,14 @@
 import { type Locale, messagesFor } from '@/common/i18n';
 import { Button } from '@/common/ui';
-import type { SiteImport } from '../lib/payload';
+import type { SiteImport } from '@/modules/import-receiver';
+
+const hostOf = (url: string | undefined) => {
+  try {
+    return new URL(url ?? '').hostname;
+  } catch {
+    return '';
+  }
+};
 
 export function ImportConfirm({
   locale,
@@ -37,7 +45,7 @@ export function ImportConfirm({
               <li key={`${face.family}-${face.weight}-${face.style}-${face.url}`}>
                 {face.family} {face.weight} {face.style}{' '}
                 <a href={face.url} rel="noopener noreferrer" target="_blank">
-                  {t.cssimport_download()}
+                  {t.cssimport_download()} ({hostOf(face.url)})
                 </a>
               </li>
             ))}

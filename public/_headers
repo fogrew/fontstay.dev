@@ -6,16 +6,10 @@
   Cross-Origin-Resource-Policy: same-origin
   Content-Security-Policy: frame-ancestors 'self'; object-src 'none'; base-uri 'none'; form-action 'self'
 
-/en/import
+/:locale/import
   ! Cross-Origin-Opener-Policy
 
-/en/import/*
-  ! Cross-Origin-Opener-Policy
-
-/ru/import
-  ! Cross-Origin-Opener-Policy
-
-/ru/import/*
+/:locale/import/*
   ! Cross-Origin-Opener-Policy
 
 /_astro/*

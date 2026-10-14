@@ -111,31 +111,34 @@ export async function fontstayCollect(win, doc, options = {}) {
     (a, b) =>
       Number(families.has(b.family.toLowerCase())) - Number(families.has(a.family.toLowerCase())),
   );
-  const files = [];
-  const fetched = new Set();
-  let total = 0;
-  for (const face of ordered) {
-    if (files.length >= MAX_FILES) break;
-    if (!face.url || fetched.has(face.url)) continue;
-    fetched.add(face.url);
-    try {
-      const response = await win.fetch(face.url, {
+  const urls = [...new Set(ordered.map((face) => face.url).filter(Boolean))].slice(0, MAX_FILES);
+  const results = await Promise.allSettled(
+    urls.map(async (url) => {
+      const response = await win.fetch(url, {
         credentials: 'omit',
         signal: AbortSignal.timeout(8000),
       });
-      if (!response.ok) continue;
-      const bytes = await response.arrayBuffer();
-      if (
-        bytes.byteLength === 0 ||
-        bytes.byteLength > MAX_FILE ||
-        total + bytes.byteLength > MAX_TOTAL
-      ) {
-        continue;
+      if (!response.ok || Number(response.headers.get('content-length')) > MAX_FILE) {
+        throw new Error('skipped');
       }
-      total += bytes.byteLength;
-      const name = face.url.split('?')[0].split('/').pop() || 'font';
-      files.push(options.base64 ? { name, base64: toBase64(bytes) } : { name, bytes });
-    } catch {}
+      return { url, bytes: await response.arrayBuffer() };
+    }),
+  );
+  const files = [];
+  let total = 0;
+  for (const result of results) {
+    if (result.status !== 'fulfilled') continue;
+    const { url, bytes } = result.value;
+    if (
+      bytes.byteLength === 0 ||
+      bytes.byteLength > MAX_FILE ||
+      total + bytes.byteLength > MAX_TOTAL
+    ) {
+      continue;
+    }
+    total += bytes.byteLength;
+    const name = url.split('?')[0].split('/').pop() || 'font';
+    files.push(options.base64 ? { name, base64: toBase64(bytes) } : { name, bytes });
   }
 
   return {
