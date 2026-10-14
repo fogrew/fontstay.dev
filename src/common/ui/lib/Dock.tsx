@@ -1,6 +1,7 @@
 import type { ComponentChildren } from 'preact';
 import { useEffect, useId, useState } from 'preact/hooks';
 import { loadLayout, parseIds, saveLayout } from './persist';
+import { ScrollShadow } from './ScrollShadow';
 import { transition } from './transition';
 
 export interface DockProps {
@@ -64,7 +65,7 @@ export function Dock({ items, storageKey }: DockProps) {
               data-id={item.id}
               hidden={!open}
             >
-              {item.content}
+              <ScrollShadow class="ff-dock__scroll">{item.content}</ScrollShadow>
             </div>
           </section>
         );

@@ -5,6 +5,7 @@ import { Button } from './Button';
 import type { CodeLanguage, Token } from './highlight';
 import { Icon } from './Icon';
 import { LiveRegion } from './LiveRegion';
+import { ScrollShadow } from './ScrollShadow';
 
 export function CodeBlock({
   locale,
@@ -80,8 +81,7 @@ export function CodeBlock({
           </Button>
         </span>
       </div>
-      {/* biome-ignore lint/a11y/noNoninteractiveTabindex: Scrollable code needs a keyboard focus target. */}
-      <section class="ff-code__body" tabIndex={0} aria-label={label}>
+      <ScrollShadow class="ff-code__body" tabIndex={0} label={label}>
         <pre>
           <code>
             {tokens?.code === code
@@ -105,7 +105,7 @@ export function CodeBlock({
               : code}
           </code>
         </pre>
-      </section>
+      </ScrollShadow>
       {status === 'failed' && (
         <p class="ff-error" role="alert">
           {t.ui_copy_failed()}

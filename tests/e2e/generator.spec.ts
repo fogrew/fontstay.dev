@@ -304,6 +304,28 @@ test('WebMCP tools drive the generator when the browser offers modelContext', as
   await expect(page.getByLabel('Browserslist query')).toHaveValue('chrome 120');
 });
 
+test('a step panel that scrolls shows an edge shadow only on the side with more content', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1280, height: 600 });
+  await page.goto('/en/');
+  await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
+  await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(sourceSans);
+  await openStep(page, 'tuning');
+  const shadow = page.locator('.ff-dock__panel:not([hidden]) .ff-shadow');
+  await expect(shadow).toHaveAttribute('data-bottom', 'true');
+  await expect(shadow).toHaveAttribute('data-top', 'false');
+  await shadow.locator('.ff-shadow__scroll').evaluate((node) => {
+    node.scrollTop = node.scrollHeight;
+  });
+  await expect(shadow).toHaveAttribute('data-top', 'true');
+  await expect(shadow).toHaveAttribute('data-bottom', 'false');
+  await expect(shadow.locator('.ff-shadow__edge[data-edge="top"]')).toHaveCSS(
+    'pointer-events',
+    'none',
+  );
+});
+
 test('the loupe shows the comparison only under the lens', async ({ page }) => {
   await page.goto('/en/');
   await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));

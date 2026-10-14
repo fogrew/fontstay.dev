@@ -1,7 +1,7 @@
 import { type ComponentChildren, Fragment } from 'preact';
 import { useCallback, useMemo, useState } from 'preact/hooks';
 import { type Locale, localizeHref, messagesFor } from '@/common/i18n';
-import { Button, Select } from '@/common/ui';
+import { Button, ScrollShadow, Select } from '@/common/ui';
 import { AudienceEditor, OsIcon } from '@/modules/audience';
 import { osFontsDataset } from '@/modules/os-fonts';
 import {
@@ -140,7 +140,7 @@ export function CatalogTable({ locale }: { locale: Locale }) {
           </li>
         ))}
       </ul>
-      <div class="ff-catalog__scroll">
+      <ScrollShadow class="ff-catalog__scroll">
         <table class="ff-catalog__table">
           <caption class="ff-sr-only">{t.catalog_caption()}</caption>
           <thead>
@@ -246,7 +246,7 @@ export function CatalogTable({ locale }: { locale: Locale }) {
             </tbody>
           ))}
         </table>
-      </div>
+      </ScrollShadow>
     </div>
   );
 }

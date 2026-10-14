@@ -13,5 +13,6 @@ export { Icon, type IconName } from './lib/Icon';
 export { LiveRegion } from './lib/LiveRegion';
 export { Popover, type PopoverProps } from './lib/Popover';
 export { clearLayouts } from './lib/persist';
+export { ScrollShadow, type ScrollShadowProps } from './lib/ScrollShadow';
 export { Select, type SelectProps } from './lib/Select';
 export { Tabs, type TabsProps } from './lib/Tabs';

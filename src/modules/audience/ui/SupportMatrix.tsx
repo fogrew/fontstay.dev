@@ -1,4 +1,5 @@
 import { type Locale, messagesFor } from '@/common/i18n';
+import { ScrollShadow } from '@/common/ui';
 import type { CellState, MatrixGroup } from '../lib/matrix';
 import { BrowserIcon, OsIcon } from './BrandIcon';
 import './audience.css';
@@ -36,8 +37,7 @@ export function SupportMatrix({
   if (groups.length === 0) return <p class="ff-muted">{t.matrix_empty()}</p>;
   return (
     <section class="ff-matrix" aria-label={t.matrix_heading()}>
-      {/* biome-ignore lint/a11y/noNoninteractiveTabindex: keyboard users scroll the wide matrix */}
-      <section class="ff-matrix__scroll" tabIndex={0} aria-label={t.matrix_scroll()}>
+      <ScrollShadow class="ff-matrix__scroll" tabIndex={0} label={t.matrix_scroll()}>
         <div class="ff-matrix__groups">
           {groups.map((group) => (
             <section class="ff-matrix__group" key={group.os}>
@@ -99,7 +99,7 @@ export function SupportMatrix({
             </section>
           ))}
         </div>
-      </section>
+      </ScrollShadow>
       <ul class="ff-matrix__legend">
         {(['full', 'partial', 'none', 'unknown'] as const).map((state) => (
           <li key={state}>
