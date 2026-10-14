@@ -72,7 +72,7 @@ header {
 .ff-header {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--ff-space-3);
+  gap: var(--ff-space-2) var(--ff-space-4);
   align-items: center;
 }
 .ff-header {
@@ -86,15 +86,23 @@ header {
 .ff-header__end {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--ff-space-3);
+  gap: var(--ff-space-2) var(--ff-space-3);
   align-items: center;
   margin-inline-start: auto;
 }
-.ff-header__actions {
+.ff-header__group {
   display: flex;
   flex-wrap: wrap;
   gap: var(--ff-space-2);
   align-items: center;
+}
+.ff-header__group + .ff-header__group {
+  padding-inline-start: var(--ff-space-3);
+  border-inline-start: 1px solid var(--ff-border);
+}
+.ff-header__actions .ff-button {
+  min-block-size: 2rem;
+  padding: 0.125rem var(--ff-space-3);
 }
 .ff-breadcrumbs {
   display: flex;
@@ -108,12 +116,18 @@ header {
   content: "/" / "";
   margin-inline-start: var(--ff-space-1);
 }
-.ff-brand {
+.ff-header .ff-brand {
   display: inline-flex;
   gap: var(--ff-space-2);
   align-items: center;
+  font-size: 1.125rem;
   font-weight: 700;
+  line-height: 1;
   text-decoration: none;
+}
+.ff-brand img {
+  display: block;
+  flex: none;
 }
 a {
   color: var(--ff-accent);
@@ -187,13 +201,40 @@ main > h1 {
 .ff-header__nav {
   flex-wrap: wrap;
   display: flex;
-  gap: var(--ff-space-3);
+  gap: var(--ff-space-1);
   margin: 0;
   padding: 0;
   list-style: none;
 }
+.ff-header__nav a,
+.ff-header__link {
+  border-radius: var(--ff-radius);
+  text-decoration: none;
+}
+.ff-header__nav a {
+  padding: 0.25rem var(--ff-space-3);
+  color: var(--ff-text);
+}
+.ff-header__nav a:hover,
+.ff-header__link:hover {
+  background: color-mix(in srgb, var(--ff-accent) 12%, transparent);
+}
 .ff-header__nav a[aria-current="page"] {
+  background: color-mix(in srgb, var(--ff-accent) 18%, transparent);
+  color: var(--ff-accent);
   font-weight: 700;
+}
+.ff-header .ff-header__link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-inline-size: 2rem;
+  padding: 0.25rem;
+}
+.ff-header__link .ff-icon {
+  margin: 0;
+  inline-size: 1.25em;
+  block-size: 1.25em;
 }
 .ff-page {
   display: grid;

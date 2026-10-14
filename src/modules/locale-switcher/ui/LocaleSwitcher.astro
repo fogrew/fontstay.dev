@@ -45,7 +45,18 @@ const t = messagesFor(current);
     min-block-size: 2rem;
     min-inline-size: 2rem;
     padding: 0.25rem 0.5rem;
+    border-radius: var(--ff-radius);
     line-height: 1.5;
+    text-decoration: none;
+  }
+
+  a:hover {
+    background: color-mix(in srgb, var(--ff-accent) 12%, transparent);
+  }
+
+  a[aria-current="true"] {
+    background: color-mix(in srgb, var(--ff-accent) 18%, transparent);
+    font-weight: 700;
   }
 </style>
 

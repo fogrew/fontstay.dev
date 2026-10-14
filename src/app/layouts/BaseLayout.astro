@@ -97,7 +97,7 @@ const indexable = !process.env.WORKERS_CI_BRANCH || process.env.WORKERS_CI_BRANC
       </nav>
       <div class="ff-header__end">
         {headerActions && (
-          <div class="ff-header__actions">
+          <div class="ff-header__group ff-header__actions">
             <button type="button" class="ff-button ff-button--secondary" id="ff-share" title={t.share_note()} disabled>
               <Icon name="share" />{t.share_copy_short()}
             </button>
@@ -108,8 +108,8 @@ const indexable = !process.env.WORKERS_CI_BRANCH || process.env.WORKERS_CI_BRANC
           </div>
         )}
         <InstallButton locale={locale} client:idle />
-        <LocaleSwitcher current={locale} {path} />
-        <a class="ff-header__link" href="https://github.com/fogrew/fontstay.dev"><Icon name="github" />{t.header_github()}</a>
+        <div class="ff-header__group"><LocaleSwitcher current={locale} {path} /></div>
+        <a class="ff-header__link" href="https://github.com/fogrew/fontstay.dev" title={t.header_github()}><Icon name="github" /><span class="ff-sr-only">{t.header_github()}</span></a>
       </div>
     </header>
     <main id="main-content" tabindex="-1"><slot /></main>
