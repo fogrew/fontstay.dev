@@ -494,5 +494,22 @@
   "mode_web_short": "Web",
   "mode_fallback_short": "Fallback",
   "mode_plain_short": "Plain",
-  "article_shift_details": "Widths"
+  "article_shift_details": "Widths",
+  "intro_heading": "Stop the page from jumping when your font loads",
+  "intro_what": "When a page loads, the browser first shows its text in a fallback font. A moment later your web font arrives and replaces it. If the two fonts have different letter widths and heights, lines wrap differently and everything below them moves. That jump is called layout shift, and Google measures it as CLS.",
+  "intro_demo_before": "Fallback font",
+  "intro_demo_after": "Web font arrives",
+  "intro_demo_text": "Fonts decide where every line breaks.",
+  "intro_demo_button": "Read more",
+  "intro_demo_note": "The button moved down: that is what visitors see as a jump.",
+  "intro_steps_heading": "Four steps make the fallback match your font, so nothing moves",
+  "intro_step_inputs": "1. Add your font",
+  "intro_step_inputs_text": "Upload a file, drop it anywhere on the page, or pick one from a font service.",
+  "intro_step_audience": "2. Choose the audience",
+  "intro_step_audience_text": "Say which browsers your visitors use, so the effort goes to the systems that matter.",
+  "intro_step_tuning": "3. Fine-tune",
+  "intro_step_tuning_text": "Check the fallback chosen for each system or adjust the values by hand.",
+  "intro_step_results": "4. Take the result",
+  "intro_step_results_text": "Copy the CSS or export it for your framework, and see how much the shift dropped.",
+  "intro_open": "Open"
 }

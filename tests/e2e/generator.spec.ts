@@ -1392,3 +1392,13 @@ test('the generator page itself does not shift while it loads', async ({ page })
   const total = await page.evaluate(() => (window as unknown as { shifts: number }).shifts);
   expect(total).toBeLessThan(0.02);
 });
+
+test('the intro guide explains the jump and opens each step', async ({ page }) => {
+  await page.goto('/en/');
+  await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
+  const guide = page.getByRole('region', { name: /Stop the page from jumping/ });
+  await expect(guide).toBeVisible();
+  await expect(guide).toContainText('layout shift');
+  await guide.getByRole('button', { name: 'Open' }).nth(1).click();
+  await expect(page.getByLabel('Audience').first()).toBeVisible();
+});

@@ -22,6 +22,7 @@ import { codePointLabel, textRuns } from '../lib/missing';
 import { slugOf } from '../lib/overview';
 import type { PreviewItem, SiteData } from '../lib/preview-item';
 import { DeviceShift } from './DeviceShift';
+import { IntroGuide } from './IntroGuide';
 
 type Mode = 'overlay' | 'side' | 'loupe' | 'web' | 'fallback' | 'plain';
 type Wrap = 'wrap' | 'balance' | 'pretty' | 'stable' | 'nowrap';
@@ -793,6 +794,7 @@ export function ArticleView({
   if (empty) {
     return (
       <section class="ff-article-view" aria-label={t.article_heading()}>
+        <IntroGuide locale={locale} />
         <p class="ff-article-view__hint">{t.article_empty_hint()}</p>
         <div class="ff-article-view__controls">{contentGroup}</div>
         <article
