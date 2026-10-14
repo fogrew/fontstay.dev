@@ -215,9 +215,9 @@
   gap: var(--ff-space-1);
   margin: 0;
   padding: var(--ff-space-2);
-  border: 1px solid var(--ff-border);
   border-radius: var(--ff-radius);
   font-size: 0.875rem;
+  background: var(--ff-surface-2);
 }
 
 .ff-generator__main {
@@ -647,8 +647,8 @@
   align-content: start;
   gap: 0.4em;
   padding: var(--ff-space-3);
-  border: 1px solid var(--ff-border);
   border-radius: var(--ff-radius);
+  background: var(--ff-surface-2);
 }
 .ff-article-view .ff-article__factor .ff-icon {
   inline-size: 2em;

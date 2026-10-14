@@ -2,6 +2,7 @@
   color-scheme: light dark;
   --ff-bg: light-dark(#f5f4f0, #161a19);
   --ff-surface: light-dark(#fffefa, #202624);
+  --ff-surface-2: light-dark(#f3f2eb, #2a322f);
   --ff-text: light-dark(#202c27, #eef1e9);
   --ff-muted: light-dark(#54625b, #b7c2b8);
   --ff-border: light-dark(#7b8c81, #76867b);

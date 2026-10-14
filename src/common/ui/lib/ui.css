@@ -38,8 +38,9 @@
   min-inline-size: 0;
   margin: 0;
   padding: var(--ff-space-4);
-  border: 1px solid var(--ff-border);
   border-radius: var(--ff-radius);
+  background: var(--ff-surface);
+  border: 0;
 }
 .ff-fit legend {
   padding-inline: var(--ff-space-2);
@@ -211,9 +212,8 @@
 .ff-accordion__item {
   display: flex;
   flex-direction: column;
-  border: 1px solid var(--ff-border);
   border-radius: var(--ff-radius);
-  background: var(--ff-surface);
+  background: var(--ff-surface-2);
 }
 .ff-accordion__item[data-open="true"] {
   flex: 0 0 auto;
@@ -250,9 +250,8 @@
   display: none;
 }
 .ff-collapsible {
-  border: 1px solid var(--ff-border);
   border-radius: var(--ff-radius);
-  background: var(--ff-surface);
+  background: var(--ff-surface-2);
 }
 .ff-collapsible__head {
   display: flex;
@@ -283,7 +282,6 @@
   display: grid;
   gap: var(--ff-space-2);
   padding: var(--ff-space-2);
-  border-block-start: 1px solid var(--ff-border);
 }
 .ff-collapsible__body[hidden] {
   display: none;
