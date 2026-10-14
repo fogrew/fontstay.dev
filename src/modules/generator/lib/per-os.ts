@@ -27,7 +27,7 @@ import {
   osFontsDataset,
   type StyleVariant,
 } from '@/modules/os-fonts';
-import { ARTICLES, articleBlocks } from './articles';
+import { articleBlocks, BUILT_IN } from './articles';
 import { fallbackPredictFont, webPredictFont } from './predict-input';
 
 export type Language = 'en' | 'ru';
@@ -171,7 +171,7 @@ const documents = new Map<Language, Block[][]>();
 function documentsFor(language: Language): Block[][] {
   const cached = documents.get(language);
   if (cached) return cached;
-  const list = [sampleBlocks(language), articleBlocks(ARTICLES[language === 'ru' ? 'ru' : 'en'])];
+  const list = [sampleBlocks(language), articleBlocks(BUILT_IN[language === 'ru' ? 'ru' : 'en'])];
   documents.set(language, list);
   return list;
 }

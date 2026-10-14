@@ -378,6 +378,28 @@ test('the text wrapping and sample text controls change the article', async ({ p
   await expect(view.getByRole('heading', { name: /フォントの読み込み/ })).toBeVisible();
 });
 
+test('the article can be shown in many scripts and loads each text on demand', async ({ page }) => {
+  await page.goto('/en/');
+  await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
+  await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(sourceSans);
+  await closePanels(page);
+  const view = page.getByRole('region', { name: 'Article' });
+  const article = view.locator('.ff-article:not([data-probe])').first();
+  await openPopover(view, 'Content');
+  for (const [id, direction] of [
+    ['he', 'rtl'],
+    ['th', 'ltr'],
+    ['zh-Hans', 'ltr'],
+    ['ko', 'ltr'],
+    ['hi', 'ltr'],
+  ] as const) {
+    await choose(view.getByLabel('Sample text'), id);
+    await expect(article).toHaveAttribute('lang', id);
+    await expect(article).toHaveAttribute('dir', direction);
+    await expect(article.locator('.ff-article__title')).not.toBeEmpty();
+  }
+});
+
 test('the CSS stays reachable while the article is large', async ({ page }) => {
   await page.setViewportSize({ width: 1280, height: 720 });
   await page.goto('/en/');

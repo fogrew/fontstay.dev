@@ -4,10 +4,13 @@ import { type Locale, messagesFor } from '@/common/i18n';
 import { Icon, Popover, Select } from '@/common/ui';
 import { measureShift, type WidthShift } from '../lib/article-shift';
 import {
-  ARTICLE_IDS,
-  ARTICLES,
+  ARTICLE_LANGUAGES,
   type Article,
+  type ArticleId,
   type ArticleKey,
+  BUILT_IN,
+  isBuiltIn,
+  loadArticle,
   type Run,
   siteArticle,
 } from '../lib/articles';
@@ -140,15 +143,17 @@ function ArticleBody({ article, coverage }: { article: Article; coverage: Covera
         <p class="ff-article__lead">{body(article.lead)}</p>
         <p class="ff-article__meta">{body(article.meta)}</p>
       </header>
-      <ul class="ff-article__factors">
-        {article.factors.map((factor) => (
-          <li key={factor.title} class="ff-article__factor">
-            <Icon name={factor.icon} />
-            <h4>{heading(factor.title)}</h4>
-            <p>{body(factor.text)}</p>
-          </li>
-        ))}
-      </ul>
+      {article.factors.length > 0 && (
+        <ul class="ff-article__factors">
+          {article.factors.map((factor) => (
+            <li key={factor.title} class="ff-article__factor">
+              <Icon name={factor.icon} />
+              <h4>{heading(factor.title)}</h4>
+              <p>{body(factor.text)}</p>
+            </li>
+          ))}
+        </ul>
+      )}
       <section>
         <h4 class="ff-article__heading">{heading(article.columnsHeading)}</h4>
         <div class="ff-article__columns">
@@ -164,38 +169,42 @@ function ArticleBody({ article, coverage }: { article: Article; coverage: Covera
           <blockquote>{body(article.quote.text)}</blockquote>
           <figcaption>{body(article.quote.cite)}</figcaption>
         </figure>
-        <section>
-          <h4 class="ff-article__heading">{heading(article.listHeading)}</h4>
-          <ol>
-            {article.list.map((item, index) => (
-              <li key={index}>
-                <Runs runs={item} coverage={coverage} />
-              </li>
-            ))}
-          </ol>
-        </section>
-        <section>
-          <h4 class="ff-article__heading">{heading(article.tableHeading)}</h4>
-          <table>
-            <thead>
-              <tr>
-                {article.tableHead.map((cell) => (
-                  <th key={cell} scope="col">
-                    {heading(cell)}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {article.tableRows.map((row) => (
-                <tr key={row[0]}>
-                  <th scope="row">{heading(row[0])}</th>
-                  <td>{body(row[1])}</td>
-                </tr>
+        {article.list.length > 0 && (
+          <section>
+            <h4 class="ff-article__heading">{heading(article.listHeading)}</h4>
+            <ol>
+              {article.list.map((item, index) => (
+                <li key={index}>
+                  <Runs runs={item} coverage={coverage} />
+                </li>
               ))}
-            </tbody>
-          </table>
-        </section>
+            </ol>
+          </section>
+        )}
+        {article.tableRows.length > 0 && (
+          <section>
+            <h4 class="ff-article__heading">{heading(article.tableHeading)}</h4>
+            <table>
+              <thead>
+                <tr>
+                  {article.tableHead.map((cell) => (
+                    <th key={cell} scope="col">
+                      {heading(cell)}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {article.tableRows.map((row) => (
+                  <tr key={row[0]}>
+                    <th scope="row">{heading(row[0])}</th>
+                    <td>{body(row[1])}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </section>
+        )}
       </div>
       <section>
         <h4 class="ff-article__heading">{heading(article.glyphsHeading)}</h4>
@@ -264,10 +273,27 @@ export function ArticleView({
     if (site.lineHeight)
       setLineHeight(Math.min(2.4, Math.max(1, Math.round(site.lineHeight * 20) / 20)));
   }, [site]);
+  const [loaded, setLoaded] = useState<Partial<Record<ArticleId, Article>>>({});
+  useEffect(() => {
+    if (articleId === 'site' || isBuiltIn(articleId) || loaded[articleId]) return;
+    let cancelled = false;
+    void loadArticle(articleId).then((value) => {
+      if (value && !cancelled) setLoaded((all) => ({ ...all, [articleId]: value }));
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [articleId, loaded]);
+  const shown =
+    articleId === 'site'
+      ? undefined
+      : isBuiltIn(articleId)
+        ? BUILT_IN[articleId]
+        : (loaded[articleId] ?? BUILT_IN.en);
   const article =
     articleId === 'site' && site
       ? siteArticle({ heading: site.heading, body: site.body }, t.article_site(), locale)
-      : ARTICLES[articleId === 'site' ? 'en' : articleId];
+      : (shown ?? BUILT_IN.en);
 
   const families = useMemo(() => [...new Set(items.map((item) => item.family))], [items]);
   const siteFamily = (stack: string | undefined) =>
@@ -757,7 +783,7 @@ export function ArticleView({
         value={articleId}
         options={[
           ...(site ? [{ value: 'site', label: t.article_site() }] : []),
-          ...ARTICLE_IDS.map((id) => ({ value: id, label: ARTICLES[id].label })),
+          ...ARTICLE_LANGUAGES.map(([id, label]) => ({ value: id, label })),
         ]}
         onChange={(value) => setArticleId(value as ArticleKey)}
       />
