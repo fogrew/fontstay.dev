@@ -56,7 +56,7 @@ import {
   SiteImportPanel,
   takePending,
 } from '@/modules/site-import';
-import { buildTools, registerWebMcp, type ShiftReport, type ToolHost } from '@/modules/webmcp';
+import type { ShiftReport, ToolHost } from '@/modules/webmcp';
 import { autoFit } from '../lib/auto-fit';
 import { fallbackRatio, webRatio } from '../lib/calibration';
 import { displayName, fitLanguage, isNoCoverage, LOW_COVERAGE } from '../lib/compute';
@@ -903,7 +903,18 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
     exportFormats: () => EXPORT_FORMATS,
     getShift: () => shiftReport.current,
   };
-  useEffect(() => registerWebMcp(buildTools(() => toolHost.current as ToolHost)), []);
+  useEffect(() => {
+    if (!('modelContext' in document) && !('modelContext' in navigator)) return;
+    let stop: (() => void) | undefined;
+    let cancelled = false;
+    void import('@/modules/webmcp').then(({ buildTools, registerWebMcp }) => {
+      if (!cancelled) stop = registerWebMcp(buildTools(() => toolHost.current as ToolHost));
+    });
+    return () => {
+      cancelled = true;
+      stop?.();
+    };
+  }, []);
   const manualValuesOf = (fontId: number) => {
     const manual: NonNullable<ShareState['manual']> = {};
     for (const [key, entry] of Object.entries(values)) {
