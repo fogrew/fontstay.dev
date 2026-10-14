@@ -229,6 +229,34 @@ test('the layer tools draw, fade and compare the web font and the fallback', asy
     .toContain('linear-gradient');
 });
 
+test('dropdowns and their options show a hover state', async ({ page }) => {
+  await page.goto('/en/');
+  await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
+  await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(sourceSans);
+  await closePanels(page);
+  const view = page.getByRole('region', { name: 'Article' });
+  const trigger = view.getByLabel('Text wrapping');
+  const background = (locator: typeof trigger) =>
+    locator.evaluate((node) => getComputedStyle(node).backgroundColor);
+  await expect(view.locator('.ff-article:not([data-probe])').first()).toBeVisible();
+  await page.mouse.move(1, 1);
+  const idle = await background(trigger);
+  await expect(async () => {
+    await trigger.hover();
+    expect(await background(trigger)).not.toBe(idle);
+  }).toPass();
+  await expect(async () => {
+    if ((await trigger.getAttribute('aria-expanded')) !== 'true') await trigger.click();
+    const option = page.getByRole('option').nth(2);
+    const box = await option.boundingBox();
+    if (!box) throw new Error('the list is not open');
+    await page.mouse.move(1, 1);
+    const optionIdle = await background(option);
+    await page.mouse.move(box.x + 10, box.y + box.height / 2);
+    expect(await background(option)).not.toBe(optionIdle);
+  }).toPass();
+});
+
 test('the text wrapping and sample text controls change the article', async ({ page }) => {
   await page.goto('/en/');
   await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));

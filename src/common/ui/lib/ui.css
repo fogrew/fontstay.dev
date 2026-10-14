@@ -343,6 +343,12 @@
   text-align: start;
   cursor: pointer;
 }
+.ff-select__button:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--ff-accent) 10%, var(--ff-surface));
+}
+.ff-select__button[aria-expanded="true"] {
+  border-color: var(--ff-accent);
+}
 .ff-select__button::after {
   content: "▾" / "";
   margin-inline-start: auto;
@@ -388,8 +394,12 @@
 .ff-select__list [role="option"][aria-disabled="true"] {
   opacity: 0.5;
 }
+.ff-select__list [role="option"]:hover:not([aria-disabled="true"]) {
+  background: color-mix(in srgb, var(--ff-accent) 16%, var(--ff-surface));
+}
 @media (forced-colors: active) {
-  .ff-select__list [role="option"][data-active="true"] {
+  .ff-select__list [role="option"][data-active="true"],
+  .ff-select__list [role="option"]:hover:not([aria-disabled="true"]) {
     outline: 2px solid Highlight;
   }
 }
