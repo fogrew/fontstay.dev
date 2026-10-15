@@ -1089,7 +1089,7 @@ test('a corrupt share link is ignored', async ({ page }) => {
   await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
   await openStep(page, 'inputs');
   await expect(page.getByRole('region', { name: 'Fonts to adapt' })).toHaveCount(0);
-  await expect(page.getByText('Your web font')).toBeVisible();
+  await expect(page.getByText('Your web font', { exact: true })).toBeVisible();
 });
 
 test('the dropdown works from the keyboard, with typeahead, and has no axe violations while open', async ({
@@ -1223,8 +1223,13 @@ const DEMO_SITE = `<!doctype html><title>Demo site</title>
 body { font-family: "Demo Sans", sans-serif; font-size: 17px; line-height: 1.6; }
 h1 { font-family: "Demo Sans", sans-serif; font-size: 34px; }
 </style>
+<main>
 <h1>Hello from the demo site</h1>
-<p>This paragraph is long enough to be taken as the body text sample of the page.</p>`;
+<p>This paragraph is long enough to be taken as the body text sample of the page and it keeps going so the preview has real copy to wrap. This paragraph is long enough to be taken as the body text sample of the page and it keeps going so the preview has real copy to wrap. </p>
+<h2>Second section</h2>
+<p>This paragraph is long enough to be taken as the body text sample of the page and it keeps going so the preview has real copy to wrap. This paragraph is long enough to be taken as the body text sample of the page and it keeps going so the preview has real copy to wrap. </p>
+<ul><li>First item of the list</li><li>Second item of the list</li></ul>
+</main>`;
 
 test('the bookmarklet hands the fonts and text of a page to the generator after a confirmation', async ({
   page,

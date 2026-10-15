@@ -1197,3 +1197,13 @@
     grid-template-columns: minmax(0, 1fr);
   }
 }
+
+@container dock (min-width: 44rem) {
+  .ff-generator__settings {
+    grid-template-columns: repeat(auto-fit, minmax(20rem, 1fr));
+    align-items: start;
+  }
+  .ff-generator__settings > :is(p, .ff-error, .ff-generator__section) {
+    grid-column: 1 / -1;
+  }
+}

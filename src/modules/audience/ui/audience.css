@@ -245,3 +245,13 @@
   align-items: center;
   white-space: nowrap;
 }
+
+@container dock (min-width: 44rem) {
+  .ff-audience {
+    grid-template-columns: repeat(auto-fit, minmax(20rem, 1fr));
+    align-items: start;
+  }
+  .ff-audience > :is(.ff-tags, .ff-audience__stats) {
+    grid-column: 1 / -1;
+  }
+}
