@@ -480,6 +480,14 @@
     border-end-end-radius: 0;
     background: var(--ff-surface);
   }
+  .ff-dock__column[data-open="true"] .ff-dock__heading button::after {
+    content: "";
+    position: absolute;
+    inset-block-end: -1px;
+    inset-inline: -1px;
+    block-size: 1px;
+    background: var(--ff-surface);
+  }
   .ff-dock__column[data-open="true"] .ff-dock__heading::before,
   .ff-dock__column[data-open="true"] .ff-dock__heading::after {
     content: "";
