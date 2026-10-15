@@ -1,4 +1,4 @@
-import { useEffect } from 'preact/hooks';
+import { useEffect, useId } from 'preact/hooks';
 import { type Locale, messagesFor } from '@/common/i18n';
 import {
   computeOsShares,
@@ -13,14 +13,16 @@ import { OsIcon } from './BrandIcon';
 export function OsPanel({
   locale,
   entries,
+  allowed,
   onChange,
 }: {
   locale: Locale;
   entries: readonly WeightedEntry[] | undefined;
+  allowed?: ((os: Os) => boolean) | undefined;
   onChange?: ((shares: OsShares) => void) | undefined;
 }) {
   const t = messagesFor(locale);
-  const shares = computeOsShares(entries ?? [], DEFAULT_DESKTOP_SPLIT);
+  const shares = computeOsShares(entries ?? [], DEFAULT_DESKTOP_SPLIT, allowed);
 
   const key = JSON.stringify(shares);
   useEffect(() => {
@@ -28,13 +30,15 @@ export function OsPanel({
   }, [key, onChange]);
 
   const number = new Intl.NumberFormat(locale, { maximumFractionDigits: 1 });
+  const headingId = useId();
+  const listed = OS_IDS.filter((id) => shares[id] > 0);
   const label = (id: Os) => t[`audience_os_${id}`]();
 
   return (
-    <div class="ff-audience__os">
-      <h3>{t.audience_os_heading()}</h3>
+    <section class="ff-audience__os" aria-labelledby={headingId}>
+      <h3 id={headingId}>{t.audience_os_heading_count({ count: listed.length })}</h3>
       <ul class="ff-audience__list" aria-label={t.audience_os_shares_label()}>
-        {OS_IDS.filter((id) => shares[id] > 0).map((id) => (
+        {listed.map((id) => (
           <li key={id}>
             <span>
               <OsIcon os={id} />
@@ -47,6 +51,6 @@ export function OsPanel({
           </li>
         ))}
       </ul>
-    </div>
+    </section>
   );
 }

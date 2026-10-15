@@ -110,9 +110,10 @@ export async function openPopover(scope: Locator | Page, name: string) {
 }
 
 export async function fillQuery(page: Page, text: string) {
-  const field = page.getByLabel('Browserslist query');
-  if (!(await field.isVisible())) {
-    await page.getByText('Raw query (advanced)', { exact: true }).click();
-  }
-  await field.fill(text);
+  await page.evaluate(
+    (detail) => window.dispatchEvent(new CustomEvent('ff-audience-set', { detail })),
+    text,
+  );
 }
+
+export const queryField = (page: Page) => page.locator('.ff-tags__field');

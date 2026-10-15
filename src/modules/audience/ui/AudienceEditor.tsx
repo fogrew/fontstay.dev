@@ -1,9 +1,9 @@
 import { useEffect, useId, useRef, useState } from 'preact/hooks';
 import { type Locale, messagesFor } from '@/common/i18n';
 import { Button, Disclosure, Icon } from '@/common/ui';
-import type { OsShares, WeightedEntry } from '../lib/os';
+import type { Os, OsShares, WeightedEntry } from '../lib/os';
 import { DEFAULT_QUERY, MY_STATS_PRESET } from '../lib/presets';
-import { MAX_QUERY_LENGTH, type Resolution, resolveQuery } from '../lib/resolve';
+import { type Resolution, resolveQuery } from '../lib/resolve';
 import {
   importStats,
   MAX_STATS_BYTES,
@@ -11,6 +11,7 @@ import {
   type StatsResult,
   type UsageStats,
 } from '../lib/stats';
+import { splitOsQuery } from '../lib/tags';
 import { BrowserIcon } from './BrandIcon';
 import { OsPanel } from './OsPanel';
 import { TagEditor } from './TagEditor';
@@ -52,7 +53,7 @@ export function AudienceEditor({
   onShares?: ((shares: OsShares) => void) | undefined;
 }) {
   const t = messagesFor(locale);
-  const inputId = useId();
+  const browsersId = useId();
   const messageId = useId();
   const fileInput = useRef<HTMLInputElement>(null);
   const actions = useRef<HTMLDivElement>(null);
@@ -70,6 +71,10 @@ export function AudienceEditor({
     window.addEventListener(AUDIENCE_SET_EVENT, apply);
     return () => window.removeEventListener(AUDIENCE_SET_EVENT, apply);
   }, []);
+  const osQuery = splitOsQuery(query);
+  const browserQuery = osQuery.browsers || DEFAULT_QUERY;
+  const allowed = (os: Os) =>
+    !osQuery.exclude.includes(os) && (osQuery.include.length === 0 || osQuery.include.includes(os));
   const [stats, setStats] = useState<StatsInfo>();
   const [statsError, setStatsError] = useState('');
   const userStats: UsageStats | undefined = stats?.stats;
@@ -78,7 +83,7 @@ export function AudienceEditor({
     if (!opened && !active) return;
     let current = true;
     const timer = setTimeout(() => {
-      resolveQuery(query, userStats).then(
+      resolveQuery(browserQuery, userStats).then(
         (resolution) => current && setState(resolution),
         () => current && setState({ failed: true }),
       );
@@ -87,7 +92,7 @@ export function AudienceEditor({
       current = false;
       clearTimeout(timer);
     };
-  }, [opened, active, query, userStats]);
+  }, [opened, active, browserQuery, userStats]);
 
   const statsErrors: Record<StatsErrorCode, string> = {
     'too-large': t.audience_stats_error_too_large(),
@@ -139,27 +144,14 @@ export function AudienceEditor({
       onToggle={(open) => open && setOpened(true)}
     >
       <div class="ff-audience">
-        <TagEditor locale={locale} query={query} onChange={setQuery} stats={Boolean(stats)} />
-        <Disclosure summary={t.audience_advanced()}>
-          <div class="ff-field">
-            <label for={inputId}>
-              <Icon name="browserslist" />
-              {t.audience_query_label()}
-            </label>
-            <textarea
-              id={inputId}
-              class="ff-input ff-audience__raw"
-              rows={3}
-              spellcheck={false}
-              maxLength={MAX_QUERY_LENGTH * 2}
-              value={query}
-              aria-invalid={invalid}
-              aria-describedby={messageId}
-              onInput={(event) => setQuery(event.currentTarget.value)}
-            />
-            <p class="ff-muted">{t.audience_query_hint()}</p>
-          </div>
-        </Disclosure>
+        <TagEditor
+          locale={locale}
+          query={query}
+          onChange={setQuery}
+          stats={Boolean(stats)}
+          invalid={invalid}
+          describedBy={messageId}
+        />
         <div id={messageId} role="status" class="ff-audience__result">
           {'loading' in state && opened && t.audience_loading()}
           {'failed' in state && t.audience_load_failed()}
@@ -168,48 +160,49 @@ export function AudienceEditor({
               {errors[state.code]} {state.detail}
             </span>
           )}
-          {'ok' in state && state.ok && (
-            <>
-              <strong>{t.audience_resolved({ count: state.count })}</strong>
+        </div>
+        {'ok' in state && state.ok && (
+          <div class="ff-audience__columns">
+            <section class="ff-audience__browsers" aria-labelledby={browsersId}>
+              <h3 id={browsersId}>{t.audience_browsers_heading({ count: state.count })}</h3>
               {state.coverage !== undefined && (
-                <span>
+                <p>
                   {t.audience_coverage({
                     percent: new Intl.NumberFormat(locale, {
                       minimumFractionDigits: 1,
                       maximumFractionDigits: 1,
                     }).format(state.coverage),
                   })}
-                </span>
+                </p>
               )}
-              <span class="ff-muted">
+              <ul class="ff-audience__list" aria-label={t.audience_list_label()}>
+                {state.groups.map((group) => (
+                  <li key={group.id}>
+                    <span>
+                      <BrowserIcon id={group.id} />
+                      {group.name}
+                    </span>
+                    <span class="ff-muted">{group.ranges.join(', ')}</span>
+                  </li>
+                ))}
+              </ul>
+              <p class="ff-muted">
                 {t.audience_data_date({
                   date: new Intl.DateTimeFormat(locale, {
                     dateStyle: 'medium',
                     timeZone: 'UTC',
                   }).format(new Date(`${state.dataDate}T00:00:00Z`)),
                 })}
-              </span>
-            </>
-          )}
-        </div>
-        {'ok' in state && state.ok && (
-          <ul class="ff-audience__list" aria-label={t.audience_list_label()}>
-            {state.groups.map((group) => (
-              <li key={group.id}>
-                <span>
-                  <BrowserIcon id={group.id} />
-                  {group.name}
-                </span>
-                <span class="ff-muted">{group.ranges.join(', ')}</span>
-              </li>
-            ))}
-          </ul>
+              </p>
+            </section>
+            <OsPanel
+              locale={locale}
+              entries={state.entries}
+              allowed={allowed}
+              onChange={onShares}
+            />
+          </div>
         )}
-        <OsPanel
-          locale={locale}
-          entries={'ok' in state && state.ok ? state.entries : undefined}
-          onChange={onShares}
-        />
         <div class="ff-audience__stats">
           <div class="ff-audience__actions" ref={actions}>
             <Button onClick={() => fileInput.current?.click()}>{t.audience_stats_import()}</Button>

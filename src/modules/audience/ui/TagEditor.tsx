@@ -3,19 +3,18 @@ import { type Locale, messagesFor } from '@/common/i18n';
 import { Icon } from '@/common/ui';
 import { looksLikeQueryList, parseBrowserslist } from '../lib/browserslist-file';
 import { MY_STATS_PRESET, PRESETS } from '../lib/presets';
-import {
-  addTags,
-  browserOf,
-  isExcluded,
-  removeTag,
-  splitQuery,
-  TAG_GROUPS,
-  toggleNot,
-} from '../lib/tags';
-import { BrowserIcon } from './BrandIcon';
+import { addTags, browserOf, removeTag, splitQuery, TAG_GROUPS } from '../lib/tags';
+import { BrowserIcon, OsIcon } from './BrandIcon';
 
 const SETS = PRESETS.filter((preset) => ['usage', 'desktop', 'mobile'].includes(preset.id));
-const stripNot = (tag: string) => tag.replace(/^not\s+/i, '');
+const LATEST = [
+  'last 1 chrome version',
+  'last 1 edge version',
+  'last 1 firefox version',
+  'last 1 safari version',
+  'last 1 ios_saf version',
+  'last 1 and_chr version',
+].join(', ');
 
 function Label({ tag }: { tag: string }) {
   const browser = browserOf(tag);
@@ -34,7 +33,9 @@ interface QuickTag {
   key: string;
   label: string;
   query: string;
+  exclude?: string | undefined;
   browser?: string | undefined;
+  os?: string | undefined;
 }
 
 export function TagEditor({
@@ -42,11 +43,15 @@ export function TagEditor({
   query,
   onChange,
   stats = false,
+  invalid = false,
+  describedBy,
 }: {
   locale: Locale;
   query: string;
   onChange: (query: string) => void;
   stats?: boolean;
+  invalid?: boolean;
+  describedBy?: string | undefined;
 }) {
   const t = messagesFor(locale);
   const hintId = useId();
@@ -56,14 +61,12 @@ export function TagEditor({
   const groupName = (id: (typeof TAG_GROUPS)[number]['id']) => {
     if (id === 'popularity') return t.audience_tags_group_popularity();
     if (id === 'baseline') return t.audience_tags_group_baseline();
+    if (id === 'os') return t.audience_tags_group_os();
     return id === 'recency' ? t.audience_tags_group_recency() : t.audience_tags_group_browsers();
   };
+  const osLabel = (id: string) => t[`audience_os_${id}` as 'audience_os_linux']();
   const sets: QuickTag[] = [
-    ...SETS.map((preset) => ({
-      key: preset.id,
-      label: t[preset.label](),
-      query: preset.query,
-    })),
+    ...SETS.map((preset) => ({ key: preset.id, label: t[preset.label](), query: preset.query })),
     ...(stats
       ? [
           {
@@ -78,12 +81,19 @@ export function TagEditor({
     ...TAG_GROUPS.map((group) => ({
       id: group.id,
       title: groupName(group.id),
-      items: group.tags.map((tag) => ({
-        key: tag.label,
-        label: tag.label,
-        query: tag.include,
-        browser: tag.browser,
-      })),
+      items: [
+        ...group.tags.map((tag) => ({
+          key: tag.label,
+          label: tag.os ? osLabel(tag.os) : tag.label,
+          query: tag.include,
+          exclude: tag.exclude,
+          browser: tag.browser,
+          os: tag.os,
+        })),
+        ...(group.id === 'baseline'
+          ? [{ key: 'latest', label: t.audience_set_latest(), query: LATEST }]
+          : []),
+      ],
     })),
     { id: 'sets', title: t.audience_tags_group_sets(), items: sets },
   ];
@@ -92,25 +102,20 @@ export function TagEditor({
     if (added.length > 0) onChange(addTags(query, added));
     setDraft('');
   };
+  const add = (value: string) => {
+    onChange(addTags(query, splitQuery(value)));
+    input.current?.focus({ preventScroll: true });
+  };
+  const taken = (value: string) => splitQuery(value).every((part) => parts.includes(part));
   return (
     <div class="ff-tags">
-      <fieldset class="ff-tags__field">
+      <fieldset class="ff-tags__field" data-query={query} aria-invalid={invalid}>
         <legend class="ff-sr-only">{t.audience_tags_label()}</legend>
         <ul class="ff-tags__chips">
           {parts.map((tag, index) => (
-            <li key={`${tag}-${index}`} class="ff-chip" data-excluded={isExcluded(tag)}>
-              <button
-                type="button"
-                class="ff-chip__not"
-                aria-pressed={isExcluded(tag)}
-                aria-label={t.audience_tag_exclude({ tag: stripNot(tag) })}
-                onClick={() => onChange(toggleNot(query, tag))}
-              >
-                <span aria-hidden="true">⊘ </span>
-                {t.audience_tag_not()}
-              </button>
+            <li key={`${tag}-${index}`} class="ff-chip">
               <span class="ff-chip__label">
-                <Label tag={stripNot(tag)} />
+                <Label tag={tag} />
               </span>
               <button
                 type="button"
@@ -122,33 +127,36 @@ export function TagEditor({
               </button>
             </li>
           ))}
+          <li class="ff-tags__entry">
+            <input
+              ref={input}
+              class="ff-tags__input"
+              type="text"
+              spellcheck={false}
+              autocomplete="off"
+              aria-label={t.audience_tags_input()}
+              aria-describedby={[hintId, describedBy].filter(Boolean).join(' ')}
+              aria-invalid={invalid}
+              value={draft}
+              onInput={(event) => setDraft(event.currentTarget.value)}
+              onKeyDown={(event) => {
+                if (event.key === 'Enter' || (event.key === ',' && draft.trim())) {
+                  event.preventDefault();
+                  commit(draft);
+                } else if (event.key === 'Backspace' && !draft && parts.length > 0) {
+                  onChange(removeTag(query, parts[parts.length - 1] ?? ''));
+                }
+              }}
+              onBlur={() => draft.trim() && commit(draft)}
+              onPaste={(event) => {
+                const text = event.clipboardData?.getData('text') ?? '';
+                if (!looksLikeQueryList(text)) return;
+                event.preventDefault();
+                commit(text);
+              }}
+            />
+          </li>
         </ul>
-        <input
-          ref={input}
-          class="ff-tags__input"
-          type="text"
-          spellcheck={false}
-          autocomplete="off"
-          aria-label={t.audience_tags_input()}
-          aria-describedby={hintId}
-          value={draft}
-          onInput={(event) => setDraft(event.currentTarget.value)}
-          onKeyDown={(event) => {
-            if (event.key === 'Enter' || (event.key === ',' && draft.trim())) {
-              event.preventDefault();
-              commit(draft);
-            } else if (event.key === 'Backspace' && !draft && parts.length > 0) {
-              onChange(removeTag(query, parts[parts.length - 1] ?? ''));
-            }
-          }}
-          onBlur={() => draft.trim() && commit(draft)}
-          onPaste={(event) => {
-            const text = event.clipboardData?.getData('text') ?? '';
-            if (!looksLikeQueryList(text)) return;
-            event.preventDefault();
-            commit(text);
-          }}
-        />
       </fieldset>
       <p id={hintId} class="ff-muted">
         {t.audience_tags_input_hint()}
@@ -161,17 +169,15 @@ export function TagEditor({
           </h4>
           <ul class="ff-tags__list">
             {group.items.map((item) => (
-              <li key={item.key}>
+              <li key={item.key} class="ff-quick">
                 <button
                   type="button"
                   class="ff-tag"
-                  disabled={splitQuery(item.query).every((part) => parts.includes(part))}
-                  onClick={() => {
-                    onChange(addTags(query, splitQuery(item.query)));
-                    input.current?.focus({ preventScroll: true });
-                  }}
+                  disabled={taken(item.query)}
+                  onClick={() => add(item.query)}
                 >
                   {item.browser && <BrowserIcon id={item.browser} />}
+                  {item.os && <OsIcon os={item.os as 'linux'} />}
                   {group.id === 'baseline' && (
                     <Icon
                       name={item.label.includes('newly') ? 'baseline-newly' : 'baseline-widely'}
@@ -179,6 +185,17 @@ export function TagEditor({
                   )}
                   {item.label}
                 </button>
+                {item.exclude && (
+                  <button
+                    type="button"
+                    class="ff-quick__not"
+                    disabled={taken(item.exclude)}
+                    aria-label={t.audience_tag_not_action({ tag: item.label })}
+                    onClick={() => add(item.exclude ?? '')}
+                  >
+                    {t.audience_tag_not()}
+                  </button>
+                )}
               </li>
             ))}
           </ul>

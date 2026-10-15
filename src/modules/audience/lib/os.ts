@@ -70,12 +70,18 @@ export function osWeights(entry: string, split: DesktopSplit): [Os, number][] {
   ]);
 }
 
-export function computeOsShares(entries: readonly WeightedEntry[], split: DesktopSplit): OsShares {
+export function computeOsShares(
+  entries: readonly WeightedEntry[],
+  split: DesktopSplit,
+  allowed?: (os: Os) => boolean,
+): OsShares {
   const total = entries.reduce((sum, item) => sum + item.usage, 0);
   const shares = emptyShares();
   for (const { entry, usage } of entries) {
     const weight = total > 0 ? usage : 1;
-    for (const [os, fraction] of osWeights(entry, split)) shares[os] += weight * fraction;
+    for (const [os, fraction] of osWeights(entry, split)) {
+      if (!allowed || allowed(os)) shares[os] += weight * fraction;
+    }
   }
   const sum = OS_IDS.reduce((acc, id) => acc + shares[id], 0);
   if (sum > 0) for (const id of OS_IDS) shares[id] = (shares[id] / sum) * 100;

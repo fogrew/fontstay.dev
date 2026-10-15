@@ -62,8 +62,6 @@
   "preview_load_failed": "Браузер не смог загрузить этот файл шрифта, поэтому предпросмотр его не показывает. Сгенерированный CSS при этом остаётся применимым к шрифту на вашем сайте.",
   "fit_low_coverage": "В этом шрифте есть глифы лишь для части букв образца, поэтому подбор ненадёжен. Покрыто:",
   "audience_heading": "Аудитория (браузеры)",
-  "audience_query_label": "Запрос browserslist",
-  "audience_query_hint": "Запросы объединяются запятыми. Пример: baseline widely available, not dead",
   "audience_preset_widely": "Baseline: широко доступно",
   "audience_preset_newly": "Baseline: недавно доступно",
   "audience_preset_defaults": "Значения browserslist по умолчанию",
@@ -74,7 +72,6 @@
   "audience_error_empty": "Введите запрос.",
   "audience_error_too_long": "Запрос слишком длинный.",
   "audience_error_invalid": "Запрос некорректен:",
-  "audience_resolved": "Версий браузеров: {count}",
   "audience_data_date": "Данные о браузерах на {date}",
   "audience_list_label": "Подходящие браузеры",
   "audience_preset_baseline2023": "Baseline 2023",
@@ -510,10 +507,13 @@
   "audience_tags_label": "Запросы аудитории",
   "audience_tags_input": "Добавить запрос",
   "audience_tags_input_hint": "Введите запрос и нажмите Enter либо вставьте или перетащите файл .browserslist, чтобы заполнить список.",
-  "audience_tag_exclude": "Исключить: {tag}",
   "audience_tag_not": "не",
   "audience_tags_group_sets": "Наборы",
-  "audience_advanced": "Исходный запрос (для опытных)",
   "audience_file_loaded": "Загружено запросов: {count} из {name}.",
-  "audience_file_empty": "В {name} нет запросов browserslist."
+  "audience_file_empty": "В {name} нет запросов browserslist.",
+  "audience_browsers_heading": "Браузеры ({count})",
+  "audience_os_heading_count": "Операционные системы ({count})",
+  "audience_tags_group_os": "Операционные системы",
+  "audience_tag_not_action": "Исключить {tag}",
+  "audience_set_latest": "Только последние версии"
 }

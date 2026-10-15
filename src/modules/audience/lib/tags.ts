@@ -13,15 +13,18 @@ export const TAG_BROWSERS = [
   'op_mini',
 ] as const;
 
+export const TAG_OS = ['windows', 'macos', 'linux', 'chromeos', 'android', 'ios'] as const;
+
 export interface Tag {
   label: string;
   include: string;
   exclude: string;
   browser?: string;
+  os?: string;
 }
 
 export interface TagGroup {
-  id: 'popularity' | 'baseline' | 'recency' | 'browsers';
+  id: 'popularity' | 'baseline' | 'recency' | 'browsers' | 'os';
   tags: readonly Tag[];
 }
 
@@ -41,6 +44,7 @@ export const TAG_GROUPS: readonly TagGroup[] = [
       'baseline 2023',
       'baseline 2024',
       'baseline 2025',
+      'baseline 2026',
     ].map(plain),
   },
   {
@@ -58,7 +62,34 @@ export const TAG_GROUPS: readonly TagGroup[] = [
       browser: id,
     })),
   },
+  {
+    id: 'os',
+    tags: TAG_OS.map((id) => ({
+      label: id,
+      include: `os ${id}`,
+      exclude: `not os ${id}`,
+      os: id,
+    })),
+  },
 ];
+
+const OS_PART = /^(not\s+)?os\s+(windows|macos|linux|chromeos|android|ios)$/i;
+
+export function splitOsQuery(query: string): {
+  browsers: string;
+  include: string[];
+  exclude: string[];
+} {
+  const browsers: string[] = [];
+  const include: string[] = [];
+  const exclude: string[] = [];
+  for (const part of splitQuery(query)) {
+    const match = OS_PART.exec(part);
+    if (!match) browsers.push(part);
+    else (match[1] ? exclude : include).push((match[2] ?? '').toLowerCase());
+  }
+  return { browsers: browsers.join(', '), include, exclude };
+}
 
 export function splitQuery(query: string): string[] {
   return query

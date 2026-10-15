@@ -62,8 +62,6 @@
   "preview_load_failed": "The browser could not load this font file, so the preview cannot show it. The generated CSS still applies to the font on your site.",
   "fit_low_coverage": "This font has glyphs for only part of the sample letters, so the fit is unreliable. Covered share:",
   "audience_heading": "Audience (browsers)",
-  "audience_query_label": "Browserslist query",
-  "audience_query_hint": "Combine queries with commas. Example: baseline widely available, not dead",
   "audience_preset_widely": "Baseline widely available",
   "audience_preset_newly": "Baseline newly available",
   "audience_preset_defaults": "Browserslist defaults",
@@ -74,7 +72,6 @@
   "audience_error_empty": "Enter a query.",
   "audience_error_too_long": "The query is too long.",
   "audience_error_invalid": "This query is not valid:",
-  "audience_resolved": "{count} browser versions",
   "audience_data_date": "Browser data up to {date}",
   "audience_list_label": "Resolved browsers",
   "audience_preset_baseline2023": "Baseline 2023",
@@ -510,10 +507,13 @@
   "audience_tags_label": "Audience queries",
   "audience_tags_input": "Add a query",
   "audience_tags_input_hint": "Type a query and press Enter, or paste or drop a .browserslist file to fill the list.",
-  "audience_tag_exclude": "Exclude: {tag}",
   "audience_tag_not": "not",
   "audience_tags_group_sets": "Sets",
-  "audience_advanced": "Raw query (advanced)",
   "audience_file_loaded": "Loaded {count} queries from {name}.",
-  "audience_file_empty": "No browserslist queries found in {name}."
+  "audience_file_empty": "No browserslist queries found in {name}.",
+  "audience_browsers_heading": "Browsers ({count})",
+  "audience_os_heading_count": "Operating systems ({count})",
+  "audience_tags_group_os": "Operating systems",
+  "audience_tag_not_action": "Exclude {tag}",
+  "audience_set_latest": "Latest versions only"
 }

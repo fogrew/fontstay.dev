@@ -12,6 +12,7 @@ import {
   openPopover,
   openStep,
   openSupport,
+  queryField,
   selectSystem,
   test,
 } from './fixtures';
@@ -302,7 +303,7 @@ test('WebMCP tools drive the generator when the browser offers modelContext', as
   ).toContain('Unknown');
   await call('set-audience', { query: 'chrome 120' });
   await openStep(page, 'audience');
-  await expect(page.getByLabel('Browserslist query')).toHaveValue('chrome 120');
+  await expect(queryField(page)).toHaveAttribute('data-query', 'chrome 120');
 });
 
 test('a step panel that scrolls shows an edge shadow only on the side with more content', async ({
@@ -465,10 +466,10 @@ test('the audience editor resolves presets and reports invalid queries', async (
   await openStep(page, 'audience');
   const list = page.getByRole('list', { name: 'Resolved browsers' });
   await expect(list).toContainText('Chrome');
-  await expect(page.getByText(/\d+ browser versions/)).toBeVisible();
+  await expect(page.getByRole('heading', { name: /^Browsers \(\d+\)$/ })).toBeVisible();
   await expect(page.getByText(/Browser data up to/)).toBeVisible();
 
-  const query = page.getByLabel('Browserslist query');
+  const query = page.getByLabel('Add a query');
   await fillQuery(page, 'chrome 120');
   await expect(list.getByRole('listitem')).toHaveCount(1);
 
@@ -477,9 +478,9 @@ test('the audience editor resolves presets and reports invalid queries', async (
   await expect(query).toHaveAttribute('aria-invalid', 'true');
 
   await page.getByRole('button', { name: 'defaults', exact: true }).click();
-  await expect(query).toHaveValue('not a query, defaults');
+  await expect(queryField(page)).toHaveAttribute('data-query', 'not a query, defaults');
   await page.getByRole('button', { name: 'Remove: not a query' }).click();
-  await expect(query).toHaveValue('defaults');
+  await expect(queryField(page)).toHaveAttribute('data-query', 'defaults');
   await expect(list).toBeVisible();
 });
 
@@ -520,13 +521,13 @@ test('imported usage statistics enable "in my stats" queries and report ignored 
   await expect(page.getByText(/3 statistics entries loaded/)).toBeVisible();
   await expect(page.getByText(/Ignored unknown browsers: nope/)).toBeVisible();
   await expect(page.getByText(/Ignored 1 unknown versions, for example: chrome 1/)).toBeVisible();
-  await expect(page.getByLabel('Browserslist query')).toHaveValue('> 0.5% in my stats');
+  await expect(queryField(page)).toHaveAttribute('data-query', '> 0.5% in my stats');
   await expect(page.getByText('Covers 73.0% of your traffic')).toBeVisible();
   await expect(page.getByRole('button', { name: 'Remove: > 0.5% in my stats' })).toBeVisible();
 
   await page.getByRole('button', { name: 'Remove my statistics' }).click();
   await expect(page.getByRole('button', { name: 'Import browserslist-stats.json' })).toBeFocused();
-  await expect(page.getByLabel('Browserslist query')).toHaveValue('baseline widely available');
+  await expect(queryField(page)).toHaveAttribute('data-query', 'baseline widely available');
   await expect(page.getByRole('link', { name: 'browserslist-ga', exact: true })).toBeVisible();
 });
 
@@ -543,27 +544,40 @@ test('system shares follow the query and the tag controls edit it', async ({ pag
   await fillQuery(page, 'firefox 120');
   await expect(shares).toContainText('Windows');
 
-  await page.getByRole('button', { name: 'firefox', exact: true }).click();
-  await expect(page.getByLabel('Browserslist query')).toHaveValue(
-    'firefox 120, last 2 firefox versions',
-  );
-  await page.getByRole('button', { name: 'Exclude: last 2 firefox versions' }).click();
-  await expect(page.getByLabel('Browserslist query')).toHaveValue('firefox 120, not firefox > 0');
+  await page.getByRole('button', { name: 'firefox', exact: true }).hover();
+  await page.getByRole('button', { name: 'Exclude firefox', exact: true }).click();
+  await expect(queryField(page)).toHaveAttribute('data-query', 'firefox 120, not firefox > 0');
   await page.getByRole('button', { name: 'Remove: not firefox > 0' }).click();
-  await expect(page.getByLabel('Browserslist query')).toHaveValue('firefox 120');
+  await expect(queryField(page)).toHaveAttribute('data-query', 'firefox 120');
   await page.getByRole('button', { name: '> 1%', exact: true }).click();
-  await expect(page.getByLabel('Browserslist query')).toHaveValue('firefox 120, > 1%');
+  await expect(queryField(page)).toHaveAttribute('data-query', 'firefox 120, > 1%');
+});
+
+test('operating system tags drop a system from the audience', async ({ page }) => {
+  await page.goto('/en/');
+  await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
+  await openStep(page, 'audience');
+  const shares = page.getByRole('list', { name: 'Estimated audience by system' });
+  await expect(shares).toContainText('Linux');
+  await page.getByRole('button', { name: 'Linux', exact: true }).hover();
+  await page.getByRole('button', { name: 'Exclude Linux', exact: true }).click();
+  await expect(queryField(page)).toHaveAttribute(
+    'data-query',
+    'baseline widely available, not os linux',
+  );
+  await expect(shares).not.toContainText('Linux');
+  await expect(page.getByRole('heading', { name: /^Operating systems \(\d+\)$/ })).toBeVisible();
 });
 
 test('typing, pasting and dropping a .browserslist file turn into tags', async ({ page }) => {
   await page.goto('/en/');
   await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
   await openStep(page, 'audience');
-  const query = page.getByLabel('Browserslist query');
+  const query = queryField(page);
   const input = page.getByLabel('Add a query');
   await input.fill('chrome 120');
   await input.press('Enter');
-  await expect(query).toHaveValue('baseline widely available, chrome 120');
+  await expect(query).toHaveAttribute('data-query', 'baseline widely available, chrome 120');
 
   await input.fill('');
   await input.evaluate((element) => {
@@ -571,7 +585,8 @@ test('typing, pasting and dropping a .browserslist file turn into tags', async (
     data.setData('text', '# targets\nsafari 17\nlast 2 firefox versions');
     element.dispatchEvent(new ClipboardEvent('paste', { clipboardData: data, cancelable: true }));
   });
-  await expect(query).toHaveValue(
+  await expect(query).toHaveAttribute(
+    'data-query',
     'baseline widely available, chrome 120, safari 17, last 2 firefox versions',
   );
 
@@ -584,7 +599,7 @@ test('typing, pasting and dropping a .browserslist file turn into tags', async (
       new DragEvent('drop', { dataTransfer: data, bubbles: true, cancelable: true }),
     );
   });
-  await expect(query).toHaveValue('> 1%, not dead');
+  await expect(query).toHaveAttribute('data-query', '> 1%, not dead');
   await expect(page.getByText('Loaded 2 queries from .browserslistrc.')).toBeAttached();
 });
 
