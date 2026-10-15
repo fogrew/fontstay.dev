@@ -26,12 +26,14 @@ export function InstallButton({ locale }: { locale: Locale }) {
 
   if (!prompt) return null;
   return (
-    <Button
-      onClick={() => {
-        void prompt.prompt().finally(() => setPrompt(undefined));
-      }}
-    >
-      {t.pwa_install()}
-    </Button>
+    <div class="ff-install">
+      <Button
+        onClick={() => {
+          void prompt.prompt().finally(() => setPrompt(undefined));
+        }}
+      >
+        {t.pwa_install()}
+      </Button>
+    </div>
   );
 }

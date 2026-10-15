@@ -827,7 +827,6 @@ export function ArticleView({
     return (
       <section class="ff-article-view" aria-label={t.article_heading()}>
         {fewText}
-        <IntroGuide locale={locale} />
         <p class="ff-article-view__hint">{t.article_empty_hint()}</p>
         <div class="ff-article-view__controls">{contentGroup}</div>
         <article
@@ -836,6 +835,7 @@ export function ArticleView({
           dir={article.dir}
           style={hydrated ? pageStyle('web') : undefined}
         >
+          <IntroGuide locale={locale} />
           <ArticleBody article={article} coverage={coverageFor(true)} />
         </article>
       </section>

@@ -13,7 +13,9 @@ export function IntroGuide({ locale }: { locale: Locale }) {
   } as const;
   return (
     <section class="ff-intro" aria-labelledby="ff-intro-title">
-      <h2 id="ff-intro-title">{t.intro_heading()}</h2>
+      <h3 id="ff-intro-title" class="ff-article__title">
+        {t.intro_heading()}
+      </h3>
       <p>{t.intro_what()}</p>
       <div class="ff-intro__demo" aria-hidden="true">
         <figure class="ff-intro__frame" data-state="before">
@@ -29,7 +31,7 @@ export function IntroGuide({ locale }: { locale: Locale }) {
         </figure>
       </div>
       <p class="ff-muted">{t.intro_demo_note()}</p>
-      <h3>{t.intro_steps_heading()}</h3>
+      <h4 class="ff-article__heading">{t.intro_steps_heading()}</h4>
       <ol class="ff-intro__steps">
         {STEPS.map((step) => (
           <li key={step}>
