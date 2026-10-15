@@ -1,5 +1,6 @@
 import { useState } from 'preact/hooks';
 import { type Locale, messagesFor } from '@/common/i18n';
+import { Icon } from '@/common/ui';
 import { addTag, browserOf, isExcluded, removeTag, splitQuery, TAG_GROUPS } from '../lib/tags';
 import { BrowserIcon } from './BrandIcon';
 
@@ -8,6 +9,9 @@ function Label({ tag }: { tag: string }) {
   return (
     <>
       {browser && <BrowserIcon id={browser} />}
+      {/baseline/i.test(tag) && (
+        <Icon name={/newly/i.test(tag) ? 'baseline-newly' : 'baseline-widely'} />
+      )}
       {tag}
     </>
   );
@@ -73,7 +77,10 @@ export function TagEditor({
       </fieldset>
       {TAG_GROUPS.map((group) => (
         <div key={group.id}>
-          <h4>{groupName(group.id)}</h4>
+          <h4>
+            {group.id === 'baseline' && <Icon name="baseline-widely" />}
+            {groupName(group.id)}
+          </h4>
           <ul class="ff-tags__list">
             {group.tags.map((tag) => {
               const query_ = mode === 'include' ? tag.include : tag.exclude;
@@ -86,6 +93,11 @@ export function TagEditor({
                     onClick={() => onChange(addTag(query, query_))}
                   >
                     {tag.browser && <BrowserIcon id={tag.browser} />}
+                    {group.id === 'baseline' && (
+                      <Icon
+                        name={tag.label.includes('newly') ? 'baseline-newly' : 'baseline-widely'}
+                      />
+                    )}
                     {tag.label}
                   </button>
                 </li>

@@ -16,6 +16,7 @@
 | [Modern Font Stacks](https://github.com/system-fonts/modern-font-stacks) | Presets, availability cross-check | CC0-1.0 |
 | [Browserslist](https://github.com/browserslist/browserslist) | Audience queries | MIT |
 | [caniuse-lite](https://github.com/browserslist/caniuse-lite) / [Can I use](https://caniuse.com/) | Browser usage data | CC BY 4.0 |
+| [Baseline icons](https://github.com/web-platform-dx/baseline-status) (`baseline-icon.js`) | Baseline logo next to every mention of Baseline | Apache-2.0 |
 | [baseline-browser-mapping](https://github.com/web-platform-dx/baseline-browser-mapping) | Baseline queries | Apache-2.0 |
 | [Microsoft Learn: Windows 10 and 11 font lists](https://learn.microsoft.com/en-us/typography/fonts/windows_11_font_list) | Font availability on Windows (preinstalled vs Feature on Demand) | Microsoft documentation, facts only |
 | [Apple: System Fonts](https://developer.apple.com/fonts/system-fonts/) | Font availability on current macOS and iOS | Apple documentation, facts only |

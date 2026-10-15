@@ -332,6 +332,13 @@
   margin-inline-end: 0.35em;
   vertical-align: -0.125em;
 }
+.ff-icon--wide {
+  inline-size: 1.8em;
+  --ff-baseline-widely-front: light-dark(#1ea446, #1ea446);
+  --ff-baseline-widely-back: light-dark(#c4eed0, #125225);
+  --ff-baseline-newly-front: light-dark(#1b6ef3, #4185ff);
+  --ff-baseline-newly-back: light-dark(#a8c7fa, #2d509e);
+}
 
 .ff-select__button {
   display: flex;

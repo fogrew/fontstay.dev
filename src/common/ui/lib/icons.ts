@@ -37,6 +37,8 @@ export const ICON_NAMES = [
   'edge',
   'windows',
   'browserslist',
+  'baseline-widely',
+  'baseline-newly',
 ] as const;
 
 export type IconName = (typeof ICON_NAMES)[number];

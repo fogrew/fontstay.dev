@@ -145,7 +145,17 @@ export function AudienceEditor({
           label={t.audience_preset_label()}
           value={presetFor(query, Boolean(stats))?.id ?? CUSTOM}
           options={[
-            ...presets.map((preset) => ({ value: preset.id, label: t[preset.label]() })),
+            ...presets.map((preset) => ({
+              value: preset.id,
+              label: t[preset.label](),
+              ...(preset.id === 'widely' || preset.id === 'baseline2023' || preset.id === 'newly'
+                ? {
+                    icon: (
+                      <Icon name={preset.id === 'newly' ? 'baseline-newly' : 'baseline-widely'} />
+                    ),
+                  }
+                : {}),
+            })),
             { value: CUSTOM, label: t.audience_preset_custom(), disabled: true },
           ]}
           onChange={(id) => setQuery(presets.find((preset) => preset.id === id)?.query ?? query)}
