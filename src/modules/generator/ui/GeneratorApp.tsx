@@ -20,9 +20,12 @@ import {
   buildMatrix,
   DEFAULT_DESKTOP_SPLIT,
   descriptorSupport,
+  isBrowserslistFile,
   lacksVerticalOverrides,
+  MAX_BROWSERSLIST_CHARS,
   OsIcon,
   type OsShares,
+  parseBrowserslist,
   SupportMatrix,
   type SystemInfo,
 } from '@/modules/audience';
@@ -981,7 +984,22 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
   const [dragging, setDragging] = useState(false);
   const [cssDrop, setCssDrop] = useState<{ id: number; files: File[] }>();
   const dropHandler = useRef<(files: File[]) => void>(() => undefined);
-  dropHandler.current = (files) => {
+  const loadAudienceFile = async (file: File) => {
+    const queries = parseBrowserslist(
+      file.size > MAX_BROWSERSLIST_CHARS ? '' : await file.text().catch(() => ''),
+    );
+    if (queries.length === 0) {
+      setAnnouncement(t.audience_file_empty({ name: file.name }));
+      return;
+    }
+    window.dispatchEvent(new CustomEvent(AUDIENCE_SET_EVENT, { detail: queries.join(', ') }));
+    window.dispatchEvent(new CustomEvent(DOCK_OPEN_EVENT, { detail: 'audience' }));
+    setAnnouncement(t.audience_file_loaded({ count: queries.length, name: file.name }));
+  };
+  dropHandler.current = (dropped) => {
+    const listFile = dropped.find((file) => isBrowserslistFile(file.name));
+    if (listFile) void loadAudienceFile(listFile);
+    const files = dropped.filter((file) => file !== listFile);
     const fontFiles = files.filter(isFontFile);
     const styleFiles = files.filter(isStyleFile);
     if (fontFiles.length > 0) void addFiles(fontFiles);

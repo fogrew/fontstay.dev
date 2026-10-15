@@ -80,6 +80,26 @@ export function addTag(query: string, tag: string): string {
   return parts.includes(tag) ? joinQuery(parts) : joinQuery([...parts, tag]);
 }
 
+export function addTags(query: string, tags: readonly string[]): string {
+  return tags.reduce((current, tag) => addTag(current, tag), query);
+}
+
+const PAIRS = TAG_GROUPS.flatMap((group) =>
+  group.tags.map((tag) => [tag.include, tag.exclude] as const),
+);
+
+export function toggleNot(query: string, tag: string): string {
+  const pair = PAIRS.find(([include, exclude]) => include === tag || exclude === tag);
+  const next = pair
+    ? tag === pair[0]
+      ? pair[1]
+      : pair[0]
+    : isExcluded(tag)
+      ? tag.replace(/^not\s+/i, '')
+      : `not ${tag}`;
+  return joinQuery(splitQuery(query).map((part) => (part === tag ? next : part)));
+}
+
 export function removeTag(query: string, tag: string): string {
   return joinQuery(splitQuery(query).filter((part) => part !== tag));
 }

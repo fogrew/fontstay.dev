@@ -1,8 +1,8 @@
 import { useEffect, useId, useRef, useState } from 'preact/hooks';
 import { type Locale, messagesFor } from '@/common/i18n';
-import { Button, Disclosure, Icon, Select } from '@/common/ui';
+import { Button, Disclosure, Icon } from '@/common/ui';
 import type { OsShares, WeightedEntry } from '../lib/os';
-import { DEFAULT_QUERY, MY_STATS_PRESET, PRESETS, presetFor } from '../lib/presets';
+import { DEFAULT_QUERY, MY_STATS_PRESET } from '../lib/presets';
 import { MAX_QUERY_LENGTH, type Resolution, resolveQuery } from '../lib/resolve';
 import {
   importStats,
@@ -16,7 +16,6 @@ import { OsPanel } from './OsPanel';
 import { TagEditor } from './TagEditor';
 import './audience.css';
 
-const CUSTOM = 'custom';
 const DEBOUNCE_MS = 250;
 const GENERATORS = [
   ['browserslist-ga', 'https://github.com/browserslist/browserslist-ga'],
@@ -131,7 +130,6 @@ export function AudienceEditor({
     invalid: t.audience_error_invalid(),
     'no-match': t.audience_error_no_match(),
   };
-  const presets = stats ? [...PRESETS, MY_STATS_PRESET] : PRESETS;
 
   return (
     <Disclosure
@@ -141,45 +139,27 @@ export function AudienceEditor({
       onToggle={(open) => open && setOpened(true)}
     >
       <div class="ff-audience">
-        <Select
-          label={t.audience_preset_label()}
-          value={presetFor(query, Boolean(stats))?.id ?? CUSTOM}
-          options={[
-            ...presets.map((preset) => ({
-              value: preset.id,
-              label: t[preset.label](),
-              ...(preset.id === 'widely' || preset.id === 'baseline2023' || preset.id === 'newly'
-                ? {
-                    icon: (
-                      <Icon name={preset.id === 'newly' ? 'baseline-newly' : 'baseline-widely'} />
-                    ),
-                  }
-                : {}),
-            })),
-            { value: CUSTOM, label: t.audience_preset_custom(), disabled: true },
-          ]}
-          onChange={(id) => setQuery(presets.find((preset) => preset.id === id)?.query ?? query)}
-        />
-        <div class="ff-field">
-          <label for={inputId}>
-            <Icon name="browserslist" />
-            {t.audience_query_label()}
-          </label>
-          <input
-            id={inputId}
-            class="ff-input"
-            type="text"
-            spellcheck={false}
-            autocomplete="off"
-            maxLength={MAX_QUERY_LENGTH * 2}
-            value={query}
-            aria-invalid={invalid}
-            aria-describedby={messageId}
-            onInput={(event) => setQuery(event.currentTarget.value)}
-          />
-          <p class="ff-muted">{t.audience_query_hint()}</p>
-        </div>
-        <TagEditor locale={locale} query={query} onChange={setQuery} />
+        <TagEditor locale={locale} query={query} onChange={setQuery} stats={Boolean(stats)} />
+        <Disclosure summary={t.audience_advanced()}>
+          <div class="ff-field">
+            <label for={inputId}>
+              <Icon name="browserslist" />
+              {t.audience_query_label()}
+            </label>
+            <textarea
+              id={inputId}
+              class="ff-input ff-audience__raw"
+              rows={3}
+              spellcheck={false}
+              maxLength={MAX_QUERY_LENGTH * 2}
+              value={query}
+              aria-invalid={invalid}
+              aria-describedby={messageId}
+              onInput={(event) => setQuery(event.currentTarget.value)}
+            />
+            <p class="ff-muted">{t.audience_query_hint()}</p>
+          </div>
+        </Disclosure>
         <div id={messageId} role="status" class="ff-audience__result">
           {'loading' in state && opened && t.audience_loading()}
           {'failed' in state && t.audience_load_failed()}

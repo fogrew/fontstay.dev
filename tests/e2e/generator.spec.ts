@@ -6,6 +6,7 @@ import {
   choose,
   closePanels,
   expect,
+  fillQuery,
   listed,
   openExport,
   openPopover,
@@ -84,7 +85,7 @@ test('the fallback list follows the selected system and reports shadowing with a
   expect(await listed(fallback)).not.toContain('Roboto');
 
   await openStep(page, 'audience');
-  await page.getByLabel('Browserslist query').fill('safari 17, chrome 120');
+  await fillQuery(page, 'safari 17, chrome 120');
   await selectSystem(page, 'macos');
   await choose(fallback, 'helvetica');
   await selectSystem(page, 'windows');
@@ -468,15 +469,16 @@ test('the audience editor resolves presets and reports invalid queries', async (
   await expect(page.getByText(/Browser data up to/)).toBeVisible();
 
   const query = page.getByLabel('Browserslist query');
-  await query.fill('chrome 120');
+  await fillQuery(page, 'chrome 120');
   await expect(list.getByRole('listitem')).toHaveCount(1);
-  await expect(page.getByLabel('Preset')).toHaveAttribute('data-value', 'custom');
 
-  await query.fill('not a query');
+  await fillQuery(page, 'not a query');
   await expect(page.getByRole('status').filter({ hasText: 'not valid' })).toBeVisible();
   await expect(query).toHaveAttribute('aria-invalid', 'true');
 
-  await choose(page.getByLabel('Preset'), 'defaults');
+  await page.getByRole('button', { name: 'defaults', exact: true }).click();
+  await expect(query).toHaveValue('not a query, defaults');
+  await page.getByRole('button', { name: 'Remove: not a query' }).click();
   await expect(query).toHaveValue('defaults');
   await expect(list).toBeVisible();
 });
@@ -520,7 +522,7 @@ test('imported usage statistics enable "in my stats" queries and report ignored 
   await expect(page.getByText(/Ignored 1 unknown versions, for example: chrome 1/)).toBeVisible();
   await expect(page.getByLabel('Browserslist query')).toHaveValue('> 0.5% in my stats');
   await expect(page.getByText('Covers 73.0% of your traffic')).toBeVisible();
-  await expect(page.getByLabel('Preset')).toHaveAttribute('data-value', 'mystats');
+  await expect(page.getByRole('button', { name: 'Remove: > 0.5% in my stats' })).toBeVisible();
 
   await page.getByRole('button', { name: 'Remove my statistics' }).click();
   await expect(page.getByRole('button', { name: 'Import browserslist-stats.json' })).toBeFocused();
@@ -532,23 +534,58 @@ test('system shares follow the query and the tag controls edit it', async ({ pag
   await page.goto('/en/');
   await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
   await openStep(page, 'audience');
-  await page.getByLabel('Browserslist query').fill('safari 17, ios_saf 17.0-17.1');
+  await fillQuery(page, 'safari 17, ios_saf 17.0-17.1');
   const shares = page.getByRole('list', { name: 'Estimated audience by system' });
   await expect(shares).toContainText('macOS');
   await expect(shares).toContainText('iOS and iPadOS');
   await expect(shares).not.toContainText('Windows');
 
-  await page.getByLabel('Browserslist query').fill('firefox 120');
+  await fillQuery(page, 'firefox 120');
   await expect(shares).toContainText('Windows');
 
-  await page.getByRole('radio', { name: 'Excluded' }).check();
   await page.getByRole('button', { name: 'firefox', exact: true }).click();
+  await expect(page.getByLabel('Browserslist query')).toHaveValue(
+    'firefox 120, last 2 firefox versions',
+  );
+  await page.getByRole('button', { name: 'Exclude: last 2 firefox versions' }).click();
   await expect(page.getByLabel('Browserslist query')).toHaveValue('firefox 120, not firefox > 0');
   await page.getByRole('button', { name: 'Remove: not firefox > 0' }).click();
   await expect(page.getByLabel('Browserslist query')).toHaveValue('firefox 120');
-  await page.getByRole('radio', { name: 'Included' }).check();
   await page.getByRole('button', { name: '> 1%', exact: true }).click();
   await expect(page.getByLabel('Browserslist query')).toHaveValue('firefox 120, > 1%');
+});
+
+test('typing, pasting and dropping a .browserslist file turn into tags', async ({ page }) => {
+  await page.goto('/en/');
+  await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
+  await openStep(page, 'audience');
+  const query = page.getByLabel('Browserslist query');
+  const input = page.getByLabel('Add a query');
+  await input.fill('chrome 120');
+  await input.press('Enter');
+  await expect(query).toHaveValue('baseline widely available, chrome 120');
+
+  await input.fill('');
+  await input.evaluate((element) => {
+    const data = new DataTransfer();
+    data.setData('text', '# targets\nsafari 17\nlast 2 firefox versions');
+    element.dispatchEvent(new ClipboardEvent('paste', { clipboardData: data, cancelable: true }));
+  });
+  await expect(query).toHaveValue(
+    'baseline widely available, chrome 120, safari 17, last 2 firefox versions',
+  );
+
+  await page.evaluate(async () => {
+    const file = new File(['> 1%\nnot dead\n'], '.browserslistrc');
+    const data = new DataTransfer();
+    data.items.add(file);
+    window.dispatchEvent(new DragEvent('dragenter', { dataTransfer: data, bubbles: true }));
+    window.dispatchEvent(
+      new DragEvent('drop', { dataTransfer: data, bubbles: true, cancelable: true }),
+    );
+  });
+  await expect(query).toHaveValue('> 1%, not dead');
+  await expect(page.getByText('Loaded 2 queries from .browserslistrc.')).toBeAttached();
 });
 
 test('a system can have several ordered fallbacks', async ({ page }) => {
@@ -608,7 +645,7 @@ test('the support matrix shows the audience by system with ranges, states and sh
   await expect(matrix.getByText(/CLS \d/).first()).toBeVisible();
 
   await openStep(page, 'audience');
-  await page.getByLabel('Browserslist query').fill('chrome 120');
+  await fillQuery(page, 'chrome 120');
   await openSupport(page);
   await expect(matrix.getByRole('heading', { level: 4, name: /^Chrome/ }).first()).toBeVisible();
   await expect(matrix.getByRole('heading', { level: 4, name: /^Safari/ })).toHaveCount(0);

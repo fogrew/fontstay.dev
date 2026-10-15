@@ -1,5 +1,5 @@
 import AxeBuilder from '@axe-core/playwright';
-import { choose, expect, test } from './fixtures';
+import { choose, expect, fillQuery, test } from './fixtures';
 
 const wcagTags = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'];
 
@@ -55,7 +55,7 @@ test('the coverage column follows the audience settings', async ({ page }) => {
   const row = page.getByRole('row', { name: /^Arial/ });
   await expect(row.getByRole('cell').last()).not.toHaveText('0%');
   await page.getByText('Audience (browsers)').click();
-  await page.getByLabel('Browserslist query').fill('and_chr >= 100');
+  await fillQuery(page, 'and_chr >= 100');
   await expect(row.getByRole('cell').last()).toHaveText('0%');
 });
 

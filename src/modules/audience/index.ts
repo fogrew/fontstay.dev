@@ -1,3 +1,8 @@
+export {
+  isBrowserslistFile,
+  MAX_BROWSERSLIST_CHARS,
+  parseBrowserslist,
+} from './lib/browserslist-file';
 export { buildMatrix, type CellState, type MatrixGroup, type SystemInfo } from './lib/matrix';
 export { browserName } from './lib/names';
 export type { WeightedEntry } from './lib/os';

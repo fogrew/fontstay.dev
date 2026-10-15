@@ -228,18 +228,6 @@
   gap: var(--ff-space-1);
   padding: 0;
 }
-.ff-tags__mode {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--ff-space-3);
-  margin: 0;
-  padding: 0;
-  border: 0;
-}
-.ff-tags__mode legend {
-  padding: 0;
-  font-weight: 600;
-}
 .ff-tags .ff-tag {
   display: inline-flex;
   align-items: center;
@@ -254,4 +242,84 @@
   .ff-audience > :is(.ff-tags, .ff-audience__stats) {
     grid-column: 1 / -1;
   }
+}
+
+.ff-tags__field {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--ff-space-1);
+  align-items: center;
+  min-inline-size: 0;
+  margin: 0;
+  padding: var(--ff-space-1) var(--ff-space-2);
+  border: 1px solid var(--ff-border);
+  border-radius: var(--ff-radius);
+  background: var(--ff-surface);
+}
+.ff-tags__field:focus-within {
+  outline: 2px solid var(--ff-focus);
+  outline-offset: 1px;
+}
+.ff-tags__chips {
+  display: contents;
+  list-style: none;
+}
+.ff-tags .ff-chip {
+  display: inline-flex;
+  flex: 0 1 auto;
+  align-items: center;
+  max-inline-size: 100%;
+  border: 1px solid var(--ff-border);
+  border-radius: 0.75rem;
+  background: var(--ff-surface-2);
+  font-size: 0.8125rem;
+}
+.ff-chip[data-excluded="true"] {
+  border-style: dashed;
+  text-decoration-line: none;
+}
+.ff-chip__label {
+  display: inline-flex;
+  align-items: center;
+  padding-inline: var(--ff-space-1);
+  overflow-wrap: anywhere;
+}
+.ff-chip[data-excluded="true"] .ff-chip__label {
+  text-decoration: line-through;
+}
+.ff-chip button {
+  min-block-size: 1.5rem;
+  padding: 0 var(--ff-space-2);
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+.ff-chip__not {
+  border-start-start-radius: 0.75rem;
+  border-end-start-radius: 0.75rem;
+  color: var(--ff-muted);
+}
+.ff-chip__not[aria-pressed="true"] {
+  background: var(--ff-bg);
+  color: inherit;
+  font-weight: 700;
+}
+.ff-tags__input {
+  flex: 1 1 10rem;
+  min-inline-size: 8rem;
+  padding: var(--ff-space-1);
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+}
+.ff-tags__input:focus {
+  outline: none;
+}
+.ff-audience__raw {
+  inline-size: 100%;
+  font-family: var(--ff-mono, monospace);
+  resize: vertical;
 }

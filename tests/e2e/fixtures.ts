@@ -108,3 +108,11 @@ export async function openPopover(scope: Locator | Page, name: string) {
     await expect(button).toHaveAttribute('aria-expanded', 'true', { timeout: 1000 });
   }).toPass();
 }
+
+export async function fillQuery(page: Page, text: string) {
+  const field = page.getByLabel('Browserslist query');
+  if (!(await field.isVisible())) {
+    await page.getByText('Raw query (advanced)', { exact: true }).click();
+  }
+  await field.fill(text);
+}
