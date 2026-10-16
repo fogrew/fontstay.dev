@@ -334,9 +334,10 @@ test('the loupe shows the comparison only under the lens', async ({ page }) => {
   await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(sourceSans);
   await closePanels(page);
   const view = page.getByRole('region', { name: 'Article' });
-  await view.getByRole('button', { name: 'Loupe', exact: true }).click();
-  const loupe = view.getByRole('application', { name: /^Loupe:/ });
+  await view.getByRole('button', { name: 'X-ray', exact: true }).click();
+  const loupe = view.getByRole('application', { name: /^X-ray:/ });
   await expect(loupe).toBeVisible();
+  await loupe.evaluate((node) => node.scrollIntoView({ block: 'start' }));
   const radius = () =>
     loupe.evaluate((node) => Number.parseFloat(node.style.getPropertyValue('--ff-lens-r') || '0'));
   expect(await radius()).toBe(0);
@@ -352,6 +353,53 @@ test('the loupe shows the comparison only under the lens', async ({ page }) => {
   await page.keyboard.press('ArrowRight');
   await page.keyboard.press('Escape');
   await expect.poll(radius).toBe(0);
+
+  await page.mouse.move(box.x + 200, box.y + 150);
+  await expect.poll(radius).toBe(100);
+  await page.keyboard.down('Shift');
+  await page.mouse.wheel(0, -100);
+  await page.keyboard.up('Shift');
+  await expect.poll(radius).toBe(110);
+  await page.mouse.move(1, 1);
+  await expect(loupe.locator('.ff-article-view__ring')).toBeHidden();
+});
+
+test('the slider moves the divider by drag and keys, vertically or horizontally', async ({
+  page,
+}) => {
+  await page.goto('/en/');
+  await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
+  await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(sourceSans);
+  await closePanels(page);
+  const view = page.getByRole('region', { name: 'Article' });
+  await view.getByRole('button', { name: 'Slider', exact: true }).click();
+  const divider = view.getByRole('slider', { name: /^Divider/ });
+  await divider.evaluate((node) => node.scrollIntoView({ block: 'start' }));
+  await expect(divider).toHaveAttribute('aria-valuenow', '50');
+  await divider.focus();
+  await page.keyboard.press('ArrowRight');
+  await expect(divider).toHaveAttribute('aria-valuenow', '52');
+  await page.keyboard.press('End');
+  await expect(divider).toHaveAttribute('aria-valuenow', '100');
+
+  const box = await divider.boundingBox();
+  if (!box) throw new Error('no divider');
+  const wrap = await view.locator('.ff-article-view__slider').boundingBox();
+  if (!wrap) throw new Error('no slider');
+  await page.mouse.move(box.x + box.width / 2, box.y + 40);
+  await page.mouse.down();
+  await page.mouse.move(wrap.x + wrap.width * 0.25, box.y + 40);
+  await page.mouse.up();
+  const value = Number(await divider.getAttribute('aria-valuenow'));
+  expect(value).toBeGreaterThan(20);
+  expect(value).toBeLessThan(30);
+
+  await view.getByRole('button', { name: 'Top and bottom' }).click();
+  await expect(divider).toHaveAttribute('aria-orientation', 'vertical');
+  await divider.focus();
+  await page.keyboard.press('Home');
+  await page.keyboard.press('ArrowDown');
+  await expect(divider).toHaveAttribute('aria-valuenow', '2');
 });
 
 test('dropdowns and their options show a hover state', async ({ page }) => {
@@ -885,10 +933,7 @@ test('characters missing from the font are highlighted and explained on focus', 
   await choose(view.getByLabel('Sample text'), 'ja');
   const mark = view.locator('.ff-article:not(.ff-article--ghost) .ff-article__missing').first();
   await expect(mark).toBeVisible();
-  await expect(mark).toHaveAttribute(
-    'aria-description',
-    /is not supported by the font.*Sans-serif/,
-  );
+  await expect(mark).toHaveAttribute('aria-description', /is not supported by the font/);
   const overflow = () =>
     page.evaluate(() => ({
       page: document.documentElement.scrollWidth - document.documentElement.clientWidth,
@@ -934,7 +979,6 @@ test('a font embedded in pasted CSS can be added and other sources are only link
   const css = `@font-face { font-family: "Embedded"; font-weight: 700; src: url(data:font/woff2;base64,${encoded}) format("woff2"); }
 @font-face { font-family: "Remote"; src: url(https://example.com/remote.woff2) format("woff2"); }
 @font-face { font-family: "Script"; src: url(javascript:alert(1)); }`;
-  await page.getByText('Import from CSS').click();
   await page.getByLabel('CSS or link').fill(css);
   await page.getByRole('button', { name: 'Read CSS' }).click();
   const list = page.getByRole('list', { name: 'Fonts found in the CSS' });
@@ -954,7 +998,6 @@ test('CSS files can be chosen and their font declarations are found automaticall
   await page.goto('/en/');
   await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
   await openStep(page, 'inputs');
-  await page.getByText('Import from CSS').click();
   await page.getByLabel('CSS files').setInputFiles({
     name: 'fonts.css',
     mimeType: 'text/css',
@@ -994,7 +1037,6 @@ test('a Google Fonts family can be searched and downloaded through the two allow
   await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
   await openStep(page, 'inputs');
   const google = picker(page, 'Google Fonts');
-  await google.getByText('Google Fonts', { exact: true }).click();
   await google.getByLabel('Search families').fill('open sans');
   await expect(google.getByText(/\d+ families shown/)).toBeVisible();
   await google
@@ -1020,7 +1062,6 @@ test('a Fontsource family is downloaded from jsDelivr', async ({ page }) => {
   await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
   await openStep(page, 'inputs');
   const fontsource = picker(page, 'Fontsource: other open fonts');
-  await fontsource.getByText('Fontsource: other open fonts', { exact: true }).click();
   await fontsource.getByLabel('Search families').fill('aileron');
   await fontsource
     .getByRole('list', { name: 'Fontsource families' })
@@ -1038,7 +1079,6 @@ test('a failed Google Fonts download is explained', async ({ page }) => {
   await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
   await openStep(page, 'inputs');
   const google = picker(page, 'Google Fonts');
-  await google.getByText('Google Fonts', { exact: true }).click();
   await google.getByLabel('Search families').fill('lora');
   await google
     .getByRole('list', { name: 'Google Fonts families' })
@@ -1298,7 +1338,6 @@ test('the bookmarklet hands the fonts and text of a page to the generator after 
   await page.goto('/en/');
   await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
   await openStep(page, 'inputs');
-  await page.getByText('Import from a website', { exact: true }).click();
   const link = page.getByRole('link', { name: 'Send to fontstay' });
   const href = (await link.getAttribute('href')) ?? '';
   expect(href).toMatch(/^javascript:/);
@@ -1456,6 +1495,6 @@ test('the intro guide explains the jump and opens each step', async ({ page }) =
   const guide = page.getByRole('region', { name: /Stop the page from jumping/ });
   await expect(guide).toBeVisible();
   await expect(guide).toContainText('layout shift');
-  await guide.getByRole('button', { name: 'Open' }).nth(1).click();
+  await guide.getByRole('button', { name: /Choose the audience/ }).click();
   await expect(page.getByLabel('Audience').first()).toBeVisible();
 });

@@ -100,11 +100,7 @@ export function SourcePicker({
   };
 
   return (
-    <Disclosure
-      icon={source.icon}
-      summary={source.heading}
-      onToggle={(open) => open && setOpened(true)}
-    >
+    <Disclosure icon={source.icon} summary={source.heading} open onVisible={() => setOpened(true)}>
       <div class="ff-source">
         <p class="ff-muted">{source.note}</p>
         <div class="ff-field">

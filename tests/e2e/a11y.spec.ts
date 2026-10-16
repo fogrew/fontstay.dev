@@ -32,11 +32,6 @@ for (const scheme of ['light', 'dark'] as const) {
     await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(fontFile);
     for (const step of Object.keys(STEPS) as (keyof typeof STEPS)[]) {
       await openStep(page, step);
-      if (step === 'inputs') {
-        for (const summary of ['Import from CSS', 'Google Fonts', 'Import from a website']) {
-          await page.getByText(summary, { exact: true }).first().click();
-        }
-      }
       if (step === 'tuning') {
         await page.getByText('Spacing while fonts load', { exact: false }).first().click();
       }

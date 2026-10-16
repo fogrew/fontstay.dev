@@ -1,3 +1,8 @@
+@font-face {
+  font-family: "ff-intro-fallback";
+  src: local("Arial"), local("Helvetica");
+  size-adjust: 108%;
+}
 .ff-generator {
   display: grid;
   gap: var(--ff-space-4);
@@ -1046,6 +1051,7 @@
 }
 
 .ff-article-view__loupe {
+  overflow: clip;
   --ff-lens-r: 0px;
   --ff-lens-x: 50%;
   --ff-lens-y: 50%;
@@ -1076,6 +1082,9 @@
     0 0 0 1px var(--ff-surface),
     0 6px 20px rgb(0 0 0 / 30%);
   pointer-events: none;
+}
+.ff-article-view__loupe:not([data-active]) .ff-article-view__ring {
+  display: none;
 }
 .ff-article-view__loupe:focus-visible {
   outline: 3px solid var(--ff-focus);
@@ -1141,12 +1150,17 @@
   font-weight: 700;
   text-transform: uppercase;
 }
-.ff-article-view .ff-intro__frame[data-state="before"] p {
+.ff-article-view .ff-intro__frame[data-state="plain"] p {
   max-inline-size: none;
   font-family: Arial, Helvetica, sans-serif;
-  font-size: 0.9rem;
+  font-size: 1.05rem;
 }
-.ff-article-view .ff-intro__frame[data-state="after"] p {
+.ff-article-view .ff-intro__frame[data-state="fallback"] p {
+  max-inline-size: none;
+  font-family: "ff-intro-fallback", Arial, sans-serif;
+  font-size: 1.05rem;
+}
+.ff-article-view .ff-intro__frame[data-state="web"] p {
   max-inline-size: none;
   font-family: Georgia, "Times New Roman", serif;
   font-size: 1.05rem;
@@ -1171,19 +1185,30 @@
   padding: 0;
   list-style: none;
 }
-.ff-article-view .ff-intro__steps li {
+.ff-article-view .ff-intro__steps {
+  grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+}
+.ff-article-view .ff-intro__card {
   display: grid;
-  grid-template-columns: 12rem minmax(0, 1fr) auto;
-  gap: var(--ff-space-3);
-  align-items: center;
-  padding: var(--ff-space-2) var(--ff-space-3);
+  align-content: start;
+  gap: var(--ff-space-1);
+  inline-size: 100%;
+  block-size: 100%;
+  padding: var(--ff-space-3);
+  border: 0;
   border-radius: var(--ff-radius);
+  background: var(--ff-surface-2);
+  color: inherit;
+  font: inherit;
+  text-align: start;
+  cursor: pointer;
+}
+.ff-article-view .ff-intro__card:hover {
   background: var(--ff-surface);
 }
-@media (max-width: 40rem) {
-  .ff-article-view .ff-intro__steps li {
-    grid-template-columns: minmax(0, 1fr);
-  }
+.ff-article-view .ff-intro__card .ff-icon {
+  inline-size: 1.5rem;
+  block-size: 1.5rem;
 }
 
 @container dock (min-width: 44rem) {
@@ -1194,4 +1219,94 @@
   .ff-generator__settings > :is(p, .ff-error, .ff-generator__section) {
     grid-column: 1 / -1;
   }
+}
+
+.ff-article-view__slider {
+  --ff-split: 50%;
+  position: relative;
+  display: grid;
+}
+.ff-article-view .ff-article-view__slider > .ff-article,
+.ff-article-view__slider-fallback {
+  grid-area: 1 / 1;
+}
+.ff-article-view__slider-fallback {
+  background: var(--ff-surface);
+  clip-path: inset(0 0 0 var(--ff-split));
+  pointer-events: none;
+}
+.ff-article-view__slider[data-stacked] .ff-article-view__slider-fallback {
+  clip-path: inset(var(--ff-split) 0 0 0);
+}
+.ff-article-view__divider {
+  position: absolute;
+  inset-block: 0;
+  inset-inline-start: var(--ff-split);
+  inline-size: 1.25rem;
+  margin-inline-start: -0.625rem;
+  cursor: ew-resize;
+  touch-action: none;
+}
+.ff-article-view__divider::before {
+  content: "";
+  position: absolute;
+  inset-block: 0;
+  inset-inline-start: calc(50% - 1px);
+  inline-size: 2px;
+  background: var(--ff-accent);
+}
+.ff-article-view__divider::after {
+  content: "";
+  position: absolute;
+  inset-block-start: min(50%, 14rem);
+  inset-inline-start: calc(50% - 0.5rem);
+  inline-size: 1rem;
+  block-size: 1rem;
+  border: 2px solid var(--ff-accent);
+  border-radius: 50%;
+  background: var(--ff-surface);
+}
+.ff-article-view__slider[data-stacked] .ff-article-view__divider {
+  inset-block: var(--ff-split) auto;
+  inset-inline: 0;
+  inline-size: auto;
+  block-size: 1.25rem;
+  margin: -0.625rem 0 0;
+  cursor: ns-resize;
+}
+.ff-article-view__slider[data-stacked] .ff-article-view__divider::before {
+  inset-block: calc(50% - 1px) auto;
+  inset-inline: 0;
+  inline-size: auto;
+  block-size: 2px;
+}
+.ff-article-view__slider[data-stacked] .ff-article-view__divider::after {
+  inset-block: calc(50% - 0.5rem) auto;
+  inset-inline-start: min(50%, 20rem);
+}
+.ff-article-view__divider:focus-visible {
+  outline: 3px solid var(--ff-focus);
+  outline-offset: -3px;
+}
+
+.ff-article-view .ff-article__code {
+  margin: 0;
+  padding: var(--ff-space-3);
+  overflow-x: auto;
+  border-radius: var(--ff-radius);
+  background: var(--ff-surface-2);
+  font-size: 0.875em;
+  line-height: 1.5;
+}
+.ff-article-view .ff-article__code code {
+  font-family: ui-monospace, "Cascadia Mono", Menlo, Consolas, monospace;
+  white-space: pre;
+}
+
+.ff-article-view .ff-article-view__intro {
+  --ff-article-size: 18px;
+  --ff-article-line: 1.5;
+  font-family: var(--ff-article-body);
+  font-size: var(--ff-article-size);
+  line-height: var(--ff-article-line);
 }

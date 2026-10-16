@@ -55,7 +55,7 @@ export function CssImport({
   dropped?: { id: number; files: File[] } | undefined;
 }) {
   const t = messagesFor(locale);
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(true);
   const [text, setText] = useState('');
   const [result, setResult] = useState<Result>();
 

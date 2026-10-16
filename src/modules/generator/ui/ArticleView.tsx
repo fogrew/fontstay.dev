@@ -24,7 +24,7 @@ import type { PreviewItem, SiteData } from '../lib/preview-item';
 import { DeviceShift } from './DeviceShift';
 import { IntroGuide } from './IntroGuide';
 
-type Mode = 'overlay' | 'side' | 'loupe' | 'web' | 'fallback' | 'plain';
+type Mode = 'overlay' | 'side' | 'slider' | 'loupe' | 'web' | 'fallback' | 'plain';
 type Wrap = 'wrap' | 'balance' | 'pretty' | 'stable' | 'nowrap';
 type Substitute = 'sans-serif' | 'serif' | 'monospace' | 'system-ui';
 type Layer = 'web' | 'fallback';
@@ -53,8 +53,18 @@ const DEFAULT_LAYERS: Record<Layer, LayerStyle> = {
   fallback: { render: 'outline', color: 'green', width: 1, opacity: 100 },
 };
 
-const MODES: readonly Mode[] = ['overlay', 'side', 'loupe', 'web', 'fallback', 'plain'];
+const MODES: readonly Mode[] = ['overlay', 'side', 'slider', 'loupe', 'web', 'fallback', 'plain'];
 const LENS_STEP = 24;
+const SAMPLE_CODE = `@font-face {
+  font-family: "Brand Fallback";
+  src: local("Arial");
+  size-adjust: 104.5%;
+  ascent-override: 92%;
+  descent-override: 24%;
+}
+body {
+  font-family: "Brand", "Brand Fallback", sans-serif;
+}`;
 const WRAPS: readonly Wrap[] = ['wrap', 'balance', 'pretty', 'stable', 'nowrap'];
 const SUBSTITUTES: readonly Substitute[] = ['sans-serif', 'serif', 'monospace', 'system-ui'];
 const KEY_PREFIX = 'ff-web-';
@@ -237,6 +247,9 @@ function ArticleBody({ article, coverage }: { article: Article; coverage: Covera
         <h4 class="ff-article__heading">{heading(article.glyphsHeading)}</h4>
         <p class="ff-article__glyphs">{body(article.glyphs)}</p>
       </section>
+      <pre class="ff-article__code" lang="en" dir="ltr">
+        <code>{SAMPLE_CODE}</code>
+      </pre>
       <footer class="ff-article__footer">{body(article.footer)}</footer>
     </>
   );
@@ -270,6 +283,8 @@ export function ArticleView({
   const [stacked, setStacked] = useState(false);
   const [lensShows, setLensShows] = useState<'overlay' | 'fallback'>('overlay');
   const [lensSize, setLensSize] = useState(200);
+  const [split, setSplit] = useState(50);
+  const slider = useRef<HTMLDivElement>(null);
   const loupe = useRef<HTMLDivElement>(null);
   const [guideOn, setGuideOn] = useState<Record<GuideId, boolean>>({
     ascender: false,
@@ -556,6 +571,7 @@ export function ArticleView({
     if (value === 'overlay') return t.mode_overlay();
     if (value === 'loupe') return t.mode_loupe();
     if (value === 'side') return t.mode_side();
+    if (value === 'slider') return t.mode_slider();
     if (value === 'web') return t.preview_web_label();
     return value === 'fallback' ? t.preview_fallback_label() : t.article_view_plain();
   };
@@ -625,8 +641,26 @@ export function ArticleView({
     element.style.setProperty('--ff-lens-x', `${x}px`);
     element.style.setProperty('--ff-lens-y', `${y}px`);
     element.style.setProperty('--ff-lens-r', `${lensSize / 2}px`);
+    element.dataset.active = '';
   };
-  const hideLens = () => loupe.current?.style.setProperty('--ff-lens-r', '0px');
+  const hideLens = () => {
+    loupe.current?.style.setProperty('--ff-lens-r', '0px');
+    if (loupe.current) delete loupe.current.dataset.active;
+  };
+  useEffect(() => {
+    const element = loupe.current;
+    if (element && 'active' in element.dataset) {
+      element.style.setProperty('--ff-lens-r', `${lensSize / 2}px`);
+    }
+  }, [lensSize]);
+  const moveSplit = (event: { clientX: number; clientY: number }) => {
+    const box = slider.current?.getBoundingClientRect();
+    if (!box) return;
+    const ratio = stacked
+      ? (event.clientY - box.top) / box.height
+      : (event.clientX - box.left) / box.width;
+    setSplit(Math.round(Math.min(1, Math.max(0, ratio)) * 1000) / 10);
+  };
   const inspectContent = (
     <>
       <fieldset class="ff-inspect__section" disabled={mode !== 'loupe'}>
@@ -874,8 +908,11 @@ export function ArticleView({
               >
                 {modeShort(value)}
               </button>
-              {value === 'side' && (
-                <span class="ff-preview__arrange" data-active={mode === 'side'}>
+              {value === 'slider' && (
+                <span
+                  class="ff-preview__arrange"
+                  data-active={mode === 'side' || mode === 'slider'}
+                >
                   {(['horizontal', 'stacked'] as const).map((kind) => (
                     <button
                       key={kind}
@@ -884,7 +921,7 @@ export function ArticleView({
                       aria-pressed={stacked === (kind === 'stacked')}
                       aria-label={kind === 'stacked' ? t.side_stacked() : t.side_horizontal()}
                       title={kind === 'stacked' ? t.side_stacked() : t.side_horizontal()}
-                      disabled={mode !== 'side'}
+                      disabled={mode !== 'side' && mode !== 'slider'}
                       onClick={() => setStacked(kind === 'stacked')}
                     >
                       <span class="ff-arrange-icon" data-kind={kind} aria-hidden="true" />
@@ -940,6 +977,9 @@ export function ArticleView({
           <span class="ff-muted">{t.preview_not_installed_note()}</span>
         </p>
       )}
+      <div class="ff-article-view__intro" lang={locale} style={pageStyle('web')}>
+        <IntroGuide locale={locale} />
+      </div>
       {mode === 'overlay' && (
         <div class="ff-article-view__overlay">
           {page('web')}
@@ -959,6 +999,50 @@ export function ArticleView({
           </figure>
         </div>
       )}
+      {mode === 'slider' && (
+        <div class="ff-article-view__slider-wrap">
+          <div
+            class="ff-article-view__slider"
+            ref={slider}
+            data-stacked={stacked ? '' : undefined}
+            style={{ '--ff-split': `${split}%` }}
+          >
+            {page('web')}
+            <div class="ff-article-view__slider-fallback" aria-hidden="true" {...{ inert: true }}>
+              {page('fallback')}
+            </div>
+            <div
+              class="ff-article-view__divider"
+              role="slider"
+              tabIndex={0}
+              aria-label={t.slider_label()}
+              aria-orientation={stacked ? 'vertical' : 'horizontal'}
+              aria-valuemin={0}
+              aria-valuemax={100}
+              aria-valuenow={Math.round(split)}
+              onPointerDown={(event) => {
+                event.currentTarget.setPointerCapture(event.pointerId);
+                moveSplit(event);
+              }}
+              onPointerMove={(event) => {
+                if (event.currentTarget.hasPointerCapture(event.pointerId)) moveSplit(event);
+              }}
+              onKeyDown={(event) => {
+                const back = stacked ? 'ArrowUp' : 'ArrowLeft';
+                const forward = stacked ? 'ArrowDown' : 'ArrowRight';
+                const step = event.shiftKey ? 10 : 2;
+                if (event.key === back) setSplit((value) => Math.max(0, value - step));
+                else if (event.key === forward) setSplit((value) => Math.min(100, value + step));
+                else if (event.key === 'Home') setSplit(0);
+                else if (event.key === 'End') setSplit(100);
+                else return;
+                event.preventDefault();
+              }}
+            />
+          </div>
+          <p class="ff-muted ff-article-view__legend">{t.slider_legend()}</p>
+        </div>
+      )}
       {mode === 'loupe' && (
         <div
           class="ff-article-view__loupe"
@@ -972,6 +1056,13 @@ export function ArticleView({
             moveLens(event.clientX - box.left, event.clientY - box.top);
           }}
           onPointerLeave={hideLens}
+          onWheel={(event) => {
+            if (!event.shiftKey && !event.altKey) return;
+            event.preventDefault();
+            const delta =
+              Math.abs(event.deltaY) >= Math.abs(event.deltaX) ? event.deltaY : event.deltaX;
+            setLensSize((size) => Math.min(400, Math.max(80, size + (delta < 0 ? 20 : -20))));
+          }}
           onFocus={(event) => {
             const box = event.currentTarget.getBoundingClientRect();
             moveLens(box.width / 2, Math.min(box.height / 2, 240));

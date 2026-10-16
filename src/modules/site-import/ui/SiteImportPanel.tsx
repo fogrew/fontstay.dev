@@ -51,7 +51,7 @@ export function SiteImportPanel({
   };
 
   return (
-    <Disclosure summary={t.import_heading()} onToggle={(open) => open && setOpened(true)}>
+    <Disclosure summary={t.import_heading()} open onVisible={() => setOpened(true)}>
       <div class="ff-site-import">
         <p class="ff-muted">{t.import_note()}</p>
         <h4 class="ff-site-import__title">{t.import_bookmarklet_label()}</h4>
