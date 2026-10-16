@@ -72,9 +72,7 @@ Lowercase, hyphen-separated, issue number first.
 
 ### Merging
 
-- Never merge via `gh pr merge` or the GitHub UI — it strips signatures. Merge locally and push:
-  - feature/bugfix/chore → `develop`: `git rebase develop <branch>`, then `git switch develop && git merge --ff-only <branch>`.
-  - release/hotfix → `main`: `git merge --no-ff`, signed tag `git tag -s v<semver>`, then merge back into `develop`.
+- Agents never push to `develop` or `main`, never merge a branch into them, and never merge a PR. Every change goes through a pull request from an issue branch; the owner merges (or tells the agent to, for that PR). The default-branch ruleset enforces pull requests and signatures.
 - After the merge: delete the local branch with `git branch -d <branch>` (switch off it first). GitHub's "automatically delete head branches" removes the remote branch of a merged PR on its own, so `git push origin --delete` is only needed for a PR closed without merging. `fetch.prune` is enabled so stale remote-tracking refs disappear on `git fetch`.
 
 ### Versioning — [SemVer](https://semver.org/)

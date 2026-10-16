@@ -19,6 +19,10 @@ export function Disclosure({
   const element = useRef<HTMLDetailsElement>(null);
   useEffect(() => {
     if (!onVisible || !element.current) return;
+    if (typeof IntersectionObserver === 'undefined') {
+      onVisible();
+      return;
+    }
     const observer = new IntersectionObserver((entries) => {
       if (!entries.some((entry) => entry.isIntersecting)) return;
       observer.disconnect();

@@ -131,7 +131,15 @@ function Runs({ runs, coverage }: { runs: readonly Run[]; coverage: Coverage }) 
   );
 }
 
-function ArticleBody({ article, coverage }: { article: Article; coverage: Coverage }) {
+function ArticleBody({
+  article,
+  coverage,
+  focusable = false,
+}: {
+  article: Article;
+  coverage: Coverage;
+  focusable?: boolean;
+}) {
   const body = (value: string) => (
     <Marked text={value} points={coverage.body} coverage={coverage} />
   );
@@ -247,7 +255,7 @@ function ArticleBody({ article, coverage }: { article: Article; coverage: Covera
         <h4 class="ff-article__heading">{heading(article.glyphsHeading)}</h4>
         <p class="ff-article__glyphs">{body(article.glyphs)}</p>
       </section>
-      <pre class="ff-article__code" lang="en" dir="ltr">
+      <pre class="ff-article__code" lang="en" dir="ltr" tabIndex={focusable ? 0 : undefined}>
         <code>{SAMPLE_CODE}</code>
       </pre>
       <footer class="ff-article__footer">{body(article.footer)}</footer>
@@ -291,15 +299,15 @@ export function ArticleView({
       return false;
     }
   });
-  const toggleIntro = () =>
-    setIntroOpen((open) => {
-      try {
-        localStorage.setItem('fontstay:intro', open ? 'closed' : 'open');
-      } catch {
-        // storage may be unavailable
-      }
-      return !open;
-    });
+  const toggleIntro = () => {
+    const next = !introOpen;
+    setIntroOpen(next);
+    try {
+      localStorage.setItem('fontstay:intro', next ? 'open' : 'closed');
+    } catch {
+      // storage may be unavailable
+    }
+  };
   const slider = useRef<HTMLDivElement>(null);
   const loupe = useRef<HTMLDivElement>(null);
   const [guideOn, setGuideOn] = useState<Record<GuideId, boolean>>({
@@ -563,6 +571,7 @@ export function ArticleView({
     };
   }, [
     boxes,
+    lensShows,
     mode,
     stacked,
     layers,
@@ -619,7 +628,7 @@ export function ArticleView({
       });
     },
   });
-  const page = (kind: 'web' | 'fallback' | 'plain', ghost = false) => (
+  const page = (kind: 'web' | 'fallback' | 'plain', ghost = false, inLens = false) => (
     <article
       class={`ff-article${ghost ? ' ff-article--ghost' : ''}${wrap === 'nowrap' ? ' ff-article--nowrap' : ''}`}
       lang={article.lang}
@@ -632,10 +641,14 @@ export function ArticleView({
       <IntroGuide
         locale={locale}
         collapsed={!introOpen}
-        interactive={kind === 'web' && !ghost}
+        interactive={kind === 'web' && !ghost && !inLens}
         onToggle={toggleIntro}
       />
-      <ArticleBody article={article} coverage={coverageFor(ghost || kind !== 'web')} />
+      <ArticleBody
+        article={article}
+        coverage={coverageFor(ghost || kind !== 'web')}
+        focusable={kind === 'web' && !ghost && !inLens}
+      />
       {boxes && kind !== 'plain' && mode !== 'plain' && (
         // biome-ignore lint/a11y/noAriaHiddenOnFocusable: a decorative canvas without fallback content
         <canvas class="ff-article__boxes" aria-hidden="true" />
@@ -892,7 +905,7 @@ export function ArticleView({
           style={hydrated ? pageStyle('web') : undefined}
         >
           <IntroGuide locale={locale} />
-          <ArticleBody article={article} coverage={coverageFor(true)} />
+          <ArticleBody article={article} coverage={coverageFor(true)} focusable />
         </article>
       </section>
     );
@@ -1039,6 +1052,7 @@ export function ArticleView({
               aria-valuemin={0}
               aria-valuemax={100}
               aria-valuenow={Math.round(split)}
+              aria-valuetext={`${Math.round(split)}%`}
               onPointerDown={(event) => {
                 event.currentTarget.setPointerCapture(event.pointerId);
                 moveSplit(event);
@@ -1052,6 +1066,8 @@ export function ArticleView({
                 const step = event.shiftKey ? 10 : 2;
                 if (event.key === back) setSplit((value) => Math.max(0, value - step));
                 else if (event.key === forward) setSplit((value) => Math.min(100, value + step));
+                else if (event.key === 'PageUp') setSplit((value) => Math.max(0, value - 10));
+                else if (event.key === 'PageDown') setSplit((value) => Math.min(100, value + 10));
                 else if (event.key === 'Home') setSplit(0);
                 else if (event.key === 'End') setSplit(100);
                 else return;
@@ -1110,11 +1126,11 @@ export function ArticleView({
           <div class="ff-article-view__lens" aria-hidden="true" {...{ inert: true }}>
             {lensShows === 'overlay' ? (
               <div class="ff-article-view__overlay">
-                {page('web')}
-                {page('fallback', true)}
+                {page('web', false, true)}
+                {page('fallback', true, true)}
               </div>
             ) : (
-              page('fallback')
+              page('fallback', false, true)
             )}
           </div>
           <span class="ff-article-view__ring" aria-hidden="true" />

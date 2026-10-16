@@ -11,7 +11,7 @@ import {
   type StatsResult,
   type UsageStats,
 } from '../lib/stats';
-import { splitOsQuery } from '../lib/tags';
+import { joinQuery, splitOsQuery, splitQuery } from '../lib/tags';
 import { BrowserIcon } from './BrandIcon';
 import { OsPanel } from './OsPanel';
 import { TagEditor } from './TagEditor';
@@ -66,7 +66,7 @@ export function AudienceEditor({
   useEffect(() => {
     const apply = (event: Event) => {
       const detail = (event as CustomEvent<unknown>).detail;
-      if (typeof detail === 'string' && detail.trim()) setQuery(detail.trim().slice(0, 500));
+      if (typeof detail === 'string' && detail.trim()) setQuery(detail.trim().slice(0, 2000));
     };
     window.addEventListener(AUDIENCE_SET_EVENT, apply);
     return () => window.removeEventListener(AUDIENCE_SET_EVENT, apply);
@@ -210,7 +210,12 @@ export function AudienceEditor({
               <Button
                 onClick={() => {
                   setStats(undefined);
-                  if (/my stats/i.test(query)) setQuery(DEFAULT_QUERY);
+                  if (/my stats/i.test(query)) {
+                    setQuery(
+                      joinQuery(splitQuery(query).filter((part) => !/my stats/i.test(part))) ||
+                        DEFAULT_QUERY,
+                    );
+                  }
                   actions.current?.querySelector('button')?.focus();
                 }}
               >

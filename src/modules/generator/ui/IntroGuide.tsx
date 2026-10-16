@@ -40,14 +40,18 @@ export function IntroGuide({
   );
   if (collapsed) {
     return (
-      <section class="ff-intro ff-intro--compact">
+      <section class="ff-intro ff-intro--compact" aria-hidden={interactive ? undefined : 'true'}>
         <h4 class="ff-article__heading">{t.intro_heading()}</h4>
         {toggle}
       </section>
     );
   }
   return (
-    <section class="ff-intro" aria-labelledby={interactive ? 'ff-intro-title' : undefined}>
+    <section
+      class="ff-intro"
+      aria-labelledby={interactive ? 'ff-intro-title' : undefined}
+      aria-hidden={interactive ? undefined : 'true'}
+    >
       <h3 id={interactive ? 'ff-intro-title' : undefined} class="ff-article__title">
         {t.intro_heading()}
       </h3>

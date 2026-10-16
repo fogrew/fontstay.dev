@@ -354,11 +354,12 @@
 @media (hover: hover) {
   .ff-quick__not {
     position: absolute;
-    inset-inline-start: 100%;
-    inset-block-start: 50%;
+    inset-inline-start: 0;
+    inset-block-start: 100%;
     z-index: 2;
-    margin-inline-start: -0.75rem;
-    transform: translateY(-50%);
+    margin-inline-start: 0;
+    padding-inline-start: var(--ff-space-2);
+    border-radius: 0 0 0.75rem 0.75rem;
     opacity: 0;
     pointer-events: none;
   }
