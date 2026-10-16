@@ -17,4 +17,5 @@ playwright/.cache/
 *.tsbuildinfo
 .feod/
 src/common/i18n/paraglide/
-.claude/
+.claude/*
+!.claude/settings.json

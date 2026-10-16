@@ -72,10 +72,10 @@ Lowercase, hyphen-separated, issue number first.
 
 ### Merging
 
-- Never merge via `gh pr merge` or the GitHub UI — it strips signatures. Merge locally and push:
-  - feature/bugfix/chore → `develop`: `git rebase develop <branch>`, then `git switch develop && git merge --ff-only <branch>`.
-  - release/hotfix → `main`: `git merge --no-ff`, signed tag `git tag -s v<semver>`, then merge back into `develop`.
-- After the merge: delete the local branch with `git branch -d <branch>` (switch off it first). GitHub's "automatically delete head branches" removes the remote branch of a merged PR on its own, so `git push origin --delete` is only needed for a PR closed without merging. `fetch.prune` is enabled so stale remote-tracking refs disappear on `git fetch`.
+- Agents never push to `develop` or `main`, never merge a branch into them, and never merge a PR. Every change goes through a pull request from an issue branch; the owner merges (or tells the agent to, for that PR).
+- Rulesets (`.github/rulesets/`): pull requests only with squash merge, signed commits and tags, linear history, no force push or deletion, signed tags that cannot be moved or deleted. The `pnpm verify` and `commitlint` checks (which also validate the branch name, PR title and commits) from `.github/workflows/ci.yml` must pass. A squash merge uses the PR title as the commit subject, so the PR title is a Conventional Commit.
+- Locally, `lefthook` refuses pushes to `develop`, `main`, `release/*` and `hotfix/*`, and `.claude/settings.json` denies pushes to them, merges and repository setting changes for agents.
+- After the merge: GitHub's "automatically delete head branches" removes the remote branch; delete the local branch with `git branch -D <branch>` (a squash merge leaves it unmerged for git). `fetch.prune` is enabled so stale remote-tracking refs disappear on `git fetch`.
 
 ### Versioning — [SemVer](https://semver.org/)
 
@@ -91,7 +91,7 @@ Release procedure:
 
 1. `git switch -c release/v<semver> develop`.
 2. `pnpm release <semver>` bumps `package.json` and stamps `CHANGELOG.md`, regenerating it from the whole history (clean tree and a matching `release/v<semver>` branch required). Review the generated entries.
-3. Commit `chore(release): v<semver>` (signed) and merge as described under Merging: `main` with `--no-ff`, signed tag `git tag -s v<semver>`, then back into `develop`.
+3. Commit `chore(release): v<semver>` (signed), push the branch and open two pull requests from it, into `main` and into `develop`. The owner squash-merges both, then tags the updated `main` with `git tag -s v<semver>` and pushes the tag.
 
 ## Code
 

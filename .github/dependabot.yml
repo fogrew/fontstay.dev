@@ -1,5 +1,18 @@
 version: 2
 updates:
+  - package-ecosystem: github-actions
+    directory: /
+    target-branch: develop
+    schedule:
+      interval: weekly
+      day: monday
+    cooldown:
+      default-days: 1
+    labels:
+      - type:chore
+      - area:infra
+    commit-message:
+      prefix: ci(deps)
   - package-ecosystem: npm
     directory: /
     target-branch: develop
