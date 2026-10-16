@@ -80,13 +80,6 @@ header {
   position: relative;
   view-transition-name: ff-header;
 }
-.ff-install {
-  position: absolute;
-  inset-block-start: 100%;
-  inset-inline-end: var(--ff-space-3);
-  z-index: 40;
-  margin-block-start: var(--ff-space-1);
-}
 @media (prefers-reduced-motion: no-preference) {
   @view-transition {
     navigation: auto;

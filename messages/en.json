@@ -358,7 +358,6 @@
   "pwa_dismiss": "Dismiss",
   "pwa_updated": "The app was updated from {from} to {to}.",
   "pwa_whats_new": "What is new",
-  "pwa_install": "Install app",
   "matrix_cls_legend": "CLS, the layout shift when the web font replaces the fallback:",
   "cssimport_files": "CSS files",
   "share_copy_short": "Share",
@@ -519,5 +518,7 @@
   "slider_legend": "The web font is before the line, the fallback after it. Drag the line to move it.",
   "intro_demo_plain": "No web font yet",
   "intro_demo_fallback": "Fallback tuned by fontstay",
-  "intro_demo_web": "Web font arrived"
+  "intro_demo_web": "Web font arrived",
+  "intro_show": "Show the guide",
+  "intro_hide": "Hide the guide"
 }

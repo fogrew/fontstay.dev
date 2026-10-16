@@ -284,6 +284,22 @@ export function ArticleView({
   const [lensShows, setLensShows] = useState<'overlay' | 'fallback'>('overlay');
   const [lensSize, setLensSize] = useState(200);
   const [split, setSplit] = useState(50);
+  const [introOpen, setIntroOpen] = useState(() => {
+    try {
+      return localStorage.getItem('fontstay:intro') === 'open';
+    } catch {
+      return false;
+    }
+  });
+  const toggleIntro = () =>
+    setIntroOpen((open) => {
+      try {
+        localStorage.setItem('fontstay:intro', open ? 'closed' : 'open');
+      } catch {
+        // storage may be unavailable
+      }
+      return !open;
+    });
   const slider = useRef<HTMLDivElement>(null);
   const loupe = useRef<HTMLDivElement>(null);
   const [guideOn, setGuideOn] = useState<Record<GuideId, boolean>>({
@@ -613,6 +629,12 @@ export function ArticleView({
       data-guides={guides && mode !== 'plain' ? '' : undefined}
       style={pageStyle(kind)}
     >
+      <IntroGuide
+        locale={locale}
+        collapsed={!introOpen}
+        interactive={kind === 'web' && !ghost}
+        onToggle={toggleIntro}
+      />
       <ArticleBody article={article} coverage={coverageFor(ghost || kind !== 'web')} />
       {boxes && kind !== 'plain' && mode !== 'plain' && (
         // biome-ignore lint/a11y/noAriaHiddenOnFocusable: a decorative canvas without fallback content
@@ -977,9 +999,6 @@ export function ArticleView({
           <span class="ff-muted">{t.preview_not_installed_note()}</span>
         </p>
       )}
-      <div class="ff-article-view__intro" lang={locale} style={pageStyle('web')}>
-        <IntroGuide locale={locale} />
-      </div>
       {mode === 'overlay' && (
         <div class="ff-article-view__overlay">
           {page('web')}

@@ -2,7 +2,7 @@
 import { getTextDirection, type Locale, locales, localizeHref, messagesFor } from '@/common/i18n';
 import { Icon } from '@/common/ui';
 import { LocaleSwitcher } from '@/modules/locale-switcher';
-import { InstallButton, PwaManager } from '@/modules/pwa';
+import { PwaManager } from '@/modules/pwa';
 import '../styles/tokens.css';
 
 interface Props {
@@ -107,7 +107,6 @@ const indexable = !process.env.WORKERS_CI_BRANCH || process.env.WORKERS_CI_BRANC
             <span class="ff-muted" id="ff-header-status" role="status"></span>
           </div>
         )}
-        <InstallButton locale={locale} client:idle />
         <div class="ff-header__group"><LocaleSwitcher current={locale} {path} /></div>
         <a class="ff-header__link" href="https://github.com/fogrew/fontstay.dev" title={t.header_github()}><Icon name="github" /><span class="ff-sr-only">{t.header_github()}</span></a>
       </div>

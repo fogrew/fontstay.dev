@@ -1498,3 +1498,20 @@ test('the intro guide explains the jump and opens each step', async ({ page }) =
   await guide.getByRole('button', { name: /Choose the audience/ }).click();
   await expect(page.getByLabel('Audience').first()).toBeVisible();
 });
+
+test('the intro guide folds into a strip once a font is loaded and can be reopened', async ({
+  page,
+}) => {
+  await page.goto('/en/');
+  await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
+  await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(sourceSans);
+  await closePanels(page);
+  const view = page.getByRole('region', { name: 'Article' });
+  const show = view.getByRole('button', { name: 'Show the guide' });
+  await expect(show).toBeVisible();
+  await expect(view.getByRole('button', { name: /Add your font/ })).toHaveCount(0);
+  await show.click();
+  await expect(view.getByRole('button', { name: /Add your font/ })).toBeVisible();
+  await view.getByRole('button', { name: 'Hide the guide' }).click();
+  await expect(show).toBeVisible();
+});
