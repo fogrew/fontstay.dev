@@ -73,7 +73,7 @@ Lowercase, hyphen-separated, issue number first.
 ### Merging
 
 - Agents never push to `develop` or `main`, never merge a branch into them, and never merge a PR. Every change goes through a pull request from an issue branch; the owner merges (or tells the agent to, for that PR).
-- Rulesets (`.github/rulesets/`): pull requests only with squash merge, signed commits and tags, linear history, no force push or deletion, Conventional Branch names and Conventional Commits messages on every branch, `vX.Y.Z` tags. The `pnpm verify` and `commitlint` checks from `.github/workflows/ci.yml` must pass. A squash merge uses the PR title as the commit subject, so the PR title is a Conventional Commit.
+- Rulesets (`.github/rulesets/`): pull requests only with squash merge, signed commits and tags, linear history, no force push or deletion, signed tags that cannot be moved or deleted. The `pnpm verify` and `commitlint` checks (which also validate the branch name, PR title and commits) from `.github/workflows/ci.yml` must pass. A squash merge uses the PR title as the commit subject, so the PR title is a Conventional Commit.
 - Locally, `lefthook` refuses pushes to `develop`, `main`, `release/*` and `hotfix/*`, and `.claude/settings.json` denies pushes to them, merges and repository setting changes for agents.
 - After the merge: GitHub's "automatically delete head branches" removes the remote branch; delete the local branch with `git branch -D <branch>` (a squash merge leaves it unmerged for git). `fetch.prune` is enabled so stale remote-tracking refs disappear on `git fetch`.
 

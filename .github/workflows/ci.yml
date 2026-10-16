@@ -46,6 +46,14 @@ jobs:
           node-version-file: .node-version
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+      - name: Branch name
+        env:
+          HEAD_REF: ${{ github.head_ref }}
+        run: |
+          printf '%s\n' "$HEAD_REF" | grep -Eq '^((feature|bugfix|chore)/[0-9]+-[a-z0-9]+(-[a-z0-9]+)*|release/v[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?|hotfix/v[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?|dependabot/.+)$' || {
+            echo "Branch '$HEAD_REF' does not follow the Conventional Branch rules in AGENTS.md" >&2
+            exit 1
+          }
       - name: Pull request title
         env:
           TITLE: ${{ github.event.pull_request.title }}

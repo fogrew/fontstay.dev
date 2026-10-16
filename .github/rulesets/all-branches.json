@@ -9,34 +9,8 @@
     }
   },
   "rules": [
-    { "type": "required_signatures" },
     {
-      "type": "branch_name_pattern",
-      "parameters": {
-        "name": "Conventional Branch",
-        "negate": false,
-        "operator": "regex",
-        "pattern": "^(main|develop|(feature|bugfix|chore)/[0-9]+-[a-z0-9]+(-[a-z0-9]+)*|release/v[0-9]+\\.[0-9]+\\.[0-9]+(-[0-9A-Za-z.-]+)?|hotfix/v[0-9]+\\.[0-9]+\\.[0-9]+(-[0-9A-Za-z.-]+)?|dependabot/.+)$"
-      }
-    },
-    {
-      "type": "commit_message_pattern",
-      "parameters": {
-        "name": "Conventional Commits",
-        "negate": false,
-        "operator": "regex",
-        "pattern": "^(feat|fix|docs|style|refactor|perf|test|build|ci|chore|revert)(\\([a-z0-9._/-]+\\))?!?: [^\\n]+"
-      }
-    },
-    {
-      "type": "max_file_size",
-      "parameters": { "max_file_size": 5 }
-    },
-    {
-      "type": "file_extension_restriction",
-      "parameters": {
-        "restricted_file_extensions": [".exe", ".dll", ".so", ".dylib", ".msi", ".jar", ".bin"]
-      }
+      "type": "required_signatures"
     }
   ],
   "bypass_actors": []
