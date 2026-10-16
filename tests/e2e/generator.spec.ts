@@ -1112,7 +1112,10 @@ test('characters missing from the font are highlighted and explained on focus', 
   await choose(view.getByLabel('Sample text'), 'ja');
   const mark = view.locator('.ff-article:not(.ff-article--ghost) .ff-article__missing').first();
   await expect(mark).toBeVisible();
-  await expect(mark).toHaveAttribute('aria-description', /is not supported by the font/);
+  await expect(mark).toHaveAttribute(
+    'aria-description',
+    /is not supported by the font and is drawn with the .+ fallback/,
+  );
   const overflow = () =>
     page.evaluate(() => ({
       page: document.documentElement.scrollWidth - document.documentElement.clientWidth,

@@ -22,7 +22,7 @@ Delivered incrementally:
    - **Paste CSS** (`@font-face` blocks / Google Fonts `<link>` URL).
 
 ### 1.2 Audience (OS & browsers)
-- **Browserslist editor** in the browser with presets: `baseline widely available`, `baseline newly available`, `baseline 20XX`, `defaults`, `> 0.5%, last 2 versions`, mobile-only, desktop-only; free-form query with validation and live resolved list.
+- **Browserslist tag editor** in the browser: quick-add tags (`baseline widely available`, `baseline newly available`, `baseline 20XX`, `defaults`, `> 0.5%, last 2 versions`, mobile-only, desktop-only, browsers, operating systems) with a hover `not` action, typed or pasted queries, `.browserslist` drop, validation and live resolved list.
 - Resolved browsers are mapped to **OS groups**: `ios_saf` → iOS, `safari` → macOS, `and_chr`/`samsung`/`and_ff`/`and_uc` → Android, `chrome`/`edge`/`firefox`/`opera` → Windows/macOS/Linux/ChromeOS (desktop split is configurable).
 - **My stats**: load `browserslist-stats.json` from the user's analytics (see 2.3) to use `in my stats` queries and traffic-weighted coverage.
 - **Manual mode**: user adds/removes OS groups and versions directly, ignoring browserslist.
@@ -132,7 +132,7 @@ src/
       upload/  google-fonts/  site-import/   # submodules
     font-metrics/         # parsing worker, metrics, cmap, script detection
     system-fonts/         # dataset access, similarity ranking, local() names
-    audience/             # browserslist editor, presets, OS mapping, support matrix, coverage
+    audience/             # browserslist tag editor, OS mapping, support matrix, coverage
     fallback-fit/         # fit math, solver, unicode-range builder, stack resolver
     layout-shift/         # CLS simulation (iframes, box diff, scoring)
     preview/              # overlay/side-by-side preview, toggles
@@ -199,7 +199,7 @@ Each phase ends deployable with a green PR check.
 - Upload input, one fallback, FitFields with auto, overlay + side-by-side preview, CSS output, copy button, EN/RU, a11y baseline.
 
 **Phase 3 — Audience & per-OS fallbacks**
-- Browserslist editor with Baseline presets, `browserslist-stats.json` import, OS mapping, manual mode, per-OS selectors with similarity ranking, stack resolver UI, descriptor support warnings, Safari strategy.
+- Browserslist tag editor with Baseline tags, `browserslist-stats.json` import, OS mapping, manual mode, per-OS selectors with similarity ranking, stack resolver UI, descriptor support warnings, Safari strategy.
 
 **Phase 4 — Layout shift**
 - CLS simulator, live metric per viewport, letter/word-spacing fit, "Optimize for CLS".

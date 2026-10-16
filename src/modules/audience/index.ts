@@ -1,6 +1,6 @@
 export {
   isBrowserslistFile,
-  MAX_BROWSERSLIST_CHARS,
+  MAX_PACKAGE_JSON_CHARS,
   parseBrowserslist,
 } from './lib/browserslist-file';
 export { buildMatrix, type CellState, type MatrixGroup, type SystemInfo } from './lib/matrix';

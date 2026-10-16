@@ -46,7 +46,20 @@ const indent = (text: string, spaces = 2) =>
     .map((line) => (line ? `${' '.repeat(spaces)}${line}` : line))
     .join('\n');
 
-const quoted = (value: string) => `'${value.replace(/\\/g, '\\\\').replace(/'/g, "\\'")}'`;
+const isControl = (code: number) =>
+  code < 32 || (code >= 127 && code <= 159) || code === 0x2028 || code === 0x2029;
+
+const mapControl = (value: string, replace: (code: number) => string) =>
+  [...value]
+    .map((char) => (isControl(char.charCodeAt(0)) ? replace(char.charCodeAt(0)) : char))
+    .join('');
+
+const escapeUnit = (code: number) => `\\u${code.toString(16).padStart(4, '0')}`;
+
+const quoted = (value: string) =>
+  `'${mapControl(value.replace(/\\/g, '\\\\').replace(/'/g, "\\'"), escapeUnit)}'`;
+
+const singleLine = (value: string) => mapControl(value, () => ' ');
 
 const extensionOf = (fileName: string) => fileName.split('.').pop()?.toLowerCase() ?? 'woff2';
 
@@ -207,7 +220,7 @@ export function buildExport(format: ExportFormat, input: ExportInput): ExportFil
     case 'next':
       return {
         text: [
-          `// Put ${filesOf(input).join(', ')} into ./fonts/ and the @font-face rules from the CSS export into your global CSS.`,
+          `// Put ${singleLine(filesOf(input).join(', '))} into ./fonts/ and the @font-face rules from the CSS export into your global CSS.`,
           "import localFont from 'next/font/local';",
           '',
           families.map((family) => nextBlock(input, family)).join('\n\n'),

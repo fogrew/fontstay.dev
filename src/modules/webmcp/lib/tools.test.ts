@@ -85,7 +85,7 @@ describe('tools', () => {
       fonts: ['arial', 'segoe-ui', 'a', 'b', 'c', 'd', 'e', 'f'],
     });
     await run(bounded, 'set-audience', { query: 'x'.repeat(2000) });
-    expect(setAudience.mock.calls[0]?.[0]).toHaveLength(500);
+    expect(setAudience.mock.calls[0]?.[0]).toHaveLength(2000);
   });
 
   it('explains known topics and lists the topics for unknown ones', async () => {

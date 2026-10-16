@@ -20,8 +20,10 @@ export function runReceivePage(root: HTMLElement): void {
     onFailure: fail,
     onImport: (value) => {
       void storePending(value).then((stored) => {
-        if (stored) location.replace(after);
-        else fail();
+        if (stored) {
+          window.opener = null;
+          location.replace(after);
+        } else fail();
       });
     },
   });

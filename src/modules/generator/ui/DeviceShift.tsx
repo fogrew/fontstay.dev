@@ -31,7 +31,7 @@ export function DeviceShift({
     return rating === 'needs-improvement' ? t.cls_rating_needs() : t.cls_rating_poor();
   };
   const worstOf = (list: readonly WidthShift[] | undefined) =>
-    list ? Math.max(...list.map((item) => item.score)) : undefined;
+    list && list.length > 0 ? Math.max(...list.map((item) => item.score)) : undefined;
   const worst = worstOf(results);
   const before = worstOf(baseline);
   const rating = worst === undefined ? undefined : ratingOf(worst);
