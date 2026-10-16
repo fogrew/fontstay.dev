@@ -36,7 +36,7 @@ async function fontstayCollect(win, doc, options = {}) {
     for (const match of src.matchAll(pattern)) {
       const href = secure(match[1], base);
       const kind = (match[2] || match[1].split('?')[0].split('.').pop() || '').toLowerCase();
-      const rank = RANK[kind] ?? 50;
+      const rank = Object.hasOwn(RANK, kind) ? RANK[kind] : 50;
       if (href && rank < bestRank) {
         best = href;
         bestRank = rank;

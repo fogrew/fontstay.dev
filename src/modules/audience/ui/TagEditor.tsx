@@ -140,6 +140,7 @@ export function TagEditor({
               value={draft}
               onInput={(event) => setDraft(event.currentTarget.value)}
               onKeyDown={(event) => {
+                if (event.isComposing) return;
                 if (event.key === 'Enter' || (event.key === ',' && draft.trim())) {
                   event.preventDefault();
                   commit(draft);

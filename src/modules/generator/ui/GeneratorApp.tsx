@@ -22,7 +22,7 @@ import {
   descriptorSupport,
   isBrowserslistFile,
   lacksVerticalOverrides,
-  MAX_BROWSERSLIST_CHARS,
+  MAX_PACKAGE_JSON_CHARS,
   OsIcon,
   type OsShares,
   parseBrowserslist,
@@ -986,7 +986,7 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
   const dropHandler = useRef<(files: File[]) => void>(() => undefined);
   const loadAudienceFile = async (file: File) => {
     const queries = parseBrowserslist(
-      file.size > MAX_BROWSERSLIST_CHARS ? '' : await file.text().catch(() => ''),
+      file.size > MAX_PACKAGE_JSON_CHARS ? '' : await file.text().catch(() => ''),
     );
     if (queries.length === 0) {
       setAnnouncement(t.audience_file_empty({ name: file.name }));

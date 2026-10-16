@@ -61,7 +61,7 @@ export function buildTools(host: () => ToolHost): WebMcpTool[] {
         required: ['query'],
       },
       execute: (input) => {
-        const query = stringOf(input.query).trim().slice(0, 500);
+        const query = stringOf(input.query).trim().slice(0, 2000);
         if (!query) return text('The query is empty.');
         return text(host().setAudience(query).message);
       },
@@ -166,7 +166,10 @@ export function buildTools(host: () => ToolHost): WebMcpTool[] {
       },
       execute: (input) => {
         const topic = stringOf(input.topic).toLowerCase().trim();
-        return text(HELP[topic] ?? `Unknown topic. Topics: ${Object.keys(HELP).join(', ')}.`);
+        return text(
+          (Object.hasOwn(HELP, topic) ? HELP[topic] : undefined) ??
+            `Unknown topic. Topics: ${Object.keys(HELP).join(', ')}.`,
+        );
       },
     },
   ];

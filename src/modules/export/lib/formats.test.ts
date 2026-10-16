@@ -81,3 +81,15 @@ describe('buildExport', () => {
     expect(buildExport('preload', several).text.split('\n')).toHaveLength(4);
   });
 });
+
+describe('hostile family names', () => {
+  it('cannot break out of the JavaScript string in the Nuxt and Astro exports', () => {
+    const name = ['x', '});evil();//', String.fromCharCode(0x2028)].join('\n');
+    const hostile: ExportFamily = { ...inter, targetFamily: name };
+    for (const format of ['nuxt', 'astro'] as const) {
+      const { text } = buildExport(format, { ...input, families: [hostile] });
+      expect(text.split('\n').some((line) => line.startsWith('});evil'))).toBe(false);
+      expect(text).toContain('x\\u000a});evil();//\\u000a\\u2028');
+    }
+  });
+});
