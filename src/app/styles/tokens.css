@@ -78,6 +78,7 @@ header {
 }
 .ff-header {
   position: relative;
+  min-block-size: 2.5rem;
   view-transition-name: ff-header;
 }
 @media (prefers-reduced-motion: no-preference) {
@@ -103,7 +104,7 @@ header {
   border-inline-start: 1px solid var(--ff-border);
 }
 .ff-header__actions .ff-button {
-  min-block-size: 2rem;
+  min-block-size: 1.75rem;
   padding: 0.125rem var(--ff-space-3);
 }
 .ff-breadcrumbs {

@@ -33,11 +33,18 @@ export function IntroGuide({
     fallback: t.intro_demo_fallback(),
     web: t.intro_demo_web(),
   } as const;
-  const toggle = onToggle && interactive && (
-    <button type="button" class="ff-intro__toggle" aria-expanded={!collapsed} onClick={onToggle}>
-      {collapsed ? t.intro_show() : t.intro_hide()}
-    </button>
-  );
+  const toggleLabel = collapsed ? t.intro_show() : t.intro_hide();
+  const toggle =
+    onToggle &&
+    (interactive ? (
+      <button type="button" class="ff-intro__toggle" aria-expanded={!collapsed} onClick={onToggle}>
+        {toggleLabel}
+      </button>
+    ) : (
+      <span class="ff-intro__toggle" aria-hidden="true">
+        {toggleLabel}
+      </span>
+    ));
   if (collapsed) {
     return (
       <section class="ff-intro ff-intro--compact">

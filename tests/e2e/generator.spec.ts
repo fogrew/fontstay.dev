@@ -1489,6 +1489,42 @@ test('the generator page itself does not shift while it loads', async ({ page })
   expect(total).toBeLessThan(0.02);
 });
 
+test('the header keeps its size and position on every page', async ({ page }) => {
+  await page.setViewportSize({ width: 1366, height: 768 });
+  const boxes: unknown[] = [];
+  for (const path of ['/en/', '/en/fonts/', '/en/presets/', '/en/guide/', '/en/credits/']) {
+    await page.goto(path);
+    boxes.push(
+      await page.evaluate(() => {
+        const rect = (selector: string) => {
+          const { y, height } = document.querySelector(selector)?.getBoundingClientRect() ?? {};
+          return [y, height];
+        };
+        return { header: rect('.ff-header'), brand: rect('.ff-brand') };
+      }),
+    );
+  }
+  for (const box of boxes) expect(box).toEqual(boxes[0]);
+});
+
+test('the intro guide has the same height in every article layer', async ({ page }) => {
+  await page.goto('/en/');
+  await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
+  await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(sourceSans);
+  await closePanels(page);
+  const view = page.getByRole('region', { name: 'Article' });
+  const heights = () =>
+    view
+      .locator('.ff-intro')
+      .evaluateAll((guides) =>
+        guides.map((guide) => Math.round(guide.getBoundingClientRect().height)),
+      );
+  const collapsed = await heights();
+  expect(new Set(collapsed).size).toBe(1);
+  await view.getByRole('button', { name: 'Show the guide' }).click();
+  await expect.poll(async () => new Set(await heights()).size).toBe(1);
+});
+
 test('the intro guide explains the jump and opens each step', async ({ page }) => {
   await page.goto('/en/');
   await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
