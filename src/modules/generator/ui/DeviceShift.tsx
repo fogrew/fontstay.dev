@@ -35,6 +35,7 @@ export function DeviceShift({
   const worst = worstOf(results);
   const before = worstOf(baseline);
   const rating = worst === undefined ? undefined : ratingOf(worst);
+  const beforeRating = before === undefined ? undefined : ratingOf(before);
   return (
     <div class="ff-shift" role="status">
       {fitting ? (
@@ -43,18 +44,37 @@ export function DeviceShift({
         <span class="ff-muted">{t.article_shift_measuring()}</span>
       ) : (
         <>
-          <strong class="ff-shift__score" data-rating={rating} title={t.article_shift_label()}>
-            <span aria-hidden="true">{SYMBOLS[rating]}</span> CLS {format.format(worst)}
-            <span class="ff-sr-only"> {label(rating)}</span>
-          </strong>
-          {before !== undefined && (
-            <span class="ff-shift__baseline">
-              {t.article_shift_plain({
-                score: format.format(before),
-                delta: delta.format(worst - before),
-              })}
-            </span>
-          )}
+          <span class="ff-shift__change">
+            <span class="ff-shift__label">CLS</span>
+            {before !== undefined && beforeRating !== undefined && (
+              <>
+                <strong
+                  class="ff-shift__score"
+                  data-rating={beforeRating}
+                  title={t.article_shift_before()}
+                >
+                  <span aria-hidden="true">{SYMBOLS[beforeRating]}</span> {format.format(before)}
+                  <span class="ff-sr-only">
+                    {' '}
+                    {t.article_shift_before()}, {label(beforeRating)}
+                  </span>
+                </strong>
+                <span class="ff-shift__arrow" aria-hidden="true">
+                  →
+                </span>
+              </>
+            )}
+            <strong class="ff-shift__score" data-rating={rating} title={t.article_shift_after()}>
+              <span aria-hidden="true">{SYMBOLS[rating]}</span> {format.format(worst)}
+              <span class="ff-sr-only">
+                {' '}
+                {t.article_shift_after()}, {label(rating)}
+              </span>
+            </strong>
+            {before !== undefined && (
+              <span class="ff-shift__baseline">({delta.format(worst - before)})</span>
+            )}
+          </span>
           <Popover label={t.article_shift_details()} align="end">
             <ul class="ff-shift__widths">
               {(results ?? []).map((item) => {
