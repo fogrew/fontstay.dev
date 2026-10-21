@@ -403,6 +403,42 @@ test('the x-ray lens follows the pointer in every layout and covers the divider'
   }
 });
 
+test('the preview width is resized by drag and keys to simulate narrower screens', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1500, height: 900 });
+  await page.goto('/en/');
+  await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
+  await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(sourceSans);
+  await closePanels(page);
+  const view = page.getByRole('region', { name: 'Article' });
+  const handle = view.getByRole('slider', { name: /^Preview width/ });
+  const frame = view.locator('.ff-article-view__frame');
+  await handle.evaluate((node) => node.scrollIntoView({ block: 'start' }));
+  const full = (await frame.boundingBox())?.width ?? 0;
+  expect(full).toBeGreaterThan(1000);
+  await expect(frame).not.toHaveAttribute('data-constrained', '');
+
+  const box = await handle.boundingBox();
+  if (!box) throw new Error('no handle');
+  await page.mouse.move(box.x + box.width / 2, box.y + 60);
+  await page.mouse.down();
+  await page.mouse.move(box.x - 600, box.y + 60);
+  await page.mouse.up();
+  await expect(frame).toHaveAttribute('data-constrained', '');
+  const narrowed = (await frame.boundingBox())?.width ?? 0;
+  expect(narrowed).toBeGreaterThan(320);
+  expect(narrowed).toBeLessThan(full - 400);
+
+  await handle.focus();
+  await page.keyboard.press('Home');
+  await expect(handle).toHaveAttribute('aria-valuenow', '320');
+  await page.keyboard.press('ArrowRight');
+  await expect(handle).toHaveAttribute('aria-valuenow', '336');
+  await page.keyboard.press('End');
+  await expect(frame).not.toHaveAttribute('data-constrained', '');
+});
+
 test('the slider moves the divider by drag and keys, vertically or horizontally', async ({
   page,
 }) => {

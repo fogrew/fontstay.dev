@@ -74,6 +74,9 @@ const DEFAULT_LAYERS: Record<LayerId, LayerStyle> = {
 
 const PRESET_ORDER: readonly Preset[] = ['overlay', 'side', 'slider', 'web', 'fallback', 'plain'];
 const LENS_STEP = 24;
+const MIN_FRAME = 320;
+const FRAME_STEP = 16;
+const FRAME_BIG_STEP = 64;
 const SAMPLE_CODE = `@font-face {
   font-family: "Brand Fallback";
   src: local("Arial");
@@ -293,6 +296,8 @@ export function ArticleView({
   const [articleId, setArticleId] = useState<ArticleKey>(locale === 'ru' ? 'ru' : 'en');
   const [positions, setPositions] = useState(PRESETS.overlay);
   const [xray, setXray] = useState(false);
+  const [frameWidth, setFrameWidth] = useState<number>();
+  const frame = useRef<HTMLDivElement>(null);
   const [size, setSize] = useState(18);
   const [lineHeight, setLineHeight] = useState(1.5);
   const [wrap, setWrap] = useState<Wrap>('wrap');
@@ -712,6 +717,14 @@ export function ArticleView({
       element.style.setProperty('--ff-lens-r', `${lensSize / 2}px`);
     }
   }, [lensSize]);
+  const fullWidth = () => view.current?.clientWidth ?? 0;
+  const sizeFrame = (pixels: number | undefined) =>
+    setFrameWidth(
+      pixels === undefined || pixels >= fullWidth() - 1
+        ? undefined
+        : Math.max(MIN_FRAME, Math.round(pixels)),
+    );
+  const currentFrame = () => Math.round(frameWidth ?? fullWidth());
   const moveSplit = (event: { clientX: number; clientY: number }) => {
     const box = slider.current?.getBoundingClientRect();
     if (!box) return;
@@ -1049,138 +1062,180 @@ export function ArticleView({
         </p>
       )}
       <div
-        ref={loupe}
-        class={xray ? 'ff-article-view__loupe' : 'ff-article-view__stage'}
-        {...(xray
-          ? {
-              tabIndex: 0,
-              role: 'application',
-              'aria-label': t.loupe_label(),
-              onPointerMove: (event: PointerEvent) => {
-                const box = (event.currentTarget as HTMLElement).getBoundingClientRect();
-                moveLens(event.clientX - box.left, event.clientY - box.top);
-              },
-              onPointerLeave: hideLens,
-              onWheel: (event: WheelEvent) => {
-                if (!event.shiftKey && !event.altKey) return;
-                event.preventDefault();
-                const delta =
-                  Math.abs(event.deltaY) >= Math.abs(event.deltaX) ? event.deltaY : event.deltaX;
-                setLensSize((current) =>
-                  Math.min(400, Math.max(80, current + (delta < 0 ? 20 : -20))),
-                );
-              },
-              onFocus: (event: FocusEvent) => {
-                const box = (event.currentTarget as HTMLElement).getBoundingClientRect();
-                moveLens(box.width / 2, Math.min(box.height / 2, 240));
-              },
-              onBlur: hideLens,
-              onKeyDown: (event: KeyboardEvent) => {
-                if (event.target !== event.currentTarget) return;
-                const element = event.currentTarget as HTMLElement;
-                const x = Number.parseFloat(element.style.getPropertyValue('--ff-lens-x')) || 0;
-                const y = Number.parseFloat(element.style.getPropertyValue('--ff-lens-y')) || 0;
-                const moves: Record<string, [number, number]> = {
-                  ArrowLeft: [-LENS_STEP, 0],
-                  ArrowRight: [LENS_STEP, 0],
-                  ArrowUp: [0, -LENS_STEP],
-                  ArrowDown: [0, LENS_STEP],
-                };
-                const move = moves[event.key];
-                if (move) {
-                  event.preventDefault();
-                  moveLens(x + move[0], y + move[1]);
-                } else if (event.key === 'Escape') {
-                  hideLens();
-                }
-              },
-            }
-          : {})}
+        ref={frame}
+        class="ff-article-view__frame"
+        data-constrained={frameWidth === undefined ? undefined : ''}
+        style={frameWidth === undefined ? undefined : { inlineSize: `${frameWidth}px` }}
       >
-        {arrangement === 'columns' ? (
-          <div class="ff-article-view__side" data-stacked={stacked ? '' : undefined}>
-            {(['start', 'end'] as const)
-              .flatMap((position) => layersAt(positions, position))
-              .map((id) => (
-                <figure key={id}>
-                  <figcaption>{presetLabel(id)}</figcaption>
-                  <div data-pane="">{page(id)}</div>
-                </figure>
-              ))}
-          </div>
-        ) : (
-          <div
-            class={clipped ? 'ff-article-view__slider' : 'ff-article-view__overlay'}
-            ref={slider}
-            data-pane=""
-            data-stacked={clipped && stacked ? '' : undefined}
-            style={clipped ? { '--ff-split': `${split}%` } : undefined}
-          >
-            {LAYER_IDS.filter((id) => positions[id] !== 'hidden').map((id) =>
-              positions[id] === 'clip' ? (
-                <div
-                  key={id}
-                  class="ff-article-view__slider-fallback"
-                  aria-hidden="true"
-                  {...{ inert: true }}
-                >
-                  {page(id, { copy: true })}
-                </div>
-              ) : (
-                <Fragment key={id}>
-                  {page(id, { ghost: positions[id] === 'ghost', styled: overlaid })}
-                </Fragment>
-              ),
-            )}
-            {clipped && (
-              <div
-                class="ff-article-view__divider"
-                role="slider"
-                tabIndex={0}
-                aria-label={t.slider_label()}
-                aria-orientation={stacked ? 'vertical' : 'horizontal'}
-                aria-valuemin={0}
-                aria-valuemax={100}
-                aria-valuenow={Math.round(split)}
-                onPointerDown={(event) => {
-                  event.currentTarget.setPointerCapture(event.pointerId);
-                  moveSplit(event);
-                }}
-                onPointerMove={(event) => {
-                  if (event.currentTarget.hasPointerCapture(event.pointerId)) moveSplit(event);
-                }}
-                onKeyDown={(event) => {
-                  const back = stacked ? 'ArrowUp' : 'ArrowLeft';
-                  const forward = stacked ? 'ArrowDown' : 'ArrowRight';
-                  const step = event.shiftKey ? 10 : 2;
-                  if (event.key === back) setSplit((value) => Math.max(0, value - step));
-                  else if (event.key === forward) setSplit((value) => Math.min(100, value + step));
-                  else if (event.key === 'Home') setSplit(0);
-                  else if (event.key === 'End') setSplit(100);
-                  else return;
+        <div
+          ref={loupe}
+          class={xray ? 'ff-article-view__loupe' : 'ff-article-view__stage'}
+          {...(xray
+            ? {
+                tabIndex: 0,
+                role: 'application',
+                'aria-label': t.loupe_label(),
+                onPointerMove: (event: PointerEvent) => {
+                  const box = (event.currentTarget as HTMLElement).getBoundingClientRect();
+                  moveLens(event.clientX - box.left, event.clientY - box.top);
+                },
+                onPointerLeave: hideLens,
+                onWheel: (event: WheelEvent) => {
+                  if (!event.shiftKey && !event.altKey) return;
                   event.preventDefault();
-                }}
-              />
-            )}
-          </div>
-        )}
-        {xray && (
-          <>
-            <div class="ff-article-view__lens" aria-hidden="true" {...{ inert: true }}>
-              <div class="ff-article-view__lens-pane">
-                {lensShows === 'overlay' ? (
-                  <div class="ff-article-view__overlay">
-                    {page('web', { copy: true, styled: true })}
-                    {page('fallback', { ghost: true, styled: true })}
+                  const delta =
+                    Math.abs(event.deltaY) >= Math.abs(event.deltaX) ? event.deltaY : event.deltaX;
+                  setLensSize((current) =>
+                    Math.min(400, Math.max(80, current + (delta < 0 ? 20 : -20))),
+                  );
+                },
+                onFocus: (event: FocusEvent) => {
+                  const box = (event.currentTarget as HTMLElement).getBoundingClientRect();
+                  moveLens(box.width / 2, Math.min(box.height / 2, 240));
+                },
+                onBlur: hideLens,
+                onKeyDown: (event: KeyboardEvent) => {
+                  if (event.target !== event.currentTarget) return;
+                  const element = event.currentTarget as HTMLElement;
+                  const x = Number.parseFloat(element.style.getPropertyValue('--ff-lens-x')) || 0;
+                  const y = Number.parseFloat(element.style.getPropertyValue('--ff-lens-y')) || 0;
+                  const moves: Record<string, [number, number]> = {
+                    ArrowLeft: [-LENS_STEP, 0],
+                    ArrowRight: [LENS_STEP, 0],
+                    ArrowUp: [0, -LENS_STEP],
+                    ArrowDown: [0, LENS_STEP],
+                  };
+                  const move = moves[event.key];
+                  if (move) {
+                    event.preventDefault();
+                    moveLens(x + move[0], y + move[1]);
+                  } else if (event.key === 'Escape') {
+                    hideLens();
+                  }
+                },
+              }
+            : {})}
+        >
+          {arrangement === 'columns' ? (
+            <div class="ff-article-view__side" data-stacked={stacked ? '' : undefined}>
+              {(['start', 'end'] as const)
+                .flatMap((position) => layersAt(positions, position))
+                .map((id) => (
+                  <figure key={id}>
+                    <figcaption>{presetLabel(id)}</figcaption>
+                    <div data-pane="">{page(id)}</div>
+                  </figure>
+                ))}
+            </div>
+          ) : (
+            <div
+              class={clipped ? 'ff-article-view__slider' : 'ff-article-view__overlay'}
+              ref={slider}
+              data-pane=""
+              data-stacked={clipped && stacked ? '' : undefined}
+              style={clipped ? { '--ff-split': `${split}%` } : undefined}
+            >
+              {LAYER_IDS.filter((id) => positions[id] !== 'hidden').map((id) =>
+                positions[id] === 'clip' ? (
+                  <div
+                    key={id}
+                    class="ff-article-view__slider-fallback"
+                    aria-hidden="true"
+                    {...{ inert: true }}
+                  >
+                    {page(id, { copy: true })}
                   </div>
                 ) : (
-                  page(lensShows, { copy: true })
-                )}
-              </div>
+                  <Fragment key={id}>
+                    {page(id, { ghost: positions[id] === 'ghost', styled: overlaid })}
+                  </Fragment>
+                ),
+              )}
+              {clipped && (
+                <div
+                  class="ff-article-view__divider"
+                  role="slider"
+                  tabIndex={0}
+                  aria-label={t.slider_label()}
+                  aria-orientation={stacked ? 'vertical' : 'horizontal'}
+                  aria-valuemin={0}
+                  aria-valuemax={100}
+                  aria-valuenow={Math.round(split)}
+                  onPointerDown={(event) => {
+                    event.currentTarget.setPointerCapture(event.pointerId);
+                    moveSplit(event);
+                  }}
+                  onPointerMove={(event) => {
+                    if (event.currentTarget.hasPointerCapture(event.pointerId)) moveSplit(event);
+                  }}
+                  onKeyDown={(event) => {
+                    const back = stacked ? 'ArrowUp' : 'ArrowLeft';
+                    const forward = stacked ? 'ArrowDown' : 'ArrowRight';
+                    const step = event.shiftKey ? 10 : 2;
+                    if (event.key === back) setSplit((value) => Math.max(0, value - step));
+                    else if (event.key === forward)
+                      setSplit((value) => Math.min(100, value + step));
+                    else if (event.key === 'Home') setSplit(0);
+                    else if (event.key === 'End') setSplit(100);
+                    else return;
+                    event.preventDefault();
+                  }}
+                />
+              )}
             </div>
-            <span class="ff-article-view__ring" aria-hidden="true" />
-          </>
-        )}
+          )}
+          {xray && (
+            <>
+              <div class="ff-article-view__lens" aria-hidden="true" {...{ inert: true }}>
+                <div class="ff-article-view__lens-pane">
+                  {lensShows === 'overlay' ? (
+                    <div class="ff-article-view__overlay">
+                      {page('web', { copy: true, styled: true })}
+                      {page('fallback', { ghost: true, styled: true })}
+                    </div>
+                  ) : (
+                    page(lensShows, { copy: true })
+                  )}
+                </div>
+              </div>
+              <span class="ff-article-view__ring" aria-hidden="true" />
+            </>
+          )}
+        </div>
+        <div
+          class="ff-article-view__resize"
+          role="slider"
+          tabIndex={0}
+          aria-label={t.frame_width_label()}
+          aria-orientation="horizontal"
+          aria-valuemin={MIN_FRAME}
+          aria-valuemax={Math.max(MIN_FRAME, fullWidth())}
+          aria-valuenow={currentFrame()}
+          aria-valuetext={`${currentFrame()}px`}
+          onPointerDown={(event) => {
+            event.currentTarget.setPointerCapture(event.pointerId);
+          }}
+          onPointerMove={(event) => {
+            const left = frame.current?.getBoundingClientRect().left ?? 0;
+            if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+              sizeFrame(event.clientX - left);
+            }
+          }}
+          onDblClick={() => sizeFrame(undefined)}
+          onKeyDown={(event) => {
+            const step = event.shiftKey ? FRAME_BIG_STEP : FRAME_STEP;
+            if (event.key === 'ArrowLeft') sizeFrame(currentFrame() - step);
+            else if (event.key === 'ArrowRight') sizeFrame(currentFrame() + step);
+            else if (event.key === 'Home') sizeFrame(MIN_FRAME);
+            else if (event.key === 'End') sizeFrame(undefined);
+            else return;
+            event.preventDefault();
+          }}
+        >
+          <span class="ff-article-view__resize-size" aria-hidden="true">
+            {currentFrame()}px
+          </span>
+        </div>
       </div>
       {overlaid && <p class="ff-muted ff-article-view__legend">{t.overlay_legend()}</p>}
       {clipped && <p class="ff-muted ff-article-view__legend">{t.slider_legend()}</p>}
