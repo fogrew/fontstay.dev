@@ -45,6 +45,7 @@ export function Popover({
         class="ff-button ff-button--secondary ff-popover__button"
         aria-expanded={open}
         aria-label={badge ? `${label} (${badge})` : label}
+        title={compact ? label : undefined}
         aria-controls={id}
         onClick={() => setOpen(!open)}
       >

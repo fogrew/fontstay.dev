@@ -584,6 +584,7 @@ export function ArticleView({
     boxes,
     positions,
     xray,
+    lensShows,
     stacked,
     layers,
     fontsReady,
@@ -702,6 +703,9 @@ export function ArticleView({
     loupe.current?.style.setProperty('--ff-lens-r', '0px');
     if (loupe.current) delete loupe.current.dataset.active;
   };
+  useEffect(() => {
+    if (!xray) hideLens();
+  }, [xray]);
   useEffect(() => {
     const element = loupe.current;
     if (element && 'active' in element.dataset) {
@@ -1072,6 +1076,7 @@ export function ArticleView({
               },
               onBlur: hideLens,
               onKeyDown: (event: KeyboardEvent) => {
+                if (event.target !== event.currentTarget) return;
                 const element = event.currentTarget as HTMLElement;
                 const x = Number.parseFloat(element.style.getPropertyValue('--ff-lens-x')) || 0;
                 const y = Number.parseFloat(element.style.getPropertyValue('--ff-lens-y')) || 0;
@@ -1097,9 +1102,9 @@ export function ArticleView({
             {(['start', 'end'] as const)
               .flatMap((position) => layersAt(positions, position))
               .map((id) => (
-                <figure key={id} data-pane="">
+                <figure key={id}>
                   <figcaption>{presetLabel(id)}</figcaption>
-                  {page(id)}
+                  <div data-pane="">{page(id)}</div>
                 </figure>
               ))}
           </div>
