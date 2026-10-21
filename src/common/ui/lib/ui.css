@@ -749,3 +749,14 @@ html[data-transition] .ff-dock__panel[data-id="results"] {
     padding-block-start: calc(var(--ff-dock-gap) + var(--ff-space-2));
   }
 }
+
+.ff-accordion__heading button:dir(rtl)::before,
+.ff-collapsible__toggle:dir(rtl)::before,
+.ff-dock__heading button:dir(rtl)::before {
+  content: "◂" / "";
+}
+.ff-accordion__heading button[aria-expanded="true"]:dir(rtl)::before,
+.ff-collapsible__toggle[aria-expanded="true"]:dir(rtl)::before,
+.ff-dock__heading button[aria-expanded="true"]:dir(rtl)::before {
+  content: "▾" / "";
+}

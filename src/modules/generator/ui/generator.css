@@ -1121,14 +1121,18 @@
 }
 .ff-article-view__lens-pane {
   position: absolute;
-  inset-block-start: var(--ff-lens-oy);
-  inset-inline-start: var(--ff-lens-ox);
+  top: var(--ff-lens-oy);
+  left: var(--ff-lens-ox);
   inline-size: var(--ff-lens-w);
+}
+.ff-article-view__lens-pane:dir(rtl) {
+  left: auto;
+  right: var(--ff-lens-ox-end);
 }
 .ff-article-view__ring {
   position: absolute;
-  inset-inline-start: calc(var(--ff-lens-x) - var(--ff-lens-r));
-  inset-block-start: calc(var(--ff-lens-y) - var(--ff-lens-r));
+  left: calc(var(--ff-lens-x) - var(--ff-lens-r));
+  top: calc(var(--ff-lens-y) - var(--ff-lens-r));
   box-sizing: border-box;
   inline-size: calc(var(--ff-lens-r) * 2);
   block-size: calc(var(--ff-lens-r) * 2);
@@ -1290,6 +1294,9 @@
   background: var(--ff-surface);
   clip-path: inset(0 0 0 var(--ff-split));
   pointer-events: none;
+}
+.ff-article-view__slider:dir(rtl) .ff-article-view__slider-fallback {
+  clip-path: inset(0 var(--ff-split) 0 0);
 }
 .ff-article-view__slider[data-stacked] .ff-article-view__slider-fallback {
   clip-path: inset(var(--ff-split) 0 0 0);

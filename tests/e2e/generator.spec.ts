@@ -403,6 +403,41 @@ test('the x-ray lens follows the pointer in every layout and covers the divider'
   }
 });
 
+test('the slider and the x-ray lens are mirrored in a right-to-left page', async ({ page }) => {
+  await page.setViewportSize({ width: 1500, height: 900 });
+  await page.goto('/en/');
+  await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
+  await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(sourceSans);
+  await closePanels(page);
+  await page.evaluate(() => {
+    document.documentElement.dir = 'rtl';
+  });
+  const view = page.getByRole('region', { name: 'Article' });
+  await view.getByRole('button', { name: 'Slider', exact: true }).click();
+  const divider = view.getByRole('slider', { name: /^Divider/ });
+  const stage = view.locator('.ff-article-view__slider');
+  await divider.evaluate((node) => node.scrollIntoView({ block: 'start' }));
+  await divider.focus();
+  await page.keyboard.press('Home');
+  const edge = await divider.boundingBox();
+  const bounds = await stage.boundingBox();
+  expect((edge?.x ?? 0) + (edge?.width ?? 0) / 2).toBeGreaterThan(
+    (bounds?.x ?? 0) + (bounds?.width ?? 0) - 20,
+  );
+  await page.keyboard.press('ArrowLeft');
+  await expect(divider).toHaveAttribute('aria-valuenow', '2');
+
+  await view.getByRole('button', { name: 'X-ray', exact: true }).click();
+  await view.getByRole('button', { name: 'Side by side', exact: true }).click();
+  const loupe = view.getByRole('application', { name: /^X-ray:/ });
+  const box = await loupe.boundingBox();
+  if (!box) throw new Error('no stage');
+  await page.mouse.move(box.x + box.width * 0.25, box.y + 200);
+  const pane = await loupe.locator('.ff-article-view__lens-pane').boundingBox();
+  const under = await loupe.locator('[data-pane] > .ff-article').nth(1).boundingBox();
+  expect(Math.abs((pane?.x ?? 0) - (under?.x ?? 99999))).toBeLessThan(1);
+});
+
 test('the preview width is resized by drag and keys to simulate narrower screens', async ({
   page,
 }) => {
