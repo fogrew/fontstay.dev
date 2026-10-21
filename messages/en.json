@@ -481,6 +481,7 @@
   "loupe_label": "X-ray: move the pointer or use the arrow keys to compare the fonts under the lens; Shift or Alt with the wheel resizes it",
   "loupe_shows": "The lens shows",
   "loupe_size": "Lens size",
+  "loupe_settings": "X-ray settings",
   "mode_web_short": "Web",
   "mode_fallback_short": "Fallback",
   "mode_plain_short": "Plain",

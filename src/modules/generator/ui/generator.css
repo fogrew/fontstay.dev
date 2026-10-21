@@ -919,6 +919,87 @@
   min-inline-size: 6.5rem;
   font-weight: 600;
 }
+.ff-button-group {
+  display: inline-flex;
+  flex-wrap: nowrap;
+  gap: 0;
+  min-inline-size: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+.ff-button-group > .ff-button,
+.ff-button-group > .ff-popover > .ff-button {
+  border-radius: 0;
+}
+.ff-button-group > :not(:first-child) {
+  margin-inline-start: -1px;
+}
+.ff-button-group > :first-child,
+.ff-button-group > :first-child > .ff-button {
+  border-start-start-radius: var(--ff-radius);
+  border-end-start-radius: var(--ff-radius);
+}
+.ff-button-group > :last-child,
+.ff-button-group > :last-child > .ff-button {
+  border-start-end-radius: var(--ff-radius);
+  border-end-end-radius: var(--ff-radius);
+}
+.ff-button-group [aria-pressed="true"],
+.ff-button-group .ff-button:focus-visible {
+  position: relative;
+  z-index: 1;
+}
+.ff-button-group [aria-pressed="true"] {
+  border-color: var(--ff-accent);
+  background: var(--ff-accent);
+  color: var(--ff-on-accent, #fff);
+}
+.ff-toolbar__guides [aria-pressed="true"] {
+  background: color-mix(in srgb, var(--ff-accent) 18%, var(--ff-surface));
+  color: inherit;
+}
+.ff-button-group .ff-tool-button {
+  min-inline-size: 2rem;
+  padding-inline: 0.5rem;
+}
+.ff-tool-icon {
+  display: block;
+  inline-size: 1.125rem;
+  block-size: 1.125rem;
+  fill: none;
+  stroke: currentcolor;
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.ff-tool-icon__fill {
+  fill: currentcolor;
+}
+.ff-tool-icon__faint {
+  opacity: 0.45;
+}
+.ff-tool-icon__guide {
+  stroke-width: 2;
+}
+.ff-tool-icon__guide[data-guide="ascender"] {
+  stroke: var(--ff-guide-ascender);
+}
+.ff-tool-icon__guide[data-guide="cap"] {
+  stroke: var(--ff-guide-cap);
+}
+.ff-tool-icon__guide[data-guide="x"] {
+  stroke: var(--ff-guide-x);
+}
+.ff-tool-icon__guide[data-guide="baseline"] {
+  stroke: var(--ff-guide-baseline);
+}
+.ff-tool-icon__guide[data-guide="descender"] {
+  stroke: var(--ff-guide-descender);
+}
+.ff-toolbar__guides:disabled {
+  opacity: 0.55;
+}
 .ff-article-view .ff-preview__modes .ff-button {
   min-block-size: 2rem;
   padding: 0.125rem var(--ff-space-2);
@@ -994,7 +1075,6 @@
 }
 .ff-preview__arrange {
   display: inline-flex;
-  gap: var(--ff-space-1);
 }
 .ff-preview__arrange[data-active="false"] {
   opacity: 0.45;
@@ -1050,24 +1130,34 @@
   flex-wrap: nowrap;
 }
 
+.ff-article-view__stage,
+.ff-article-view__loupe {
+  position: relative;
+}
 .ff-article-view__loupe {
   overflow: clip;
   --ff-lens-r: 0px;
   --ff-lens-x: 50%;
   --ff-lens-y: 50%;
-  position: relative;
-  display: grid;
+  --ff-lens-ox: 0px;
+  --ff-lens-oy: 0px;
+  --ff-lens-w: 100%;
   cursor: crosshair;
   touch-action: pan-y;
 }
-.ff-article-view .ff-article-view__loupe > .ff-article {
-  grid-area: 1 / 1;
-}
 .ff-article-view__lens {
-  grid-area: 1 / 1;
+  position: absolute;
+  inset: 0;
+  z-index: 3;
   background: var(--ff-surface);
   clip-path: circle(var(--ff-lens-r) at var(--ff-lens-x) var(--ff-lens-y));
   pointer-events: none;
+}
+.ff-article-view__lens-pane {
+  position: absolute;
+  inset-block-start: var(--ff-lens-oy);
+  inset-inline-start: var(--ff-lens-ox);
+  inline-size: var(--ff-lens-w);
 }
 .ff-article-view__ring {
   position: absolute;
