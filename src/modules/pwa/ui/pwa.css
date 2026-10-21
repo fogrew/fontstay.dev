@@ -2,7 +2,7 @@
   position: fixed;
   inset-block-end: var(--ff-space-4);
   inset-inline-end: var(--ff-space-4);
-  z-index: 20;
+  z-index: 40;
   max-inline-size: min(26rem, calc(100vw - 2 * var(--ff-space-4)));
 }
 .ff-toast {
