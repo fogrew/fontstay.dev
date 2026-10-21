@@ -1121,6 +1121,7 @@
   display: grid;
   gap: var(--ff-space-3);
   margin-block-end: var(--ff-space-6);
+  font-family: system-ui, sans-serif;
 }
 .ff-article-view .ff-intro p {
   max-inline-size: 70ch;
