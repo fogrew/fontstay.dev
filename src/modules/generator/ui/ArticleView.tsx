@@ -698,6 +698,7 @@ export function ArticleView({
     if (pane) {
       const rect = pane.getBoundingClientRect();
       element.style.setProperty('--ff-lens-ox', `${rect.left - box.left}px`);
+      element.style.setProperty('--ff-lens-ox-end', `${box.right - rect.right}px`);
       element.style.setProperty('--ff-lens-oy', `${rect.top - box.top}px`);
       element.style.setProperty('--ff-lens-w', `${rect.width}px`);
     }
@@ -719,6 +720,8 @@ export function ArticleView({
       element.style.setProperty('--ff-lens-r', `${lensSize / 2}px`);
     }
   }, [lensSize]);
+  const isRtl = () =>
+    getComputedStyle(view.current ?? document.documentElement).direction === 'rtl';
   const fullWidth = () => view.current?.clientWidth ?? 0;
   const sizeFrame = (pixels: number | undefined) =>
     setFrameWidth(
@@ -730,9 +733,8 @@ export function ArticleView({
   const moveSplit = (event: { clientX: number; clientY: number }) => {
     const box = slider.current?.getBoundingClientRect();
     if (!box) return;
-    const ratio = stacked
-      ? (event.clientY - box.top) / box.height
-      : (event.clientX - box.left) / box.width;
+    const across = isRtl() ? box.right - event.clientX : event.clientX - box.left;
+    const ratio = stacked ? (event.clientY - box.top) / box.height : across / box.width;
     setSplit(Math.round(Math.min(1, Math.max(0, ratio)) * 1000) / 10);
   };
   const familyOptions = [
@@ -1172,8 +1174,10 @@ export function ArticleView({
                     if (event.currentTarget.hasPointerCapture(event.pointerId)) moveSplit(event);
                   }}
                   onKeyDown={(event) => {
-                    const back = stacked ? 'ArrowUp' : 'ArrowLeft';
-                    const forward = stacked ? 'ArrowDown' : 'ArrowRight';
+                    const start = isRtl() ? 'ArrowRight' : 'ArrowLeft';
+                    const end = isRtl() ? 'ArrowLeft' : 'ArrowRight';
+                    const back = stacked ? 'ArrowUp' : start;
+                    const forward = stacked ? 'ArrowDown' : end;
                     const step = event.shiftKey ? 10 : 2;
                     if (event.key === back) setSplit((value) => Math.max(0, value - step));
                     else if (event.key === forward)
@@ -1219,16 +1223,18 @@ export function ArticleView({
             event.currentTarget.setPointerCapture(event.pointerId);
           }}
           onPointerMove={(event) => {
-            const left = frame.current?.getBoundingClientRect().left ?? 0;
-            if (event.currentTarget.hasPointerCapture(event.pointerId)) {
-              sizeFrame(event.clientX - left);
+            const box = frame.current?.getBoundingClientRect();
+            if (box && event.currentTarget.hasPointerCapture(event.pointerId)) {
+              sizeFrame(isRtl() ? box.right - event.clientX : event.clientX - box.left);
             }
           }}
           onDblClick={() => sizeFrame(undefined)}
           onKeyDown={(event) => {
             const step = event.shiftKey ? FRAME_BIG_STEP : FRAME_STEP;
-            if (event.key === 'ArrowLeft') sizeFrame(currentFrame() - step);
-            else if (event.key === 'ArrowRight') sizeFrame(currentFrame() + step);
+            const shrink = isRtl() ? 'ArrowRight' : 'ArrowLeft';
+            const grow = isRtl() ? 'ArrowLeft' : 'ArrowRight';
+            if (event.key === shrink) sizeFrame(currentFrame() - step);
+            else if (event.key === grow) sizeFrame(currentFrame() + step);
             else if (event.key === 'Home') sizeFrame(MIN_FRAME);
             else if (event.key === 'End') sizeFrame(undefined);
             else return;
