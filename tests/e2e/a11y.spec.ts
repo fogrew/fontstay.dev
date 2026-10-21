@@ -1,5 +1,5 @@
 import AxeBuilder from '@axe-core/playwright';
-import { expect, openStep, openSupport, STEPS, test } from './fixtures';
+import { closePanels, expect, openStep, openSupport, STEPS, test } from './fixtures';
 
 const fontFile = new URL(
   '../fixtures/fonts/SourceSansPro-Regular.woff2',
@@ -35,13 +35,16 @@ for (const scheme of ['light', 'dark'] as const) {
       if (step === 'tuning') {
         await page.getByText('Spacing while fonts load', { exact: false }).first().click();
       }
-      if (step === 'results') {
-        await page.getByRole('button', { name: 'Glyph coverage', exact: true }).click();
-      }
       await page.waitForTimeout(800);
       const results = await new AxeBuilder({ page }).withTags(tags).analyze();
       expect(results.violations, step).toEqual([]);
     }
+    await closePanels(page);
+    await page.getByRole('button', { name: 'Glyph coverage', exact: true }).click();
+    await page.getByRole('button', { name: 'Browser support', exact: true }).click();
+    await page.waitForTimeout(800);
+    const details = await new AxeBuilder({ page }).withTags(tags).analyze();
+    expect(details.violations, 'details').toEqual([]);
   });
 }
 

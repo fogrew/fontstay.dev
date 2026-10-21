@@ -858,7 +858,7 @@ test('the open step and the support section are collapsible and remembered', asy
   await expect(page.locator('#ff-settings')).toBeVisible();
   await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(sourceSans);
 
-  await openStep(page, 'results');
+  await closePanels(page);
   const support = page.getByRole('button', { name: 'Browser support', exact: true });
   await expect(support).toHaveAttribute('aria-expanded', 'false');
   await support.click();
@@ -912,7 +912,7 @@ test('the coverage section shows a Unicode map and a per-block table', async ({ 
   await page.goto('/en/');
   await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
   await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(sourceSans);
-  await openStep(page, 'results');
+  await closePanels(page);
   await page.getByRole('button', { name: 'Glyph coverage', exact: true }).click();
   await expect(page.getByText(/code points in \d+ Unicode blocks/)).toBeVisible();
   const table = page.getByRole('table', { name: 'Glyph coverage per Unicode block' });
@@ -1190,8 +1190,9 @@ test('fonts and settings survive a reload and the share link restores the settin
     page.getByRole('checkbox', { name: 'Include Android in the stack' }),
   ).not.toBeChecked();
 
+  await closePanels(page);
   await page.getByRole('button', { name: 'Share', exact: true }).click();
-  await expect(page.getByText('The link was copied.')).toBeVisible();
+  await expect(page.getByRole('status').filter({ hasText: 'The link was copied.' })).toBeVisible();
   const link = await page.evaluate(() => navigator.clipboard.readText());
   expect(link).toMatch(/#s=[A-Za-z0-9_-]+$/);
 
@@ -1208,7 +1209,9 @@ test('fonts and settings survive a reload and the share link restores the settin
   await fresh.close();
 
   await page.getByRole('button', { name: 'Forget', exact: true }).click();
-  await expect(page.getByText(/were removed from this browser/)).toBeVisible();
+  await expect(
+    page.getByRole('status').filter({ hasText: /were removed from this browser/ }),
+  ).toBeVisible();
   await page.reload();
   await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
   await expect(page.getByRole('button', { name: /^Remove: .*\.(woff2|ttf)/ })).toHaveCount(0);
