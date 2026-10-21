@@ -8,7 +8,6 @@ import '../styles/tokens.css';
 interface Props {
   locale: Locale;
   path: string;
-  headerActions?: boolean;
   page?: 'generator' | 'fonts' | 'presets' | 'guide' | 'credits' | 'changelog';
   title?: string;
   description?: string;
@@ -17,7 +16,6 @@ interface Props {
 const {
   locale,
   path,
-  headerActions = false,
   page = 'generator',
   title: pageTitle,
   description: pageDescription,
@@ -96,17 +94,6 @@ const indexable = !process.env.WORKERS_CI_BRANCH || process.env.WORKERS_CI_BRANC
         </ul>
       </nav>
       <div class="ff-header__end">
-        {headerActions && (
-          <div class="ff-header__group ff-header__actions">
-            <button type="button" class="ff-button ff-button--secondary" id="ff-share" title={t.share_note()} disabled>
-              <Icon name="share" />{t.share_copy_short()}
-            </button>
-            <button type="button" class="ff-button ff-button--secondary" id="ff-forget" disabled>
-              <Icon name="forget" />{t.share_forget_short()}
-            </button>
-            <span class="ff-muted" id="ff-header-status" role="status"></span>
-          </div>
-        )}
         <div class="ff-header__group"><LocaleSwitcher current={locale} {path} /></div>
         <a class="ff-header__link" href="https://github.com/fogrew/fontstay.dev" title={t.header_github()}><Icon name="github" /><span class="ff-sr-only">{t.header_github()}</span></a>
       </div>

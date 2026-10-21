@@ -102,10 +102,6 @@ header {
   padding-inline-start: var(--ff-space-3);
   border-inline-start: 1px solid var(--ff-border);
 }
-.ff-header__actions .ff-button {
-  min-block-size: 2rem;
-  padding: 0.125rem var(--ff-space-3);
-}
 .ff-breadcrumbs {
   display: flex;
   flex-wrap: wrap;

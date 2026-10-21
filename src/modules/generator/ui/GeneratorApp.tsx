@@ -10,6 +10,7 @@ import {
   Dock,
   FitField,
   type FitValue,
+  Icon,
   LiveRegion,
   Select,
 } from '@/common/ui';
@@ -1067,24 +1068,6 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
   };
   const actions = useRef({ copyLink, forget });
   actions.current = { copyLink, forget };
-  useEffect(() => {
-    const share = document.getElementById('ff-share') as HTMLButtonElement | null;
-    const reset = document.getElementById('ff-forget') as HTMLButtonElement | null;
-    const onShare = () => void actions.current.copyLink();
-    const onForget = () => void actions.current.forget();
-    share?.addEventListener('click', onShare);
-    reset?.addEventListener('click', onForget);
-    if (share) share.disabled = false;
-    if (reset) reset.disabled = false;
-    return () => {
-      share?.removeEventListener('click', onShare);
-      reset?.removeEventListener('click', onForget);
-    };
-  }, []);
-  useEffect(() => {
-    const status = document.getElementById('ff-header-status');
-    if (status) status.textContent = shareMessage;
-  }, [shareMessage]);
   const winnerOf = (os: OsId) => {
     const winner = plan?.resolution.platforms.find((item) => item.platform === os)?.winner;
     return (
@@ -1764,57 +1747,35 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
             id: 'results',
             label: t.col_results(),
             content: showResults ? (
-              <Accordion
-                storageKey="results"
-                resizable={false}
-                resizeLabel={(above, below) => t.accordion_resize({ above, below })}
-                items={[
-                  {
-                    id: 'export',
-                    label: t.export_heading(),
-                    content: (
-                      <ExportPanel
-                        locale={locale}
-                        input={exportInput}
-                        report={reportText}
-                        reordered={reordered}
-                        multi={allMode}
-                      />
-                    ),
-                  },
-                  {
-                    id: 'coverage',
-                    label: t.coverage_heading(),
-                    open: false,
-                    content: allMode ? (
-                      <p class="ff-muted">{t.results_pick_font()}</p>
-                    ) : (
-                      selected && (
-                        <CoverageMap locale={locale} codePoints={selected.metrics.codePoints} />
-                      )
-                    ),
-                  },
-                  {
-                    id: 'support',
-                    label: t.matrix_heading(),
-                    open: false,
-                    content: allMode ? (
-                      <p class="ff-muted">{t.results_pick_font()}</p>
-                    ) : (
-                      <>
-                        <SupportMatrix locale={locale} groups={matrixGroups} rating={ratingText} />
-                        {simulation && output && (
-                          <LayoutShiftPanel
-                            locale={locale}
-                            verify={simulation}
-                            signature={output.fontFaces}
-                          />
-                        )}
-                      </>
-                    ),
-                  },
-                ]}
-              />
+              <>
+                <div class="ff-share">
+                  <Button onClick={() => void copyLink()} title={t.share_note()}>
+                    <Icon name="share" />
+                    {t.share_copy()}
+                  </Button>
+                  <span class="ff-muted">{shareMessage}</span>
+                </div>
+                <Accordion
+                  storageKey="results"
+                  resizable={false}
+                  resizeLabel={(above, below) => t.accordion_resize({ above, below })}
+                  items={[
+                    {
+                      id: 'export',
+                      label: t.export_heading(),
+                      content: (
+                        <ExportPanel
+                          locale={locale}
+                          input={exportInput}
+                          report={reportText}
+                          reordered={reordered}
+                          multi={allMode}
+                        />
+                      ),
+                    },
+                  ]}
+                />
+              </>
             ) : (
               <p class="ff-generator__empty">{t.results_empty()}</p>
             ),
@@ -1828,10 +1789,65 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
           items={previewItems}
           fitting={fitting}
           site={site}
+          actions={
+            <div class="ff-share">
+              <Button onClick={() => void copyLink()} title={t.share_note()}>
+                <Icon name="share" />
+                {t.share_copy_short()}
+              </Button>
+              <Button onClick={() => void forget()}>
+                <Icon name="forget" />
+                {t.share_forget_short()}
+              </Button>
+              <span class="ff-muted" role="status">
+                {shareMessage}
+              </span>
+            </div>
+          }
           onShift={(report) => {
             shiftReport.current = report;
           }}
         />
+        {showResults && (
+          <Accordion
+            storageKey="preview-details"
+            resizable={false}
+            resizeLabel={(above, below) => t.accordion_resize({ above, below })}
+            items={[
+              {
+                id: 'coverage',
+                label: t.coverage_heading(),
+                open: false,
+                content: allMode ? (
+                  <p class="ff-muted">{t.results_pick_font()}</p>
+                ) : (
+                  selected && (
+                    <CoverageMap locale={locale} codePoints={selected.metrics.codePoints} />
+                  )
+                ),
+              },
+              {
+                id: 'support',
+                label: t.matrix_heading(),
+                open: false,
+                content: allMode ? (
+                  <p class="ff-muted">{t.results_pick_font()}</p>
+                ) : (
+                  <>
+                    <SupportMatrix locale={locale} groups={matrixGroups} rating={ratingText} />
+                    {simulation && output && (
+                      <LayoutShiftPanel
+                        locale={locale}
+                        verify={simulation}
+                        signature={output.fontFaces}
+                      />
+                    )}
+                  </>
+                ),
+              },
+            ]}
+          />
+        )}
       </div>
     </div>
   );
