@@ -14,6 +14,7 @@ import {
   Select,
 } from '@/common/ui';
 import {
+  AUDIENCE_FILE_EVENT,
   AUDIENCE_SET_EVENT,
   type AudienceData,
   AudienceEditor,
@@ -21,11 +22,10 @@ import {
   DEFAULT_DESKTOP_SPLIT,
   descriptorSupport,
   isBrowserslistFile,
+  isStatsFile,
   lacksVerticalOverrides,
-  MAX_BROWSERSLIST_CHARS,
   OsIcon,
   type OsShares,
-  parseBrowserslist,
   SupportMatrix,
   type SystemInfo,
 } from '@/modules/audience';
@@ -984,22 +984,20 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
   const [dragging, setDragging] = useState(false);
   const [cssDrop, setCssDrop] = useState<{ id: number; files: File[] }>();
   const dropHandler = useRef<(files: File[]) => void>(() => undefined);
-  const loadAudienceFile = async (file: File) => {
-    const queries = parseBrowserslist(
-      file.size > MAX_BROWSERSLIST_CHARS ? '' : await file.text().catch(() => ''),
-    );
-    if (queries.length === 0) {
-      setAnnouncement(t.audience_file_empty({ name: file.name }));
-      return;
-    }
-    window.dispatchEvent(new CustomEvent(AUDIENCE_SET_EVENT, { detail: queries.join(', ') }));
-    window.dispatchEvent(new CustomEvent(DOCK_OPEN_EVENT, { detail: 'audience' }));
-    setAnnouncement(t.audience_file_loaded({ count: queries.length, name: file.name }));
-  };
   dropHandler.current = (dropped) => {
+    const audienceFile = dropped.find(
+      (file) => isBrowserslistFile(file.name) || isStatsFile(file.name),
+    );
     const listFile = dropped.find((file) => isBrowserslistFile(file.name));
-    if (listFile) void loadAudienceFile(listFile);
-    const files = dropped.filter((file) => file !== listFile);
+    const statsFile = dropped.find((file) => isStatsFile(file.name));
+    for (const file of [listFile, statsFile]) {
+      if (file) window.dispatchEvent(new CustomEvent(AUDIENCE_FILE_EVENT, { detail: file }));
+    }
+    if (audienceFile)
+      window.dispatchEvent(new CustomEvent(DOCK_OPEN_EVENT, { detail: 'audience' }));
+    const files = dropped.filter(
+      (file) => !isBrowserslistFile(file.name) && !isStatsFile(file.name),
+    );
     const fontFiles = files.filter(isFontFile);
     const styleFiles = files.filter(isStyleFile);
     if (fontFiles.length > 0) void addFiles(fontFiles);
