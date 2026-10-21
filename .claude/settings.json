@@ -10,7 +10,6 @@
       "Bash(git push origin HEAD:main:*)",
       "Bash(git push origin --delete:*)",
       "Bash(git merge:*)",
-      "Bash(gh pr merge:*)",
       "Bash(gh pr review --approve:*)",
       "Bash(gh repo edit:*)",
       "Bash(gh ruleset:*)",
@@ -25,8 +24,7 @@
       "PowerShell(git push origin develop:*)",
       "PowerShell(git push origin main:*)",
       "PowerShell(git push --force:*)",
-      "PowerShell(git merge:*)",
-      "PowerShell(gh pr merge:*)"
+      "PowerShell(git merge:*)"
     ]
   }
 }
