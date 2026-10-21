@@ -398,6 +398,10 @@ test('the x-ray lens follows the pointer in every layout and covers the divider'
     await expect.poll(radius, layout).toBe(100);
     const pane = await loupe.locator('.ff-article-view__lens-pane').boundingBox();
     expect(pane?.width, layout).toBeGreaterThan(300);
+    if (layout === 'Side by side') {
+      const under = await loupe.locator('[data-pane] > .ff-article').nth(1).boundingBox();
+      expect(Math.abs((pane?.y ?? 0) - (under?.y ?? 99))).toBeLessThan(1);
+    }
   }
 });
 
