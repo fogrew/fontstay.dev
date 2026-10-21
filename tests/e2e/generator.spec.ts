@@ -1489,9 +1489,44 @@ test('the generator page itself does not shift while it loads', async ({ page })
   expect(total).toBeLessThan(0.02);
 });
 
+test('an open panel fills the screen down to its bottom edge', async ({ page }) => {
+  await page.setViewportSize({ width: 1500, height: 900 });
+  await page.goto('/en/');
+  await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
+  await openStep(page, 'audience');
+  const box = await page.locator('.ff-dock__panel:not([hidden])').boundingBox();
+  const bottom = (box?.y ?? 0) + (box?.height ?? 0);
+  expect(bottom).toBeGreaterThan(895);
+  expect(bottom).toBeLessThanOrEqual(900);
+});
+
+test('the next button moves to the following panel and the last one has none', async ({ page }) => {
+  await page.setViewportSize({ width: 1500, height: 900 });
+  await page.goto('/en/');
+  await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
+  await openStep(page, 'inputs');
+  await page.getByRole('button', { name: 'Next: 2. Audience' }).click();
+  await expect(page.getByRole('button', { name: '2. Audience', exact: true })).toHaveAttribute(
+    'aria-expanded',
+    'true',
+  );
+  await openStep(page, 'results');
+  await expect(page.getByRole('button', { name: /^Next:/ })).toHaveCount(0);
+});
+
+test('a click outside an open panel closes it', async ({ page }) => {
+  await page.setViewportSize({ width: 1500, height: 900 });
+  await page.goto('/en/');
+  await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
+  await openStep(page, 'tuning');
+  await page.locator('.ff-header').click({ position: { x: 700, y: 5 } });
+  await expect(page.locator('.ff-dock__panel:not([hidden])')).toHaveCount(0);
+});
+
 test('the intro guide explains the jump and opens each step', async ({ page }) => {
   await page.goto('/en/');
   await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
+  await closePanels(page);
   const guide = page.getByRole('region', { name: /Stop the page from jumping/ });
   await expect(guide).toBeVisible();
   await expect(guide).toContainText('layout shift');

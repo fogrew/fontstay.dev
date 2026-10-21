@@ -377,6 +377,7 @@
   "col_audience": "2. Audience",
   "col_tuning": "3. Fine-tuning",
   "col_results": "4. Results",
+  "dock_next": "Next: {label}",
   "tuning_empty": "Add a font to tune its fallbacks.",
   "preview_not_installed_note": "The preview falls back to a generic font; the values and the support matrix are still calculated for it.",
   "results_pick_font": "Choose a single font in the first column to see this.",

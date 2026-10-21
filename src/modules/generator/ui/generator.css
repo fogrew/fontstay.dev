@@ -19,6 +19,7 @@
 .ff-preview,
 .ff-generator__section {
   display: grid;
+  align-content: start;
   gap: var(--ff-space-2);
   padding: var(--ff-space-3);
   border: 1px dashed var(--ff-border);
@@ -1214,7 +1215,7 @@
 @container dock (min-width: 44rem) {
   .ff-generator__settings {
     grid-template-columns: repeat(auto-fit, minmax(20rem, 1fr));
-    align-items: start;
+    align-items: stretch;
   }
   .ff-generator__settings > :is(p, .ff-error, .ff-generator__section) {
     grid-column: 1 / -1;
