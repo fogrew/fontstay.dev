@@ -960,7 +960,7 @@ test('the article shows the layout shift measured on this device and ellipsizes 
   await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(sourceSans);
   await closePanels(page);
   const view = page.getByRole('region', { name: 'Article' });
-  await expect(view.getByRole('status').filter({ hasText: /CLS \d\.\d{3}/ })).toBeVisible({
+  await expect(view.getByRole('status').filter({ hasText: /CLS.*\d\.\d{3}/ })).toBeVisible({
     timeout: 20_000,
   });
   await openPopover(view, 'Content');
@@ -1487,6 +1487,20 @@ test('the generator page itself does not shift while it loads', async ({ page })
   await page.waitForTimeout(1500);
   const total = await page.evaluate(() => (window as unknown as { shifts: number }).shifts);
   expect(total).toBeLessThan(0.02);
+});
+
+test('the layout shift score shows the value before and after in rating colours', async ({
+  page,
+}) => {
+  await page.goto('/en/');
+  await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
+  await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(sourceSans);
+  await closePanels(page);
+  const scores = page.locator('.ff-shift .ff-shift__score');
+  await expect(scores).toHaveCount(2);
+  await expect(scores.first()).toHaveAttribute('data-rating', /.+/);
+  await expect(scores.last()).toHaveAttribute('data-rating', 'good');
+  await expect(page.locator('.ff-shift__arrow')).toBeVisible();
 });
 
 test('the intro guide explains the jump and opens each step', async ({ page }) => {

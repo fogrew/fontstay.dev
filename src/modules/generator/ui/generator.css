@@ -1324,3 +1324,16 @@
   text-decoration: underline;
   cursor: pointer;
 }
+
+.ff-shift__change {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: var(--ff-space-1);
+  align-items: center;
+}
+.ff-shift__label {
+  font-weight: 700;
+}
+.ff-shift__arrow {
+  color: var(--ff-muted);
+}
