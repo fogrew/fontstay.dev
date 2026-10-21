@@ -222,12 +222,16 @@ test('the inspect tools draw, fade and compare the web font and the fallback', a
   await choose(layer('Adjusted fallback').getByLabel('Colour'), 'red');
   await expect(ghost).toHaveCSS('-webkit-text-stroke-color', /^rgb/);
 
-  await view.getByRole('checkbox', { name: 'Glyph boxes' }).check();
+  await page.keyboard.press('Escape');
+  await expect(inspect).toHaveAttribute('aria-expanded', 'false');
+  await view.getByRole('button', { name: 'Glyph boxes' }).click();
+  await expect(view.getByRole('button', { name: 'Glyph boxes' })).toHaveAttribute(
+    'aria-pressed',
+    'true',
+  );
   await expect(view.locator('.ff-article:not([data-probe]) canvas.ff-article__boxes')).toHaveCount(
     2,
   );
-  await page.keyboard.press('Escape');
-  await expect(inspect).toHaveAttribute('aria-expanded', 'false');
 
   await view.getByRole('button', { name: 'Side by side', exact: true }).click();
   const side = view.locator('.ff-article-view__side');
@@ -238,14 +242,13 @@ test('the inspect tools draw, fade and compare the web font and the fallback', a
   await expect.poll(rows).toBe(1);
   await view.getByRole('button', { name: 'Top and bottom', exact: true }).click();
   await expect.poll(rows).toBe(2);
-  await openInspect();
   const body = view.locator('.ff-article:not([data-probe])').first();
   const guides = () => body.evaluate((node) => node.style.getPropertyValue('--ff-guides'));
   await expect.poll(guides).toBe('');
-  await view.getByRole('checkbox', { name: 'Baseline' }).check();
+  await view.getByRole('button', { name: 'Baseline', exact: true }).click();
   await expect.poll(guides).toContain('--ff-guide-baseline');
   expect(await guides()).not.toContain('--ff-guide-cap');
-  await view.getByRole('checkbox', { name: 'Cap height' }).check();
+  await view.getByRole('button', { name: 'Cap height', exact: true }).click();
   await expect.poll(guides).toContain('--ff-guide-cap');
 });
 
@@ -364,6 +367,38 @@ test('the loupe shows the comparison only under the lens', async ({ page }) => {
   await expect.poll(radius).toBe(110);
   await page.mouse.move(1, 1);
   await expect(loupe.locator('.ff-article-view__ring')).toBeHidden();
+});
+
+test('the x-ray lens follows the pointer in every layout and covers the divider', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1500, height: 900 });
+  await page.goto('/en/');
+  await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
+  await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(sourceSans);
+  await closePanels(page);
+  const view = page.getByRole('region', { name: 'Article' });
+  await view.getByRole('button', { name: 'X-ray', exact: true }).click();
+  await expect(view.getByRole('button', { name: 'X-ray', exact: true })).toHaveAttribute(
+    'aria-pressed',
+    'true',
+  );
+  const loupe = view.getByRole('application', { name: /^X-ray:/ });
+  const radius = () =>
+    loupe.evaluate((node) => Number.parseFloat(node.style.getPropertyValue('--ff-lens-r') || '0'));
+  for (const layout of ['Overlay', 'Side by side', 'Slider', 'Web font', 'Plain fallback']) {
+    await view.getByRole('button', { name: layout, exact: true }).click();
+    await loupe.evaluate((node) => node.scrollIntoView({ block: 'start' }));
+    const box = await loupe.boundingBox();
+    if (!box) throw new Error(`no stage in ${layout}`);
+    await page.mouse.move(1, 1);
+    await expect.poll(radius, layout).toBe(0);
+    const x = layout === 'Side by side' ? box.x + box.width * 0.75 : box.x + box.width / 2;
+    await page.mouse.move(x, box.y + 200);
+    await expect.poll(radius, layout).toBe(100);
+    const pane = await loupe.locator('.ff-article-view__lens-pane').boundingBox();
+    expect(pane?.width, layout).toBeGreaterThan(300);
+  }
 });
 
 test('the slider moves the divider by drag and keys, vertically or horizontally', async ({
@@ -985,7 +1020,7 @@ test('characters missing from the font are highlighted and explained on focus', 
   await mark.focus();
   await expect(mark).toBeFocused();
   expect(await overflow()).toEqual(before);
-  await openPopover(view, 'Fonts');
+  await openPopover(view, 'Inspect');
   await choose(view.getByLabel('Missing characters'), 'serif');
   await expect(mark).toHaveAttribute('aria-description', /Serif/);
 });
@@ -1305,7 +1340,7 @@ test('several fonts share the article and the export and are tuned one by one', 
   await expect(code).not.toContainText('Source Sans Pro Fallback');
   await closePanels(page);
   const view = page.getByRole('region', { name: 'Article' });
-  await openPopover(view, 'Fonts');
+  await openPopover(view, 'Inspect');
   await expect(view.getByLabel('Headings font')).toBeVisible();
   await expect(view.getByLabel('Text font')).toBeVisible();
   await expect(view.locator('.ff-article:not([data-probe])').first()).toBeVisible();
