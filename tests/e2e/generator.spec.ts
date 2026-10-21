@@ -147,10 +147,12 @@ for (const { width, height } of [
     await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(sourceSans);
     const article = page.locator('.ff-article:not([data-probe])').first();
     await expect(article).toBeVisible();
-    const dock = await page.locator('.ff-dock').boundingBox();
-    const body = await article.boundingBox();
-    expect(dock?.y).toBeLessThan(150);
-    expect(body?.width).toBeGreaterThan(width * 0.85);
+    await expect
+      .poll(async () => (await page.locator('.ff-dock').boundingBox())?.y ?? 999)
+      .toBeLessThan(150);
+    await expect
+      .poll(async () => (await article.boundingBox())?.width ?? 0)
+      .toBeGreaterThan(width * 0.85);
     for (const name of ['1. Inputs', '2. Audience', '3. Fine-tuning', '4. Results']) {
       await expect(page.getByRole('button', { name, exact: true })).toBeVisible();
     }

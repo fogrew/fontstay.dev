@@ -263,12 +263,13 @@ main > h1 {
 }
 .ff-page__metrics {
   display: grid;
-  grid-template-columns: max-content 1fr;
+  grid-template-columns: fit-content(50%) minmax(0, 1fr);
   gap: var(--ff-space-1) var(--ff-space-4);
   margin: 0;
 }
 .ff-page__metrics dd {
   margin: 0;
+  overflow-wrap: anywhere;
 }
 .ff-specimen {
   font-size: 1.5rem;
