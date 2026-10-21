@@ -18,18 +18,36 @@ import { buildCss } from '../lib/css';
 import { drawGlyphBoxes } from '../lib/glyph-boxes';
 import { GUIDES, type GuideId, type GuideOffsets, guideImage, guideOffsets } from '../lib/guides';
 import { isInstalledOnDevice } from '../lib/installed';
+import {
+  arrangementOf,
+  hasPosition,
+  LAYER_IDS,
+  type LayerId,
+  layersAt,
+  PRESETS,
+  type Preset,
+  presetOf,
+  visibleLayers,
+} from '../lib/layers';
 import { codePointLabel, textRuns } from '../lib/missing';
 import { slugOf } from '../lib/overview';
 import type { PreviewItem, SiteData } from '../lib/preview-item';
 import { DeviceShift } from './DeviceShift';
 import { IntroGuide } from './IntroGuide';
+import { ToolIcon } from './ToolIcons';
 
-type Mode = 'overlay' | 'side' | 'slider' | 'loupe' | 'web' | 'fallback' | 'plain';
 type Wrap = 'wrap' | 'balance' | 'pretty' | 'stable' | 'nowrap';
 type Substitute = 'sans-serif' | 'serif' | 'monospace' | 'system-ui';
 type Layer = 'web' | 'fallback';
+type LensShows = 'overlay' | 'fallback' | 'plain';
 type Render = 'fill' | 'outline';
 type LayerColor = 'text' | 'green' | 'red' | 'blue' | 'amber';
+
+interface PageOptions {
+  ghost?: boolean;
+  styled?: boolean;
+  copy?: boolean;
+}
 
 interface LayerStyle {
   render: Render;
@@ -48,12 +66,13 @@ const COLOR_TOKENS: Record<LayerColor, string> = {
   blue: '--ff-focus',
   amber: '--ff-rating-needs',
 };
-const DEFAULT_LAYERS: Record<Layer, LayerStyle> = {
+const DEFAULT_LAYERS: Record<LayerId, LayerStyle> = {
   web: { render: 'fill', color: 'text', width: 1, opacity: 100 },
   fallback: { render: 'outline', color: 'green', width: 1, opacity: 100 },
+  plain: { render: 'outline', color: 'amber', width: 1, opacity: 100 },
 };
 
-const MODES: readonly Mode[] = ['overlay', 'side', 'slider', 'loupe', 'web', 'fallback', 'plain'];
+const PRESET_ORDER: readonly Preset[] = ['overlay', 'side', 'slider', 'web', 'fallback', 'plain'];
 const LENS_STEP = 24;
 const SAMPLE_CODE = `@font-face {
   font-family: "Brand Fallback";
@@ -274,7 +293,8 @@ export function ArticleView({
 }) {
   const t = messagesFor(locale);
   const [articleId, setArticleId] = useState<ArticleKey>(locale === 'ru' ? 'ru' : 'en');
-  const [mode, setMode] = useState<Mode>('overlay');
+  const [positions, setPositions] = useState(PRESETS.overlay);
+  const [xray, setXray] = useState(false);
   const [size, setSize] = useState(18);
   const [lineHeight, setLineHeight] = useState(1.5);
   const [wrap, setWrap] = useState<Wrap>('wrap');
@@ -283,7 +303,7 @@ export function ArticleView({
   const [bodyPick, setBodyPick] = useState<string>();
   const [layers, setLayers] = useState(DEFAULT_LAYERS);
   const [stacked, setStacked] = useState(false);
-  const [lensShows, setLensShows] = useState<'overlay' | 'fallback'>('overlay');
+  const [lensShows, setLensShows] = useState<LensShows>('overlay');
   const [lensSize, setLensSize] = useState(200);
   const [split, setSplit] = useState(50);
   const [introOpen, setIntroOpen] = useState(() => {
@@ -304,6 +324,11 @@ export function ArticleView({
     });
   const slider = useRef<HTMLDivElement>(null);
   const loupe = useRef<HTMLDivElement>(null);
+  const arrangement = arrangementOf(positions);
+  const clipped = hasPosition(positions, 'clip');
+  const inspectable = visibleLayers(positions).some((id) => id !== 'plain');
+  const overlaid = hasPosition(positions, 'ghost');
+  const preset = presetOf(positions);
   const [guideOn, setGuideOn] = useState<Record<GuideId, boolean>>({
     ascender: false,
     cap: false,
@@ -495,17 +520,15 @@ export function ArticleView({
   ]);
 
   const empty = items.length === 0 || !headingFamily || !bodyFamily;
-  const stack = (family: string | undefined, kind: 'web' | 'fallback' | 'plain') => {
+  const stack = (family: string | undefined, kind: LayerId) => {
     if (!family || family === SYSTEM) return 'system-ui, sans-serif';
     const key = keyOf(family);
     if (kind === 'web') return `"${key}", ${substitute}`;
     if (kind === 'fallback') return `"${key} Fallback", ${substitute}`;
     return categoryOf(family);
   };
-  const pageStyle = (kind: 'web' | 'fallback' | 'plain') => {
-    const layer = kind === 'plain' ? undefined : layers[kind];
-    const styled = layer && mode === 'overlay';
-    const inspecting = mode !== 'plain';
+  const pageStyle = (kind: LayerId, styled = false) => {
+    const layer = layers[kind];
     const metrics = kind === 'plain' ? undefined : guideMetrics[kind];
     const image = metrics ? guideImage(metrics, activeGuides) : undefined;
     return {
@@ -513,18 +536,14 @@ export function ArticleView({
       '--ff-article-body': stack(bodyFamily, kind),
       '--ff-article-size': `${size}px`,
       '--ff-article-line': String(lineHeight),
-      ...(kind !== 'plain' && layer
-        ? {
-            '--ff-layer-color': `var(${COLOR_TOKENS[styled ? layer.color : DEFAULT_LAYERS[kind].color]})`,
-          }
-        : {}),
+      '--ff-layer-color': `var(${COLOR_TOKENS[styled ? layer.color : DEFAULT_LAYERS[kind].color]})`,
       ...(styled ? { '--ff-layer-stroke': `${layer.width}px`, opacity: layer.opacity / 100 } : {}),
-      ...(image && guides && inspecting ? { '--ff-guides': image } : {}),
+      ...(image && guides ? { '--ff-guides': image } : {}),
       textWrap: wrap,
     };
   };
   useEffect(() => {
-    if (!guides || mode === 'plain' || !fontsReady || !bodyFamily) return;
+    if (!guides || !inspectable || !fontsReady || !bodyFamily) return;
     let cancelled = false;
     void (async () => {
       const next: Partial<Record<Layer, GuideOffsets>> = {};
@@ -539,11 +558,11 @@ export function ArticleView({
     return () => {
       cancelled = true;
     };
-  }, [guides, mode, fontsReady, fontFaces, size, lineHeight, bodyFamily, substitute]);
+  }, [guides, inspectable, fontsReady, fontFaces, size, lineHeight, bodyFamily, substitute]);
 
   useEffect(() => {
     const root = view.current;
-    if (!boxes || !root || !fontsReady || mode === 'plain') return;
+    if (!boxes || !root || !fontsReady || !inspectable) return;
     const pages = [...root.querySelectorAll<HTMLElement>('.ff-article:not([data-probe])')];
     const draw = () => {
       for (const element of pages) {
@@ -565,7 +584,9 @@ export function ArticleView({
     };
   }, [
     boxes,
-    mode,
+    positions,
+    xray,
+    lensShows,
     stacked,
     layers,
     fontsReady,
@@ -579,15 +600,8 @@ export function ArticleView({
     substitute,
   ]);
 
-  const modeShort = (value: Mode) => {
-    if (value === 'web') return t.mode_web_short();
-    if (value === 'fallback') return t.mode_fallback_short();
-    if (value === 'plain') return t.mode_plain_short();
-    return modeLabel(value);
-  };
-  const modeLabel = (value: Mode) => {
+  const presetLabel = (value: Preset) => {
     if (value === 'overlay') return t.mode_overlay();
-    if (value === 'loupe') return t.mode_loupe();
     if (value === 'side') return t.mode_side();
     if (value === 'slider') return t.mode_slider();
     if (value === 'web') return t.preview_web_label();
@@ -621,24 +635,27 @@ export function ArticleView({
       });
     },
   });
-  const page = (kind: 'web' | 'fallback' | 'plain', ghost = false) => (
+  const page = (
+    kind: LayerId,
+    { ghost = false, styled = false, copy = false }: PageOptions = {},
+  ) => (
     <article
       class={`ff-article${ghost ? ' ff-article--ghost' : ''}${wrap === 'nowrap' ? ' ff-article--nowrap' : ''}`}
       lang={article.lang}
       dir={article.dir}
-      aria-hidden={ghost ? 'true' : undefined}
-      data-render={mode === 'overlay' && kind !== 'plain' ? layers[kind].render : undefined}
-      data-guides={guides && mode !== 'plain' ? '' : undefined}
-      style={pageStyle(kind)}
+      aria-hidden={ghost || copy ? 'true' : undefined}
+      data-render={styled && kind !== 'plain' ? layers[kind].render : undefined}
+      data-guides={guides && kind !== 'plain' ? '' : undefined}
+      style={pageStyle(kind, styled)}
     >
       <IntroGuide
         locale={locale}
         collapsed={!introOpen}
-        interactive={kind === 'web' && !ghost}
+        interactive={kind === 'web' && !ghost && !copy}
         onToggle={toggleIntro}
       />
-      <ArticleBody article={article} coverage={coverageFor(ghost || kind !== 'web')} />
-      {boxes && kind !== 'plain' && mode !== 'plain' && (
+      <ArticleBody article={article} coverage={coverageFor(ghost || copy || kind !== 'web')} />
+      {boxes && kind !== 'plain' && (
         // biome-ignore lint/a11y/noAriaHiddenOnFocusable: a decorative canvas without fallback content
         <canvas class="ff-article__boxes" aria-hidden="true" />
       )}
@@ -658,10 +675,27 @@ export function ArticleView({
   };
   const setLayer = (layer: Layer, change: Partial<LayerStyle>) =>
     setLayers((all) => ({ ...all, [layer]: { ...all[layer], ...change } }));
-  const inspectable = mode !== 'plain';
   const moveLens = (x: number, y: number) => {
     const element = loupe.current;
     if (!element) return;
+    const box = element.getBoundingClientRect();
+    const panes = [...element.querySelectorAll<HTMLElement>('[data-pane]')];
+    const pane =
+      panes.find((candidate) => {
+        const rect = candidate.getBoundingClientRect();
+        return (
+          x + box.left >= rect.left &&
+          x + box.left <= rect.right &&
+          y + box.top >= rect.top &&
+          y + box.top <= rect.bottom
+        );
+      }) ?? panes[0];
+    if (pane) {
+      const rect = pane.getBoundingClientRect();
+      element.style.setProperty('--ff-lens-ox', `${rect.left - box.left}px`);
+      element.style.setProperty('--ff-lens-oy', `${rect.top - box.top}px`);
+      element.style.setProperty('--ff-lens-w', `${rect.width}px`);
+    }
     element.style.setProperty('--ff-lens-x', `${x}px`);
     element.style.setProperty('--ff-lens-y', `${y}px`);
     element.style.setProperty('--ff-lens-r', `${lensSize / 2}px`);
@@ -671,6 +705,9 @@ export function ArticleView({
     loupe.current?.style.setProperty('--ff-lens-r', '0px');
     if (loupe.current) delete loupe.current.dataset.active;
   };
+  useEffect(() => {
+    if (!xray) hideLens();
+  }, [xray]);
   useEffect(() => {
     const element = loupe.current;
     if (element && 'active' in element.dataset) {
@@ -685,65 +722,67 @@ export function ArticleView({
       : (event.clientX - box.left) / box.width;
     setSplit(Math.round(Math.min(1, Math.max(0, ratio)) * 1000) / 10);
   };
+  const familyOptions = [
+    ...families.map((family) => ({ value: family, label: family })),
+    { value: SYSTEM, label: t.article_font_system() },
+  ];
+  const xrayContent = (
+    <>
+      <Select
+        compact
+        label={t.loupe_shows()}
+        value={lensShows}
+        options={[
+          { value: 'overlay', label: t.mode_overlay() },
+          { value: 'fallback', label: t.preview_fallback_label() },
+          { value: 'plain', label: t.article_view_plain() },
+        ]}
+        onChange={(value) => setLensShows(value as LensShows)}
+      />
+      <div class="ff-field ff-preview__slider">
+        <div class="ff-preview__label">
+          <label for="ff-lens-size">{t.loupe_size()}</label>
+          <output for="ff-lens-size">{lensSize}px</output>
+        </div>
+        <input
+          id="ff-lens-size"
+          type="range"
+          min={80}
+          max={400}
+          step={10}
+          value={lensSize}
+          onInput={(event) => setLensSize(event.currentTarget.valueAsNumber)}
+        />
+      </div>
+    </>
+  );
   const inspectContent = (
     <>
-      <fieldset class="ff-inspect__section" disabled={mode !== 'loupe'}>
-        <legend>{t.mode_loupe()}</legend>
+      <fieldset class="ff-inspect__section">
+        <legend>{t.article_group_fonts()}</legend>
         <Select
           compact
-          label={t.loupe_shows()}
-          value={lensShows}
-          options={[
-            { value: 'overlay', label: t.mode_overlay() },
-            { value: 'fallback', label: t.preview_fallback_label() },
-          ]}
-          onChange={(value) => setLensShows(value as 'overlay' | 'fallback')}
+          label={t.article_heading_font()}
+          value={headingFamily ?? SYSTEM}
+          options={familyOptions}
+          onChange={setHeadingPick}
         />
-        <div class="ff-field ff-preview__slider">
-          <div class="ff-preview__label">
-            <label for="ff-lens-size">{t.loupe_size()}</label>
-            <output for="ff-lens-size">{lensSize}px</output>
-          </div>
-          <input
-            id="ff-lens-size"
-            type="range"
-            min={80}
-            max={400}
-            step={10}
-            value={lensSize}
-            onInput={(event) => setLensSize(event.currentTarget.valueAsNumber)}
-          />
-        </div>
+        <Select
+          compact
+          label={t.article_body_font()}
+          value={bodyFamily ?? SYSTEM}
+          options={familyOptions}
+          onChange={setBodyPick}
+        />
+        <Select
+          compact
+          label={t.article_missing_font()}
+          value={substitute}
+          options={SUBSTITUTES.map((value) => ({ value, label: substituteLabel(value) }))}
+          onChange={(value) => setSubstitute(value as Substitute)}
+        />
       </fieldset>
-      <fieldset class="ff-inspect__section" disabled={!inspectable}>
-        <legend>{t.guides_enable()}</legend>
-        <ul class="ff-guide-list">
-          {GUIDES.map((id) => (
-            <li key={id}>
-              <label data-guide={id}>
-                <input
-                  type="checkbox"
-                  checked={guideOn[id]}
-                  onChange={(event) => {
-                    const checked = event.currentTarget.checked;
-                    setGuideOn((all) => ({ ...all, [id]: checked }));
-                  }}
-                />{' '}
-                <span class="ff-guide-list__swatch" aria-hidden="true" /> {guideLabel(id)}
-              </label>
-            </li>
-          ))}
-        </ul>
-        <label>
-          <input
-            type="checkbox"
-            checked={boxes}
-            onChange={(event) => setBoxes(event.currentTarget.checked)}
-          />{' '}
-          {t.boxes_enable()}
-        </label>
-      </fieldset>
-      <fieldset class="ff-inspect__section ff-layers" disabled={mode !== 'overlay'}>
+      <fieldset class="ff-inspect__section ff-layers" disabled={!overlaid}>
         <legend>{t.article_group_layers()}</legend>
         {LAYERS.map((layer, row) => {
           const name = layer === 'web' ? t.preview_web_label() : t.preview_fallback_label();
@@ -759,7 +798,7 @@ export function ArticleView({
                 hideLabel={row > 0}
                 label={t.layer_render()}
                 value={layers[layer].render}
-                disabled={mode !== 'overlay'}
+                disabled={!overlaid}
                 options={RENDERS.map((value) => ({
                   value,
                   label: value === 'fill' ? t.layer_render_fill() : t.layer_render_outline(),
@@ -771,7 +810,7 @@ export function ArticleView({
                 hideLabel={row > 0}
                 label={t.layer_color()}
                 value={layers[layer].color}
-                disabled={mode !== 'overlay'}
+                disabled={!overlaid}
                 options={COLORS.map((value) => ({ value, label: colorLabel(value) }))}
                 onChange={(value) => setLayer(layer, { color: value as LayerColor })}
               />
@@ -789,7 +828,7 @@ export function ArticleView({
                   max={4}
                   step={0.5}
                   value={layers[layer].width}
-                  disabled={mode !== 'overlay' || layers[layer].render !== 'outline'}
+                  disabled={!overlaid || layers[layer].render !== 'outline'}
                   onInput={(event) => setLayer(layer, { width: event.currentTarget.valueAsNumber })}
                 />
               </div>
@@ -807,7 +846,7 @@ export function ArticleView({
                   max={100}
                   step={5}
                   value={layers[layer].opacity}
-                  disabled={mode !== 'overlay'}
+                  disabled={!overlaid}
                   onInput={(event) =>
                     setLayer(layer, { opacity: event.currentTarget.valueAsNumber })
                   }
@@ -819,10 +858,6 @@ export function ArticleView({
       </fieldset>
     </>
   );
-  const familyOptions = [
-    ...families.map((family) => ({ value: family, label: family })),
-    { value: SYSTEM, label: t.article_font_system() },
-  ];
   const contentGroup = (
     <fieldset class="ff-article-view__group">
       <legend>{t.article_group_content()}</legend>
@@ -918,71 +953,85 @@ export function ArticleView({
         ))}
       </div>
       <div class="ff-article-view__controls ff-toolbar">
-        <fieldset class="ff-preview__modes ff-toolbar__modes">
+        <fieldset class="ff-preview__modes ff-toolbar__modes ff-button-group">
           <legend class="ff-sr-only">{t.preview_mode_label()}</legend>
-          {MODES.map((value) => (
-            <Fragment key={value}>
-              <button
-                type="button"
-                class="ff-button ff-button--secondary"
-                aria-pressed={mode === value}
-                aria-label={modeLabel(value)}
-                title={modeLabel(value)}
-                onClick={() => setMode(value)}
-              >
-                {modeShort(value)}
-              </button>
-              {value === 'slider' && (
-                <span
-                  class="ff-preview__arrange"
-                  data-active={mode === 'side' || mode === 'slider'}
-                >
-                  {(['horizontal', 'stacked'] as const).map((kind) => (
-                    <button
-                      key={kind}
-                      type="button"
-                      class="ff-button ff-button--secondary ff-preview__arrange-button"
-                      aria-pressed={stacked === (kind === 'stacked')}
-                      aria-label={kind === 'stacked' ? t.side_stacked() : t.side_horizontal()}
-                      title={kind === 'stacked' ? t.side_stacked() : t.side_horizontal()}
-                      disabled={mode !== 'side' && mode !== 'slider'}
-                      onClick={() => setStacked(kind === 'stacked')}
-                    >
-                      <span class="ff-arrange-icon" data-kind={kind} aria-hidden="true" />
-                    </button>
-                  ))}
-                </span>
-              )}
-            </Fragment>
+          {PRESET_ORDER.map((value) => (
+            <button
+              key={value}
+              type="button"
+              class="ff-button ff-button--secondary ff-tool-button"
+              aria-pressed={preset === value}
+              aria-label={presetLabel(value)}
+              title={presetLabel(value)}
+              onClick={() => setPositions(PRESETS[value])}
+            >
+              <ToolIcon name={value} />
+            </button>
           ))}
         </fieldset>
+        <span
+          class="ff-preview__arrange ff-button-group"
+          data-active={arrangement === 'columns' || clipped}
+        >
+          {(['horizontal', 'stacked'] as const).map((kind) => (
+            <button
+              key={kind}
+              type="button"
+              class="ff-button ff-button--secondary ff-preview__arrange-button"
+              aria-pressed={stacked === (kind === 'stacked')}
+              aria-label={kind === 'stacked' ? t.side_stacked() : t.side_horizontal()}
+              title={kind === 'stacked' ? t.side_stacked() : t.side_horizontal()}
+              disabled={arrangement !== 'columns' && !clipped}
+              onClick={() => setStacked(kind === 'stacked')}
+            >
+              <span class="ff-arrange-icon" data-kind={kind} aria-hidden="true" />
+            </button>
+          ))}
+        </span>
+        <div class="ff-button-group ff-toolbar__xray">
+          <button
+            type="button"
+            class="ff-button ff-button--secondary ff-tool-button"
+            aria-pressed={xray}
+            aria-label={t.mode_loupe()}
+            title={t.mode_loupe()}
+            onClick={() => setXray((on) => !on)}
+          >
+            <ToolIcon name="xray" />
+          </button>
+          <Popover label={t.loupe_settings()} compact>
+            {xrayContent}
+          </Popover>
+        </div>
+        <fieldset class="ff-toolbar__guides ff-button-group" disabled={!inspectable}>
+          <legend class="ff-sr-only">{t.guides_enable()}</legend>
+          {GUIDES.map((id) => (
+            <button
+              key={id}
+              type="button"
+              class="ff-button ff-button--secondary ff-tool-button"
+              data-guide={id}
+              aria-pressed={guideOn[id]}
+              aria-label={guideLabel(id)}
+              title={guideLabel(id)}
+              onClick={() => setGuideOn((all) => ({ ...all, [id]: !all[id] }))}
+            >
+              <ToolIcon name={id} />
+            </button>
+          ))}
+          <button
+            type="button"
+            class="ff-button ff-button--secondary ff-tool-button"
+            aria-pressed={boxes}
+            aria-label={t.boxes_enable()}
+            title={t.boxes_enable()}
+            onClick={() => setBoxes((on) => !on)}
+          >
+            <ToolIcon name="boxes" />
+          </button>
+        </fieldset>
         <Popover label={t.article_group_content()}>{contentGroup}</Popover>
-        <Popover label={t.article_group_fonts()}>
-          <Select
-            compact
-            label={t.article_heading_font()}
-            value={headingFamily ?? SYSTEM}
-            options={familyOptions}
-            onChange={setHeadingPick}
-          />
-          <Select
-            compact
-            label={t.article_body_font()}
-            value={bodyFamily ?? SYSTEM}
-            options={familyOptions}
-            onChange={setBodyPick}
-          />
-          <Select
-            compact
-            label={t.article_missing_font()}
-            value={substitute}
-            options={SUBSTITUTES.map((value) => ({ value, label: substituteLabel(value) }))}
-            onChange={(value) => setSubstitute(value as Substitute)}
-          />
-        </Popover>
-        <Popover label={t.article_group_inspect()} badge={activeGuides.length + (boxes ? 1 : 0)}>
-          {inspectContent}
-        </Popover>
+        <Popover label={t.article_group_inspect()}>{inspectContent}</Popover>
         <DeviceShift
           locale={locale}
           results={shiftResults?.adjusted}
@@ -1002,128 +1051,142 @@ export function ArticleView({
           <span class="ff-muted">{t.preview_not_installed_note()}</span>
         </p>
       )}
-      {mode === 'overlay' && (
-        <div class="ff-article-view__overlay">
-          {page('web')}
-          {page('fallback', true)}
-          <p class="ff-muted ff-article-view__legend">{t.overlay_legend()}</p>
-        </div>
-      )}
-      {mode === 'side' && (
-        <div class="ff-article-view__side" data-stacked={stacked ? '' : undefined}>
-          <figure>
-            <figcaption>{t.preview_web_label()}</figcaption>
-            {page('web')}
-          </figure>
-          <figure>
-            <figcaption>{t.preview_fallback_label()}</figcaption>
-            {page('fallback')}
-          </figure>
-        </div>
-      )}
-      {mode === 'slider' && (
-        <div class="ff-article-view__slider-wrap">
-          <div
-            class="ff-article-view__slider"
-            ref={slider}
-            data-stacked={stacked ? '' : undefined}
-            style={{ '--ff-split': `${split}%` }}
-          >
-            {page('web')}
-            <div class="ff-article-view__slider-fallback" aria-hidden="true" {...{ inert: true }}>
-              {page('fallback')}
-            </div>
-            <div
-              class="ff-article-view__divider"
-              role="slider"
-              tabIndex={0}
-              aria-label={t.slider_label()}
-              aria-orientation={stacked ? 'vertical' : 'horizontal'}
-              aria-valuemin={0}
-              aria-valuemax={100}
-              aria-valuenow={Math.round(split)}
-              onPointerDown={(event) => {
-                event.currentTarget.setPointerCapture(event.pointerId);
-                moveSplit(event);
-              }}
-              onPointerMove={(event) => {
-                if (event.currentTarget.hasPointerCapture(event.pointerId)) moveSplit(event);
-              }}
-              onKeyDown={(event) => {
-                const back = stacked ? 'ArrowUp' : 'ArrowLeft';
-                const forward = stacked ? 'ArrowDown' : 'ArrowRight';
-                const step = event.shiftKey ? 10 : 2;
-                if (event.key === back) setSplit((value) => Math.max(0, value - step));
-                else if (event.key === forward) setSplit((value) => Math.min(100, value + step));
-                else if (event.key === 'Home') setSplit(0);
-                else if (event.key === 'End') setSplit(100);
-                else return;
+      <div
+        ref={loupe}
+        class={xray ? 'ff-article-view__loupe' : 'ff-article-view__stage'}
+        {...(xray
+          ? {
+              tabIndex: 0,
+              role: 'application',
+              'aria-label': t.loupe_label(),
+              onPointerMove: (event: PointerEvent) => {
+                const box = (event.currentTarget as HTMLElement).getBoundingClientRect();
+                moveLens(event.clientX - box.left, event.clientY - box.top);
+              },
+              onPointerLeave: hideLens,
+              onWheel: (event: WheelEvent) => {
+                if (!event.shiftKey && !event.altKey) return;
                 event.preventDefault();
-              }}
-            />
-          </div>
-          <p class="ff-muted ff-article-view__legend">{t.slider_legend()}</p>
-        </div>
-      )}
-      {mode === 'loupe' && (
-        <div
-          class="ff-article-view__loupe"
-          ref={loupe}
-          // biome-ignore lint/a11y/noNoninteractiveTabindex: the lens follows the arrow keys
-          tabIndex={0}
-          role="application"
-          aria-label={t.loupe_label()}
-          onPointerMove={(event) => {
-            const box = event.currentTarget.getBoundingClientRect();
-            moveLens(event.clientX - box.left, event.clientY - box.top);
-          }}
-          onPointerLeave={hideLens}
-          onWheel={(event) => {
-            if (!event.shiftKey && !event.altKey) return;
-            event.preventDefault();
-            const delta =
-              Math.abs(event.deltaY) >= Math.abs(event.deltaX) ? event.deltaY : event.deltaX;
-            setLensSize((size) => Math.min(400, Math.max(80, size + (delta < 0 ? 20 : -20))));
-          }}
-          onFocus={(event) => {
-            const box = event.currentTarget.getBoundingClientRect();
-            moveLens(box.width / 2, Math.min(box.height / 2, 240));
-          }}
-          onBlur={hideLens}
-          onKeyDown={(event) => {
-            const element = event.currentTarget;
-            const x = Number.parseFloat(element.style.getPropertyValue('--ff-lens-x')) || 0;
-            const y = Number.parseFloat(element.style.getPropertyValue('--ff-lens-y')) || 0;
-            const moves: Record<string, [number, number]> = {
-              ArrowLeft: [-LENS_STEP, 0],
-              ArrowRight: [LENS_STEP, 0],
-              ArrowUp: [0, -LENS_STEP],
-              ArrowDown: [0, LENS_STEP],
-            };
-            const move = moves[event.key];
-            if (move) {
-              event.preventDefault();
-              moveLens(x + move[0], y + move[1]);
-            } else if (event.key === 'Escape') {
-              hideLens();
+                const delta =
+                  Math.abs(event.deltaY) >= Math.abs(event.deltaX) ? event.deltaY : event.deltaX;
+                setLensSize((current) =>
+                  Math.min(400, Math.max(80, current + (delta < 0 ? 20 : -20))),
+                );
+              },
+              onFocus: (event: FocusEvent) => {
+                const box = (event.currentTarget as HTMLElement).getBoundingClientRect();
+                moveLens(box.width / 2, Math.min(box.height / 2, 240));
+              },
+              onBlur: hideLens,
+              onKeyDown: (event: KeyboardEvent) => {
+                if (event.target !== event.currentTarget) return;
+                const element = event.currentTarget as HTMLElement;
+                const x = Number.parseFloat(element.style.getPropertyValue('--ff-lens-x')) || 0;
+                const y = Number.parseFloat(element.style.getPropertyValue('--ff-lens-y')) || 0;
+                const moves: Record<string, [number, number]> = {
+                  ArrowLeft: [-LENS_STEP, 0],
+                  ArrowRight: [LENS_STEP, 0],
+                  ArrowUp: [0, -LENS_STEP],
+                  ArrowDown: [0, LENS_STEP],
+                };
+                const move = moves[event.key];
+                if (move) {
+                  event.preventDefault();
+                  moveLens(x + move[0], y + move[1]);
+                } else if (event.key === 'Escape') {
+                  hideLens();
+                }
+              },
             }
-          }}
-        >
-          {page('web')}
-          <div class="ff-article-view__lens" aria-hidden="true" {...{ inert: true }}>
-            {lensShows === 'overlay' ? (
-              <div class="ff-article-view__overlay">
-                {page('web')}
-                {page('fallback', true)}
-              </div>
-            ) : (
-              page('fallback')
+          : {})}
+      >
+        {arrangement === 'columns' ? (
+          <div class="ff-article-view__side" data-stacked={stacked ? '' : undefined}>
+            {(['start', 'end'] as const)
+              .flatMap((position) => layersAt(positions, position))
+              .map((id) => (
+                <figure key={id}>
+                  <figcaption>{presetLabel(id)}</figcaption>
+                  <div data-pane="">{page(id)}</div>
+                </figure>
+              ))}
+          </div>
+        ) : (
+          <div
+            class={clipped ? 'ff-article-view__slider' : 'ff-article-view__overlay'}
+            ref={slider}
+            data-pane=""
+            data-stacked={clipped && stacked ? '' : undefined}
+            style={clipped ? { '--ff-split': `${split}%` } : undefined}
+          >
+            {LAYER_IDS.filter((id) => positions[id] !== 'hidden').map((id) =>
+              positions[id] === 'clip' ? (
+                <div
+                  key={id}
+                  class="ff-article-view__slider-fallback"
+                  aria-hidden="true"
+                  {...{ inert: true }}
+                >
+                  {page(id, { copy: true })}
+                </div>
+              ) : (
+                <Fragment key={id}>
+                  {page(id, { ghost: positions[id] === 'ghost', styled: overlaid })}
+                </Fragment>
+              ),
+            )}
+            {clipped && (
+              <div
+                class="ff-article-view__divider"
+                role="slider"
+                tabIndex={0}
+                aria-label={t.slider_label()}
+                aria-orientation={stacked ? 'vertical' : 'horizontal'}
+                aria-valuemin={0}
+                aria-valuemax={100}
+                aria-valuenow={Math.round(split)}
+                onPointerDown={(event) => {
+                  event.currentTarget.setPointerCapture(event.pointerId);
+                  moveSplit(event);
+                }}
+                onPointerMove={(event) => {
+                  if (event.currentTarget.hasPointerCapture(event.pointerId)) moveSplit(event);
+                }}
+                onKeyDown={(event) => {
+                  const back = stacked ? 'ArrowUp' : 'ArrowLeft';
+                  const forward = stacked ? 'ArrowDown' : 'ArrowRight';
+                  const step = event.shiftKey ? 10 : 2;
+                  if (event.key === back) setSplit((value) => Math.max(0, value - step));
+                  else if (event.key === forward) setSplit((value) => Math.min(100, value + step));
+                  else if (event.key === 'Home') setSplit(0);
+                  else if (event.key === 'End') setSplit(100);
+                  else return;
+                  event.preventDefault();
+                }}
+              />
             )}
           </div>
-          <span class="ff-article-view__ring" aria-hidden="true" />
-        </div>
-      )}
-      {(mode === 'web' || mode === 'fallback' || mode === 'plain') && page(mode)}
+        )}
+        {xray && (
+          <>
+            <div class="ff-article-view__lens" aria-hidden="true" {...{ inert: true }}>
+              <div class="ff-article-view__lens-pane">
+                {lensShows === 'overlay' ? (
+                  <div class="ff-article-view__overlay">
+                    {page('web', { copy: true, styled: true })}
+                    {page('fallback', { ghost: true, styled: true })}
+                  </div>
+                ) : (
+                  page(lensShows, { copy: true })
+                )}
+              </div>
+            </div>
+            <span class="ff-article-view__ring" aria-hidden="true" />
+          </>
+        )}
+      </div>
+      {overlaid && <p class="ff-muted ff-article-view__legend">{t.overlay_legend()}</p>}
+      {clipped && <p class="ff-muted ff-article-view__legend">{t.slider_legend()}</p>}
     </section>
   );
 }
