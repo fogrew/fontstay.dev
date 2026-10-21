@@ -1,4 +1,4 @@
-import { Fragment } from 'preact';
+import { type ComponentChildren, Fragment } from 'preact';
 import { useEffect, useMemo, useRef, useState } from 'preact/hooks';
 import { type Locale, messagesFor } from '@/common/i18n';
 import { Icon, Popover, Select } from '@/common/ui';
@@ -260,12 +260,14 @@ export function ArticleView({
   items,
   fitting = false,
   site,
+  actions,
   onShift,
 }: {
   locale: Locale;
   items: readonly PreviewItem[];
   fitting?: boolean;
   site?: SiteData | undefined;
+  actions?: ComponentChildren;
   onShift?:
     | ((report: { adjusted: WidthShift[]; plain: WidthShift[] } | undefined) => void)
     | undefined;
@@ -987,6 +989,7 @@ export function ArticleView({
           baseline={shiftResults?.plain}
           fitting={fitting}
         />
+        {actions}
       </div>
       {loadFailed && (
         <p class="ff-error" role="alert">

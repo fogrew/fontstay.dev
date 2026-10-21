@@ -58,7 +58,7 @@ export async function selectSystem(page: Page, os: string) {
 }
 
 export async function openSupport(page: Page) {
-  await openStep(page, 'results');
+  await closePanels(page);
   const button = page.getByRole('button', { name: 'Browser support', exact: true });
   if ((await button.getAttribute('aria-expanded')) === 'false') await button.click();
 }
