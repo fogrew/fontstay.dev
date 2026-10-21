@@ -234,12 +234,15 @@
 
 @container dock (min-width: 44rem) {
   .ff-audience {
-    grid-template-columns: repeat(auto-fit, minmax(20rem, 1fr));
+    grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
     align-items: start;
   }
-  .ff-audience > :is(.ff-tags, .ff-audience__stats, .ff-audience__columns, .ff-audience__result) {
-    grid-column: 1 / -1;
-  }
+}
+.ff-audience__filters,
+.ff-audience__results {
+  display: grid;
+  gap: var(--ff-space-2);
+  min-inline-size: 0;
 }
 
 .ff-tags__field {
@@ -336,16 +339,22 @@
   z-index: 1;
 }
 .ff-quick__not {
+  display: inline-flex;
+  gap: var(--ff-space-1);
+  align-items: center;
   min-block-size: 1.5rem;
-  margin-inline-start: -0.75rem;
-  padding: 0 var(--ff-space-2) 0 1rem;
+  margin-inline-end: -0.75rem;
+  padding: 0 1rem 0 var(--ff-space-2);
   border: 1px solid var(--ff-border);
-  border-radius: 0 0.75rem 0.75rem 0;
+  border-radius: 0.75rem 0 0 0.75rem;
   background: var(--ff-surface-2);
   color: var(--ff-muted);
   font: inherit;
   font-size: 0.75rem;
   cursor: pointer;
+}
+.ff-quick__ban {
+  color: var(--ff-error);
 }
 .ff-quick__not:disabled {
   opacity: 0.5;
@@ -354,10 +363,10 @@
 @media (hover: hover) {
   .ff-quick__not {
     position: absolute;
-    inset-inline-start: 100%;
+    inset-inline-end: 100%;
     inset-block-start: 50%;
     z-index: 2;
-    margin-inline-start: -0.75rem;
+    margin-inline-end: -0.75rem;
     transform: translateY(-50%);
     opacity: 0;
     pointer-events: none;
@@ -379,7 +388,7 @@
 }
 @container dock (min-width: 44rem) {
   .ff-audience__columns {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
   }
 }
 .ff-audience__browsers {

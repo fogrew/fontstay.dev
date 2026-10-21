@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { resolveQuery } from './resolve';
-import { MAX_STATS_BYTES, MAX_STATS_ENTRIES, parseStats } from './stats';
+import { isStatsFile, MAX_STATS_BYTES, MAX_STATS_ENTRIES, parseStats } from './stats';
 
 const known = {
   chrome: { versions: ['119', '120'] },
@@ -24,6 +24,22 @@ describe('parseStats', () => {
       unknownVersions: ['chrome 5'],
     });
     if (result.ok) expect(result.stats).toEqual({ chrome: { '120': 60 }, firefox: { '121': 10 } });
+  });
+
+  it('rejects a file where no browser or version is known', () => {
+    expect(parseStats(JSON.stringify({ netscape: { '4': 1 }, chrome: { '5': 1 } }), known)).toEqual(
+      {
+        ok: false,
+        code: 'empty',
+        detail: '',
+      },
+    );
+  });
+
+  it('recognises the statistics file by name', () => {
+    expect(isStatsFile('browserslist-stats.json')).toBe(true);
+    expect(isStatsFile('Browserslist_Stats (1).json')).toBe(true);
+    expect(isStatsFile('package.json')).toBe(false);
   });
 
   it('rejects malformed input with a code', () => {
@@ -55,7 +71,7 @@ describe('parseStats', () => {
     const safe = parseStats('{"__proto__": {"x": 1}, "chrome": {"120": 1}}', known);
     expect(safe).toMatchObject({ ok: true, unknownBrowsers: ['__proto__'] });
     expect(({} as Record<string, unknown>).x).toBeUndefined();
-    expect(parseStats('{"chrome": {"__proto__": 1}}', known)).toMatchObject({ ok: true });
+    expect(parseStats('{"chrome": {"__proto__": 1, "120": 1}}', known)).toMatchObject({ ok: true });
   });
 });
 
