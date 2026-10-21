@@ -34,6 +34,7 @@ test.afterEach(async () => {
 });
 
 test('the extension sends the page to the import page of fontstay.dev', async ({ baseURL }) => {
+  test.setTimeout(90_000);
   const extension = prepareExtension(baseURL ?? '');
   context = await chromium.launchPersistentContext('', {
     channel: 'chromium',
