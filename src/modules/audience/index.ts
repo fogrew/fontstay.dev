@@ -9,7 +9,7 @@ export type { WeightedEntry } from './lib/os';
 export { DEFAULT_DESKTOP_SPLIT, type OsShares } from './lib/os';
 export { PRESETS } from './lib/presets';
 export { type BrowserGroup, type Resolution, resolveQuery } from './lib/resolve';
-export { importStats, parseStats, type UsageStats } from './lib/stats';
+export { importStats, isStatsFile, parseStats, type UsageStats } from './lib/stats';
 export {
   descriptorSupport,
   FEATURES,
@@ -17,6 +17,11 @@ export {
   lacksVerticalOverrides,
   supportData,
 } from './lib/support';
-export { AUDIENCE_SET_EVENT, type AudienceData, AudienceEditor } from './ui/AudienceEditor';
+export {
+  AUDIENCE_FILE_EVENT,
+  AUDIENCE_SET_EVENT,
+  type AudienceData,
+  AudienceEditor,
+} from './ui/AudienceEditor';
 export { BrowserIcon, OsIcon } from './ui/BrandIcon';
 export { SupportMatrix } from './ui/SupportMatrix';

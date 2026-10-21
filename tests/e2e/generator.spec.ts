@@ -653,6 +653,42 @@ test('typing, pasting and dropping a .browserslist file turn into tags', async (
   await expect(page.getByText('Loaded 2 queries from .browserslistrc.')).toBeAttached();
 });
 
+test('the audience file buttons and drops fill the query and the statistics', async ({ page }) => {
+  await page.goto('/en/');
+  await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
+  await openStep(page, 'audience');
+  const query = queryField(page);
+
+  await page
+    .locator('input[type="file"]:not([accept])')
+    .last()
+    .setInputFiles({
+      name: '.browserslistrc',
+      mimeType: 'text/plain',
+      buffer: Buffer.from('> 2%'),
+    });
+  await expect(query).toHaveAttribute('data-query', '> 2%');
+  await expect(page.getByText('Loaded 1 queries from .browserslistrc.')).toBeVisible();
+
+  await page.evaluate(() => {
+    const file = new File([JSON.stringify({ chrome: { '120': 60 } })], 'browserslist-stats.json');
+    const data = new DataTransfer();
+    data.items.add(file);
+    window.dispatchEvent(new DragEvent('dragenter', { dataTransfer: data, bubbles: true }));
+    window.dispatchEvent(
+      new DragEvent('drop', { dataTransfer: data, bubbles: true, cancelable: true }),
+    );
+  });
+  await expect(query).toHaveAttribute('data-query', '> 0.5% in my stats');
+  await expect(page.getByText(/1 statistics entries loaded/)).toBeVisible();
+
+  const filters = page.locator('.ff-audience__filters');
+  const results = page.locator('.ff-audience__results');
+  const filtersBox = await filters.boundingBox();
+  const resultsBox = await results.boundingBox();
+  expect(filtersBox?.x).toBeLessThan(resultsBox?.x ?? 0);
+});
+
 test('a system can have several ordered fallbacks', async ({ page }) => {
   await page.goto('/en/');
   await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));

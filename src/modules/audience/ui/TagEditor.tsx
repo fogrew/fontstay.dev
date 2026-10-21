@@ -170,6 +170,35 @@ export function TagEditor({
           <ul class="ff-tags__list">
             {group.items.map((item) => (
               <li key={item.key} class="ff-quick">
+                {item.exclude && (
+                  <button
+                    type="button"
+                    class="ff-quick__not"
+                    disabled={taken(item.exclude)}
+                    aria-label={t.audience_tag_not_action({ tag: item.label })}
+                    onClick={() => add(item.exclude ?? '')}
+                  >
+                    <svg
+                      class="ff-quick__ban"
+                      width="1em"
+                      height="1em"
+                      viewBox="0 0 16 16"
+                      aria-hidden="true"
+                      focusable="false"
+                    >
+                      <circle
+                        cx="8"
+                        cy="8"
+                        r="6"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                      />
+                      <path d="M3.8 3.8l8.4 8.4" stroke="currentColor" stroke-width="2" />
+                    </svg>
+                    {t.audience_tag_not()}
+                  </button>
+                )}
                 <button
                   type="button"
                   class="ff-tag"
@@ -185,17 +214,6 @@ export function TagEditor({
                   )}
                   {item.label}
                 </button>
-                {item.exclude && (
-                  <button
-                    type="button"
-                    class="ff-quick__not"
-                    disabled={taken(item.exclude)}
-                    aria-label={t.audience_tag_not_action({ tag: item.label })}
-                    onClick={() => add(item.exclude ?? '')}
-                  >
-                    {t.audience_tag_not()}
-                  </button>
-                )}
               </li>
             ))}
           </ul>

@@ -3,7 +3,13 @@ export const MAX_STATS_ENTRIES = 20_000;
 
 export type UsageStats = Record<string, Record<string, number>>;
 
-export type StatsErrorCode = 'too-large' | 'not-json' | 'wrong-shape' | 'bad-value' | 'too-many';
+export type StatsErrorCode =
+  | 'too-large'
+  | 'not-json'
+  | 'wrong-shape'
+  | 'bad-value'
+  | 'too-many'
+  | 'empty';
 
 export interface ImportedStats {
   stats: UsageStats;
@@ -19,6 +25,9 @@ export type StatsResult =
 type KnownData = Record<string, { versions: (string | null)[] } | undefined>;
 
 const BROWSER_ID = /^[a-z_]{1,32}$/;
+const STATS_FILE = /^browserslist[-_]stats.*\.json$/i;
+
+export const isStatsFile = (name: string) => STATS_FILE.test(name);
 
 export function parseStats(text: string, known: KnownData): StatsResult {
   if (text.length > MAX_STATS_BYTES) return { ok: false, code: 'too-large', detail: '' };
@@ -62,6 +71,7 @@ export function parseStats(text: string, known: KnownData): StatsResult {
     }
     stats[browser] = kept;
   }
+  if (entries === 0) return { ok: false, code: 'empty', detail: '' };
   return { ok: true, stats, entries, unknownBrowsers, unknownVersions };
 }
 
