@@ -1659,6 +1659,7 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
       )}
       <Dock
         storageKey="dock"
+        nextLabel={(label) => t.dock_next({ label })}
         items={[
           {
             id: 'inputs',
