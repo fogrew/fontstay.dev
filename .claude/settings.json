@@ -1,0 +1,30 @@
+{
+  "permissions": {
+    "deny": [
+      "Bash(git push --force:*)",
+      "Bash(git push -f:*)",
+      "Bash(git push --delete:*)",
+      "Bash(git push origin develop:*)",
+      "Bash(git push origin main:*)",
+      "Bash(git push origin HEAD:develop:*)",
+      "Bash(git push origin HEAD:main:*)",
+      "Bash(git push origin --delete:*)",
+      "Bash(git merge:*)",
+      "Bash(gh pr review --approve:*)",
+      "Bash(gh repo edit:*)",
+      "Bash(gh ruleset:*)",
+      "Bash(gh api --method PUT:*)",
+      "Bash(gh api --method PATCH:*)",
+      "Bash(gh api --method POST:*)",
+      "Bash(gh api --method DELETE:*)",
+      "Bash(gh api -X PUT:*)",
+      "Bash(gh api -X PATCH:*)",
+      "Bash(gh api -X POST:*)",
+      "Bash(gh api -X DELETE:*)",
+      "PowerShell(git push origin develop:*)",
+      "PowerShell(git push origin main:*)",
+      "PowerShell(git push --force:*)",
+      "PowerShell(git merge:*)"
+    ]
+  }
+}
