@@ -227,6 +227,7 @@ Each phase ends deployable with a green PR check.
 **Backlog**
 - Font inspector in the style of everythingfonts.com: colour and background previews (including an image), a size waterfall, a glyph viewer with bounding boxes and line metrics, name-table attributes (#101).
 - Offline use and a service-worker update flow: an "Update" toast with a changelog link while the app is open, the new version downloaded in the background, and a toast after an automatic update linking to the combined changelog of all applied versions (#78).
+- Right-to-left interface and an Arabic locale (#221): all layout uses logical properties (inline and block), direction-dependent geometry (the slider, the X-ray lens, the width handle, disclosure glyphs) is mirrored, and the Arabic messages need a native review before the locale ships.
 
 ## 6. Risks
 

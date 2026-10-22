@@ -1,5 +1,13 @@
 import AxeBuilder from '@axe-core/playwright';
-import { closePanels, expect, openStep, openSupport, STEPS, test } from './fixtures';
+import {
+  closePanels,
+  expect,
+  openStep,
+  openSupport,
+  STEPS,
+  test,
+  waitForGenerator,
+} from './fixtures';
 
 const fontFile = new URL(
   '../fixtures/fonts/SourceSansPro-Regular.woff2',
@@ -28,7 +36,7 @@ for (const scheme of ['light', 'dark'] as const) {
     test.setTimeout(90_000);
     await page.emulateMedia({ colorScheme: scheme });
     await page.goto('/en/');
-    await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
+    await waitForGenerator(page);
     await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(fontFile);
     for (const step of Object.keys(STEPS) as (keyof typeof STEPS)[]) {
       await openStep(page, step);
@@ -65,7 +73,7 @@ test('the pages reflow at 320 px without horizontal page scroll', async ({ page 
 test('the generator reflows at 320 px with a font loaded', async ({ page }) => {
   await page.setViewportSize({ width: 320, height: 700 });
   await page.goto('/en/');
-  await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
+  await waitForGenerator(page);
   await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(fontFile);
   await page.waitForTimeout(1500);
   const overflow = await page.evaluate(
@@ -76,7 +84,7 @@ test('the generator reflows at 320 px with a font loaded', async ({ page }) => {
 
 test('keyboard users can reach the main controls and open the sections', async ({ page }) => {
   await page.goto('/en/');
-  await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
+  await waitForGenerator(page);
   await page.keyboard.press('Tab');
   await expect(page.getByRole('link', { name: 'Skip to content' })).toBeFocused();
   await page.keyboard.press('Enter');
@@ -97,7 +105,7 @@ test('keyboard users can reach the main controls and open the sections', async (
 test('forced colors keeps the support states distinguishable by text', async ({ page }) => {
   await page.emulateMedia({ forcedColors: 'active' });
   await page.goto('/en/');
-  await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
+  await waitForGenerator(page);
   await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(fontFile);
   await openSupport(page);
   const matrix = page.getByRole('region', { name: 'Browser support' });

@@ -15,6 +15,7 @@ import {
   queryField,
   selectSystem,
   test,
+  waitForGenerator,
 } from './fixtures';
 
 const fonts = new URL('../fixtures/fonts/', import.meta.url).pathname.replace(
@@ -27,7 +28,7 @@ test('uploading a font produces per-system fallbacks, editable values and CSS', 
   page,
 }) => {
   await page.goto('/en/');
-  await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
+  await waitForGenerator(page);
   await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(sourceSans);
 
   const fallback = page.getByLabel('Fallback font 1', { exact: true });
@@ -58,7 +59,7 @@ test('uploading a font produces per-system fallbacks, editable values and CSS', 
 
 test('serif and monospace fallbacks are available by font type', async ({ page }) => {
   await page.goto('/en/');
-  await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
+  await waitForGenerator(page);
   await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(sourceSans);
   await selectSystem(page, 'windows');
   await choose(page.getByLabel('Font type'), 'serif');
@@ -74,7 +75,7 @@ test('the fallback list follows the selected system and reports shadowing with a
   page,
 }) => {
   await page.goto('/en/');
-  await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
+  await waitForGenerator(page);
   await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(sourceSans);
   const fallback = page.getByLabel('Fallback font 1', { exact: true });
 
@@ -98,7 +99,7 @@ test('the fallback list follows the selected system and reports shadowing with a
 
 test('the fit follows the page language for a font with Cyrillic', async ({ page }) => {
   await page.goto('/ru/');
-  await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
+  await waitForGenerator(page);
   await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(sourceSans);
   await selectSystem(page, 'macos');
   const fallback = page.getByLabel('Запасной шрифт 1', { exact: true });
@@ -108,7 +109,7 @@ test('the fit follows the page language for a font with Cyrillic', async ({ page
 
 test('an invalid file is rejected with an announced error', async ({ page }) => {
   await page.goto('/en/');
-  await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
+  await waitForGenerator(page);
   await page.locator('input[type="file"][accept*="woff2"]').setInputFiles({
     name: 'broken.woff2',
     mimeType: 'font/woff2',
@@ -123,7 +124,7 @@ for (const locale of ['en', 'ru']) {
     page,
   }) => {
     await page.goto(`/${locale}/`);
-    await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
+    await waitForGenerator(page);
     await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(sourceSans);
     await expect(page.getByRole('heading', { level: 2 }).nth(3)).toBeVisible();
     const results = await new AxeBuilder({ page })
@@ -143,7 +144,7 @@ for (const { width, height } of [
   }) => {
     await page.setViewportSize({ width, height });
     await page.goto('/en/');
-    await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
+    await waitForGenerator(page);
     await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(sourceSans);
     const article = page.locator('.ff-article:not([data-probe])').first();
     await expect(article).toBeVisible();
@@ -163,7 +164,7 @@ test('the article switches between overlay, side by side, web font and fallback 
   page,
 }) => {
   await page.goto('/en/');
-  await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
+  await waitForGenerator(page);
   await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(sourceSans);
   await closePanels(page);
   const view = page.getByRole('region', { name: 'Article' });
@@ -199,7 +200,7 @@ test('the article switches between overlay, side by side, web font and fallback 
 
 test('the inspect tools draw, fade and compare the web font and the fallback', async ({ page }) => {
   await page.goto('/en/');
-  await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
+  await waitForGenerator(page);
   await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(sourceSans);
   await closePanels(page);
   const view = page.getByRole('region', { name: 'Article' });
@@ -266,7 +267,7 @@ test('WebMCP tools drive the generator when the browser offers modelContext', as
     };
   });
   await page.goto('/en/');
-  await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
+  await waitForGenerator(page);
   await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(sourceSans);
   const call = (name: string, input: object = {}) =>
     page.evaluate(
@@ -316,7 +317,7 @@ test('a step panel that scrolls shows an edge shadow only on the side with more 
 }) => {
   await page.setViewportSize({ width: 1280, height: 600 });
   await page.goto('/en/');
-  await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
+  await waitForGenerator(page);
   await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(sourceSans);
   await openStep(page, 'tuning');
   const shadow = page.locator('.ff-dock__panel:not([hidden]) .ff-shadow');
@@ -335,7 +336,7 @@ test('a step panel that scrolls shows an edge shadow only on the side with more 
 
 test('the loupe shows the comparison only under the lens', async ({ page }) => {
   await page.goto('/en/');
-  await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
+  await waitForGenerator(page);
   await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(sourceSans);
   await closePanels(page);
   const view = page.getByRole('region', { name: 'Article' });
@@ -374,7 +375,7 @@ test('the x-ray lens follows the pointer in every layout and covers the divider'
 }) => {
   await page.setViewportSize({ width: 1500, height: 900 });
   await page.goto('/en/');
-  await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
+  await waitForGenerator(page);
   await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(sourceSans);
   await closePanels(page);
   const view = page.getByRole('region', { name: 'Article' });
@@ -405,12 +406,75 @@ test('the x-ray lens follows the pointer in every layout and covers the divider'
   }
 });
 
+test('the dock mirrors step and disclosure glyphs in RTL at both breakpoints', async ({ page }) => {
+  await page.goto('/en/');
+  await waitForGenerator(page);
+  await page.evaluate(() => {
+    document.documentElement.dir = 'rtl';
+  });
+  const buttons = page.locator('.ff-dock__heading button');
+  const first = buttons.first();
+  const last = buttons.last();
+  for (const width of [1500, 800]) {
+    await page.setViewportSize({ width, height: 900 });
+    for (const button of [first, last]) {
+      if ((await button.getAttribute('aria-expanded')) === 'true') await button.click();
+      for (const open of [false, true]) {
+        if (open) await button.click();
+        const glyph = await button.evaluate((node) => getComputedStyle(node, '::before').content);
+        if (width >= 1024) {
+          if (button === first) expect(glyph).toContain('‹');
+          else expect(glyph).toBe('none');
+        } else {
+          expect(glyph).toContain(open ? '▾' : '◂');
+        }
+      }
+      await button.click();
+    }
+  }
+});
+
+test('the slider and the x-ray lens are mirrored in a right-to-left page', async ({ page }) => {
+  await page.setViewportSize({ width: 1500, height: 900 });
+  await page.goto('/en/');
+  await waitForGenerator(page);
+  await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(sourceSans);
+  await closePanels(page);
+  await page.evaluate(() => {
+    document.documentElement.dir = 'rtl';
+  });
+  const view = page.getByRole('region', { name: 'Article' });
+  await view.getByRole('button', { name: 'Slider', exact: true }).click();
+  const divider = view.getByRole('slider', { name: /^Divider/ });
+  const stage = view.locator('.ff-article-view__slider');
+  await divider.evaluate((node) => node.scrollIntoView({ block: 'start' }));
+  await divider.focus();
+  await page.keyboard.press('Home');
+  const edge = await divider.boundingBox();
+  const bounds = await stage.boundingBox();
+  expect((edge?.x ?? 0) + (edge?.width ?? 0) / 2).toBeGreaterThan(
+    (bounds?.x ?? 0) + (bounds?.width ?? 0) - 20,
+  );
+  await page.keyboard.press('ArrowLeft');
+  await expect(divider).toHaveAttribute('aria-valuenow', '2');
+
+  await view.getByRole('button', { name: 'X-ray', exact: true }).click();
+  await view.getByRole('button', { name: 'Side by side', exact: true }).click();
+  const loupe = view.getByRole('application', { name: /^X-ray:/ });
+  const box = await loupe.boundingBox();
+  if (!box) throw new Error('no stage');
+  await page.mouse.move(box.x + box.width * 0.25, box.y + 200);
+  const pane = await loupe.locator('.ff-article-view__lens-pane').boundingBox();
+  const under = await loupe.locator('[data-pane] > .ff-article').nth(1).boundingBox();
+  expect(Math.abs((pane?.x ?? 0) - (under?.x ?? 99999))).toBeLessThan(1);
+});
+
 test('the preview width is resized by drag and keys to simulate narrower screens', async ({
   page,
 }) => {
   await page.setViewportSize({ width: 1500, height: 900 });
   await page.goto('/en/');
-  await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
+  await waitForGenerator(page);
   await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(sourceSans);
   await closePanels(page);
   const view = page.getByRole('region', { name: 'Article' });
@@ -447,7 +511,7 @@ test('the slider moves the divider by drag and keys, vertically or horizontally'
   page,
 }) => {
   await page.goto('/en/');
-  await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
+  await waitForGenerator(page);
   await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(sourceSans);
   await closePanels(page);
   const view = page.getByRole('region', { name: 'Article' });
@@ -483,7 +547,7 @@ test('the slider moves the divider by drag and keys, vertically or horizontally'
 
 test('dropdowns and their options show a hover state', async ({ page }) => {
   await page.goto('/en/');
-  await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
+  await waitForGenerator(page);
   await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(sourceSans);
   await closePanels(page);
   const view = page.getByRole('region', { name: 'Article' });
@@ -512,7 +576,7 @@ test('dropdowns and their options show a hover state', async ({ page }) => {
 
 test('the text wrapping and sample text controls change the article', async ({ page }) => {
   await page.goto('/en/');
-  await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
+  await waitForGenerator(page);
   await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(sourceSans);
   await closePanels(page);
   const view = page.getByRole('region', { name: 'Article' });
@@ -531,7 +595,7 @@ test('the text wrapping and sample text controls change the article', async ({ p
 
 test('the article can be shown in many scripts and loads each text on demand', async ({ page }) => {
   await page.goto('/en/');
-  await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
+  await waitForGenerator(page);
   await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(sourceSans);
   await closePanels(page);
   const view = page.getByRole('region', { name: 'Article' });
@@ -554,7 +618,7 @@ test('the article can be shown in many scripts and loads each text on demand', a
 test('the CSS stays reachable while the article is large', async ({ page }) => {
   await page.setViewportSize({ width: 1280, height: 720 });
   await page.goto('/en/');
-  await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
+  await waitForGenerator(page);
   await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(sourceSans);
   await openStep(page, 'results');
   const code = page.getByRole('region', { name: 'Generated CSS', includeHidden: true });
@@ -567,7 +631,7 @@ test('a font with few Latin glyphs warns about coverage and previews its own gly
   page,
 }) => {
   await page.goto('/en/');
-  await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
+  await waitForGenerator(page);
   const font = buildFont(
     [
       [0x61, 0x61, 1],
@@ -589,7 +653,7 @@ test('a font with few Latin glyphs warns about coverage and previews its own gly
 
 test('the audience editor resolves presets and reports invalid queries', async ({ page }) => {
   await page.goto('/en/');
-  await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
+  await waitForGenerator(page);
   await openStep(page, 'audience');
   const list = page.getByRole('list', { name: 'Resolved browsers' });
   await expect(list).toContainText('Chrome');
@@ -613,7 +677,7 @@ test('the audience editor resolves presets and reports invalid queries', async (
 
 test('the audience editor passes axe when open', async ({ page }) => {
   await page.goto('/ru/');
-  await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
+  await waitForGenerator(page);
   await openStep(page, 'audience');
   await expect(page.getByRole('list', { name: 'Подходящие браузеры' })).toBeVisible();
   const results = await new AxeBuilder({ page })
@@ -626,7 +690,7 @@ test('imported usage statistics enable "in my stats" queries and report ignored 
   page,
 }) => {
   await page.goto('/en/');
-  await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
+  await waitForGenerator(page);
   await openStep(page, 'audience');
   const upload = (content: string) =>
     page.locator('input[type="file"][accept*="json"]').setInputFiles({
@@ -660,7 +724,7 @@ test('imported usage statistics enable "in my stats" queries and report ignored 
 
 test('system shares follow the query and the tag controls edit it', async ({ page }) => {
   await page.goto('/en/');
-  await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
+  await waitForGenerator(page);
   await openStep(page, 'audience');
   await fillQuery(page, 'safari 17, ios_saf 17.0-17.1');
   const shares = page.getByRole('list', { name: 'Estimated audience by system' });
@@ -682,7 +746,7 @@ test('system shares follow the query and the tag controls edit it', async ({ pag
 
 test('operating system tags drop a system from the audience', async ({ page }) => {
   await page.goto('/en/');
-  await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
+  await waitForGenerator(page);
   await openStep(page, 'audience');
   const shares = page.getByRole('list', { name: 'Estimated audience by system' });
   await expect(shares).toContainText('Linux');
@@ -698,7 +762,7 @@ test('operating system tags drop a system from the audience', async ({ page }) =
 
 test('typing, pasting and dropping a .browserslist file turn into tags', async ({ page }) => {
   await page.goto('/en/');
-  await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
+  await waitForGenerator(page);
   await openStep(page, 'audience');
   const query = queryField(page);
   const input = page.getByLabel('Add a query');
@@ -732,7 +796,7 @@ test('typing, pasting and dropping a .browserslist file turn into tags', async (
 
 test('the audience file buttons and drops fill the query and the statistics', async ({ page }) => {
   await page.goto('/en/');
-  await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
+  await waitForGenerator(page);
   await openStep(page, 'audience');
   const query = queryField(page);
 
@@ -768,7 +832,7 @@ test('the audience file buttons and drops fill the query and the statistics', as
 
 test('a system can have several ordered fallbacks', async ({ page }) => {
   await page.goto('/en/');
-  await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
+  await waitForGenerator(page);
   await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(sourceSans);
   await selectSystem(page, 'windows');
   const code = page.getByRole('region', { name: 'Generated CSS', includeHidden: true });
@@ -808,7 +872,7 @@ test('the support matrix shows the audience by system with ranges, states and sh
   page,
 }) => {
   await page.goto('/en/');
-  await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
+  await waitForGenerator(page);
   await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(sourceSans);
   await openSupport(page);
   const code = page.getByRole('region', { name: 'Generated CSS', includeHidden: true });
@@ -832,7 +896,7 @@ test('the support matrix shows the audience by system with ranges, states and sh
 
 test('a system can be switched off and then falls back to the generic family', async ({ page }) => {
   await page.goto('/en/');
-  await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
+  await waitForGenerator(page);
   await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(sourceSans);
   const matrix = page.getByRole('region', { name: 'Browser support' });
   await openSupport(page);
@@ -852,7 +916,7 @@ test('the support matrix shows the shift with and without the CSS and the result
   page,
 }) => {
   await page.goto('/en/');
-  await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
+  await waitForGenerator(page);
   await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(sourceSans);
   await openSupport(page);
   const matrix = page.getByRole('region', { name: 'Browser support' });
@@ -866,7 +930,7 @@ test('the support matrix shows the shift with and without the CSS and the result
 
 test('spacing adds the fonts-loading CSS and script', async ({ page }) => {
   await page.goto('/en/');
-  await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
+  await waitForGenerator(page);
   await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(sourceSans);
   const code = page.getByRole('region', { name: 'Generated CSS', includeHidden: true });
   await expect(code).not.toContainText('fonts-loading');
@@ -886,7 +950,7 @@ test('spacing adds the fonts-loading CSS and script', async ({ page }) => {
 
 test('values are optimized automatically and pinned values stay', async ({ page }) => {
   await page.goto('/en/');
-  await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
+  await waitForGenerator(page);
   await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(sourceSans);
   await selectSystem(page, 'windows');
   await choose(page.getByLabel('Fallback font 1', { exact: true }), 'arial');
@@ -904,7 +968,7 @@ test('values are optimized automatically and pinned values stay', async ({ page 
 test('opening and closing a step does not move the page content', async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto('/en/');
-  await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
+  await waitForGenerator(page);
   await closePanels(page);
   const article = page.locator('.ff-article:not([data-probe])').first();
   await expect(article).toBeVisible();
@@ -918,7 +982,7 @@ test('opening and closing a step does not move the page content', async ({ page 
 
 test('the open step and the support section are collapsible and remembered', async ({ page }) => {
   await page.goto('/en/');
-  await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
+  await waitForGenerator(page);
   const inputs = page.getByRole('button', { name: '1. Inputs' });
   await openStep(page, 'inputs');
   await expect(page.locator('#ff-settings')).toBeVisible();
@@ -926,7 +990,7 @@ test('the open step and the support section are collapsible and remembered', asy
   await expect(inputs).toHaveAttribute('aria-expanded', 'false');
   await expect(page.locator('#ff-settings')).toBeHidden();
   await page.reload();
-  await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
+  await waitForGenerator(page);
   await expect(page.getByRole('button', { name: '1. Inputs' })).toHaveAttribute(
     'aria-expanded',
     'false',
@@ -947,7 +1011,7 @@ test('the open step and the support section are collapsible and remembered', asy
 test('the dock stays pinned to the top while the article scrolls', async ({ page }) => {
   await page.setViewportSize({ width: 1453, height: 800 });
   await page.goto('/en/');
-  await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
+  await waitForGenerator(page);
   await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(sourceSans);
   await closePanels(page);
   await expect(page.locator('.ff-article:not([data-probe])').first()).toBeVisible();
@@ -962,7 +1026,7 @@ test('a system with a single known font explains why no fallback can be added', 
   page,
 }) => {
   await page.goto('/en/');
-  await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
+  await waitForGenerator(page);
   await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(sourceSans);
   await selectSystem(page, 'android');
   await expect(page.getByRole('button', { name: 'Add fallback' })).toBeDisabled();
@@ -973,7 +1037,7 @@ test('the unicode-range toggle limits the fallbacks to the covered characters', 
   page,
 }) => {
   await page.goto('/en/');
-  await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
+  await waitForGenerator(page);
   await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(sourceSans);
   const code = page.getByRole('region', { name: 'Generated CSS', includeHidden: true });
   await expect(code).toContainText('size-adjust');
@@ -987,7 +1051,7 @@ test('the unicode-range toggle limits the fallbacks to the covered characters', 
 
 test('the coverage section shows a Unicode map and a per-block table', async ({ page }) => {
   await page.goto('/en/');
-  await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
+  await waitForGenerator(page);
   await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(sourceSans);
   await closePanels(page);
   await page.getByRole('button', { name: 'Glyph coverage', exact: true }).click();
@@ -1010,7 +1074,7 @@ test('the style select switches a system to the bold face and adds the descripto
   page,
 }) => {
   await page.goto('/en/');
-  await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
+  await waitForGenerator(page);
   await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(sourceSans);
   await selectSystem(page, 'windows');
   const code = page.getByRole('region', { name: 'Generated CSS', includeHidden: true });
@@ -1025,7 +1089,7 @@ test('the style select switches a system to the bold face and adds the descripto
 
 test('a font collection is split into separate fonts', async ({ page }) => {
   await page.goto('/en/');
-  await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
+  await waitForGenerator(page);
   const collection = buildCollection([buildFont([[0x41, 0x5a, 1]]), buildFont([[0x61, 0x7a, 1]])]);
   await page.locator('input[type="file"][accept*="woff2"]').setInputFiles({
     name: 'pair.ttc',
@@ -1040,7 +1104,7 @@ test('characters missing from the font are highlighted and explained on focus', 
   page,
 }) => {
   await page.goto('/en/');
-  await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
+  await waitForGenerator(page);
   await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(sourceSans);
   await closePanels(page);
   const view = page.getByRole('region', { name: 'Article' });
@@ -1071,7 +1135,7 @@ test('the article shows the layout shift measured on this device and ellipsizes 
   page,
 }) => {
   await page.goto('/en/');
-  await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
+  await waitForGenerator(page);
   await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(sourceSans);
   await closePanels(page);
   const view = page.getByRole('region', { name: 'Article' });
@@ -1088,7 +1152,7 @@ test('a font embedded in pasted CSS can be added and other sources are only link
   page,
 }) => {
   await page.goto('/en/');
-  await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
+  await waitForGenerator(page);
   await openStep(page, 'inputs');
   const encoded = readFileSync(sourceSans).toString('base64');
   const css = `@font-face { font-family: "Embedded"; font-weight: 700; src: url(data:font/woff2;base64,${encoded}) format("woff2"); }
@@ -1111,7 +1175,7 @@ test('CSS files can be chosen and their font declarations are found automaticall
   page,
 }) => {
   await page.goto('/en/');
-  await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
+  await waitForGenerator(page);
   await openStep(page, 'inputs');
   await page.getByLabel('CSS files').setInputFiles({
     name: 'fonts.css',
@@ -1149,7 +1213,7 @@ test('a Google Fonts family can be searched and downloaded through the two allow
     }),
   );
   await page.goto('/en/');
-  await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
+  await waitForGenerator(page);
   await openStep(page, 'inputs');
   const google = picker(page, 'Google Fonts');
   await google.getByLabel('Search families').fill('open sans');
@@ -1174,7 +1238,7 @@ test('a Fontsource family is downloaded from jsDelivr', async ({ page }) => {
     }),
   );
   await page.goto('/en/');
-  await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
+  await waitForGenerator(page);
   await openStep(page, 'inputs');
   const fontsource = picker(page, 'Fontsource: other open fonts');
   await fontsource.getByLabel('Search families').fill('aileron');
@@ -1191,7 +1255,7 @@ test('a Fontsource family is downloaded from jsDelivr', async ({ page }) => {
 test('a failed Google Fonts download is explained', async ({ page }) => {
   await page.route('https://fonts.googleapis.com/**', (route) => route.abort());
   await page.goto('/en/');
-  await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
+  await waitForGenerator(page);
   await openStep(page, 'inputs');
   const google = picker(page, 'Google Fonts');
   await google.getByLabel('Search families').fill('lora');
@@ -1205,7 +1269,7 @@ test('a failed Google Fonts download is explained', async ({ page }) => {
 
 test('every export format can be shown, copied and downloaded', async ({ page }) => {
   await page.goto('/en/');
-  await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
+  await waitForGenerator(page);
   await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(sourceSans);
   await openExport(page);
   const format = page.getByLabel('Format');
@@ -1231,7 +1295,7 @@ test('the impact report is built from the same state as the matrix and can be do
   page,
 }) => {
   await page.goto('/en/');
-  await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
+  await waitForGenerator(page);
   await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(sourceSans);
   await openExport(page);
   await choose(page.getByLabel('Format'), { label: 'Impact report (Markdown)' });
@@ -1251,7 +1315,7 @@ test('fonts and settings survive a reload and the share link restores the settin
 }) => {
   await context.grantPermissions(['clipboard-read', 'clipboard-write']);
   await page.goto('/en/');
-  await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
+  await waitForGenerator(page);
   await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(sourceSans);
   await expect(page.getByRole('button', { name: /^Remove: SourceSansPro-Regular/ })).toBeVisible();
   const android = page.getByRole('checkbox', { name: 'Include Android in the stack' });
@@ -1260,7 +1324,7 @@ test('fonts and settings survive a reload and the share link restores the settin
   await page.waitForTimeout(800);
 
   await page.reload();
-  await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
+  await waitForGenerator(page);
   await openStep(page, 'tuning');
   await expect(page.getByRole('button', { name: /^Remove: SourceSansPro-Regular/ })).toBeVisible();
   await expect(
@@ -1277,7 +1341,7 @@ test('fonts and settings survive a reload and the share link restores the settin
   if (!fresh) throw new Error('no browser');
   const other = await fresh.newPage();
   await other.goto(link);
-  await other.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
+  await waitForGenerator(other);
   await other.locator('input[type="file"][accept*="woff2"]').setInputFiles(sourceSans);
   await openStep(other, 'tuning');
   await expect(
@@ -1290,13 +1354,13 @@ test('fonts and settings survive a reload and the share link restores the settin
     page.getByRole('status').filter({ hasText: /were removed from this browser/ }),
   ).toBeVisible();
   await page.reload();
-  await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
+  await waitForGenerator(page);
   await expect(page.getByRole('button', { name: /^Remove: .*\.(woff2|ttf)/ })).toHaveCount(0);
 });
 
 test('a corrupt share link is ignored', async ({ page }) => {
   await page.goto('/en/#s=!!!not-a-state');
-  await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
+  await waitForGenerator(page);
   await openStep(page, 'inputs');
   await expect(page.getByRole('region', { name: 'Fonts to adapt' })).toHaveCount(0);
   await expect(page.getByText('Your web font', { exact: true })).toBeVisible();
@@ -1306,7 +1370,7 @@ test('the dropdown works from the keyboard, with typeahead, and has no axe viola
   page,
 }) => {
   await page.goto('/en/');
-  await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
+  await waitForGenerator(page);
   await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(sourceSans);
   await openExport(page);
   const format = page.getByRole('combobox', { name: 'Format' });
@@ -1332,7 +1396,7 @@ test('the dropdown works from the keyboard, with typeahead, and has no axe viola
 test('the steps are equal columns and only one is open at a time', async ({ page }) => {
   await page.setViewportSize({ width: 1453, height: 1000 });
   await page.goto('/en/');
-  await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
+  await waitForGenerator(page);
   const widths = await page
     .locator('.ff-dock__column')
     .evaluateAll((nodes) => nodes.map((node) => Math.round(node.getBoundingClientRect().width)));
@@ -1356,7 +1420,7 @@ test('several fonts share the article and the export and are tuned one by one', 
   page,
 }) => {
   await page.goto('/en/');
-  await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
+  await waitForGenerator(page);
   await page
     .locator('input[type="file"][accept*="woff2"]')
     .setInputFiles([sourceSans, `${fonts}FiraSans-Regular.ttf`]);
@@ -1390,7 +1454,7 @@ test('several fonts share the article and the export and are tuned one by one', 
 
 test('each font keeps its own style across a reload', async ({ page }) => {
   await page.goto('/en/');
-  await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
+  await waitForGenerator(page);
   await page
     .locator('input[type="file"][accept*="woff2"]')
     .setInputFiles([sourceSans, `${fonts}FiraSans-Regular.ttf`]);
@@ -1407,7 +1471,7 @@ test('each font keeps its own style across a reload', async ({ page }) => {
   await page.waitForTimeout(800);
 
   await page.reload();
-  await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
+  await waitForGenerator(page);
   await open(/^Source Sans/);
   await expect(code).toContainText('font-weight: 700;');
   await open(/^Fira Sans/);
@@ -1417,7 +1481,7 @@ test('each font keeps its own style across a reload', async ({ page }) => {
 
 test('scripts with different widths get their own fallback faces', async ({ page }) => {
   await page.goto('/en/');
-  await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
+  await waitForGenerator(page);
   await page
     .locator('input[type="file"][accept*="woff2"]')
     .setInputFiles(`${fonts}FiraSans-Regular.ttf`);
@@ -1454,7 +1518,7 @@ test('the bookmarklet hands the fonts and text of a page to the generator after 
     });
   });
   await page.goto('/en/');
-  await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
+  await waitForGenerator(page);
   await openStep(page, 'inputs');
   const link = page.getByRole('link', { name: 'Send to fontstay' });
   const href = (await link.getAttribute('href')) ?? '';
@@ -1506,7 +1570,7 @@ test('panels animate with view transitions unless reduced motion is requested', 
     }
   });
   await page.goto('/en/');
-  await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
+  await waitForGenerator(page);
   const inputs = page.getByRole('button', { name: '3. Fine-tuning' });
   await inputs.click();
   await expect(inputs).toHaveAttribute('aria-expanded', 'false');
@@ -1524,7 +1588,7 @@ test('panels animate with view transitions unless reduced motion is requested', 
 
 test('the export code is syntax highlighted without inline styles', async ({ page }) => {
   await page.goto('/en/');
-  await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
+  await waitForGenerator(page);
   await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(sourceSans);
   await openExport(page);
   const code = page.getByRole('region', { name: 'Generated CSS', includeHidden: true });
@@ -1542,7 +1606,7 @@ test('the export code is syntax highlighted without inline styles', async ({ pag
 
 test('the article uses the system font stack until a font is added', async ({ page }) => {
   await page.goto('/en/');
-  await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
+  await waitForGenerator(page);
   await closePanels(page);
   await expect(page.getByText(/Choose a web font or drop it anywhere/)).toBeVisible();
   await expect(page.locator('.ff-article:not([data-probe])')).toHaveCSS('font-family', /system-ui/);
@@ -1550,7 +1614,7 @@ test('the article uses the system font stack until a font is added', async ({ pa
 
 test('fonts and CSS files can be dropped anywhere on the page', async ({ page }) => {
   await page.goto('/en/');
-  await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
+  await waitForGenerator(page);
   await closePanels(page);
   const bytes = [...readFileSync(sourceSans)];
   const drop = (name: string, type: string, content: number[] | string) =>
@@ -1601,7 +1665,7 @@ test('the generator page itself does not shift while it loads', async ({ page })
     }).observe({ type: 'layout-shift', buffered: true });
   });
   await page.goto('/en/');
-  await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
+  await waitForGenerator(page);
   await page.waitForTimeout(1500);
   const total = await page.evaluate(() => (window as unknown as { shifts: number }).shifts);
   expect(total).toBeLessThan(0.02);
@@ -1627,7 +1691,7 @@ test('the header keeps its size and position on every page', async ({ page }) =>
 
 test('the intro guide has the same height in every article layer', async ({ page }) => {
   await page.goto('/en/');
-  await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
+  await waitForGenerator(page);
   await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(sourceSans);
   await closePanels(page);
   const view = page.getByRole('region', { name: 'Article' });
@@ -1646,7 +1710,7 @@ test('the intro guide has the same height in every article layer', async ({ page
 test('an open panel fills the screen down to its bottom edge', async ({ page }) => {
   await page.setViewportSize({ width: 1500, height: 900 });
   await page.goto('/en/');
-  await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
+  await waitForGenerator(page);
   await openStep(page, 'audience');
   const box = await page.locator('.ff-dock__panel:not([hidden])').boundingBox();
   const bottom = (box?.y ?? 0) + (box?.height ?? 0);
@@ -1657,7 +1721,7 @@ test('an open panel fills the screen down to its bottom edge', async ({ page }) 
 test('the next button moves to the following panel and the last one has none', async ({ page }) => {
   await page.setViewportSize({ width: 1500, height: 900 });
   await page.goto('/en/');
-  await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
+  await waitForGenerator(page);
   await openStep(page, 'inputs');
   await page.getByRole('button', { name: 'Next: 2. Audience' }).click();
   await expect(page.getByRole('button', { name: '2. Audience', exact: true })).toHaveAttribute(
@@ -1671,7 +1735,7 @@ test('the next button moves to the following panel and the last one has none', a
 test('a click outside an open panel closes it', async ({ page }) => {
   await page.setViewportSize({ width: 1500, height: 900 });
   await page.goto('/en/');
-  await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
+  await waitForGenerator(page);
   await openStep(page, 'tuning');
   await page.locator('.ff-header').click({ position: { x: 700, y: 5 } });
   await expect(page.locator('.ff-dock__panel:not([hidden])')).toHaveCount(0);
@@ -1681,7 +1745,7 @@ test('the layout shift score shows the value before and after in rating colours'
   page,
 }) => {
   await page.goto('/en/');
-  await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
+  await waitForGenerator(page);
   await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(sourceSans);
   await closePanels(page);
   const scores = page.locator('.ff-shift .ff-shift__score');
@@ -1693,7 +1757,7 @@ test('the layout shift score shows the value before and after in rating colours'
 
 test('the intro guide explains the jump and opens each step', async ({ page }) => {
   await page.goto('/en/');
-  await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
+  await waitForGenerator(page);
   await closePanels(page);
   const guide = page.getByRole('region', { name: /Stop the page from jumping/ });
   await expect(guide).toBeVisible();
@@ -1706,7 +1770,7 @@ test('the intro guide folds into a strip once a font is loaded and can be reopen
   page,
 }) => {
   await page.goto('/en/');
-  await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
+  await waitForGenerator(page);
   await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(sourceSans);
   await closePanels(page);
   const view = page.getByRole('region', { name: 'Article' });

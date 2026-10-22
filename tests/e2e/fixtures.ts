@@ -24,6 +24,12 @@ export const test = base.extend({
 
 export { expect };
 
+export async function waitForGenerator(page: Page) {
+  await page
+    .locator('astro-island[component-export="GeneratorApp"]:not([ssr])')
+    .waitFor({ state: 'attached' });
+}
+
 const SYSTEM_NAMES: Record<string, RegExp> = {
   windows: /^Windows/,
   macos: /^macOS/,
