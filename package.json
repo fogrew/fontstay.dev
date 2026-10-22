@@ -42,18 +42,18 @@
     "postinstall": "pnpm i18n:compile"
   },
   "dependencies": {
-    "@astrojs/preact": "6.1.0",
+    "@astrojs/preact": "6.1.1",
     "@preact/signals": "2.11.3",
-    "astro": "7.4.1",
+    "astro": "7.4.2",
     "browserslist": "4.29.4",
     "fontkitten": "1.0.3",
     "preact": "10.29.8",
     "shiki": "4.5.0"
   },
   "devDependencies": {
-    "@astrojs/check": "0.9.11",
+    "@astrojs/check": "0.9.12",
     "@axe-core/playwright": "4.14.0",
-    "@biomejs/biome": "2.5.15",
+    "@biomejs/biome": "2.6.2",
     "@commitlint/cli": "21.2.4",
     "@commitlint/config-conventional": "21.2.4",
     "@feod/analyzer": "0.1.1",
