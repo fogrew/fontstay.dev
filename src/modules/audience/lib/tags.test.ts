@@ -1,14 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import {
-  addTag,
-  addTags,
-  browserOf,
-  isExcluded,
-  joinQuery,
-  removeTag,
-  splitQuery,
-  toggleNot,
-} from './tags';
+import { addTag, addTags, browserOf, isExcluded, joinQuery, removeTag, splitQuery } from './tags';
 
 describe('query tags', () => {
   it('splits and joins comma separated queries', () => {
@@ -30,22 +21,13 @@ describe('query tags', () => {
     expect(isExcluded('notable')).toBe(false);
     expect(browserOf('last 2 chrome versions')).toBe('chrome');
     expect(browserOf('not ios_saf > 0')).toBe('ios_saf');
+    expect(browserOf('os windows')).toBeUndefined();
     expect(browserOf('> 1%')).toBeUndefined();
   });
 });
 
-describe('toggling not', () => {
-  it('flips a plain query and its negation', () => {
-    expect(toggleNot('chrome 120, dead', 'dead')).toBe('chrome 120, not dead');
-    expect(toggleNot('chrome 120, not dead', 'not dead')).toBe('chrome 120, dead');
-  });
-
-  it('maps browser tags to their exclusion and back', () => {
-    expect(toggleNot('last 2 edge versions', 'last 2 edge versions')).toBe('not edge > 0');
-    expect(toggleNot('not edge > 0', 'not edge > 0')).toBe('last 2 edge versions');
-  });
-
-  it('adds several tags at once without duplicates', () => {
+describe('adding several tags', () => {
+  it('skips duplicates', () => {
     expect(addTags('dead', ['dead', '> 1%'])).toBe('dead, > 1%');
   });
 });

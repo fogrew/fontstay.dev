@@ -1,4 +1,5 @@
 export const MAX_BROWSERSLIST_CHARS = 20_000;
+export const MAX_PACKAGE_JSON_CHARS = 500_000;
 const MAX_QUERIES = 40;
 const MAX_QUERY = 200;
 
@@ -33,8 +34,9 @@ function fromPackageJson(text: string): string[] {
 }
 
 export function parseBrowserslist(text: string): string[] {
+  if (text.trimStart().startsWith('{'))
+    return fromPackageJson(text.slice(0, MAX_PACKAGE_JSON_CHARS));
   const source = text.slice(0, MAX_BROWSERSLIST_CHARS);
-  if (source.trimStart().startsWith('{')) return fromPackageJson(source);
   const sections = new Map<string, string[]>([['', []]]);
   let current = '';
   for (const raw of source.split(/\r?\n/)) {
@@ -49,9 +51,13 @@ export function parseBrowserslist(text: string): string[] {
     sections.get(current)?.push(line);
   }
   const base = sections.get('') ?? [];
+  const production = sections.get('production') ?? [];
   const picked =
-    sections.get('production') ??
-    (base.length > 0 ? base : [...sections.values()].find((lines) => lines.length > 0));
+    production.length > 0
+      ? production
+      : base.length > 0
+        ? base
+        : [...sections.values()].find((lines) => lines.length > 0);
   return clean(picked ?? []);
 }
 

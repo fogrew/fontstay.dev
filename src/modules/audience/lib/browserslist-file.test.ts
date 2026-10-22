@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { isBrowserslistFile, parseBrowserslist } from './browserslist-file';
+import { isBrowserslistFile, MAX_PACKAGE_JSON_CHARS, parseBrowserslist } from './browserslist-file';
 
 describe('parseBrowserslist', () => {
   it('reads one query per line and drops comments and blanks', () => {
@@ -23,6 +23,19 @@ describe('parseBrowserslist', () => {
     expect(parseBrowserslist('[modern]\nlast 2 versions\n[legacy]\nie 11')).toEqual([
       'last 2 versions',
     ]);
+  });
+
+  it('falls back to the base queries when the production section is empty', () => {
+    expect(parseBrowserslist('> 1%\n[production]\n[development]\nlast 1 chrome version')).toEqual([
+      '> 1%',
+    ]);
+  });
+
+  it('reads a package.json larger than the plain list limit but stops at its own cap', () => {
+    const padding = 'x'.repeat(30_000);
+    expect(parseBrowserslist(`{"x": "${padding}", "browserslist": ["> 1%"]}`)).toEqual(['> 1%']);
+    const oversized = `{"x": "${'x'.repeat(MAX_PACKAGE_JSON_CHARS)}", "browserslist": ["> 1%"]}`;
+    expect(parseBrowserslist(oversized)).toEqual([]);
   });
 
   it('reads the browserslist key of a package.json', () => {

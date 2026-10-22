@@ -84,8 +84,14 @@ describe('tools', () => {
       system: 'windows',
       fonts: ['arial', 'segoe-ui', 'a', 'b', 'c', 'd', 'e', 'f'],
     });
-    await run(bounded, 'set-audience', { query: 'x'.repeat(2000) });
-    expect(setAudience.mock.calls[0]?.[0]).toHaveLength(500);
+    await run(bounded, 'set-audience', { query: 'x'.repeat(2500) });
+    expect(setAudience.mock.calls[0]?.[0]).toHaveLength(2000);
+  });
+
+  it('treats inherited property names as unknown topics', async () => {
+    for (const topic of ['__proto__', 'constructor', 'toString']) {
+      expect(await run(tools, 'explain-setting', { topic })).toContain('Topics:');
+    }
   });
 
   it('explains known topics and lists the topics for unknown ones', async () => {
