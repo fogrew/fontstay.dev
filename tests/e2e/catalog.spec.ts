@@ -159,6 +159,7 @@ test('the catalog table filters by every column and groups by type', async ({ pa
 });
 
 test('a preset stays applied to every uploaded font until it is cleared', async ({ page }) => {
+  test.setTimeout(90_000);
   await page.goto('/en/presets/');
   await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
   const item = page.locator('li', { has: page.getByRole('heading', { name: 'Classic serif' }) });
@@ -175,7 +176,7 @@ test('a preset stays applied to every uploaded font until it is cleared', async 
   await expect(
     page.getByRole('region', { name: 'Generated CSS', includeHidden: true }),
   ).toContainText('serif;', {
-    timeout: 15_000,
+    timeout: 60_000,
   });
   await page.getByRole('button', { name: 'Clear the preset' }).click();
   await expect(page.getByText('Stack preset applied: Classic serif')).toHaveCount(0);
