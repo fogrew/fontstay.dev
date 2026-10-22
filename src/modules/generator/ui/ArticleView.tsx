@@ -955,7 +955,7 @@ export function ArticleView({
           dir={article.dir}
           style={hydrated ? pageStyle('web') : undefined}
         >
-          <IntroGuide locale={locale} />
+          <IntroGuide locale={locale} interactive />
           <ArticleBody article={article} coverage={coverageFor(true)} focusable />
         </article>
       </section>

@@ -21,6 +21,7 @@ describe('query tags', () => {
     expect(isExcluded('notable')).toBe(false);
     expect(browserOf('last 2 chrome versions')).toBe('chrome');
     expect(browserOf('not ios_saf > 0')).toBe('ios_saf');
+    expect(browserOf('os windows')).toBeUndefined();
     expect(browserOf('> 1%')).toBeUndefined();
   });
 });

@@ -82,6 +82,24 @@ describe('buildExport', () => {
   });
 });
 
+describe('hostile file names', () => {
+  const withFile = (fileName: string): ExportInput => ({
+    ...input,
+    families: [{ ...inter, fonts: [{ fileName, weight: 400, style: 'normal' }] }],
+  });
+
+  it('keeps a file name that is an inherited property name out of the preload type', () => {
+    const { text } = buildExport('preload', withFile('x.constructor'));
+    expect(text).not.toContain('native code');
+    expect(text).not.toContain('[object');
+  });
+
+  it('keeps a line break in the file name inside the Next comment line', () => {
+    const { text } = buildExport('next', withFile('a\n});evil();//.woff2'));
+    expect(text.split('\n').some((line) => line.startsWith('});evil'))).toBe(false);
+  });
+});
+
 describe('hostile family names', () => {
   it('cannot break out of the JavaScript string in the Nuxt and Astro exports', () => {
     const name = ['x', '});evil();//', String.fromCharCode(0x2028)].join('\n');

@@ -63,6 +63,10 @@ const singleLine = (value: string) => mapControl(value, () => ' ');
 
 const extensionOf = (fileName: string) => fileName.split('.').pop()?.toLowerCase() ?? 'woff2';
 
+const mimeOf = (fileName: string) => {
+  const extension = extensionOf(fileName);
+  return (Object.hasOwn(MIME, extension) ? MIME[extension] : undefined) ?? 'font/woff2';
+};
 const MIME: Record<string, string> = {
   woff2: 'font/woff2',
   woff: 'font/woff',
@@ -122,7 +126,7 @@ function nextBlock(input: ExportInput, family: ExportFamily): string {
           '  src: [',
           ...fonts.map(
             (font) =>
-              `    { path: ${quoted(`./fonts/${fileOf(font)}`)}, weight: '${font.weight}', style: '${font.style}' },`,
+              `    { path: ${quoted(`./fonts/${fileOf(font)}`)}, weight: '${font.weight}', style: ${quoted(font.style)} },`,
           ),
           '  ],',
         ].join('\n');
@@ -147,7 +151,7 @@ function nuxtBlock(family: ExportFamily): string {
           '        src: [',
           ...fonts.map(
             (font) =>
-              `          { src: ${quoted(`/fonts/${fileOf(font)}`)}, weight: ${font.weight}, style: '${font.style}' },`,
+              `          { src: ${quoted(`/fonts/${fileOf(font)}`)}, weight: ${font.weight}, style: ${quoted(font.style)} },`,
           ),
           '        ],',
         ].join('\n');
@@ -163,7 +167,7 @@ function nuxtBlock(family: ExportFamily): string {
 function astroBlock(input: ExportInput, family: ExportFamily): string {
   const variants = fontsOf(family).map(
     (font) =>
-      `{ weight: ${font.weight}, style: '${font.style}', src: [${quoted(`./src/assets/fonts/${fileOf(font)}`)}] }`,
+      `{ weight: ${font.weight}, style: ${quoted(font.style)}, src: [${quoted(`./src/assets/fonts/${fileOf(font)}`)}] }`,
   );
   return [
     '    {',
@@ -264,7 +268,7 @@ export function buildExport(format: ExportFormat, input: ExportInput): ExportFil
         text: filesOf(input)
           .map(
             (fileName) =>
-              `<link rel="preload" href="/fonts/${encodeURI(fileName)}" as="font" type="${MIME[extensionOf(fileName)] ?? 'font/woff2'}" crossorigin>`,
+              `<link rel="preload" href="/fonts/${encodeURI(fileName)}" as="font" type="${mimeOf(fileName)}" crossorigin>`,
           )
           .join('\n'),
         fileName: 'preload.html',
