@@ -1,5 +1,5 @@
 import AxeBuilder from '@axe-core/playwright';
-import { choose, expect, fillQuery, test } from './fixtures';
+import { choose, expect, fillQuery, test, waitForGenerator } from './fixtures';
 
 const wcagTags = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'];
 
@@ -90,7 +90,7 @@ test('a preset opens in the generator with its type and per-system fallbacks', a
   );
   await item.getByRole('link', { name: 'Open in the generator' }).click();
   await expect(page).toHaveURL(/\/en\/(#s=.*)?$/);
-  await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
+  await waitForGenerator(page);
   const font = new URL(
     '../fixtures/fonts/SourceSansPro-Regular.woff2',
     import.meta.url,
@@ -159,12 +159,11 @@ test('the catalog table filters by every column and groups by type', async ({ pa
 });
 
 test('a preset stays applied to every uploaded font until it is cleared', async ({ page }) => {
-  test.setTimeout(90_000);
   await page.goto('/en/presets/');
   await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
   const item = page.locator('li', { has: page.getByRole('heading', { name: 'Classic serif' }) });
   await item.getByRole('link', { name: 'Open in the generator' }).click();
-  await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
+  await waitForGenerator(page);
   const fonts = new URL('../fixtures/fonts/', import.meta.url).pathname.replace(
     /^\/([A-Za-z]:)/,
     '$1',
@@ -176,7 +175,7 @@ test('a preset stays applied to every uploaded font until it is cleared', async 
   await expect(
     page.getByRole('region', { name: 'Generated CSS', includeHidden: true }),
   ).toContainText('serif;', {
-    timeout: 60_000,
+    timeout: 15_000,
   });
   await page.getByRole('button', { name: 'Clear the preset' }).click();
   await expect(page.getByText('Stack preset applied: Classic serif')).toHaveCount(0);
