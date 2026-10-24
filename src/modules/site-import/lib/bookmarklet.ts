@@ -14,6 +14,7 @@ const WRAPPER = `
   const token = Array.from(crypto.getRandomValues(new Uint8Array(24)), (byte) => 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'[byte % 62]).join('');
   const child = window.open(target + __PATH__ + '#t=' + token, '_blank');
   const data = fontstayCollect(window, document);
+  data.catch(() => alert(__FAILED__));
   if (!child) {
     data.then(async (payload) => {
       try {
@@ -22,7 +23,7 @@ const WRAPPER = `
       } catch {
         alert(__FAILED__);
       }
-    });
+    }, () => {});
     return;
   }
   const listener = (event) => {
@@ -30,7 +31,7 @@ const WRAPPER = `
     window.removeEventListener('message', listener);
     data.then((payload) => {
       child.postMessage({ type: ${JSON.stringify(DATA_TYPE)}, v: ${PROTOCOL_VERSION}, token, payload }, target, payload.files.map((file) => file.bytes));
-    });
+    }, () => {});
   };
   window.addEventListener('message', listener);
 })();

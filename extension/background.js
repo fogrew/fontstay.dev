@@ -24,9 +24,13 @@ async function deliver(tabId, token, payload) {
       await sleep(250);
     }
   }
+  await chrome.action.setBadgeText({ text: '!' });
+  await chrome.action.setTitle({ title: 'Could not reach fontstay.dev. Click to try again.' });
 }
 
 async function sendTab(tab) {
+  await chrome.action.setBadgeText({ text: '' });
+  await chrome.action.setTitle({ title: 'Send this page to fontstay' });
   if (tab.id === undefined || !/^https?:/.test(tab.url ?? '')) return;
   let payload;
   try {

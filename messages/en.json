@@ -427,7 +427,7 @@
   "import_bookmarklet_copy_failed": "Could not copy. Allow clipboard access and try again.",
   "import_bookmarklet_drag": "Drag this link to the bookmarks bar instead of clicking it.",
   "import_bookmarklet_alert_copied": "The data was copied to the clipboard: font names and sizes, the page title and a text sample. Open fontstay.dev and paste it into the Add a font field.",
-  "import_bookmarklet_alert_failed": "Could not copy the data. Allow clipboard access and try again.",
+  "import_bookmarklet_alert_failed": "Could not collect or copy the data. Allow clipboard access and try again, or use the extension.",
   "import_extension_label": "Browser extension",
   "import_extension_note": "Load the extension folder in developer mode. It asks for no access to websites until you click its button.",
   "import_extension_link": "Extension source and instructions",
