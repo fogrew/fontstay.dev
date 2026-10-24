@@ -304,7 +304,9 @@ export function AudienceEditor({
                         <BrowserIcon id={group.id} />
                         {group.name}
                       </span>
-                      <span class="ff-muted">{group.ranges.join(', ')}</span>
+                      <span class="ff-muted" dir="auto">
+                        {group.ranges.join(', ')}
+                      </span>
                     </li>
                   ))}
                 </ul>

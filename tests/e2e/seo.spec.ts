@@ -1,6 +1,6 @@
 import { expect, test } from './fixtures';
 
-for (const locale of ['en', 'ru']) {
+for (const locale of ['en', 'ru', 'ar']) {
   test(`${locale}: pages carry the title, description, Open Graph and structured data`, async ({
     page,
   }) => {
@@ -17,7 +17,7 @@ for (const locale of ['en', 'ru']) {
       );
       await expect(page.locator('meta[property="og:locale"]')).toHaveAttribute(
         'content',
-        locale === 'ru' ? 'ru_RU' : 'en_US',
+        { en: 'en_US', ru: 'ru_RU', ar: 'ar_AR' }[locale] ?? '',
       );
       await expect(page.locator('link[rel="canonical"]')).toHaveAttribute(
         'href',

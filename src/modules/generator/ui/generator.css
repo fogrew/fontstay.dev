@@ -1459,3 +1459,7 @@
   font-size: 0.75rem;
   white-space: nowrap;
 }
+
+.ff-shift__arrow:dir(rtl) {
+  transform: scaleX(-1);
+}

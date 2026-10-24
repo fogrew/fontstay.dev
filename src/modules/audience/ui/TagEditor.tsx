@@ -114,7 +114,7 @@ export function TagEditor({
         <ul class="ff-tags__chips">
           {parts.map((tag, index) => (
             <li key={`${tag}-${index}`} class="ff-chip">
-              <span class="ff-chip__label">
+              <span class="ff-chip__label" dir="auto">
                 <Label tag={tag} />
               </span>
               <button
@@ -203,6 +203,7 @@ export function TagEditor({
                 <button
                   type="button"
                   class="ff-tag"
+                  dir="auto"
                   disabled={taken(item.query)}
                   onClick={() => add(item.query)}
                 >

@@ -85,7 +85,7 @@ export function CodeBlock({
         </span>
       </div>
       <ScrollShadow class="ff-code__body" tabIndex={0} label={label}>
-        <pre>
+        <pre dir="ltr">
           <code>
             {tokens?.code === code
               ? tokens.lines.map((line, row) => (
