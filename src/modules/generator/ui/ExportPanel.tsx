@@ -1,3 +1,4 @@
+import type { ComponentChildren } from 'preact';
 import { useState } from 'preact/hooks';
 import { type Locale, messagesFor } from '@/common/i18n';
 import { CodeBlock, Icon, type IconName, Select } from '@/common/ui';
@@ -21,12 +22,16 @@ export function ExportPanel({
   report,
   reordered = false,
   multi = false,
+  actions,
+  note,
 }: {
   locale: Locale;
   input: ExportInput;
   report: () => string;
   reordered?: boolean;
   multi?: boolean;
+  actions?: ComponentChildren;
+  note?: string;
 }) {
   const t = messagesFor(locale);
   const [chosen, setFormat] = useState<Choice>('css');
@@ -70,7 +75,13 @@ export function ExportPanel({
         code={file.text}
         fileName={file.fileName}
         language={file.language}
+        actions={actions}
       />
+      {note && (
+        <p class="ff-muted" role="status">
+          {note}
+        </p>
+      )}
     </div>
   );
 }
