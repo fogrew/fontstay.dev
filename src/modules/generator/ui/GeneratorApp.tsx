@@ -48,6 +48,7 @@ import {
   isFontCollection,
   MAX_FONT_BYTES,
 } from '@/modules/font-metrics';
+import { downloadOrigin, type FontOrigin, sameOrigin } from '@/modules/font-sources';
 import type { SiteImport } from '@/modules/import-receiver';
 import { LayoutShiftPanel, type PanelInput, ratingOf, worstShift } from '@/modules/layout-shift';
 import { type Category, loadVariantMetrics, type OsId, osFontsDataset } from '@/modules/os-fonts';
@@ -111,6 +112,7 @@ interface LoadedFont {
   fileName: string;
   metrics: FontMetrics;
   bytes: ArrayBuffer;
+  origin?: FontOrigin;
 }
 
 const FONT_EXTENSIONS = /\.(woff2|woff|ttf|otf|ttc|otc)$/i;
@@ -236,6 +238,7 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
   };
 
   const [announcement, setAnnouncement] = useState('');
+  const [offer, setOffer] = useState<FontOrigin[]>([]);
   useEffect(() => () => parser.current?.dispose(), []);
   useEffect(() => {
     if (focusSlot === undefined) return;
@@ -243,7 +246,11 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
     setFocusSlot(undefined);
   }, [focusSlot]);
 
-  const addFiles = async (files: File[], persist = true) => {
+  const addFiles = async (
+    files: File[],
+    persist = true,
+    origins?: ReadonlyMap<File, FontOrigin>,
+  ) => {
     if (files.length === 0 || busy) return;
     parser.current ??= createFontParser();
     setBusy(true);
@@ -288,7 +295,14 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
             const bytes = data.slice(0);
             const result = await parser.current.parse(data);
             if (result.ok) {
-              added.push({ id: nextId.current++, fileName: name, metrics: result.font, bytes });
+              const origin = origins?.get(file);
+              added.push({
+                id: nextId.current++,
+                fileName: name,
+                metrics: result.font,
+                bytes,
+                ...(origin ? { origin } : {}),
+              });
             } else {
               failures.push(`${name}: ${errors[result.error.code] ?? t.error_invalid_font()}`);
             }
@@ -305,7 +319,11 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
     if (added.length > 0) {
       if (persist) {
         for (const item of added)
-          void storeFont({ name: item.fileName, bytes: item.bytes.slice(0) });
+          void storeFont({
+            name: item.fileName,
+            bytes: item.bytes.slice(0),
+            ...(item.origin ? { origin: item.origin } : {}),
+          });
       }
       setFonts((current) => [...current, ...added]);
       setAnnouncement(`${t.upload_added()}: ${fonts.length + added.length}`);
@@ -339,11 +357,23 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
         pending.current = state;
       }
       const stored = await loadStoredFonts();
-      if (stored.length > 0 && current) {
-        await addFiles(
-          stored.map((item) => new File([item.bytes], item.name)),
-          false,
-        );
+      const origins = new Map<File, FontOrigin>();
+      const files = stored.map((item) => {
+        const file = new File([item.bytes], item.name);
+        if (item.origin) origins.set(file, item.origin);
+        return file;
+      });
+      const persisted = files.length;
+      const wanted = (payload ? (state?.sources ?? []) : []).filter(
+        (origin, index, all) => all.findIndex((other) => sameOrigin(other, origin)) === index,
+      );
+      const missing = wanted
+        .filter((origin) => !stored.some((item) => item.origin && sameOrigin(item.origin, origin)))
+        .slice(0, Math.max(0, MAX_FONTS - persisted));
+      if (files.length > 0 && current) await addFiles(files, false, origins);
+      if (missing.length > 0 && current) {
+        setOffer(missing);
+        window.dispatchEvent(new CustomEvent(DOCK_OPEN_EVENT, { detail: 'inputs' }));
       }
       if (current) setRestored(true);
     })();
@@ -351,6 +381,24 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
       current = false;
     };
   }, []);
+  const acceptOffer = async () => {
+    const wanted = offer.slice(0, Math.max(0, MAX_FONTS - fonts.length));
+    setOffer([]);
+    const results = await Promise.allSettled(wanted.map((origin) => downloadOrigin(origin)));
+    const origins = new Map<File, FontOrigin>();
+    const files: File[] = [];
+    results.forEach((result, index) => {
+      const origin = wanted[index];
+      if (result.status === 'fulfilled' && origin) {
+        files.push(result.value);
+        origins.set(result.value, origin);
+      }
+    });
+    if (files.length > 0) await addFiles(files, true, origins);
+    if (results.some((result) => result.status === 'rejected')) {
+      setError((message) => [message, t.share_sources_failed()].filter(Boolean).join(' '));
+    }
+  };
   useEffect(() => {
     const state = pending.current;
     if (!state || fonts.length === 0) return;
@@ -363,7 +411,7 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
         ? fonts[0]
         : fonts.find((font) => font.fileName === state.fontName);
     if (!target) {
-      if (restored) pending.current = null;
+      if (restored && offer.length === 0) pending.current = null;
       return;
     }
     pending.current = null;
@@ -389,7 +437,7 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
       if (saved) apply(font, saved);
     }
     setValues(restoredValues);
-  }, [fonts, restored]);
+  }, [fonts, restored, offer]);
 
   const selected = fonts.find((font) => font.id === selectedId) ?? fonts[0];
   const allMode = fonts.length > 1 && (selectedId === undefined || selectedId === 'all');
@@ -958,6 +1006,7 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
     const manual = selected ? manualValuesOf(selected.id) : {};
     const letter = spacingValues.letter;
     const word = spacingValues.word;
+    const sources = fonts.flatMap((font) => (font.origin ? [font.origin] : []));
     return {
       v: SHARE_VERSION,
       ...(query ? { query } : {}),
@@ -969,6 +1018,7 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
       picks,
       manual,
       others: othersOf(),
+      ...(sources.length > 0 ? { sources } : {}),
       range: rangeOn,
       ...(perScript ? {} : { scripts: false }),
       spacing: {
@@ -1048,15 +1098,22 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
   }, []);
   useEffect(() => {
     if (!shareMessage) return;
-    const timer = setTimeout(() => setShareMessage(''), 5000);
+    const timer = setTimeout(() => setShareMessage(''), 10_000);
     return () => clearTimeout(timer);
   }, [shareMessage]);
+  const uploaded = fonts.filter((font) => !font.origin).map((font) => displayName(font.fileName));
+  const shareNote =
+    uploaded.length > 0 || fonts.length === 0 ? t.share_note() : t.share_note_catalog();
   const copyLink = async () => {
     try {
       const payload = await encodeShareState(currentShareState());
       const link = `${location.origin}${location.pathname}#${HASH_KEY}${payload}`;
       await navigator.clipboard.writeText(link);
-      setShareMessage(t.share_copied());
+      setShareMessage(
+        uploaded.length === 0
+          ? t.share_copied()
+          : t.share_copied_files({ files: uploaded.join(', ') }),
+      );
     } catch {
       setShareMessage(t.share_failed());
     }
@@ -1656,7 +1713,13 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
                   compact={fonts.length > 0}
                   dragging={dragging}
                   dropped={cssDrop}
-                  onFiles={addFiles}
+                  onFiles={(files, origin) =>
+                    addFiles(
+                      files,
+                      true,
+                      origin ? new Map(files.map((file) => [file, origin])) : undefined,
+                    )
+                  }
                   onImport={setIncoming}
                 />
                 {incoming && (
@@ -1669,6 +1732,22 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
                       void discardPending();
                     }}
                   />
+                )}
+                {offer.length > 0 && (
+                  <section class="ff-offer" aria-label={t.share_offer_label()}>
+                    <p>{t.share_offer({ count: offer.length })}</p>
+                    <Button variant="primary" disabled={busy} onClick={() => void acceptOffer()}>
+                      {t.share_offer_accept()}
+                    </Button>
+                    <Button
+                      onClick={() => {
+                        setOffer([]);
+                        if (fonts.length === 0) pending.current = null;
+                      }}
+                    >
+                      {t.share_offer_dismiss()}
+                    </Button>
+                  </section>
                 )}
                 {error && (
                   <p class="ff-error" role="alert">
@@ -1757,7 +1836,7 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
                         multi={allMode}
                         note={shareMessage}
                         actions={
-                          <Button onClick={() => void copyLink()} title={t.share_note()}>
+                          <Button onClick={() => void copyLink()} title={shareNote}>
                             <Icon name="share" />
                             {t.share_copy_short()}
                           </Button>
@@ -1782,7 +1861,7 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
           site={site}
           actions={
             <div class="ff-share">
-              <Button onClick={() => void copyLink()} title={t.share_note()}>
+              <Button onClick={() => void copyLink()} title={shareNote}>
                 <Icon name="share" />
                 {t.share_copy_short()}
               </Button>

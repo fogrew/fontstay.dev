@@ -1,3 +1,4 @@
+import type { FontOrigin } from '@/modules/font-sources';
 import type { Category, OsId } from '@/modules/os-fonts';
 import type { FontStyleKey } from './per-os';
 
@@ -26,6 +27,7 @@ export interface ShareState extends FontState {
   fontName?: string;
   preset?: string;
   others?: Record<string, FontState>;
+  sources?: FontOrigin[];
   disabled?: OsId[];
   range?: boolean;
   scripts?: boolean;
@@ -67,6 +69,20 @@ function migrate(
 }
 
 const MAX_OTHER_FONTS = 32;
+const MAX_SOURCES = 8;
+const FAMILY = /^[\p{L}\p{N} ._'-]{1,80}$/u;
+const ORIGIN_STYLE = /^\d{3}i?$/;
+const SUBSET = /^[a-z0-9-]{1,40}$/;
+
+export function parseOrigin(value: unknown): FontOrigin | null {
+  if (!isRecord(value)) return null;
+  const { source, family, style, subset } = value;
+  if (source !== 'google' && source !== 'fontsource') return null;
+  if (typeof family !== 'string' || !FAMILY.test(family)) return null;
+  if (typeof style !== 'string' || !ORIGIN_STYLE.test(style)) return null;
+  if (typeof subset !== 'string' || !SUBSET.test(subset)) return null;
+  return { source, family, style, subset };
+}
 
 function parseFontState(input: Record<string, unknown>): FontState {
   const state: FontState = {};
@@ -124,6 +140,12 @@ export function parseShareState(
         others[name] = parseFontState(value);
     }
     state.others = others;
+  }
+  if (Array.isArray(input.sources)) {
+    state.sources = input.sources
+      .slice(0, MAX_SOURCES)
+      .map(parseOrigin)
+      .filter((origin): origin is FontOrigin => origin !== null);
   }
   if (typeof input.range === 'boolean') state.range = input.range;
   if (typeof input.scripts === 'boolean') state.scripts = input.scripts;

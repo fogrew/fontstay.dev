@@ -257,7 +257,7 @@
   "report_loading_strategy": "تحصل Safari والمتصفحات الأخرى التي لا تدعم التجاوزات العمودية على font-size-adjust وline-height ثابت من CSS المولَّد.",
   "report_loading_spacing": "يُطبَّق تباعد الحروف والكلمات أثناء تحميل الخط فقط؛ أبقِ نص Font Loading API البرمجي مبكرًا في الصفحة.",
   "export_report": "تقرير الأثر (Markdown)",
-  "share_note": "تُحفظ خطوطك وإعداداتك في هذا المتصفح فقط. يحتوي الرابط على الإعدادات واسم ملف الخط لا الملف نفسه: على من يفتحه أن يضيف الخط نفسه.",
+  "share_note": "تُحفظ خطوطك وإعداداتك في هذا المتصفح فقط. يحتوي الرابط على الإعدادات. تُنزَّل الخطوط المختارة من Google Fonts أو Fontsource من جديد عند فتحه، أما الملفات المرفوعة فلا يتضمنها الرابط: على من يفتحه إضافة الملف نفسه.",
   "share_forget": "نسيان البيانات المحفوظة",
   "share_copied": "تم نسخ الرابط.",
   "share_failed": "تعذّر نسخ الرابط.",
@@ -501,5 +501,12 @@
   "source_list_label": "العائلات المطابقة",
   "source_note": "يعمل البحث على فهرس مضمّن في الموقع. تنزيل خط يجلب ملفًا واحدًا من Google (fonts.googleapis.com وfonts.gstatic.com) أو من Fontsource (cdn.jsdelivr.net)؛ ترى هذه الخوادم عنوان IP الخاص بك ولا ترى المُحيل.",
   "input_formats": "الملفات المقبولة: WOFF2 وWOFF وTTF وOTF وTTC وOTC وCSS.",
-  "source_browse": "الفهارس:"
+  "source_browse": "الفهارس:",
+  "share_note_catalog": "تُحفظ خطوطك وإعداداتك في هذا المتصفح فقط. يحتوي الرابط على الإعدادات والخطوط المختارة من Google Fonts أو Fontsource، وتُنزَّل من جديد عند فتحه.",
+  "share_copied_files": "نُسخ الرابط، لكنه لا يتضمن هذه الملفات: {files}. على من يفتحه إضافة الملفات نفسها.",
+  "share_sources_failed": "تعذّر تنزيل بعض الخطوط من الرابط من Google Fonts أو Fontsource.",
+  "share_offer_label": "الخطوط من الرابط",
+  "share_offer": "يستخدم هذا الرابط {count} من الخطوط من Google Fonts أو Fontsource. سيرى Google أو jsDelivr عنوان IP الخاص بك عند التنزيل.",
+  "share_offer_accept": "تنزيل الخطوط",
+  "share_offer_dismiss": "تخطي"
 }

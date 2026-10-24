@@ -48,6 +48,7 @@ The bookmarklet and the browser extension (`extension/`) send the fonts, text an
 - No `eval`, no inline event handlers, no `dangerouslySetInnerHTML`.
 - New origins, `blob:` or `data:` sources, or any `'unsafe-*'` keyword must be justified in the PR and listed in the table above.
 - Same-origin iframes (CLS simulator) are allowed by `frame-ancestors 'self'`; framing by other origins is not.
+- A share link may list fonts to download (`sources`). Each entry is validated by `parseOrigin` and must match a family, style and subset of the bundled catalog before any URL is built, and nothing is fetched until the recipient confirms, because the download shows their IP address to Google or jsDelivr.
 - Features that load external resources add their origin to the matching directive in the PR that introduces them (the Google Fonts picker adds `https://fonts.googleapis.com` and `https://fonts.gstatic.com`, the Fontsource picker `https://cdn.jsdelivr.net`, to `connect-src`).
 - The service worker (`/sw.js`, generated after the build by `scripts/pwa/build-pwa.mjs`) is same-origin, covered by `worker-src 'self'`, and served with `Cache-Control: no-cache`; it precaches only same-origin files and never handles cross-origin requests.
 

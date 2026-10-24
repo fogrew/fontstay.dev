@@ -257,7 +257,7 @@
   "report_loading_strategy": "Safari and other browsers without vertical overrides get font-size-adjust and a fixed line-height from the generated CSS.",
   "report_loading_spacing": "Letter and word spacing apply only while the font loads; keep the Font Loading API script early in the page.",
   "export_report": "Impact report (Markdown)",
-  "share_note": "Your fonts and settings are saved in this browser only. The link contains the settings and the name of the font file but not the file itself: whoever opens it has to add the same font.",
+  "share_note": "Your fonts and settings are saved in this browser only. The link contains the settings. Fonts picked from Google Fonts or Fontsource are downloaded again when it is opened, but uploaded files are not included: whoever opens the link has to add the same file.",
   "share_forget": "Forget saved data",
   "share_copied": "The link was copied.",
   "share_failed": "The link could not be copied.",
@@ -501,5 +501,12 @@
   "source_list_label": "Matching families",
   "source_note": "The search runs on a catalog bundled with the site. Adding a font downloads one file from Google (fonts.googleapis.com, fonts.gstatic.com) or from Fontsource (cdn.jsdelivr.net); they see your IP address and no referrer.",
   "input_formats": "Accepted files: WOFF2, WOFF, TTF, OTF, TTC, OTC and CSS.",
-  "source_browse": "Browse the catalogs:"
+  "source_browse": "Browse the catalogs:",
+  "share_note_catalog": "Your fonts and settings are saved in this browser only. The link contains the settings and the fonts picked from Google Fonts or Fontsource, which are downloaded again when it is opened.",
+  "share_copied_files": "The link was copied, but it does not include these files: {files}. Whoever opens it has to add the same files.",
+  "share_sources_failed": "Some fonts from the link could not be downloaded from Google Fonts or Fontsource.",
+  "share_offer_label": "Fonts from the link",
+  "share_offer": "This link uses {count} fonts from Google Fonts or Fontsource. Downloading them shows your IP address to Google or jsDelivr.",
+  "share_offer_accept": "Download the fonts",
+  "share_offer_dismiss": "Skip"
 }

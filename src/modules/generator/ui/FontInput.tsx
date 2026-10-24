@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'preact/hooks';
 import { type Locale, messagesFor } from '@/common/i18n';
 import { Button } from '@/common/ui';
-import { FamilySearch } from '@/modules/font-sources';
+import { FamilySearch, type FontOrigin } from '@/modules/font-sources';
 import type { SiteImport } from '@/modules/import-receiver';
 import { readClipboardImport, SiteImportPanel } from '@/modules/site-import';
 import { classifyInput } from '../lib/classify-input';
@@ -55,7 +55,7 @@ export function FontInput({
   compact: boolean;
   dragging: boolean;
   dropped?: { id: number; files: File[] } | undefined;
-  onFiles: (files: File[]) => void;
+  onFiles: (files: File[], origin?: FontOrigin) => void;
   onImport: (value: SiteImport) => void;
 }) {
   const t = messagesFor(locale);
@@ -170,7 +170,12 @@ export function FontInput({
       {site && <SiteImportPanel locale={locale} />}
       {!compact && <p class="ff-muted">{t.upload_local()}</p>}
       {kind === 'name' && (
-        <FamilySearch locale={locale} busy={busy} query={text} onFile={(file) => onFiles([file])} />
+        <FamilySearch
+          locale={locale}
+          busy={busy}
+          query={text}
+          onFile={(file, origin) => onFiles([file], origin)}
+        />
       )}
       <div role="status">
         {importError && <p class="ff-error">{t.import_paste_error()}</p>}

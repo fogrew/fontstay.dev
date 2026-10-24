@@ -68,7 +68,7 @@ Both modes:
 - Preload `<link>` tags.
 - Machine-readable JSON (all inputs, computed metrics, outputs).
 - Impact report (Markdown): CLS per viewport, support matrix, coverage, warnings.
-- Share link: state serialized into URL hash (uploaded font files are kept in IndexedDB locally; link warns they are not shared).
+- Share link: state serialized into URL hash (uploaded font files are kept in IndexedDB locally; link warns they are not shared; fonts picked from Google Fonts or Fontsource travel as `sources` and are downloaded again after the recipient confirms).
 
 ### 1.8 Other pages
 - **Font catalog** (cssfontstack analog): table of system fonts × OS/versions with availability and estimated audience coverage; static page per font with metrics and specimen.

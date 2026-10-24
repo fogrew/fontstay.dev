@@ -2,11 +2,9 @@ import { useEffect, useMemo, useState } from 'preact/hooks';
 import { type Locale, messagesFor } from '@/common/i18n';
 import { Button, Select } from '@/common/ui';
 import { FontSourceError } from '../lib/download';
-import * as fontsource from '../lib/fontsource';
-import * as google from '../lib/google';
+import { type FontOrigin, SOURCES, type SourceId } from '../lib/origin';
 import { CJK_SUBSETS, type FontFamily, parseStyle, searchFamilies } from '../lib/types';
 
-type SourceId = 'google' | 'fontsource';
 type Catalog =
   | { state: 'loading' }
   | { state: 'ready'; families: FontFamily[] }
@@ -17,19 +15,6 @@ interface Hit {
   family: FontFamily;
 }
 
-const SOURCES: Record<
-  SourceId,
-  {
-    loadCatalog: () => Promise<FontFamily[]>;
-    download: (family: FontFamily, style: string, subset: string) => Promise<File>;
-  }
-> = {
-  google: {
-    loadCatalog: google.loadCatalog,
-    download: (family, style, subset) => google.downloadFont(family.name, style, subset),
-  },
-  fontsource: { loadCatalog: fontsource.loadCatalog, download: fontsource.downloadFont },
-};
 const HITS_PER_SOURCE = 8;
 
 export function FamilySearch({
@@ -41,7 +26,7 @@ export function FamilySearch({
   locale: Locale;
   busy: boolean;
   query: string;
-  onFile: (file: File) => void;
+  onFile: (file: File, origin: FontOrigin) => void;
 }) {
   const t = messagesFor(locale);
   const [catalogs, setCatalogs] = useState<Partial<Record<SourceId, Catalog>>>({});
@@ -99,7 +84,8 @@ export function FamilySearch({
     setDownloading(true);
     setMessage(t.source_downloading());
     try {
-      onFile(await SOURCES[chosen.source].download(chosen.family, style, subset));
+      const file = await SOURCES[chosen.source].download(chosen.family, style, subset);
+      onFile(file, { source: chosen.source, family: chosen.family.id, style, subset });
       setMessage(t.source_downloaded({ name: chosen.family.name }));
     } catch (failure) {
       const code = failure instanceof FontSourceError ? failure.code : 'network';

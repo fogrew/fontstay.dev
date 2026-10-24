@@ -131,3 +131,24 @@ describe('parseShareState', () => {
     );
   });
 });
+
+describe('font origins', () => {
+  const origin = { source: 'google', family: 'Open Sans', style: '400', subset: 'latin' };
+
+  it('keeps valid origins', () => {
+    expect(parseShareState({ v: 1, sources: [origin] })?.sources).toEqual([origin]);
+  });
+
+  it('drops malformed origins and caps the list', () => {
+    const bad = [
+      { ...origin, source: 'evil' },
+      { ...origin, family: '../x/<script>' },
+      { ...origin, style: 'bold' },
+      { ...origin, subset: 'Latin Ext' },
+      'text',
+    ];
+    const many = Array.from({ length: 20 }, () => origin);
+    expect(parseShareState({ v: 1, sources: bad })?.sources).toEqual([]);
+    expect(parseShareState({ v: 1, sources: many })?.sources).toHaveLength(8);
+  });
+});

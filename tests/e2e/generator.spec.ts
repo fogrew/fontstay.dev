@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 import AxeBuilder from '@axe-core/playwright';
-import type { Page } from '@playwright/test';
+import type { BrowserContext, Page } from '@playwright/test';
 import { buildCollection, buildFont } from '../../src/modules/font-metrics/lib/forged.test-util';
 import {
   choose,
@@ -1245,6 +1245,58 @@ test('a Google Fonts family can be searched and downloaded through the two allow
   await expect(page.getByRole('button', { name: /^Remove: Open-Sans-400-latin/ })).toBeVisible();
 });
 
+test('a share link carries Google Fonts choices and downloads them again', async ({
+  page,
+  context,
+}) => {
+  await context.grantPermissions(['clipboard-read', 'clipboard-write']);
+  const cors = { 'access-control-allow-origin': '*' };
+  const mockGoogle = async (target: Pick<BrowserContext, 'route'>) => {
+    await target.route('https://fonts.googleapis.com/**', (route) =>
+      route.fulfill({
+        status: 200,
+        headers: { ...cors, 'content-type': 'text/css' },
+        body: '/* latin */\n@font-face { font-family: "Open Sans"; src: url(https://fonts.gstatic.com/s/opensans/latin.woff2) format("woff2"); }',
+      }),
+    );
+    await target.route('https://fonts.gstatic.com/**', (route) =>
+      route.fulfill({
+        status: 200,
+        headers: { ...cors, 'content-type': 'font/woff2' },
+        body: readFileSync(sourceSans),
+      }),
+    );
+  };
+  await mockGoogle(context);
+  await page.goto('/en/');
+  await waitForGenerator(page);
+  await openStep(page, 'inputs');
+  await page.getByLabel('Font name, CSS or copied site data').fill('open sans');
+  await page
+    .getByRole('list', { name: 'Matching families' })
+    .getByRole('button', { name: /^Open Sans.*Google Fonts/ })
+    .click();
+  await page.getByRole('button', { name: 'Add to the fonts' }).click();
+  await expect(page.getByText('Downloaded Open Sans.')).toBeVisible();
+  await closePanels(page);
+  await page.getByRole('button', { name: 'Share', exact: true }).click();
+  await expect(page.getByRole('status').filter({ hasText: 'The link was copied.' })).toBeVisible();
+  const link = await page.evaluate(() => navigator.clipboard.readText());
+
+  const fresh = await context.browser()?.newContext();
+  if (!fresh) throw new Error('no browser');
+  await mockGoogle(fresh);
+  const other = await fresh.newPage();
+  await other.goto(link);
+  await waitForGenerator(other);
+  await openStep(other, 'inputs');
+  await expect(other.getByText(/This link uses 1 fonts/)).toBeVisible();
+  await other.getByRole('button', { name: 'Download the fonts' }).click();
+  await openStep(other, 'tuning');
+  await expect(other.getByRole('button', { name: /^Remove: Open-Sans-400-latin/ })).toBeVisible();
+  await fresh.close();
+});
+
 test('a Fontsource family is downloaded from jsDelivr', async ({ page }) => {
   await page.route('https://cdn.jsdelivr.net/fontsource/fonts/**', (route) =>
     route.fulfill({
@@ -1347,7 +1399,11 @@ test('fonts and settings survive a reload and the share link restores the settin
 
   await closePanels(page);
   await page.getByRole('button', { name: 'Share', exact: true }).click();
-  await expect(page.getByRole('status').filter({ hasText: 'The link was copied.' })).toBeVisible();
+  await expect(
+    page.getByRole('status').filter({
+      hasText: /The link was copied, but it does not include these files: SourceSansPro-Regular/,
+    }),
+  ).toBeVisible();
   const link = await page.evaluate(() => navigator.clipboard.readText());
   expect(link).toMatch(/#s=[A-Za-z0-9_-]+$/);
 
