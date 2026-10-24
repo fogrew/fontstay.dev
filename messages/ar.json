@@ -508,5 +508,7 @@
   "share_offer_label": "الخطوط من الرابط",
   "share_offer": "يستخدم هذا الرابط {count} من الخطوط من Google Fonts أو Fontsource. سيرى Google أو jsDelivr عنوان IP الخاص بك عند التنزيل.",
   "share_offer_accept": "تنزيل الخطوط",
-  "share_offer_dismiss": "تخطي"
+  "share_offer_dismiss": "تخطي",
+  "source_upright": "عادي",
+  "source_too_many": "يتسع لـ {max} خطوط إضافية على الأكثر. ألغِ تحديد بعض الأنماط أو الأنظمة."
 }

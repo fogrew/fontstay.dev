@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useState } from 'preact/hooks';
 import { type Locale, messagesFor } from '@/common/i18n';
-import { Button, Select } from '@/common/ui';
+import { Button } from '@/common/ui';
 import { FontSourceError } from '../lib/download';
-import { type FontOrigin, SOURCES, type SourceId } from '../lib/origin';
+import { downloadOrigin, type FontOrigin, SOURCES, type SourceId } from '../lib/origin';
 import { CJK_SUBSETS, type FontFamily, parseStyle, searchFamilies } from '../lib/types';
 
 type Catalog =
@@ -16,23 +16,26 @@ interface Hit {
 }
 
 const HITS_PER_SOURCE = 8;
+const scriptsOf = (family: FontFamily) => family.subsets.filter((name) => !CJK_SUBSETS.has(name));
 
 export function FamilySearch({
   locale,
   busy,
   query,
-  onFile,
+  slots,
+  onFiles,
 }: {
   locale: Locale;
   busy: boolean;
   query: string;
-  onFile: (file: File, origin: FontOrigin) => void;
+  slots: number;
+  onFiles: (files: File[], origins: ReadonlyMap<File, FontOrigin>) => void;
 }) {
   const t = messagesFor(locale);
   const [catalogs, setCatalogs] = useState<Partial<Record<SourceId, Catalog>>>({});
   const [chosen, setChosen] = useState<Hit>();
-  const [style, setStyle] = useState('400');
-  const [subset, setSubset] = useState('latin');
+  const [styles, setStyles] = useState<ReadonlySet<string>>(new Set(['400']));
+  const [subsets, setSubsets] = useState<ReadonlySet<string>>(new Set(['latin']));
   const [message, setMessage] = useState('');
   const [downloading, setDownloading] = useState(false);
 
@@ -73,21 +76,47 @@ export function FamilySearch({
   const choose = (hit: Hit) => {
     setChosen(hit);
     const { family } = hit;
-    setStyle(family.styles.includes('400') ? '400' : (family.styles[0] ?? '400'));
-    const subsets = family.subsets.filter((name) => !CJK_SUBSETS.has(name));
-    setSubset(subsets.includes('latin') ? 'latin' : (subsets[0] ?? 'latin'));
+    setStyles(new Set([family.styles.includes('400') ? '400' : (family.styles[0] ?? '400')]));
+    const names = scriptsOf(family);
+    setSubsets(new Set([names.includes('latin') ? 'latin' : (names[0] ?? 'latin')]));
     setMessage('');
   };
+  const toggle = (set: ReadonlySet<string>, value: string, apply: (next: Set<string>) => void) => {
+    const next = new Set(set);
+    if (!next.delete(value)) next.add(value);
+    apply(next);
+  };
+  const count = styles.size * subsets.size;
 
   const add = async () => {
-    if (!chosen) return;
+    if (!chosen || count === 0 || count > slots) return;
     setDownloading(true);
     setMessage(t.source_downloading());
-    try {
-      const file = await SOURCES[chosen.source].download(chosen.family, style, subset);
-      onFile(file, { source: chosen.source, family: chosen.family.id, style, subset });
+    const wanted = [...styles].flatMap((style) =>
+      [...subsets].map(
+        (subset): FontOrigin => ({
+          source: chosen.source,
+          family: chosen.family.id,
+          style,
+          subset,
+        }),
+      ),
+    );
+    const results = await Promise.allSettled(wanted.map((origin) => downloadOrigin(origin)));
+    let failure: unknown;
+    const files: File[] = [];
+    const origins = new Map<File, FontOrigin>();
+    results.forEach((result, index) => {
+      const origin = wanted[index];
+      if (result.status === 'fulfilled' && origin) {
+        files.push(result.value);
+        origins.set(result.value, origin);
+      } else if (result.status === 'rejected') failure ??= result.reason;
+    });
+    if (files.length > 0) onFiles(files, origins);
+    if (results.every((result) => result.status === 'fulfilled')) {
       setMessage(t.source_downloaded({ name: chosen.family.name }));
-    } catch (failure) {
+    } else {
       const code = failure instanceof FontSourceError ? failure.code : 'network';
       setMessage(
         code === 'no-subset'
@@ -96,9 +125,8 @@ export function FamilySearch({
             ? t.source_error_file()
             : t.source_error_network(),
       );
-    } finally {
-      setDownloading(false);
     }
+    setDownloading(false);
   };
 
   return (
@@ -131,23 +159,61 @@ export function FamilySearch({
             <strong>{chosen.family.name}</strong>{' '}
             <span class="ff-muted">{sourceName(chosen.source)}</span>
           </p>
-          <Select
-            label={t.source_style_label()}
-            value={style}
-            options={chosen.family.styles.map((key) => ({ value: key, label: styleLabel(key) }))}
-            onChange={setStyle}
-          />
-          <Select
-            label={t.source_subset_label()}
-            value={subset}
-            options={chosen.family.subsets
-              .filter((name) => !CJK_SUBSETS.has(name))
-              .map((name) => ({ value: name, label: name }))}
-            onChange={setSubset}
-          />
-          <Button variant="primary" disabled={busy || downloading} onClick={() => void add()}>
-            {t.source_add()}
-          </Button>
+          <div class="ff-source__groups">
+            <fieldset class="ff-toggle-set">
+              <legend>{t.source_style_label()}</legend>
+              {[false, true].map((italic) => {
+                const keys = chosen.family.styles.filter(
+                  (key) => parseStyle(key).italic === italic,
+                );
+                return keys.length === 0 ? null : (
+                  <div class="ff-toggle-group" key={String(italic)}>
+                    <span class="ff-muted ff-toggle-group__label">
+                      {italic ? t.style_italic() : t.source_upright()}
+                    </span>
+                    {keys.map((key) => (
+                      <button
+                        key={key}
+                        type="button"
+                        class="ff-toggle"
+                        aria-pressed={styles.has(key)}
+                        aria-label={styleLabel(key)}
+                        onClick={() => toggle(styles, key, setStyles)}
+                      >
+                        {parseStyle(key).weight}
+                      </button>
+                    ))}
+                  </div>
+                );
+              })}
+            </fieldset>
+            <fieldset class="ff-toggle-set">
+              <legend>{t.source_subset_label()}</legend>
+              <div class="ff-toggle-group">
+                {scriptsOf(chosen.family).map((name) => (
+                  <button
+                    key={name}
+                    type="button"
+                    class="ff-toggle"
+                    aria-pressed={subsets.has(name)}
+                    onClick={() => toggle(subsets, name, setSubsets)}
+                  >
+                    {name}
+                  </button>
+                ))}
+              </div>
+            </fieldset>
+          </div>
+          <div class="ff-source__add">
+            <Button
+              variant="primary"
+              disabled={busy || downloading || count === 0 || count > slots}
+              onClick={() => void add()}
+            >
+              {count > 1 ? `${t.source_add()} (${count})` : t.source_add()}
+            </Button>
+            {count > slots && <span class="ff-error">{t.source_too_many({ max: slots })}</span>}
+          </div>
         </div>
       )}
       <p role="status" class="ff-muted">

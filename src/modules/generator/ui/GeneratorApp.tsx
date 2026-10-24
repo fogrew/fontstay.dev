@@ -1711,15 +1711,10 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
                   locale={locale}
                   busy={busy}
                   compact={fonts.length > 0}
+                  slots={MAX_FONTS - fonts.length}
                   dragging={dragging}
                   dropped={cssDrop}
-                  onFiles={(files, origin) =>
-                    addFiles(
-                      files,
-                      true,
-                      origin ? new Map(files.map((file) => [file, origin])) : undefined,
-                    )
-                  }
+                  onFiles={(files, origins) => addFiles(files, true, origins)}
                   onImport={setIncoming}
                 />
                 {incoming && (
