@@ -48,6 +48,7 @@ import {
   isFontCollection,
   MAX_FONT_BYTES,
 } from '@/modules/font-metrics';
+import { downloadOrigin, type FontOrigin, sameOrigin } from '@/modules/font-sources';
 import type { SiteImport } from '@/modules/import-receiver';
 import { LayoutShiftPanel, type PanelInput, ratingOf, worstShift } from '@/modules/layout-shift';
 import { type Category, loadVariantMetrics, type OsId, osFontsDataset } from '@/modules/os-fonts';
@@ -111,6 +112,7 @@ interface LoadedFont {
   fileName: string;
   metrics: FontMetrics;
   bytes: ArrayBuffer;
+  origin?: FontOrigin;
 }
 
 const FONT_EXTENSIONS = /\.(woff2|woff|ttf|otf|ttc|otc)$/i;
@@ -243,7 +245,11 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
     setFocusSlot(undefined);
   }, [focusSlot]);
 
-  const addFiles = async (files: File[], persist = true) => {
+  const addFiles = async (
+    files: File[],
+    persist = true,
+    origins?: ReadonlyMap<File, FontOrigin>,
+  ) => {
     if (files.length === 0 || busy) return;
     parser.current ??= createFontParser();
     setBusy(true);
@@ -288,7 +294,14 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
             const bytes = data.slice(0);
             const result = await parser.current.parse(data);
             if (result.ok) {
-              added.push({ id: nextId.current++, fileName: name, metrics: result.font, bytes });
+              const origin = origins?.get(file);
+              added.push({
+                id: nextId.current++,
+                fileName: name,
+                metrics: result.font,
+                bytes,
+                ...(origin ? { origin } : {}),
+              });
             } else {
               failures.push(`${name}: ${errors[result.error.code] ?? t.error_invalid_font()}`);
             }
@@ -305,7 +318,11 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
     if (added.length > 0) {
       if (persist) {
         for (const item of added)
-          void storeFont({ name: item.fileName, bytes: item.bytes.slice(0) });
+          void storeFont({
+            name: item.fileName,
+            bytes: item.bytes.slice(0),
+            ...(item.origin ? { origin: item.origin } : {}),
+          });
       }
       setFonts((current) => [...current, ...added]);
       setAnnouncement(`${t.upload_added()}: ${fonts.length + added.length}`);
@@ -339,11 +356,32 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
         pending.current = state;
       }
       const stored = await loadStoredFonts();
-      if (stored.length > 0 && current) {
-        await addFiles(
-          stored.map((item) => new File([item.bytes], item.name)),
-          false,
-        );
+      const origins = new Map<File, FontOrigin>();
+      const files = stored.map((item) => {
+        const file = new File([item.bytes], item.name);
+        if (item.origin) origins.set(file, item.origin);
+        return file;
+      });
+      const persisted = files.length;
+      const missing = (payload ? (state?.sources ?? []) : []).filter(
+        (origin) => !stored.some((item) => item.origin && sameOrigin(item.origin, origin)),
+      );
+      if (missing.length > 0) {
+        const results = await Promise.allSettled(missing.map((origin) => downloadOrigin(origin)));
+        results.forEach((result, index) => {
+          const origin = missing[index];
+          if (result.status === 'fulfilled' && origin) {
+            files.push(result.value);
+            origins.set(result.value, origin);
+          }
+        });
+        if (results.some((result) => result.status === 'rejected')) {
+          setError(t.share_sources_failed());
+        }
+      }
+      if (files.length > 0 && current) {
+        await addFiles(files.slice(0, persisted), false, origins);
+        if (files.length > persisted) await addFiles(files.slice(persisted), true, origins);
       }
       if (current) setRestored(true);
     })();
@@ -958,6 +996,7 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
     const manual = selected ? manualValuesOf(selected.id) : {};
     const letter = spacingValues.letter;
     const word = spacingValues.word;
+    const sources = fonts.flatMap((font) => (font.origin ? [font.origin] : []));
     return {
       v: SHARE_VERSION,
       ...(query ? { query } : {}),
@@ -969,6 +1008,7 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
       picks,
       manual,
       others: othersOf(),
+      ...(sources.length > 0 ? { sources } : {}),
       range: rangeOn,
       ...(perScript ? {} : { scripts: false }),
       spacing: {
@@ -1048,15 +1088,21 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
   }, []);
   useEffect(() => {
     if (!shareMessage) return;
-    const timer = setTimeout(() => setShareMessage(''), 5000);
+    const timer = setTimeout(() => setShareMessage(''), 10_000);
     return () => clearTimeout(timer);
   }, [shareMessage]);
+  const uploaded = fonts.filter((font) => !font.origin).map((font) => displayName(font.fileName));
+  const shareNote = uploaded.length === 0 ? t.share_note_catalog() : t.share_note();
   const copyLink = async () => {
     try {
       const payload = await encodeShareState(currentShareState());
       const link = `${location.origin}${location.pathname}#${HASH_KEY}${payload}`;
       await navigator.clipboard.writeText(link);
-      setShareMessage(t.share_copied());
+      setShareMessage(
+        uploaded.length === 0
+          ? t.share_copied()
+          : t.share_copied_files({ files: uploaded.join(', ') }),
+      );
     } catch {
       setShareMessage(t.share_failed());
     }
@@ -1656,7 +1702,13 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
                   compact={fonts.length > 0}
                   dragging={dragging}
                   dropped={cssDrop}
-                  onFiles={addFiles}
+                  onFiles={(files, origin) =>
+                    addFiles(
+                      files,
+                      true,
+                      origin ? new Map(files.map((file) => [file, origin])) : undefined,
+                    )
+                  }
                   onImport={setIncoming}
                 />
                 {incoming && (
@@ -1757,7 +1809,7 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
                         multi={allMode}
                         note={shareMessage}
                         actions={
-                          <Button onClick={() => void copyLink()} title={t.share_note()}>
+                          <Button onClick={() => void copyLink()} title={shareNote}>
                             <Icon name="share" />
                             {t.share_copy_short()}
                           </Button>
@@ -1782,7 +1834,7 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
           site={site}
           actions={
             <div class="ff-share">
-              <Button onClick={() => void copyLink()} title={t.share_note()}>
+              <Button onClick={() => void copyLink()} title={shareNote}>
                 <Icon name="share" />
                 {t.share_copy_short()}
               </Button>

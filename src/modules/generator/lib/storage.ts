@@ -1,4 +1,5 @@
-import { parseShareState, type ShareState } from './share';
+import type { FontOrigin } from '@/modules/font-sources';
+import { parseOrigin, parseShareState, type ShareState } from './share';
 
 const SETTINGS_KEY = 'fontstay:settings';
 const DB_NAME = 'fontstay';
@@ -8,6 +9,7 @@ export const MAX_STORED_FONTS = 8;
 export interface StoredFont {
   name: string;
   bytes: ArrayBuffer;
+  origin?: FontOrigin;
 }
 
 export function loadSettings(): ShareState | null {
@@ -70,7 +72,11 @@ export async function loadStoredFonts(): Promise<StoredFont[]> {
     const all = await run('readonly', (store) => store.getAll() as IDBRequest<StoredFont[]>);
     return all
       .filter((item) => typeof item.name === 'string' && item.bytes instanceof ArrayBuffer)
-      .slice(0, MAX_STORED_FONTS);
+      .slice(0, MAX_STORED_FONTS)
+      .map((item) => {
+        const origin = parseOrigin(item.origin);
+        return origin ? { ...item, origin } : { name: item.name, bytes: item.bytes };
+      });
   } catch {
     return [];
   }
