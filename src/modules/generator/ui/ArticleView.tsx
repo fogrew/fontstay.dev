@@ -303,7 +303,9 @@ export function ArticleView({
     | undefined;
 }) {
   const t = messagesFor(locale);
-  const [articleId, setArticleId] = useState<ArticleKey>(locale === 'ru' ? 'ru' : 'en');
+  const [articleId, setArticleId] = useState<ArticleKey>(
+    locale === 'ru' || locale === 'ar' ? locale : 'en',
+  );
   const [positions, setPositions] = useState(PRESETS.overlay);
   const [xray, setXray] = useState(false);
   const [frameWidth, setFrameWidth] = useState<number>();

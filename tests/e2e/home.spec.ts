@@ -3,11 +3,16 @@ import { expect, test } from './fixtures';
 
 const wcagTags = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'];
 
-for (const locale of ['en', 'ru']) {
+for (const locale of ['en', 'ru', 'ar']) {
   test(`${locale}: renders with the right language`, async ({ page }) => {
     await page.goto(`/${locale}/`);
     await expect(page.locator('html')).toHaveAttribute('lang', locale);
     await expect(page.getByRole('heading', { level: 1, name: 'fontstay.dev' })).toBeAttached();
+  });
+
+  test(`${locale}: sets the text direction of the language`, async ({ page }) => {
+    await page.goto(`/${locale}/`);
+    await expect(page.locator('html')).toHaveAttribute('dir', locale === 'ar' ? 'rtl' : 'ltr');
   });
 
   test(`${locale}: header links to the repository`, async ({ page }) => {

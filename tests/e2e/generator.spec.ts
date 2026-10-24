@@ -1778,6 +1778,22 @@ test('share sits next to download and copy in the code block and spacing is on b
   ).toBeChecked();
 });
 
+test('the generated code stays left to right and queries stay readable on an Arabic page', async ({
+  page,
+}) => {
+  await page.goto('/ar/');
+  await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
+  await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(sourceSans);
+  await openStep(page, 'results');
+  await expect(page.locator('.ff-dock__panel:not([hidden]) .ff-code pre').first()).toHaveAttribute(
+    'dir',
+    'ltr',
+  );
+  await openStep(page, 'audience');
+  const tag = page.locator('.ff-tags__list .ff-tag', { hasText: '0.5%' }).first();
+  await expect(tag).toHaveAttribute('dir', 'auto');
+});
+
 test('the intro guide explains the jump and opens each step', async ({ page }) => {
   await page.goto('/en/');
   await waitForGenerator(page);

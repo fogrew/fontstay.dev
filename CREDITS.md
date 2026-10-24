@@ -67,4 +67,5 @@
 - [Font Awesome Free brands](https://fontawesome.com/license/free) (icons under CC BY 4.0, Fonticons, Inc.) — the Windows and Edge marks and the save, share, download, copy and forget action icons in `public/brands.svg`.
 - [Browserslist logo](https://github.com/browserslist/browserslist) by Anton Popov (MIT) — the Browserslist mark in `public/brands.svg`.
 - [WAI-ARIA APG select-only combobox](https://www.w3.org/WAI/ARIA/apg/patterns/combobox/examples/combobox-select-only/) — keyboard and ARIA model of the custom dropdown.
+- [Google Translate](https://translate.google.com/) — machine translation used while developing as a second opinion on the Arabic messages (back-translation to English and a forward comparison); no output is shipped verbatim.
 - [Shiki](https://shiki.style/) (MIT) — syntax highlighting of the export code: the JavaScript regex engine and the CSS, HTML, JavaScript, TypeScript and Markdown grammars with a CSS-variables theme, rendered as class names.

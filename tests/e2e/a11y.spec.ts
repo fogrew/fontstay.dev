@@ -20,7 +20,7 @@ for (const scheme of ['light', 'dark'] as const) {
   test(`${scheme} scheme: every page has no axe violations`, async ({ page }) => {
     test.setTimeout(120_000);
     await page.emulateMedia({ colorScheme: scheme });
-    for (const locale of ['en', 'ru']) {
+    for (const locale of ['en', 'ru', 'ar']) {
       for (const path of pages) {
         await page.goto(`/${locale}${path}`);
         await page.waitForLoadState('networkidle');
@@ -58,7 +58,7 @@ for (const scheme of ['light', 'dark'] as const) {
 
 test('the pages reflow at 320 px without horizontal page scroll', async ({ page }) => {
   await page.setViewportSize({ width: 320, height: 700 });
-  for (const locale of ['en', 'ru']) {
+  for (const locale of ['en', 'ru', 'ar']) {
     for (const path of pages) {
       await page.goto(`/${locale}${path}`);
       await page.waitForLoadState('networkidle');

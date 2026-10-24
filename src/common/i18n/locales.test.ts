@@ -10,6 +10,10 @@ describe('pickLocale', () => {
     expect(pickLocale(['RU'])).toBe('ru');
   });
 
+  it('matches Arabic regional tags', () => {
+    expect(pickLocale(['ar-EG', 'en'])).toBe('ar');
+  });
+
   it('skips unsupported languages', () => {
     expect(pickLocale(['de', 'ru'])).toBe('ru');
   });
@@ -24,5 +28,6 @@ describe('localeName', () => {
   it('returns the capitalized autonym', () => {
     expect(localeName('en')).toBe('English');
     expect(localeName('ru')).toBe('Русский');
+    expect(localeName('ar')).toBe('العربية');
   });
 });

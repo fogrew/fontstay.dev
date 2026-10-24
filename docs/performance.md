@@ -6,12 +6,12 @@
 
 | Page | Measured | Budget |
 |---|---|---|
-| `/en/` (generator) | 150.4 kB | 156 kB |
-| `/en/fonts/` (catalog) | 62.0 kB | 64 kB |
-| `/en/presets/` | 52.5 kB | 54 kB |
+| `/en/` (generator) | 156.8 kB | 162 kB |
+| `/en/fonts/` (catalog) | 72.4 kB | 76 kB |
+| `/en/presets/` | 61.3 kB | 64 kB |
 | `/en/import/` (site import receiver) | 2.2 kB | 4 kB |
 
-Raise a limit only with a justification in the PR. The limits were raised for the three-column layout, the custom dropdown (shared by every page), the catalog filters, the all-fonts overview and the layer model with its icon controls (#218).
+Raise a limit only with a justification in the PR. The limits were raised for the three-column layout, the custom dropdown (shared by every page), the catalog filters, the all-fonts overview the layer model with its icon controls (#218) and the Arabic locale: every page ships the messages of all locales, so a language costs about 5.7 kB gzip on each page until the catalogs are split per locale (#252).
 
 ## What is lazy
 
