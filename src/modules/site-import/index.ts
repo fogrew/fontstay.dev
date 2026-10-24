@@ -10,3 +10,7 @@ export async function takePending() {
 export async function discardPending() {
   return (await import('./lib/pending')).discardPending();
 }
+
+export async function readClipboardImport(text: string) {
+  return (await import('./lib/pending')).parseClipboardImport(text);
+}

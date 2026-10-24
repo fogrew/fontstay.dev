@@ -1,2 +1,1 @@
-export { FontsourcePicker } from './ui/FontsourcePicker';
-export { GoogleFontsPicker } from './ui/GoogleFontsPicker';
+export { FamilySearch } from './ui/FamilySearch';

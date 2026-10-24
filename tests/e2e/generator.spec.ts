@@ -1180,8 +1180,7 @@ test('a font embedded in pasted CSS can be added and other sources are only link
   const css = `@font-face { font-family: "Embedded"; font-weight: 700; src: url(data:font/woff2;base64,${encoded}) format("woff2"); }
 @font-face { font-family: "Remote"; src: url(https://example.com/remote.woff2) format("woff2"); }
 @font-face { font-family: "Script"; src: url(javascript:alert(1)); }`;
-  await page.getByLabel('CSS or link').fill(css);
-  await page.getByRole('button', { name: 'Read CSS' }).click();
+  await page.getByLabel('Font name, CSS or copied site data').fill(css);
   const list = page.getByRole('list', { name: 'Fonts found in the CSS' });
   await expect(list.getByRole('link', { name: 'Download the file' })).toHaveAttribute(
     'href',
@@ -1199,7 +1198,7 @@ test('CSS files can be chosen and their font declarations are found automaticall
   await page.goto('/en/');
   await waitForGenerator(page);
   await openStep(page, 'inputs');
-  await page.getByLabel('CSS files').setInputFiles({
+  await page.locator('input[type="file"][accept*="woff2"]').setInputFiles({
     name: 'fonts.css',
     mimeType: 'text/css',
     buffer: Buffer.from(
@@ -1212,9 +1211,6 @@ test('CSS files can be chosen and their font declarations are found automaticall
     'https://example.com/remote.woff2',
   );
 });
-
-const picker = (page: Page, name: string) =>
-  page.locator('details').filter({ has: page.getByText(name, { exact: true }) });
 
 test('a Google Fonts family can be searched and downloaded through the two allowed origins', async ({
   page,
@@ -1237,15 +1233,13 @@ test('a Google Fonts family can be searched and downloaded through the two allow
   await page.goto('/en/');
   await waitForGenerator(page);
   await openStep(page, 'inputs');
-  const google = picker(page, 'Google Fonts');
-  await google.getByLabel('Search families').fill('open sans');
-  await expect(google.getByText(/\d+ families shown/)).toBeVisible();
-  await google
-    .getByRole('list', { name: 'Google Fonts families' })
-    .getByRole('button', { name: /^Open Sans/ })
+  await page.getByLabel('Font name, CSS or copied site data').fill('open sans');
+  await page
+    .getByRole('list', { name: 'Matching families' })
+    .getByRole('button', { name: /^Open Sans.*Google Fonts/ })
     .click();
-  await expect(google.getByLabel('Script subset')).toHaveAttribute('data-value', 'latin');
-  await google.getByRole('button', { name: 'Add to the fonts' }).click();
+  await expect(page.getByLabel('Script subset')).toHaveAttribute('data-value', 'latin');
+  await page.getByRole('button', { name: 'Add to the fonts' }).click();
   await expect(page.getByText('Downloaded Open Sans.')).toBeVisible();
   await openStep(page, 'tuning');
   await expect(page.getByRole('button', { name: /^Remove: Open-Sans-400-latin/ })).toBeVisible();
@@ -1262,13 +1256,12 @@ test('a Fontsource family is downloaded from jsDelivr', async ({ page }) => {
   await page.goto('/en/');
   await waitForGenerator(page);
   await openStep(page, 'inputs');
-  const fontsource = picker(page, 'Fontsource: other open fonts');
-  await fontsource.getByLabel('Search families').fill('aileron');
-  await fontsource
-    .getByRole('list', { name: 'Fontsource families' })
-    .getByRole('button', { name: /^Aileron/ })
+  await page.getByLabel('Font name, CSS or copied site data').fill('aileron');
+  await page
+    .getByRole('list', { name: 'Matching families' })
+    .getByRole('button', { name: /^Aileron.*Fontsource/ })
     .click();
-  await fontsource.getByRole('button', { name: 'Add to the fonts' }).click();
+  await page.getByRole('button', { name: 'Add to the fonts' }).click();
   await expect(page.getByText('Downloaded Aileron.')).toBeVisible();
   await openStep(page, 'tuning');
   await expect(page.getByRole('button', { name: /^Remove: Aileron-400-latin/ })).toBeVisible();
@@ -1279,13 +1272,12 @@ test('a failed Google Fonts download is explained', async ({ page }) => {
   await page.goto('/en/');
   await waitForGenerator(page);
   await openStep(page, 'inputs');
-  const google = picker(page, 'Google Fonts');
-  await google.getByLabel('Search families').fill('lora');
-  await google
-    .getByRole('list', { name: 'Google Fonts families' })
-    .getByRole('button', { name: /^Lora/ })
+  await page.getByLabel('Font name, CSS or copied site data').fill('lora');
+  await page
+    .getByRole('list', { name: 'Matching families' })
+    .getByRole('button', { name: /^Lora.*Google Fonts/ })
     .click();
-  await google.getByRole('button', { name: 'Add to the fonts' }).click();
+  await page.getByRole('button', { name: 'Add to the fonts' }).click();
   await expect(page.getByText(/Could not download the font/)).toBeVisible();
 });
 
@@ -1385,7 +1377,7 @@ test('a corrupt share link is ignored', async ({ page }) => {
   await waitForGenerator(page);
   await openStep(page, 'inputs');
   await expect(page.getByRole('region', { name: 'Fonts to adapt' })).toHaveCount(0);
-  await expect(page.getByText('Your web font', { exact: true })).toBeVisible();
+  await expect(page.getByText('Add a font', { exact: true })).toBeVisible();
 });
 
 test('the dropdown works from the keyboard, with typeahead, and has no axe violations while open', async ({
@@ -1542,6 +1534,7 @@ test('the bookmarklet hands the fonts and text of a page to the generator after 
   await page.goto('/en/');
   await waitForGenerator(page);
   await openStep(page, 'inputs');
+  await page.getByRole('button', { name: 'Import from a website…' }).click();
   const link = page.getByRole('link', { name: 'Send to fontstay' });
   const href = (await link.getAttribute('href')) ?? '';
   expect(href).toMatch(/^javascript:/);
@@ -1845,4 +1838,107 @@ test('the intro guide folds into a strip once a font is loaded and can be reopen
   await expect(view.getByRole('button', { name: /Add your font/ })).toBeVisible();
   await view.getByRole('button', { name: 'Hide the guide' }).click();
   await expect(show).toBeVisible();
+});
+
+test.describe('the single input field', () => {
+  const open = async (page: Page) => {
+    await page.goto('/en/');
+    await waitForGenerator(page);
+    await openStep(page, 'inputs');
+    return page.getByLabel('Font name, CSS or copied site data');
+  };
+
+  test('a font name lists families of both catalogs with their source', async ({ page }) => {
+    const field = await open(page);
+    await field.fill('roboto');
+    const list = page.getByRole('list', { name: 'Matching families' });
+    await expect(list).toBeVisible();
+    await expect(
+      list.getByRole('button', { name: /^Roboto\b.*Google Fonts/ }).first(),
+    ).toBeVisible();
+    await field.fill('a');
+    await expect(list.getByText('Fontsource').first()).toBeVisible();
+    await expect(list.getByText('Google Fonts').first()).toBeVisible();
+  });
+
+  test('a name that matches nothing says so', async ({ page }) => {
+    const field = await open(page);
+    await field.fill('zzzzqqqq');
+    await expect(page.getByText('No family matches this name.')).toBeVisible();
+  });
+
+  test('pasted CSS lists its faces and drops the name search', async ({ page }) => {
+    const field = await open(page);
+    await field.fill(
+      '@font-face { font-family: "Demo Sans"; font-weight: 700; src: url(https://fonts.test/demo.woff2) format("woff2"); }',
+    );
+    const faces = page.getByRole('list', { name: 'Fonts found in the CSS' });
+    await expect(faces).toContainText('Demo Sans');
+    await expect(faces.getByRole('link', { name: 'Download the file' })).toBeVisible();
+    await expect(page.getByRole('list', { name: 'Matching families' })).toHaveCount(0);
+  });
+
+  test('text that looks like CSS but has no fonts reports it', async ({ page }) => {
+    const field = await open(page);
+    await field.fill('@import url("x.css");');
+    await expect(
+      page.getByText('No @font-face rules or Google Fonts links were found.'),
+    ).toBeVisible();
+  });
+
+  test('pasted site data opens the import confirmation and clears the field', async ({ page }) => {
+    const field = await open(page);
+    await field.fill(
+      JSON.stringify({ v: 1, origin: 'https://site.test', faces: [{ family: 'Inter' }] }),
+    );
+    await expect(
+      page.getByRole('region', { name: 'Import from https://site.test?' }),
+    ).toBeVisible();
+    await expect(field).toHaveValue('');
+  });
+
+  test('broken site data is rejected', async ({ page }) => {
+    const field = await open(page);
+    await field.fill('{"v":1');
+    await expect(page.getByText('The pasted text is not valid import data.')).toBeVisible();
+  });
+
+  test('a CSS file chosen through the field is read into it', async ({ page }) => {
+    const field = await open(page);
+    await page.locator('input[type="file"][accept*="woff2"]').setInputFiles({
+      name: 'fonts.css',
+      mimeType: 'text/css',
+      buffer: Buffer.from(
+        '@font-face { font-family: "From File"; src: url(https://f.test/a.woff2); }',
+      ),
+    });
+    await expect(field).toHaveValue(/From File/);
+    await expect(page.getByRole('list', { name: 'Fonts found in the CSS' })).toContainText(
+      'From File',
+    );
+  });
+
+  test('the import instructions open from the link under the field', async ({ page }) => {
+    await open(page);
+    const toggle = page.getByRole('button', { name: 'Import from a website…' });
+    await expect(toggle).toHaveAttribute('aria-expanded', 'false');
+    await toggle.click();
+    await expect(toggle).toHaveAttribute('aria-expanded', 'true');
+    await expect(page.getByRole('heading', { name: 'Bookmarklet' })).toBeVisible();
+  });
+});
+
+test('the input field with suggestions and CSS results has no axe violations', async ({ page }) => {
+  await page.goto('/en/');
+  await waitForGenerator(page);
+  await openStep(page, 'inputs');
+  const field = page.getByLabel('Font name, CSS or copied site data');
+  await field.fill('roboto');
+  await page.getByRole('list', { name: 'Matching families' }).getByRole('button').first().click();
+  await page.getByRole('button', { name: 'Import from a website…' }).click();
+  const names = await new AxeBuilder({ page }).analyze();
+  expect(names.violations).toEqual([]);
+  await field.fill('@font-face { font-family: A; src: url(https://f.test/a.woff2); }');
+  const css = await new AxeBuilder({ page }).analyze();
+  expect(css.violations).toEqual([]);
 });
