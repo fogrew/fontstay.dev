@@ -48,18 +48,11 @@ import {
   isFontCollection,
   MAX_FONT_BYTES,
 } from '@/modules/font-metrics';
-import { FontsourcePicker, GoogleFontsPicker } from '@/modules/font-sources';
 import type { SiteImport } from '@/modules/import-receiver';
 import { LayoutShiftPanel, type PanelInput, ratingOf, worstShift } from '@/modules/layout-shift';
 import { type Category, loadVariantMetrics, type OsId, osFontsDataset } from '@/modules/os-fonts';
 import { cssStack, PRESETS, type PresetId, presetName, presetPicks } from '@/modules/presets';
-import {
-  discardPending,
-  ImportConfirm,
-  PENDING_HASH,
-  SiteImportPanel,
-  takePending,
-} from '@/modules/site-import';
+import { discardPending, ImportConfirm, PENDING_HASH, takePending } from '@/modules/site-import';
 import type { ShiftReport, ToolHost } from '@/modules/webmcp';
 import { siteIsMeaningful } from '../lib/articles';
 import { autoFit } from '../lib/auto-fit';
@@ -109,9 +102,8 @@ import {
 } from '../lib/storage';
 import { ArticleView } from './ArticleView';
 import { CoverageMap } from './CoverageMap';
-import { CssImport } from './CssImport';
 import { ExportPanel } from './ExportPanel';
-import { FontUpload } from './FontUpload';
+import { FontInput } from './FontInput';
 import './generator.css';
 
 interface LoadedFont {
@@ -1658,24 +1650,15 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
             label: t.col_inputs(),
             content: (
               <div class="ff-generator__settings" id="ff-settings">
-                <FontUpload
+                <FontInput
                   locale={locale}
                   busy={busy}
                   compact={fonts.length > 0}
+                  dragging={dragging}
+                  dropped={cssDrop}
                   onFiles={addFiles}
+                  onImport={setIncoming}
                 />
-                <GoogleFontsPicker
-                  locale={locale}
-                  busy={busy}
-                  onFile={(file) => void addFiles([file])}
-                />
-                <FontsourcePicker
-                  locale={locale}
-                  busy={busy}
-                  onFile={(file) => void addFiles([file])}
-                />
-                <CssImport locale={locale} busy={busy} onFiles={addFiles} dropped={cssDrop} />
-                <SiteImportPanel locale={locale} onImport={setIncoming} />
                 {incoming && (
                   <ImportConfirm
                     locale={locale}
