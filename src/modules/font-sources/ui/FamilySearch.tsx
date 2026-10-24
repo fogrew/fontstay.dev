@@ -167,6 +167,16 @@ export function FamilySearch({
       <p role="status" class="ff-muted">
         {message}
       </p>
+      <p class="ff-muted">
+        {t.source_browse()}{' '}
+        <a href="https://fonts.google.com/" target="_blank" rel="noopener noreferrer">
+          {t.source_name_google()}
+        </a>
+        {', '}
+        <a href="https://fontsource.org/fonts" target="_blank" rel="noopener noreferrer">
+          {t.source_name_fontsource()}
+        </a>
+      </p>
       <p class="ff-muted">{t.source_note()}</p>
     </div>
   );

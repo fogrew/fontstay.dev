@@ -491,13 +491,15 @@
   "intro_hide": "Скрыть инструкцию",
   "input_heading": "Добавить шрифт",
   "input_label": "Название шрифта, CSS или данные с сайта",
-  "input_placeholder": "Inter, правило @font-face, ссылка Google Fonts…",
+  "input_placeholder": "Inter, Roboto Flex, правило @font-face, ссылка Google Fonts…",
   "input_hint": "Введите название шрифта, чтобы найти его в Google Fonts и Fontsource, вставьте CSS или данные, скопированные букмарклетом, либо перетащите сюда файл шрифта или CSS.",
-  "input_choose": "Выбрать файлы…",
+  "input_choose": "Выбрать файл шрифта или CSS…",
   "input_site": "Импорт с сайта…",
   "source_name_google": "Google Fonts",
   "source_name_fontsource": "Fontsource",
   "source_none": "Нет семейства с таким названием. Проверьте написание или вставьте CSS.",
   "source_list_label": "Подходящие семейства",
-  "source_note": "Поиск идёт по каталогу, встроенному в сайт. Добавление шрифта скачивает один файл с серверов Google (fonts.googleapis.com, fonts.gstatic.com) или Fontsource (cdn.jsdelivr.net); они видят ваш IP-адрес, но не адрес страницы."
+  "source_note": "Поиск идёт по каталогу, встроенному в сайт. Добавление шрифта скачивает один файл с серверов Google (fonts.googleapis.com, fonts.gstatic.com) или Fontsource (cdn.jsdelivr.net); они видят ваш IP-адрес, но не адрес страницы.",
+  "input_formats": "Подходят файлы WOFF2, WOFF, TTF, OTF, TTC, OTC и CSS.",
+  "source_browse": "Каталоги:"
 }
