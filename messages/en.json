@@ -215,8 +215,8 @@
   "source_loading": "Loading the catalog…",
   "source_error_catalog": "The catalog could not be loaded.",
   "source_results": "{count} families shown",
-  "source_style_label": "Style",
-  "source_subset_label": "Script subset",
+  "source_style_label": "Styles",
+  "source_subset_label": "Script subsets",
   "source_add": "Add to the fonts",
   "source_downloading": "Downloading…",
   "source_error_network": "Could not download the font. Check the connection and that the font server is reachable.",
@@ -508,5 +508,7 @@
   "share_offer_label": "Fonts from the link",
   "share_offer": "This link uses {count} fonts from Google Fonts or Fontsource. Downloading them shows your IP address to Google or jsDelivr.",
   "share_offer_accept": "Download the fonts",
-  "share_offer_dismiss": "Skip"
+  "share_offer_dismiss": "Skip",
+  "source_upright": "Upright",
+  "source_too_many": "At most {max} more fonts fit. Deselect some styles or scripts."
 }

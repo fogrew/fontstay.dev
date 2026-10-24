@@ -373,7 +373,8 @@
 }
 .ff-source__list {
   display: grid;
-  gap: 1px;
+  grid-template-columns: repeat(auto-fill, minmax(13rem, 1fr));
+  gap: var(--ff-space-1);
   max-block-size: 14rem;
   overflow-y: auto;
   margin: 0;
@@ -396,6 +397,51 @@
 }
 .ff-source__item[aria-pressed="true"] {
   background: var(--ff-state-full);
+}
+.ff-source__groups {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--ff-space-3) var(--ff-space-4);
+}
+.ff-toggle-set {
+  display: grid;
+  gap: var(--ff-space-1);
+  margin: 0;
+  padding: 0;
+  border: 0;
+  min-inline-size: 0;
+}
+.ff-toggle-set legend {
+  padding: 0;
+  margin-block-end: var(--ff-space-1);
+}
+.ff-toggle-group {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--ff-space-1);
+}
+.ff-toggle-group__label {
+  min-inline-size: 4.5rem;
+}
+.ff-toggle {
+  min-inline-size: 2.75rem;
+  min-block-size: 2rem;
+  padding: 0 var(--ff-space-2);
+  border: 1px solid var(--ff-border);
+  border-radius: var(--ff-radius);
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+}
+.ff-toggle[aria-pressed="true"] {
+  background: var(--ff-state-full);
+}
+.ff-source__add {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--ff-space-2);
 }
 .ff-export {
   display: grid;

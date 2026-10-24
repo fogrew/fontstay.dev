@@ -215,8 +215,8 @@
   "source_loading": "Загружаю каталог…",
   "source_error_catalog": "Не удалось загрузить каталог.",
   "source_results": "Показано семейств: {count}",
-  "source_style_label": "Начертание",
-  "source_subset_label": "Набор символов",
+  "source_style_label": "Начертания",
+  "source_subset_label": "Наборы символов",
   "source_add": "Добавить в шрифты",
   "source_downloading": "Скачиваю…",
   "source_error_network": "Не удалось скачать шрифт. Проверьте соединение и доступность сервера шрифтов.",
@@ -508,5 +508,7 @@
   "share_offer_label": "Шрифты из ссылки",
   "share_offer": "Эта ссылка использует шрифтов из Google Fonts или Fontsource: {count}. При загрузке Google или jsDelivr увидят ваш IP-адрес.",
   "share_offer_accept": "Загрузить шрифты",
-  "share_offer_dismiss": "Пропустить"
+  "share_offer_dismiss": "Пропустить",
+  "source_upright": "Прямые",
+  "source_too_many": "Можно добавить ещё не больше {max} шрифтов. Снимите часть начертаний или наборов."
 }

@@ -45,6 +45,7 @@ export function FontInput({
   locale,
   busy,
   compact,
+  slots,
   dragging,
   dropped,
   onFiles,
@@ -53,9 +54,10 @@ export function FontInput({
   locale: Locale;
   busy: boolean;
   compact: boolean;
+  slots: number;
   dragging: boolean;
   dropped?: { id: number; files: File[] } | undefined;
-  onFiles: (files: File[], origin?: FontOrigin) => void;
+  onFiles: (files: File[], origins?: ReadonlyMap<File, FontOrigin>) => void;
   onImport: (value: SiteImport) => void;
 }) {
   const t = messagesFor(locale);
@@ -170,12 +172,7 @@ export function FontInput({
       {site && <SiteImportPanel locale={locale} />}
       {!compact && <p class="ff-muted">{t.upload_local()}</p>}
       {kind === 'name' && (
-        <FamilySearch
-          locale={locale}
-          busy={busy}
-          query={text}
-          onFile={(file, origin) => onFiles([file], origin)}
-        />
+        <FamilySearch locale={locale} busy={busy} query={text} slots={slots} onFiles={onFiles} />
       )}
       <div role="status">
         {importError && <p class="ff-error">{t.import_paste_error()}</p>}

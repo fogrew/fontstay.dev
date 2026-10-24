@@ -1238,11 +1238,48 @@ test('a Google Fonts family can be searched and downloaded through the two allow
     .getByRole('list', { name: 'Matching families' })
     .getByRole('button', { name: /^Open Sans.*Google Fonts/ })
     .click();
-  await expect(page.getByLabel('Script subset')).toHaveAttribute('data-value', 'latin');
+  await expect(page.getByRole('button', { name: 'latin', exact: true })).toHaveAttribute(
+    'aria-pressed',
+    'true',
+  );
   await page.getByRole('button', { name: 'Add to the fonts' }).click();
   await expect(page.getByText('Downloaded Open Sans.')).toBeVisible();
   await openStep(page, 'tuning');
   await expect(page.getByRole('button', { name: /^Remove: Open-Sans-400-latin/ })).toBeVisible();
+});
+
+test('several styles of a catalog family are added with one click', async ({ page }) => {
+  const cors = { 'access-control-allow-origin': '*' };
+  await page.route('https://fonts.googleapis.com/**', (route) =>
+    route.fulfill({
+      status: 200,
+      headers: { ...cors, 'content-type': 'text/css' },
+      body: '/* latin */\n@font-face { font-family: "Open Sans"; src: url(https://fonts.gstatic.com/s/opensans/latin.woff2) format("woff2"); }',
+    }),
+  );
+  await page.route('https://fonts.gstatic.com/**', (route) =>
+    route.fulfill({
+      status: 200,
+      headers: { ...cors, 'content-type': 'font/woff2' },
+      body: readFileSync(sourceSans),
+    }),
+  );
+  await page.goto('/en/');
+  await waitForGenerator(page);
+  await openStep(page, 'inputs');
+  await page.getByLabel('Font name, CSS or copied site data').fill('open sans');
+  await page
+    .getByRole('list', { name: 'Matching families' })
+    .getByRole('button', { name: /^Open Sans.*Google Fonts/ })
+    .click();
+  await page.getByRole('button', { name: '700', exact: true }).click();
+  await page.getByRole('button', { name: '400 Italic', exact: true }).click();
+  await page.getByRole('button', { name: 'Add to the fonts (3)' }).click();
+  await expect(page.getByText('Downloaded Open Sans.')).toBeVisible();
+  await openStep(page, 'tuning');
+  for (const name of ['Open-Sans-400-latin', 'Open-Sans-700-latin', 'Open-Sans-400i-latin']) {
+    await expect(page.getByRole('button', { name: new RegExp(`^Remove: ${name}`) })).toBeVisible();
+  }
 });
 
 test('a share link carries Google Fonts choices and downloads them again', async ({
