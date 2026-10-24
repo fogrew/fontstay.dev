@@ -1289,6 +1289,9 @@ test('a share link carries Google Fonts choices and downloads them again', async
   const other = await fresh.newPage();
   await other.goto(link);
   await waitForGenerator(other);
+  await openStep(other, 'inputs');
+  await expect(other.getByText(/This link uses 1 fonts/)).toBeVisible();
+  await other.getByRole('button', { name: 'Download the fonts' }).click();
   await openStep(other, 'tuning');
   await expect(other.getByRole('button', { name: /^Remove: Open-Sans-400-latin/ })).toBeVisible();
   await fresh.close();

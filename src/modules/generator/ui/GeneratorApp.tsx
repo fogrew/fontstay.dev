@@ -238,6 +238,7 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
   };
 
   const [announcement, setAnnouncement] = useState('');
+  const [offer, setOffer] = useState<FontOrigin[]>([]);
   useEffect(() => () => parser.current?.dispose(), []);
   useEffect(() => {
     if (focusSlot === undefined) return;
@@ -363,25 +364,16 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
         return file;
       });
       const persisted = files.length;
-      const missing = (payload ? (state?.sources ?? []) : []).filter(
-        (origin) => !stored.some((item) => item.origin && sameOrigin(item.origin, origin)),
+      const wanted = (payload ? (state?.sources ?? []) : []).filter(
+        (origin, index, all) => all.findIndex((other) => sameOrigin(other, origin)) === index,
       );
-      if (missing.length > 0) {
-        const results = await Promise.allSettled(missing.map((origin) => downloadOrigin(origin)));
-        results.forEach((result, index) => {
-          const origin = missing[index];
-          if (result.status === 'fulfilled' && origin) {
-            files.push(result.value);
-            origins.set(result.value, origin);
-          }
-        });
-        if (results.some((result) => result.status === 'rejected')) {
-          setError(t.share_sources_failed());
-        }
-      }
-      if (files.length > 0 && current) {
-        await addFiles(files.slice(0, persisted), false, origins);
-        if (files.length > persisted) await addFiles(files.slice(persisted), true, origins);
+      const missing = wanted
+        .filter((origin) => !stored.some((item) => item.origin && sameOrigin(item.origin, origin)))
+        .slice(0, Math.max(0, MAX_FONTS - persisted));
+      if (files.length > 0 && current) await addFiles(files, false, origins);
+      if (missing.length > 0 && current) {
+        setOffer(missing);
+        window.dispatchEvent(new CustomEvent(DOCK_OPEN_EVENT, { detail: 'inputs' }));
       }
       if (current) setRestored(true);
     })();
@@ -389,6 +381,24 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
       current = false;
     };
   }, []);
+  const acceptOffer = async () => {
+    const wanted = offer.slice(0, Math.max(0, MAX_FONTS - fonts.length));
+    setOffer([]);
+    const results = await Promise.allSettled(wanted.map((origin) => downloadOrigin(origin)));
+    const origins = new Map<File, FontOrigin>();
+    const files: File[] = [];
+    results.forEach((result, index) => {
+      const origin = wanted[index];
+      if (result.status === 'fulfilled' && origin) {
+        files.push(result.value);
+        origins.set(result.value, origin);
+      }
+    });
+    if (files.length > 0) await addFiles(files, true, origins);
+    if (results.some((result) => result.status === 'rejected')) {
+      setError((message) => [message, t.share_sources_failed()].filter(Boolean).join(' '));
+    }
+  };
   useEffect(() => {
     const state = pending.current;
     if (!state || fonts.length === 0) return;
@@ -401,7 +411,7 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
         ? fonts[0]
         : fonts.find((font) => font.fileName === state.fontName);
     if (!target) {
-      if (restored) pending.current = null;
+      if (restored && offer.length === 0) pending.current = null;
       return;
     }
     pending.current = null;
@@ -427,7 +437,7 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
       if (saved) apply(font, saved);
     }
     setValues(restoredValues);
-  }, [fonts, restored]);
+  }, [fonts, restored, offer]);
 
   const selected = fonts.find((font) => font.id === selectedId) ?? fonts[0];
   const allMode = fonts.length > 1 && (selectedId === undefined || selectedId === 'all');
@@ -1092,7 +1102,8 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
     return () => clearTimeout(timer);
   }, [shareMessage]);
   const uploaded = fonts.filter((font) => !font.origin).map((font) => displayName(font.fileName));
-  const shareNote = uploaded.length === 0 ? t.share_note_catalog() : t.share_note();
+  const shareNote =
+    uploaded.length > 0 || fonts.length === 0 ? t.share_note() : t.share_note_catalog();
   const copyLink = async () => {
     try {
       const payload = await encodeShareState(currentShareState());
@@ -1721,6 +1732,22 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
                       void discardPending();
                     }}
                   />
+                )}
+                {offer.length > 0 && (
+                  <section class="ff-offer" aria-label={t.share_offer_label()}>
+                    <p>{t.share_offer({ count: offer.length })}</p>
+                    <Button variant="primary" disabled={busy} onClick={() => void acceptOffer()}>
+                      {t.share_offer_accept()}
+                    </Button>
+                    <Button
+                      onClick={() => {
+                        setOffer([]);
+                        if (fonts.length === 0) pending.current = null;
+                      }}
+                    >
+                      {t.share_offer_dismiss()}
+                    </Button>
+                  </section>
                 )}
                 {error && (
                   <p class="ff-error" role="alert">

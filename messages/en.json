@@ -504,5 +504,9 @@
   "source_browse": "Browse the catalogs:",
   "share_note_catalog": "Your fonts and settings are saved in this browser only. The link contains the settings and the fonts picked from Google Fonts or Fontsource, which are downloaded again when it is opened.",
   "share_copied_files": "The link was copied, but it does not include these files: {files}. Whoever opens it has to add the same files.",
-  "share_sources_failed": "Some fonts from the link could not be downloaded from Google Fonts or Fontsource."
+  "share_sources_failed": "Some fonts from the link could not be downloaded from Google Fonts or Fontsource.",
+  "share_offer_label": "Fonts from the link",
+  "share_offer": "This link uses {count} fonts from Google Fonts or Fontsource. Downloading them shows your IP address to Google or jsDelivr.",
+  "share_offer_accept": "Download the fonts",
+  "share_offer_dismiss": "Skip"
 }

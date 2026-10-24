@@ -504,5 +504,9 @@
   "source_browse": "Каталоги:",
   "share_note_catalog": "Шрифты и настройки сохраняются только в этом браузере. Ссылка содержит настройки и шрифты, выбранные в Google Fonts или Fontsource: они загрузятся заново при открытии.",
   "share_copied_files": "Ссылка скопирована, но в неё не входят файлы: {files}. Тот, кто её откроет, должен добавить такие же файлы.",
-  "share_sources_failed": "Не удалось загрузить часть шрифтов из ссылки с Google Fonts или Fontsource."
+  "share_sources_failed": "Не удалось загрузить часть шрифтов из ссылки с Google Fonts или Fontsource.",
+  "share_offer_label": "Шрифты из ссылки",
+  "share_offer": "Эта ссылка использует шрифтов из Google Fonts или Fontsource: {count}. При загрузке Google или jsDelivr увидят ваш IP-адрес.",
+  "share_offer_accept": "Загрузить шрифты",
+  "share_offer_dismiss": "Пропустить"
 }

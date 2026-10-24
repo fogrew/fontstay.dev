@@ -504,5 +504,9 @@
   "source_browse": "الفهارس:",
   "share_note_catalog": "تُحفظ خطوطك وإعداداتك في هذا المتصفح فقط. يحتوي الرابط على الإعدادات والخطوط المختارة من Google Fonts أو Fontsource، وتُنزَّل من جديد عند فتحه.",
   "share_copied_files": "نُسخ الرابط، لكنه لا يتضمن هذه الملفات: {files}. على من يفتحه إضافة الملفات نفسها.",
-  "share_sources_failed": "تعذّر تنزيل بعض الخطوط من الرابط من Google Fonts أو Fontsource."
+  "share_sources_failed": "تعذّر تنزيل بعض الخطوط من الرابط من Google Fonts أو Fontsource.",
+  "share_offer_label": "الخطوط من الرابط",
+  "share_offer": "يستخدم هذا الرابط {count} من الخطوط من Google Fonts أو Fontsource. سيرى Google أو jsDelivr عنوان IP الخاص بك عند التنزيل.",
+  "share_offer_accept": "تنزيل الخطوط",
+  "share_offer_dismiss": "تخطي"
 }
