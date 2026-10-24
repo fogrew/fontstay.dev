@@ -235,4 +235,25 @@ describe('fontstayCollect', () => {
     );
     expect((result.files as { bytes: ArrayBuffer }[])[0]?.bytes.byteLength).toBe(3);
   });
+
+  it('shares one byte budget between the files read in parallel', async () => {
+    const rules = Array.from({ length: 8 }, (_, index) =>
+      faceRule({ family: `F${index}`, src: `url(/f${index}.woff2) format("woff2")` }),
+    );
+    const { result } = await collect(rules, async () => {
+      let sent = 0;
+      return {
+        ok: true,
+        headers: { get: () => null },
+        body: {
+          getReader: () => ({
+            read: async () =>
+              sent++ < 5 ? { done: false, value: new Uint8Array(1024 * 1024) } : { done: true },
+            cancel: async () => undefined,
+          }),
+        },
+      };
+    });
+    expect((result.files as unknown[]).length).toBeLessThan(8);
+  });
 });

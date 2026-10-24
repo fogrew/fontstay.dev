@@ -13,7 +13,7 @@ async function fontstayCollect(win, doc, options = {}) {
   const MAX_FACES = 64;
   const MAX_SHEETS = 6;
   const MAX_CSS = 500000;
-  const readBounded = async (response, limit) => {
+  const readBounded = async (response, limit, budget) => {
     if (!response.ok || Number(response.headers.get('content-length')) > limit) {
       throw new Error('skipped');
     }
@@ -29,7 +29,8 @@ async function fontstayCollect(win, doc, options = {}) {
       const { done, value } = await reader.read();
       if (done) break;
       size += value.byteLength;
-      if (size > limit) {
+      if (budget) budget.left -= value.byteLength;
+      if (size > limit || (budget && budget.left < 0)) {
         await reader.cancel();
         throw new Error('skipped');
       }
@@ -252,13 +253,14 @@ async function fontstayCollect(win, doc, options = {}) {
       Number(families.has(b.family.toLowerCase())) - Number(families.has(a.family.toLowerCase())),
   );
   const urls = [...new Set(ordered.map((face) => face.url).filter(Boolean))].slice(0, MAX_FILES);
+  const budget = { left: MAX_TOTAL };
   const results = await Promise.allSettled(
     urls.map(async (url) => {
       const response = await win.fetch(url, {
         credentials: 'omit',
         signal: AbortSignal.timeout(8000),
       });
-      return { url, bytes: await readBounded(response, MAX_FILE) };
+      return { url, bytes: await readBounded(response, MAX_FILE, budget) };
     }),
   );
   const files = [];

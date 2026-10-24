@@ -14,7 +14,16 @@ async function whenComplete(tabId) {
   }
 }
 
-async function deliver(tabId, token, payload) {
+let generation = 0;
+
+async function setStatus(text, title) {
+  try {
+    await chrome.action.setBadgeText({ text });
+    await chrome.action.setTitle({ title });
+  } catch {}
+}
+
+async function deliver(tabId, token, payload, mine) {
   await whenComplete(tabId);
   for (let attempt = 0; attempt < 20; attempt++) {
     try {
@@ -24,13 +33,17 @@ async function deliver(tabId, token, payload) {
       await sleep(250);
     }
   }
-  await chrome.action.setBadgeText({ text: '!' });
-  await chrome.action.setTitle({ title: 'Could not reach fontstay.dev. Click to try again.' });
+  if (mine === generation) {
+    await setStatus(
+      '!',
+      'Could not send this page to fontstay.dev. Click the button on the page to try again.',
+    );
+  }
 }
 
 async function sendTab(tab) {
-  await chrome.action.setBadgeText({ text: '' });
-  await chrome.action.setTitle({ title: 'Send this page to fontstay' });
+  const mine = ++generation;
+  await setStatus('', 'Send this page to fontstay');
   if (tab.id === undefined || !/^https?:/.test(tab.url ?? '')) return;
   let payload;
   try {
@@ -40,13 +53,17 @@ async function sendTab(tab) {
     });
     payload = injection?.result;
   } catch {
+    await setStatus('!', 'Could not read this page.');
     return;
   }
-  if (!payload) return;
+  if (!payload) {
+    await setStatus('!', 'Could not read this page.');
+    return;
+  }
   const token = makeToken();
   const locale = chrome.i18n.getUILanguage().startsWith('ru') ? 'ru' : 'en';
   const created = await chrome.tabs.create({ url: `${ORIGIN}/${locale}/import/#t=${token}` });
-  if (created.id !== undefined) await deliver(created.id, token, payload);
+  if (created.id !== undefined) await deliver(created.id, token, payload, mine);
 }
 
 self.fontstaySend = sendTab;
