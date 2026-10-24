@@ -1,5 +1,5 @@
 ---
-import { getTextDirection, type Locale, locales, localizeHref, messagesFor } from '@/common/i18n';
+import { catalogUrl, getTextDirection, type Locale, locales, localizeHref, messagesFor } from '@/common/i18n';
 import { Icon } from '@/common/ui';
 import { LocaleSwitcher } from '@/modules/locale-switcher';
 import { PwaManager } from '@/modules/pwa';
@@ -47,6 +47,7 @@ const indexable = !process.env.WORKERS_CI_BRANCH || process.env.WORKERS_CI_BRANC
     <title>{title}</title>
     <meta name="description" content={description} />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="preload" as="fetch" href={catalogUrl(locale)} crossorigin="anonymous" />
     <link rel="manifest" href="/manifest.webmanifest" />
     <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
     <meta name="theme-color" content="#161a19" media="(prefers-color-scheme: dark)" />

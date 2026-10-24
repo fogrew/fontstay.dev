@@ -109,7 +109,7 @@ Seeds:
 - Preact + `@preact/signals` for the interactive generator island (`client:load` for generator, `client:visible` elsewhere).
 - Font parsing: **fontkitten** (MIT, ~93 KB gzip, woff2 included) in a **Web Worker**; we compute metrics ourselves from cmap + glyph advances ([spike](spikes/font-parsing.md)).
 - `browserslist` + `baseline-browser-mapping` bundled for the browser (lazy-loaded chunk).
-- i18n: Astro i18n routing (`/en/`, `/ru/`, default locale redirect) + **Paraglide JS 2** for typed, tree-shaken messages.
+- i18n: Astro i18n routing (`/en/`, `/ru/`, default locale redirect) + **Paraglide JS 2** for the typed message keys and the locale runtime; the texts themselves are the per-locale JSON files (`messages/<locale>.json`), which `messagesFor` fills in `{name}` placeholders from. A page fetches only the file of its own locale (preloaded from the head, read before the islands hydrate); prerendering reads all of them.
 
 ### 3.2 FEOD layout
 [FEOD](https://fractal-oriented.tech/en/) levels: `app`, `pages`, `modules`, `common`, `global`. Imports only through each entity's root `index.ts`; direction per the [import matrix](https://fractal-oriented.tech/en/reference/import-matrix).

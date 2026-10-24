@@ -1,4 +1,5 @@
 export { catalogs } from './catalog';
+export { catalogUrl } from './catalog-url';
 export {
   assertIsLocale,
   baseLocale,
