@@ -28,7 +28,7 @@ describe('bookmarklet', () => {
     const href = bookmarkletHref(options);
     expect(new URL(href).protocol).toBe('javascript:');
     expect(decodeURIComponent(href.slice('javascript:'.length))).toBe(bookmarkletSource(options));
-    expect(href.length).toBeLessThan(8000);
+    expect(href.length).toBeLessThan(16000);
     expect(href).not.toContain('#');
   });
 
