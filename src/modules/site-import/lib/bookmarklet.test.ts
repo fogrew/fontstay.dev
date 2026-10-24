@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { bookmarkletHref, bookmarkletSource } from './bookmarklet';
 
 const options = {
@@ -37,5 +37,22 @@ describe('bookmarklet', () => {
     expect(source).toContain('event.origin !== target');
     expect(source).toContain('event.source !== child');
     expect(source).toContain('fontstay:ready');
+  });
+
+  it('says so when the collector fails, with or without the generator window', async () => {
+    const run = async (child: unknown) => {
+      const alert = vi.fn();
+      const window = { open: () => child, addEventListener: () => undefined };
+      new Function('window', 'document', 'alert', 'crypto', bookmarkletSource(options))(
+        window,
+        {},
+        alert,
+        globalThis.crypto,
+      );
+      await new Promise((resolve) => setTimeout(resolve, 0));
+      return alert;
+    };
+    expect(await run(null)).toHaveBeenCalledWith('Failed');
+    expect(await run({})).toHaveBeenCalledWith('Failed');
   });
 });

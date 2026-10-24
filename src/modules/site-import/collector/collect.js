@@ -13,6 +13,37 @@ export async function fontstayCollect(win, doc, options = {}) {
   const MAX_FACES = 64;
   const MAX_SHEETS = 6;
   const MAX_CSS = 500000;
+  const readBounded = async (response, limit, budget) => {
+    if (!response.ok || Number(response.headers.get('content-length')) > limit) {
+      throw new Error('skipped');
+    }
+    if (!response.body) {
+      const buffer = await response.arrayBuffer();
+      if (buffer.byteLength > limit) throw new Error('skipped');
+      return buffer;
+    }
+    const reader = response.body.getReader();
+    const chunks = [];
+    let size = 0;
+    for (;;) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      size += value.byteLength;
+      if (budget) budget.left -= value.byteLength;
+      if (size > limit || (budget && budget.left < 0)) {
+        await reader.cancel();
+        throw new Error('skipped');
+      }
+      chunks.push(value);
+    }
+    const bytes = new Uint8Array(size);
+    let offset = 0;
+    for (const chunk of chunks) {
+      bytes.set(chunk, offset);
+      offset += chunk.byteLength;
+    }
+    return bytes.buffer;
+  };
   const RANK = { woff2: 0, woff: 1, truetype: 2, opentype: 3, ttf: 2, otf: 3 };
   const unquote = (text) =>
     String(text)
@@ -157,10 +188,7 @@ export async function fontstayCollect(win, doc, options = {}) {
           credentials: 'omit',
           signal: AbortSignal.timeout(8000),
         });
-        if (!response.ok || Number(response.headers.get('content-length')) > MAX_CSS) {
-          throw new Error('skipped');
-        }
-        return response.text();
+        return new TextDecoder().decode(await readBounded(response, MAX_CSS));
       }),
     );
     texts.forEach((result, position) => {
@@ -225,16 +253,14 @@ export async function fontstayCollect(win, doc, options = {}) {
       Number(families.has(b.family.toLowerCase())) - Number(families.has(a.family.toLowerCase())),
   );
   const urls = [...new Set(ordered.map((face) => face.url).filter(Boolean))].slice(0, MAX_FILES);
+  const budget = { left: MAX_TOTAL };
   const results = await Promise.allSettled(
     urls.map(async (url) => {
       const response = await win.fetch(url, {
         credentials: 'omit',
         signal: AbortSignal.timeout(8000),
       });
-      if (!response.ok || Number(response.headers.get('content-length')) > MAX_FILE) {
-        throw new Error('skipped');
-      }
-      return { url, bytes: await response.arrayBuffer() };
+      return { url, bytes: await readBounded(response, MAX_FILE, budget) };
     }),
   );
   const files = [];

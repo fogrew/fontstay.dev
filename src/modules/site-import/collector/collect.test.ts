@@ -15,6 +15,8 @@ const faceRule = ({ family, src, weight = '400' }: FaceInit) => ({
   },
 });
 
+const encode = (text: string) => new TextEncoder().encode(text).buffer;
+
 function page(rules: unknown[], fetchFile?: (url: string) => Promise<unknown>) {
   const fetch = vi.fn(
     fetchFile ??
@@ -125,8 +127,10 @@ describe('fontstayCollect', () => {
         ? {
             ok: true,
             headers: { get: () => null },
-            text: async () =>
-              '/* c */ @font-face { font-family: "Remote"; font-weight: 700; src: url(https://fonts.test/r.woff2) format("woff2"); }',
+            arrayBuffer: async () =>
+              encode(
+                '/* c */ @font-face { font-family: "Remote"; font-weight: 700; src: url(https://fonts.test/r.woff2) format("woff2"); }',
+              ),
           }
         : {
             ok: true,
@@ -157,8 +161,8 @@ describe('fontstayCollect', () => {
     win.fetch.mockImplementation(async (url: string) => ({
       ok: true,
       headers: { get: () => null },
-      text: async () => sheets[url] ?? '',
-      arrayBuffer: async () => new Uint8Array([1]).buffer,
+      arrayBuffer: async () =>
+        url in sheets ? encode(sheets[url] ?? '') : new Uint8Array([1]).buffer,
     }));
     const result = await fontstayCollect(win, doc);
     expect((result.faces as { family: string }[]).map((face) => face.family)).toEqual(['A', 'B']);
@@ -187,5 +191,69 @@ describe('fontstayCollect', () => {
     expect(result.faces).toEqual([
       expect.objectContaining({ url: 'https://site.test/latin.woff2' }),
     ]);
+  });
+
+  it('stops reading a file that has no content-length once it exceeds the limit', async () => {
+    const chunk = new Uint8Array(4 * 1024 * 1024);
+    let reads = 0;
+    const cancel = vi.fn(async () => undefined);
+    const { result } = await collect(
+      [faceRule({ family: 'Big', src: 'url(/big.woff2) format("woff2")' })],
+      async () => ({
+        ok: true,
+        headers: { get: () => null },
+        body: {
+          getReader: () => ({
+            read: async () => (++reads > 100 ? { done: true } : { done: false, value: chunk }),
+            cancel,
+          }),
+        },
+      }),
+    );
+    expect(result.files).toEqual([]);
+    expect(reads).toBeLessThan(5);
+    expect(cancel).toHaveBeenCalled();
+  });
+
+  it('reads a streamed file that fits', async () => {
+    const { result } = await collect(
+      [faceRule({ family: 'Small', src: 'url(/s.woff2) format("woff2")' })],
+      async () => {
+        const parts = [new Uint8Array([1, 2]), new Uint8Array([3])];
+        return {
+          ok: true,
+          headers: { get: () => null },
+          body: {
+            getReader: () => ({
+              read: async () =>
+                parts.length ? { done: false, value: parts.shift() } : { done: true },
+              cancel: async () => undefined,
+            }),
+          },
+        };
+      },
+    );
+    expect((result.files as { bytes: ArrayBuffer }[])[0]?.bytes.byteLength).toBe(3);
+  });
+
+  it('shares one byte budget between the files read in parallel', async () => {
+    const rules = Array.from({ length: 8 }, (_, index) =>
+      faceRule({ family: `F${index}`, src: `url(/f${index}.woff2) format("woff2")` }),
+    );
+    const { result } = await collect(rules, async () => {
+      let sent = 0;
+      return {
+        ok: true,
+        headers: { get: () => null },
+        body: {
+          getReader: () => ({
+            read: async () =>
+              sent++ < 5 ? { done: false, value: new Uint8Array(1024 * 1024) } : { done: true },
+            cancel: async () => undefined,
+          }),
+        },
+      };
+    });
+    expect((result.files as unknown[]).length).toBeLessThan(8);
   });
 });
