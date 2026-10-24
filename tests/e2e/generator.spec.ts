@@ -1758,6 +1758,26 @@ test('the layout shift score shows the value before and after in rating colours'
   await expect(page.locator('.ff-shift__arrow')).toBeVisible();
 });
 
+test('share sits next to download and copy in the code block and spacing is on by default', async ({
+  page,
+}) => {
+  await page.goto('/en/');
+  await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
+  await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(sourceSans);
+  await openStep(page, 'results');
+  const header = page.locator('.ff-dock__panel:not([hidden]) .ff-code__header');
+  await expect(header.getByRole('button', { name: 'Share', exact: true })).toBeVisible();
+  await expect(header.getByRole('button', { name: /^Download/ })).toBeVisible();
+  await expect(header.getByRole('button', { name: /^Copy code/ })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Copy share link' })).toHaveCount(0);
+
+  await openStep(page, 'tuning');
+  await page.getByText('Spacing while fonts load', { exact: false }).first().click();
+  await expect(
+    page.getByRole('checkbox', { name: 'Compensate spacing while the font loads' }),
+  ).toBeChecked();
+});
+
 test('the intro guide explains the jump and opens each step', async ({ page }) => {
   await page.goto('/en/');
   await waitForGenerator(page);

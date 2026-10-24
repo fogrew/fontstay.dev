@@ -283,7 +283,6 @@
   "export_report": "Impact report (Markdown)",
   "share_heading": "Save and share",
   "share_note": "Your fonts and settings are saved in this browser only. The link contains the settings and the name of the font file but not the file itself: whoever opens it has to add the same font.",
-  "share_copy": "Copy share link",
   "share_forget": "Forget saved data",
   "share_copied": "The link was copied.",
   "share_failed": "The link could not be copied.",

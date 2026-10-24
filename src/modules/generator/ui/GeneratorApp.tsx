@@ -179,7 +179,7 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
   const [values, setValues] = useState<Record<string, Values>>({});
   const [optimized, setOptimized] = useState<Record<string, Partial<Overrides>>>({});
   const [spacingResult, setSpacingResult] = useState<{ key: string; value: SpacingEm }>();
-  const [spacingOn, setSpacingOn] = useState(false);
+  const [spacingOn, setSpacingOn] = useState(true);
   const [rangeOn, setRangeOn] = useState(false);
   const [perScript, setPerScript] = useState(true);
   const [openSystem, setOpenSystem] = useState<OsId | null | undefined>();
@@ -1746,35 +1746,33 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
             id: 'results',
             label: t.col_results(),
             content: showResults ? (
-              <>
-                <div class="ff-share">
-                  <Button onClick={() => void copyLink()} title={t.share_note()}>
-                    <Icon name="share" />
-                    {t.share_copy()}
-                  </Button>
-                  <span class="ff-muted">{shareMessage}</span>
-                </div>
-                <Accordion
-                  storageKey="results"
-                  resizable={false}
-                  resizeLabel={(above, below) => t.accordion_resize({ above, below })}
-                  items={[
-                    {
-                      id: 'export',
-                      label: t.export_heading(),
-                      content: (
-                        <ExportPanel
-                          locale={locale}
-                          input={exportInput}
-                          report={reportText}
-                          reordered={reordered}
-                          multi={allMode}
-                        />
-                      ),
-                    },
-                  ]}
-                />
-              </>
+              <Accordion
+                storageKey="results"
+                resizable={false}
+                resizeLabel={(above, below) => t.accordion_resize({ above, below })}
+                items={[
+                  {
+                    id: 'export',
+                    label: t.export_heading(),
+                    content: (
+                      <ExportPanel
+                        locale={locale}
+                        input={exportInput}
+                        report={reportText}
+                        reordered={reordered}
+                        multi={allMode}
+                        note={shareMessage}
+                        actions={
+                          <Button onClick={() => void copyLink()} title={t.share_note()}>
+                            <Icon name="share" />
+                            {t.share_copy_short()}
+                          </Button>
+                        }
+                      />
+                    ),
+                  },
+                ]}
+              />
             ) : (
               <p class="ff-generator__empty">{t.results_empty()}</p>
             ),

@@ -63,6 +63,8 @@ test('the layout model agrees with the browser measurement', async ({ page }) =>
   await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(sourceSans);
   await selectSystem(page, 'windows');
   await choose(page.getByLabel('Fallback font 1', { exact: true }), 'arial');
+  await page.getByText('Spacing while fonts load', { exact: false }).first().click();
+  await page.getByRole('checkbox', { name: 'Compensate spacing while the font loads' }).uncheck();
 
   const pin = async (sizeAdjust?: number) => {
     await selectSystem(page, 'windows');

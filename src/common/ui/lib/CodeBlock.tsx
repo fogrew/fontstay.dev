@@ -1,4 +1,4 @@
-import { Fragment } from 'preact';
+import { type ComponentChildren, Fragment } from 'preact';
 import { useEffect, useState } from 'preact/hooks';
 import { type Locale, messagesFor } from '@/common/i18n';
 import { Button } from './Button';
@@ -13,12 +13,14 @@ export function CodeBlock({
   label,
   fileName,
   language,
+  actions,
 }: {
   locale: Locale;
   code: string;
   label: string;
   fileName?: string | undefined;
   language?: CodeLanguage | undefined;
+  actions?: ComponentChildren;
 }) {
   const t = messagesFor(locale);
   const [status, setStatus] = useState<'idle' | 'copied' | 'failed'>('idle');
@@ -59,6 +61,7 @@ export function CodeBlock({
       <div class="ff-code__header">
         <span>{label}</span>
         <span class="ff-code__actions">
+          {actions}
           {fileName && (
             <Button
               onClick={() => {
