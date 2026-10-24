@@ -1794,6 +1794,12 @@ test('the generated code stays left to right and queries stay readable on an Ara
   await expect(tag).toHaveAttribute('dir', 'auto');
 });
 
+test('an import link without a pending import explains that it expired', async ({ page }) => {
+  await page.goto('/en/#import');
+  await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
+  await expect(page.getByRole('alert').filter({ hasText: 'no longer available' })).toBeVisible();
+});
+
 test('the intro guide explains the jump and opens each step', async ({ page }) => {
   await page.goto('/en/');
   await waitForGenerator(page);
