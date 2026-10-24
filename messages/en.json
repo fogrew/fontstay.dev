@@ -436,6 +436,7 @@
   "import_page_title": "Receiving site data",
   "import_receiving": "Receiving the data from the site…",
   "import_nothing": "Nothing was received. Run the bookmarklet or the extension again from the site you want to import.",
+  "import_expired": "The import is no longer available: it expires after ten minutes. Run the bookmarklet or the extension again.",
   "import_back": "Open the generator",
   "import_heading": "Import from a website",
   "import_note": "Collect the fonts, text and sizes of a page and open them here. Nothing goes through a server: the data travels from that page's tab to this one.",

@@ -207,13 +207,23 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
   useEffect(() => {
     if (location.hash !== PENDING_HASH) return;
     history.replaceState(null, '', location.pathname + location.search);
-    void takePending().then(setIncoming);
+    void takePending().then((value) => {
+      if (value) setIncoming(value);
+      else {
+        setError(t.import_expired());
+        window.dispatchEvent(new CustomEvent(DOCK_OPEN_EVENT, { detail: 'inputs' }));
+      }
+    });
   }, []);
   useEffect(() => {
     if (incoming) window.dispatchEvent(new CustomEvent(DOCK_OPEN_EVENT, { detail: 'inputs' }));
   }, [incoming]);
   const acceptImport = () => {
     if (!incoming) return;
+    if (busy) {
+      setError(t.error_busy());
+      return;
+    }
     const value = incoming;
     setIncoming(null);
     const body = value.used.find((item) => item.role === 'body');
