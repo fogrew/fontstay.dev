@@ -30,6 +30,20 @@ for (const locale of ['en', 'ru', 'ar']) {
   });
 }
 
+test('a page loads the message file of its own locale only', async ({ page }) => {
+  const files: string[] = [];
+  page.on('request', (request) => {
+    const match = /\/_astro\/(en|ru|ar)\.[\w-]+\.json$/.exec(request.url());
+    if (match?.[1]) files.push(match[1]);
+  });
+  for (const locale of ['en', 'ru', 'ar']) {
+    files.length = 0;
+    await page.goto(`/${locale}/`);
+    await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
+    expect(files, locale).toEqual([locale]);
+  }
+});
+
 test('root redirects to the locale matching the browser language', async ({ browser }) => {
   const context = await browser.newContext({ locale: 'ru-RU' });
   const page = await context.newPage();
