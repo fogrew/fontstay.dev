@@ -491,13 +491,15 @@
   "intro_hide": "Hide the guide",
   "input_heading": "Add a font",
   "input_label": "Font name, CSS or copied site data",
-  "input_placeholder": "Inter, a @font-face rule, a Google Fonts link…",
+  "input_placeholder": "Inter, Roboto Flex, a @font-face rule, a Google Fonts link…",
   "input_hint": "Type a font name to search Google Fonts and Fontsource, paste CSS or the data copied by the bookmarklet, or drop a font or CSS file here.",
-  "input_choose": "Choose files…",
+  "input_choose": "Choose a font or CSS file…",
   "input_site": "Import from a website…",
   "source_name_google": "Google Fonts",
   "source_name_fontsource": "Fontsource",
   "source_none": "No family matches this name. Check the spelling, or paste CSS instead.",
   "source_list_label": "Matching families",
-  "source_note": "The search runs on a catalog bundled with the site. Adding a font downloads one file from Google (fonts.googleapis.com, fonts.gstatic.com) or from Fontsource (cdn.jsdelivr.net); they see your IP address and no referrer."
+  "source_note": "The search runs on a catalog bundled with the site. Adding a font downloads one file from Google (fonts.googleapis.com, fonts.gstatic.com) or from Fontsource (cdn.jsdelivr.net); they see your IP address and no referrer.",
+  "input_formats": "Accepted files: WOFF2, WOFF, TTF, OTF, TTC, OTC and CSS.",
+  "source_browse": "Browse the catalogs:"
 }

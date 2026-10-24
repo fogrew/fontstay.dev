@@ -491,13 +491,15 @@
   "intro_hide": "إخفاء الدليل",
   "input_heading": "إضافة خط",
   "input_label": "اسم الخط أو CSS أو بيانات منسوخة من موقع",
-  "input_placeholder": "Inter، أو قاعدة @font-face، أو رابط Google Fonts…",
+  "input_placeholder": "Inter, Roboto Flex, قاعدة @font-face, رابط Google Fonts…",
   "input_hint": "اكتب اسم خط للبحث عنه في Google Fonts وFontsource، أو الصق CSS أو البيانات التي نسختها الإشارة المرجعية، أو أسقط هنا ملف خط أو ملف CSS.",
-  "input_choose": "اختيار ملفات…",
+  "input_choose": "اختيار ملف خط أو CSS…",
   "input_site": "الاستيراد من موقع إلكتروني…",
   "source_name_google": "Google Fonts",
   "source_name_fontsource": "Fontsource",
   "source_none": "لا توجد عائلة بهذا الاسم. تحقق من الإملاء أو الصق CSS بدلًا من ذلك.",
   "source_list_label": "العائلات المطابقة",
-  "source_note": "يعمل البحث على فهرس مضمّن في الموقع. تنزيل خط يجلب ملفًا واحدًا من Google (fonts.googleapis.com وfonts.gstatic.com) أو من Fontsource (cdn.jsdelivr.net)؛ ترى هذه الخوادم عنوان IP الخاص بك ولا ترى المُحيل."
+  "source_note": "يعمل البحث على فهرس مضمّن في الموقع. تنزيل خط يجلب ملفًا واحدًا من Google (fonts.googleapis.com وfonts.gstatic.com) أو من Fontsource (cdn.jsdelivr.net)؛ ترى هذه الخوادم عنوان IP الخاص بك ولا ترى المُحيل.",
+  "input_formats": "الملفات المقبولة: WOFF2 وWOFF وTTF وOTF وTTC وOTC وCSS.",
+  "source_browse": "الفهارس:"
 }

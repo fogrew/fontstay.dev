@@ -135,7 +135,7 @@ export function FontInput({
           }}
         />
         <p id="ff-input-hint" class="ff-muted ff-drop__hint">
-          {t.input_hint()}
+          {t.input_hint()} {t.input_formats()}
         </p>
       </div>
       <p class="ff-drop__links">
