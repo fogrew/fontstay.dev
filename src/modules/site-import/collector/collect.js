@@ -11,6 +11,8 @@ export async function fontstayCollect(win, doc, options = {}) {
   const MAX_FILE = 10485760;
   const MAX_TOTAL = 31457280;
   const MAX_FACES = 64;
+  const MAX_SHEETS = 6;
+  const MAX_CSS = 500000;
   const RANK = { woff2: 0, woff: 1, truetype: 2, opentype: 3, ttf: 2, otf: 3 };
   const unquote = (text) =>
     String(text)
@@ -45,31 +47,128 @@ export async function fontstayCollect(win, doc, options = {}) {
     return best;
   };
 
+  const coversLatin = (range) => {
+    if (!range) return true;
+    return range.split(',').some((part) => {
+      const match = /^u\+([0-9a-f?]+)(?:-([0-9a-f]+))?$/i.exec(part.trim());
+      if (!match) return false;
+      const wild = match[1].includes('?');
+      const low = Number.parseInt(match[1].replace(/\?/g, '0'), 16);
+      const high = wild
+        ? Number.parseInt(match[1].replace(/\?/g, 'f'), 16)
+        : match[2]
+          ? Number.parseInt(match[2], 16)
+          : low;
+      return [0x41, 0x61].some((point) => point >= low && point <= high);
+    });
+  };
+
   const faces = [];
+  const slots = new Map();
+  const latin = new Map();
+  const pending = [];
+  const queued = new Set();
+  const defer = (href, base) => {
+    const url = secure(href, base);
+    if (!url || queued.has(url) || queued.size >= MAX_SHEETS) return;
+    queued.add(url);
+    pending.push(url);
+  };
+  const addFace = (face, covers) => {
+    const key = `${face.family.toLowerCase()}|${face.weight}|${face.style}`;
+    const slot = slots.get(key);
+    if (slot === undefined) {
+      if (faces.length >= MAX_FACES) return;
+      slots.set(key, faces.length);
+      faces.push(face);
+      latin.set(face, covers);
+    } else if (covers && !latin.get(faces[slot])) {
+      latin.delete(faces[slot]);
+      faces[slot] = face;
+      latin.set(face, covers);
+    }
+  };
   const walk = (rules, base) => {
-    for (let index = 0; index < rules.length && faces.length < MAX_FACES; index++) {
+    for (let index = 0; index < rules.length; index++) {
       const rule = rules[index];
       if (rule.type === 5) {
         const family = unquote(rule.style.getPropertyValue('font-family'));
         if (!family) continue;
         const url = bestUrl(rule.style.getPropertyValue('src'), base);
-        faces.push({
-          family,
-          weight: weightOf(rule.style.getPropertyValue('font-weight')),
-          style: /italic|oblique/i.test(rule.style.getPropertyValue('font-style'))
-            ? 'italic'
-            : 'normal',
-          ...(url ? { url } : {}),
-        });
+        addFace(
+          {
+            family,
+            weight: weightOf(rule.style.getPropertyValue('font-weight')),
+            style: /italic|oblique/i.test(rule.style.getPropertyValue('font-style'))
+              ? 'italic'
+              : 'normal',
+            ...(url ? { url } : {}),
+          },
+          coversLatin(rule.style.getPropertyValue('unicode-range')),
+        );
+      } else if (rule.type === 3) {
+        let inner;
+        try {
+          inner = rule.styleSheet?.cssRules;
+        } catch {}
+        if (inner) walk(inner, rule.styleSheet.href || base);
+        else defer(rule.href, base);
       } else if (rule.cssRules) {
         walk(rule.cssRules, base);
       }
     }
   };
+  const textRules = (text) => {
+    const css = text.slice(0, MAX_CSS).replace(/\/\*[\s\S]*?\*\//g, '');
+    const imports = [];
+    for (const match of css.matchAll(
+      /@import\s+(?:url\(\s*["']?([^"')]+)["']?\s*\)|["']([^"']+)["'])/gi,
+    )) {
+      imports.push(match[1] || match[2]);
+    }
+    const rules = [];
+    for (const block of css.matchAll(/@font-face\s*\{([^}]*)\}/gi)) {
+      const props = new Map();
+      for (const declaration of block[1].split(/;(?![^(]*\))/)) {
+        const colon = declaration.indexOf(':');
+        if (colon > 0) {
+          props.set(
+            declaration.slice(0, colon).trim().toLowerCase(),
+            declaration.slice(colon + 1).trim(),
+          );
+        }
+      }
+      rules.push({ type: 5, style: { getPropertyValue: (name) => props.get(name) ?? '' } });
+    }
+    return { rules, imports };
+  };
   for (const sheet of Array.from(doc.styleSheets)) {
     try {
       walk(sheet.cssRules, sheet.href || doc.baseURI);
-    } catch {}
+    } catch {
+      defer(sheet.href, doc.baseURI);
+    }
+  }
+  for (let depth = 0; depth < 2 && pending.length > 0; depth++) {
+    const batch = pending.splice(0);
+    const texts = await Promise.allSettled(
+      batch.map(async (url) => {
+        const response = await win.fetch(url, {
+          credentials: 'omit',
+          signal: AbortSignal.timeout(8000),
+        });
+        if (!response.ok || Number(response.headers.get('content-length')) > MAX_CSS) {
+          throw new Error('skipped');
+        }
+        return response.text();
+      }),
+    );
+    texts.forEach((result, position) => {
+      if (result.status !== 'fulfilled') return;
+      const { rules, imports } = textRules(result.value);
+      walk(rules, batch[position]);
+      for (const href of imports) defer(href, batch[position]);
+    });
   }
 
   const used = [];

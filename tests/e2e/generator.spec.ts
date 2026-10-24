@@ -1545,7 +1545,7 @@ test('the bookmarklet hands the fonts and text of a page to the generator after 
   const link = page.getByRole('link', { name: 'Send to fontstay' });
   const href = (await link.getAttribute('href')) ?? '';
   expect(href).toMatch(/^javascript:/);
-  expect(href.length).toBeLessThan(8000);
+  expect(href.length).toBeLessThan(16000);
 
   const site = await context.newPage();
   await site.goto('https://site.test/');

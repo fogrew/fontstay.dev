@@ -103,4 +103,89 @@ describe('fontstayCollect', () => {
     );
     expect((result.files as { name: string }[]).map((file) => file.name)).toEqual(['small.woff2']);
   });
+
+  it('reads the faces of an @import that is readable, and fetches the one that is not', async () => {
+    const readable = {
+      type: 3,
+      href: 'inner.css',
+      styleSheet: {
+        href: 'https://site.test/inner.css',
+        cssRules: [faceRule({ family: 'Inner', src: 'url(/i.woff2)' })],
+      },
+    };
+    const blocked = {
+      type: 3,
+      href: 'https://fonts.test/css',
+      get styleSheet(): never {
+        throw new Error('cross-origin');
+      },
+    };
+    const { result, fetch } = await collect([readable, blocked], async (url) =>
+      url === 'https://fonts.test/css'
+        ? {
+            ok: true,
+            headers: { get: () => null },
+            text: async () =>
+              '/* c */ @font-face { font-family: "Remote"; font-weight: 700; src: url(https://fonts.test/r.woff2) format("woff2"); }',
+          }
+        : {
+            ok: true,
+            headers: { get: () => null },
+            arrayBuffer: async () => new Uint8Array([1]).buffer,
+          },
+    );
+    expect(result.faces).toEqual([
+      expect.objectContaining({ family: 'Inner', url: 'https://site.test/i.woff2' }),
+      expect.objectContaining({ family: 'Remote', weight: 700, url: 'https://fonts.test/r.woff2' }),
+    ]);
+    expect(fetch).toHaveBeenCalledWith('https://fonts.test/css', expect.anything());
+  });
+
+  it('reads a cross-origin stylesheet through fetch and follows its @import once', async () => {
+    const { win, doc } = page([]);
+    doc.styleSheets.push({
+      href: 'https://cdn.test/x.css',
+      get cssRules(): never {
+        throw new Error('cross-origin');
+      },
+    } as never);
+    const sheets: Record<string, string> = {
+      'https://cdn.test/x.css':
+        '@import url("more.css"); @font-face { font-family: A; src: url(a.woff2); }',
+      'https://cdn.test/more.css': '@font-face { font-family: B; src: url(b.woff2); }',
+    };
+    win.fetch.mockImplementation(async (url: string) => ({
+      ok: true,
+      headers: { get: () => null },
+      text: async () => sheets[url] ?? '',
+      arrayBuffer: async () => new Uint8Array([1]).buffer,
+    }));
+    const result = await fontstayCollect(win, doc);
+    expect((result.faces as { family: string }[]).map((face) => face.family)).toEqual(['A', 'B']);
+  });
+
+  it('keeps the Latin subset of a family split by unicode-range', async () => {
+    const face = (range: string, file: string) => ({
+      type: 5,
+      style: {
+        getPropertyValue: (name: string) =>
+          ({
+            'font-family': 'Split',
+            src: `url(/${file}.woff2) format("woff2")`,
+            'font-weight': '400',
+            'font-style': 'normal',
+            'unicode-range': range,
+          })[name] ?? '',
+      },
+    });
+    const { result } = await collect([
+      face('U+0400-045F, U+0490-0491', 'cyrillic'),
+      face('U+0100-02BA, U+1E00-1EFF', 'latin-ext'),
+      face('U+0000-00FF, U+0131', 'latin'),
+      face('U+4??', 'wild'),
+    ]);
+    expect(result.faces).toEqual([
+      expect.objectContaining({ url: 'https://site.test/latin.woff2' }),
+    ]);
+  });
 });
