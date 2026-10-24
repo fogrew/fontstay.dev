@@ -130,26 +130,36 @@ export function AudienceEditor({
     setQuery(MY_STATS_PRESET.query);
   };
 
-  const loadList = async (file: File | undefined) => {
-    if (!file) return;
-    const queries = parseBrowserslist(
-      file.size > MAX_PACKAGE_JSON_CHARS ? '' : await file.text().catch(() => ''),
+  const loadLists = async (files: File[]) => {
+    if (files.length === 0) return;
+    const name = files.map((file) => file.name).join(', ');
+    const parsed = await Promise.all(
+      files.map(async (file) =>
+        parseBrowserslist(
+          file.size > MAX_PACKAGE_JSON_CHARS ? '' : await file.text().catch(() => ''),
+        ),
+      ),
     );
+    const queries = [...new Set(parsed.flat())];
     if (queries.length === 0) {
-      setFileNote(t.audience_file_empty({ name: file.name }));
+      setFileNote(t.audience_file_empty({ name }));
       return;
     }
     setQuery(queries.join(', '));
-    setFileNote(t.audience_file_loaded({ count: queries.length, name: file.name }));
+    setFileNote(t.audience_file_loaded({ count: queries.length, name }));
   };
   const loadFile = (file: File | undefined) =>
-    file && isStatsFile(file.name) ? loadStats(file) : loadList(file);
+    file && isStatsFile(file.name) ? loadStats(file) : loadLists(file ? [file] : []);
+  const loadListsRef = useRef(loadLists);
+  loadListsRef.current = loadLists;
   const loadFileRef = useRef(loadFile);
   loadFileRef.current = loadFile;
   useEffect(() => {
     const receive = (event: Event) => {
-      const file = (event as CustomEvent<unknown>).detail;
-      if (file instanceof File) void loadFileRef.current(file);
+      const detail = (event as CustomEvent<unknown>).detail;
+      if (detail instanceof File) void loadFileRef.current(detail);
+      else if (Array.isArray(detail) && detail.every((file) => file instanceof File))
+        void loadListsRef.current(detail);
     };
     window.addEventListener(AUDIENCE_FILE_EVENT, receive);
     return () => window.removeEventListener(AUDIENCE_FILE_EVENT, receive);
@@ -230,8 +240,9 @@ export function AudienceEditor({
               ref={listInput}
               hidden
               type="file"
+              multiple
               onChange={(event) => {
-                void loadList(event.currentTarget.files?.[0]);
+                void loadLists([...(event.currentTarget.files ?? [])]);
                 event.currentTarget.value = '';
               }}
             />

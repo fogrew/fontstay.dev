@@ -999,11 +999,12 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
     const audienceFile = dropped.find(
       (file) => isBrowserslistFile(file.name) || isStatsFile(file.name),
     );
-    const listFile = dropped.find((file) => isBrowserslistFile(file.name));
+    const listFiles = dropped.filter((file) => isBrowserslistFile(file.name));
     const statsFile = dropped.find((file) => isStatsFile(file.name));
-    for (const file of [listFile, statsFile]) {
-      if (file) window.dispatchEvent(new CustomEvent(AUDIENCE_FILE_EVENT, { detail: file }));
-    }
+    if (listFiles.length > 0)
+      window.dispatchEvent(new CustomEvent(AUDIENCE_FILE_EVENT, { detail: listFiles }));
+    if (statsFile)
+      window.dispatchEvent(new CustomEvent(AUDIENCE_FILE_EVENT, { detail: statsFile }));
     if (audienceFile)
       window.dispatchEvent(new CustomEvent(DOCK_OPEN_EVENT, { detail: 'audience' }));
     const files = dropped.filter(

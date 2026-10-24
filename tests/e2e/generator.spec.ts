@@ -794,6 +794,25 @@ test('typing, pasting and dropping a .browserslist file turn into tags', async (
   await expect(page.getByText('Loaded 2 queries from .browserslistrc.')).toBeAttached();
 });
 
+test('dropping several browserslist files merges their queries', async ({ page }) => {
+  await page.goto('/en/');
+  await waitForGenerator(page);
+  await openStep(page, 'audience');
+  await page.evaluate(() => {
+    const data = new DataTransfer();
+    data.items.add(new File(['> 1%\nnot dead\n'], '.browserslistrc'));
+    data.items.add(new File(['not dead\nsafari 17\n'], '.browserslist'));
+    window.dispatchEvent(new DragEvent('dragenter', { dataTransfer: data, bubbles: true }));
+    window.dispatchEvent(
+      new DragEvent('drop', { dataTransfer: data, bubbles: true, cancelable: true }),
+    );
+  });
+  await expect(queryField(page)).toHaveAttribute('data-query', '> 1%, not dead, safari 17');
+  await expect(
+    page.getByText('Loaded 3 queries from .browserslistrc, .browserslist.'),
+  ).toBeAttached();
+});
+
 test('the audience file buttons and drops fill the query and the statistics', async ({ page }) => {
   await page.goto('/en/');
   await waitForGenerator(page);
