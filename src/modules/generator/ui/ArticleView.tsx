@@ -392,7 +392,7 @@ export function ArticleView({
         : (loaded[articleId] ?? BUILT_IN.en);
   const article =
     articleId === 'site' && site?.meaningful
-      ? siteArticle(site.blocks, t.article_site(), locale)
+      ? siteArticle(site.blocks, t.article_site())
       : (shown ?? BUILT_IN.en);
 
   const families = useMemo(() => [...new Set(items.map((item) => item.family))], [items]);

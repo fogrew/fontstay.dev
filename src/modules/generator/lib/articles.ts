@@ -347,9 +347,16 @@ export function siteIsMeaningful(blocks: readonly SiteBlock[]): boolean {
   return blocks.length >= SITE_MIN_BLOCKS && total >= SITE_MIN_CHARS;
 }
 
-const RTL = /[֐-ࣿ]/u;
+const RTL_LETTER = /[֐-ࣿיִ-﷿ﹰ-ﻼ]/gu;
+const LETTER = /\p{L}/gu;
 
-export function siteArticle(blocks: readonly SiteBlock[], label: string, lang: string): Article {
+export function isMostlyRtl(text: string): boolean {
+  const letters = text.match(LETTER)?.length ?? 0;
+  const rtl = text.match(RTL_LETTER)?.length ?? 0;
+  return rtl * 2 > letters;
+}
+
+export function siteArticle(blocks: readonly SiteBlock[], label: string): Article {
   const texts = (role: SiteBlock['role']) =>
     blocks.filter((block) => block.role === role).map((block) => block.text);
   const [title = ''] = texts('heading');
@@ -359,8 +366,8 @@ export function siteArticle(blocks: readonly SiteBlock[], label: string, lang: s
   return {
     id: 'site',
     label,
-    lang,
-    dir: RTL.test(blocks.map((block) => block.text).join('')) ? 'rtl' : 'ltr',
+    lang: '',
+    dir: isMostlyRtl(blocks.map((block) => block.text).join('')) ? 'rtl' : 'ltr',
     kicker: '',
     title,
     lead,
