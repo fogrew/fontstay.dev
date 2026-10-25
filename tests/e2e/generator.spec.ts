@@ -2094,3 +2094,23 @@ test('the tag input commits on Enter, comma and blur, pastes lists and backspace
 
   await expect(page.getByRole('button', { name: '> 2%', exact: true })).toBeDisabled();
 });
+
+test('a dropped .browserslistrc opens the audience step and sets the query', async ({ page }) => {
+  await page.goto('/en/');
+  await waitForGenerator(page);
+  await closePanels(page);
+  await page.evaluate(() => {
+    const transfer = new DataTransfer();
+    transfer.items.add(new File(['last 2 chrome versions\nnot dead\n'], '.browserslistrc'));
+    for (const kind of ['dragenter', 'dragover', 'drop']) {
+      window.dispatchEvent(
+        new DragEvent(kind, { dataTransfer: transfer, bubbles: true, cancelable: true }),
+      );
+    }
+  });
+  await expect(page.getByRole('button', { name: '2. Audience', exact: true })).toHaveAttribute(
+    'aria-expanded',
+    'true',
+  );
+  await expect(queryField(page)).toHaveAttribute('data-query', 'last 2 chrome versions, not dead');
+});
