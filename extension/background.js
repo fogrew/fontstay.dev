@@ -62,7 +62,9 @@ async function sendTab(tab) {
   }
   const token = makeToken();
   const locale = chrome.i18n.getUILanguage().startsWith('ru') ? 'ru' : 'en';
-  const created = await chrome.tabs.create({ url: `${ORIGIN}/${locale}/import/#t=${token}` });
+  const created = await chrome.tabs.create({
+    url: `${ORIGIN}/${locale}/import/#t=${token}&via=ext`,
+  });
   if (created.id !== undefined) await deliver(created.id, token, payload, mine);
 }
 

@@ -1,5 +1,5 @@
 import { storePending } from './handoff';
-import { tokenFromHash } from './protocol';
+import { openedByExtension, tokenFromHash } from './protocol';
 import { startReceiver } from './receiver';
 
 export function runReceivePage(root: HTMLElement): void {
@@ -14,9 +14,11 @@ export function runReceivePage(root: HTMLElement): void {
     fail();
     return;
   }
+  const acceptOpener = !openedByExtension(location.hash);
   history.replaceState(null, '', location.pathname);
   startReceiver(window, {
     token,
+    acceptOpener,
     onFailure: fail,
     onImport: (value) => {
       void storePending(value).then((stored) => {

@@ -8,7 +8,7 @@ Content Security Policy blocks bookmarklets.
   cannot read any page until you click its toolbar button, and its only standing host access is
   the import pages of fontstay.dev (`https://fontstay.dev/*/import/*`).
 - `background.js`: on a click it injects `collect-run.js` into the active tab, opens
-  `https://fontstay.dev/<locale>/import/#t=<token>` and hands the result to the content script.
+  `https://fontstay.dev/<locale>/import/#t=<token>&via=ext` and hands the result to the content script.
 - `relay.js`: content script of the import page. It posts the data to the page with the token.
 - `collect-run.js`: generated from `src/modules/site-import/collector/collect.js` by
   `pnpm extension:build` (a unit test fails when it is out of date).

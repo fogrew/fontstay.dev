@@ -12,11 +12,13 @@ export interface ReceiverOptions {
   token: string;
   onImport: (value: SiteImport) => void;
   onFailure: () => void;
+  acceptOpener?: boolean;
   announceEveryMs?: number;
   timeoutMs?: number;
 }
 
 export function startReceiver(win: ReceiverWindow, options: ReceiverOptions): () => void {
+  const acceptOpener = options.acceptOpener !== false;
   let finished = false;
   const stop = () => {
     finished = true;
@@ -30,7 +32,7 @@ export function startReceiver(win: ReceiverWindow, options: ReceiverOptions): ()
     if (typeof data !== 'object' || data === null) return;
     const message = data as Record<string, unknown>;
     if (message.type !== DATA_TYPE || message.v !== PROTOCOL_VERSION) return;
-    const fromOpener = win.opener !== null && event.source === win.opener;
+    const fromOpener = acceptOpener && win.opener !== null && event.source === win.opener;
     const fromSelf = event.source === (win as unknown) && event.origin === win.location.origin;
     if (!fromOpener && !fromSelf) return;
     if (message.token !== options.token) return;
@@ -45,7 +47,10 @@ export function startReceiver(win: ReceiverWindow, options: ReceiverOptions): ()
     if (value) options.onImport(value);
     else options.onFailure();
   };
-  const announce = () => win.opener?.postMessage({ type: READY_TYPE, v: PROTOCOL_VERSION }, '*');
+  // The wildcard target is intentional: READY carries no data.
+  const announce = () => {
+    if (acceptOpener) win.opener?.postMessage({ type: READY_TYPE, v: PROTOCOL_VERSION }, '*');
+  };
   win.addEventListener('message', listener);
   announce();
   const announcer = setInterval(announce, options.announceEveryMs ?? 400);

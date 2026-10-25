@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { DATA_TYPE, READY_TYPE, tokenFromHash } from './protocol';
+import { DATA_TYPE, openedByExtension, READY_TYPE, tokenFromHash } from './protocol';
 import { type ReceiverWindow, startReceiver } from './receiver';
 
 const TOKEN = 'abcdefghijklmnopqrstuvwx';
@@ -36,6 +36,14 @@ describe('tokenFromHash', () => {
     expect(tokenFromHash(`#t=${'a'.repeat(100)}`)).toBeNull();
     expect(tokenFromHash('')).toBeNull();
   });
+
+  it('tells an extension tab from the marker, and only with a valid token', () => {
+    expect(tokenFromHash(`#t=${TOKEN}&via=ext`)).toBe(TOKEN);
+    expect(openedByExtension(`#t=${TOKEN}&via=ext`)).toBe(true);
+    expect(openedByExtension(`#t=${TOKEN}`)).toBe(false);
+    expect(openedByExtension(`#t=short&via=ext`)).toBe(false);
+    expect(tokenFromHash(`#t=${TOKEN}&via=other`)).toBeNull();
+  });
 });
 
 describe('startReceiver', () => {
@@ -65,6 +73,26 @@ describe('startReceiver', () => {
     send({ data: null, source: opener, origin: 'https://a.example' });
     expect(onImport).not.toHaveBeenCalled();
     expect(onFailure).not.toHaveBeenCalled();
+  });
+
+  it('keeps the opener branch when it is switched on explicitly', () => {
+    const { win, opener, posted, send } = setup();
+    const onImport = vi.fn();
+    startReceiver(win, { token: TOKEN, onImport, onFailure: vi.fn(), acceptOpener: true });
+    expect(posted).toHaveLength(1);
+    send({ data: message(), source: opener, origin: 'https://site.example' });
+    expect(onImport).toHaveBeenCalledOnce();
+  });
+
+  it('ignores the opener and stays silent when the opener branch is off', () => {
+    const { win, opener, posted, send } = setup();
+    const onImport = vi.fn();
+    startReceiver(win, { token: TOKEN, onImport, onFailure: vi.fn(), acceptOpener: false });
+    expect(posted).toEqual([]);
+    send({ data: message(), source: opener, origin: 'https://site.example' });
+    expect(onImport).not.toHaveBeenCalled();
+    send({ data: message(), source: win, origin: win.location.origin });
+    expect(onImport).toHaveBeenCalledOnce();
   });
 
   it('accepts only the first message and then stops listening', () => {
