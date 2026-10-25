@@ -424,19 +424,6 @@
 .ff-toggle-group__label {
   min-inline-size: 4.5rem;
 }
-.ff-toggle {
-  min-inline-size: 2.75rem;
-  min-block-size: 2rem;
-  padding: 0 var(--ff-space-2);
-  border: 1px solid var(--ff-border);
-  border-radius: var(--ff-radius);
-  background: transparent;
-  color: inherit;
-  cursor: pointer;
-}
-.ff-toggle[aria-pressed="true"] {
-  background: var(--ff-state-full);
-}
 .ff-source__add {
   display: flex;
   flex-wrap: wrap;
@@ -875,52 +862,10 @@
   min-inline-size: 6.5rem;
   font-weight: 600;
 }
-.ff-button-group {
-  display: inline-flex;
-  flex-wrap: nowrap;
-  gap: 0;
-  min-inline-size: 0;
-  margin: 0;
-  padding: 0;
-  border: 0;
-}
-.ff-button-group > .ff-button,
-.ff-button-group > .ff-popover > .ff-button {
-  border-radius: 0;
-}
-.ff-button-group > :not(:first-child) {
-  margin-inline-start: -1px;
-}
-.ff-button-group > :first-child,
-.ff-button-group > :first-child > .ff-button {
-  border-start-start-radius: var(--ff-radius);
-  border-end-start-radius: var(--ff-radius);
-}
-.ff-button-group > :last-child,
-.ff-button-group > :last-child > .ff-button {
-  border-start-end-radius: var(--ff-radius);
-  border-end-end-radius: var(--ff-radius);
-}
-.ff-button-group [aria-pressed="true"],
-.ff-button-group .ff-button:focus-visible {
-  position: relative;
-  z-index: 1;
-}
-.ff-button-group [aria-pressed="true"] {
-  border-color: var(--ff-accent);
-  background: var(--ff-accent);
-  color: var(--ff-on-accent, #fff);
-}
 .ff-toolbar__guides [aria-pressed="true"] {
   background: color-mix(in srgb, var(--ff-accent) 18%, var(--ff-surface));
   box-shadow: inset 0 -3px 0 var(--ff-accent);
   color: inherit;
-}
-@media (forced-colors: active) {
-  .ff-button-group [aria-pressed="true"] {
-    outline: 2px solid Highlight;
-    outline-offset: -2px;
-  }
 }
 .ff-button-group .ff-tool-button {
   min-inline-size: 2rem;

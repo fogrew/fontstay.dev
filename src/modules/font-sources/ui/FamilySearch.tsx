@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'preact/hooks';
 import { type Locale, messagesFor } from '@/common/i18n';
-import { Button } from '@/common/ui';
+import { Button, ToggleGroup } from '@/common/ui';
 import { FontSourceError } from '../lib/download';
 import { downloadOrigin, type FontOrigin, SOURCES, type SourceId } from '../lib/origin';
 import { CJK_SUBSETS, type FontFamily, parseStyle, searchFamilies } from '../lib/types';
@@ -80,11 +80,6 @@ export function FamilySearch({
     const names = scriptsOf(family);
     setSubsets(new Set([names.includes('latin') ? 'latin' : (names[0] ?? 'latin')]));
     setMessage('');
-  };
-  const toggle = (set: ReadonlySet<string>, value: string, apply: (next: Set<string>) => void) => {
-    const next = new Set(set);
-    if (!next.delete(value)) next.add(value);
-    apply(next);
   };
   const count = styles.size * subsets.size;
 
@@ -171,37 +166,30 @@ export function FamilySearch({
                     <span class="ff-muted ff-toggle-group__label">
                       {italic ? t.style_italic() : t.source_upright()}
                     </span>
-                    {keys.map((key) => (
-                      <button
-                        key={key}
-                        type="button"
-                        class="ff-toggle"
-                        aria-pressed={styles.has(key)}
-                        aria-label={styleLabel(key)}
-                        onClick={() => toggle(styles, key, setStyles)}
-                      >
-                        {parseStyle(key).weight}
-                      </button>
-                    ))}
+                    <ToggleGroup
+                      key={`${chosen.family.id}-${italic}`}
+                      label={italic ? t.style_italic() : t.source_upright()}
+                      items={keys.map((key) => ({
+                        key,
+                        label: String(parseStyle(key).weight),
+                        ariaLabel: styleLabel(key),
+                      }))}
+                      selected={styles}
+                      onChange={setStyles}
+                    />
                   </div>
                 );
               })}
             </fieldset>
             <fieldset class="ff-toggle-set">
               <legend>{t.source_subset_label()}</legend>
-              <div class="ff-toggle-group">
-                {scriptsOf(chosen.family).map((name) => (
-                  <button
-                    key={name}
-                    type="button"
-                    class="ff-toggle"
-                    aria-pressed={subsets.has(name)}
-                    onClick={() => toggle(subsets, name, setSubsets)}
-                  >
-                    {name}
-                  </button>
-                ))}
-              </div>
+              <ToggleGroup
+                key={chosen.family.id}
+                label={t.source_subset_label()}
+                items={scriptsOf(chosen.family).map((name) => ({ key: name, label: name }))}
+                selected={subsets}
+                onChange={setSubsets}
+              />
             </fieldset>
           </div>
           <div class="ff-source__add">

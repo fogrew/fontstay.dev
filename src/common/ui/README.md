@@ -7,6 +7,8 @@ Tokens use `light-dark()` with system color scheme by default and optional root
 focus outlines and active-tab borders; reduced motion removes button transitions.
 
 - `Button`: native button, `type="button"` by default, primary/secondary variants.
+- `ff-button-group` (CSS): joins adjacent `.ff-button`s without gaps and squares only touching corners; works on a `div`, `span` or `fieldset` with a `legend`.
+- `ToggleGroup`: multi-select `ff-button-group` of `aria-pressed` buttons; Shift+click selects the range from the last clicked item, applying its state.
 - `FitField`: labelled range and number inputs with unit-bearing accessible names,
   auto checkbox and reset. Controlled `FitValue` follows changing `autoValue` in
   auto mode; edits pin a manual value. Reset/checking auto removes the pin. Inputs
