@@ -2114,3 +2114,37 @@ test('a dropped .browserslistrc opens the audience step and sets the query', asy
   );
   await expect(queryField(page)).toHaveAttribute('data-query', 'last 2 chrome versions, not dead');
 });
+
+test('a page with too little text keeps the built-in article and says so', async ({
+  page,
+  context,
+}) => {
+  await context.route('https://thin.test/**', (route) => {
+    const font = new URL(route.request().url()).pathname === '/font.woff2';
+    return route.fulfill({
+      status: 200,
+      headers: { 'content-type': font ? 'font/woff2' : 'text/html' },
+      body: font
+        ? readFileSync(sourceSans)
+        : `<!doctype html><style>@font-face { font-family: "Thin Sans"; src: url(/font.woff2) format("woff2"); } body { font-family: "Thin Sans", sans-serif; }</style><h1>Hi</h1><p>Short.</p>`,
+    });
+  });
+  await page.goto('/en/');
+  await waitForGenerator(page);
+  await openStep(page, 'inputs');
+  await page.getByRole('button', { name: 'Import from a website…' }).click();
+  const href =
+    (await page.getByRole('link', { name: 'Send to fontstay' }).getAttribute('href')) ?? '';
+
+  const site = await context.newPage();
+  await site.goto('https://thin.test/');
+  const popup = site.waitForEvent('popup');
+  await site.evaluate(decodeURIComponent(href.slice('javascript:'.length)));
+  const generator = await popup;
+  await generator.waitForURL(/\/en\/(#.*)?$/);
+  await generator
+    .getByRole('region', { name: 'Import from https://thin.test?' })
+    .getByRole('button', { name: 'Import' })
+    .click();
+  await expect(generator.getByRole('status').filter({ hasText: 'too little text' })).toBeVisible();
+});
