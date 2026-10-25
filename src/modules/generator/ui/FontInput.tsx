@@ -185,7 +185,12 @@ export function FontInput({
             const { face, pick } = entry;
             return (
               <li key={`${face.family}-${index}`}>
-                <span>{`${displayName(face.family)} · ${face.weight} · ${face.style}`}</span>
+                <span>
+                  {`${displayName(face.family)} · ${face.weight} · ${face.style}`}
+                  {face.skipped > 0 && (
+                    <span class="ff-muted">{` · ${t.cssimport_skipped({ count: face.skipped })}`}</span>
+                  )}
+                </span>
                 {pick.kind === 'data' && (
                   <Button
                     disabled={busy}

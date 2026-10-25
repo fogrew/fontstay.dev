@@ -30,6 +30,7 @@ describe('parseFontFaces', () => {
           { url: 'https://example.com/a.woff2', format: 'woff2' },
           { url: '/b.ttf', format: 'truetype' },
         ],
+        skipped: 0,
       },
     ]);
   });
@@ -55,8 +56,70 @@ describe('parseFontFaces', () => {
     ).toEqual([]);
   });
 
+  it('keeps the Latin subset of a Google Fonts stylesheet', () => {
+    const subsets: [string, string][] = [
+      ['cyrillic-ext', 'U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F'],
+      ['cyrillic', 'U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116'],
+      ['greek', 'U+0370-0377, U+037A-037F, U+0384-038A, U+038C, U+038E-03A1, U+03A3-03FF'],
+      ['vietnamese', 'U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1'],
+      ['latin-ext', 'U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF'],
+      ['latin', 'U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC'],
+    ];
+    const css = subsets
+      .map(
+        ([name, range]) =>
+          `/* ${name} */@font-face{font-family:'Inter';font-style:normal;font-weight:400;src:url(https://fonts.gstatic.com/${name}.woff2) format('woff2');unicode-range:${range};}`,
+      )
+      .join('\n');
+    const faces = parseFontFaces(css);
+    expect(faces).toHaveLength(1);
+    expect(faces[0]?.sources[0]?.url).toBe('https://fonts.gstatic.com/latin.woff2');
+    expect(faces[0]?.skipped).toBe(5);
+  });
+
+  it('understands wildcard ranges and keeps the first face when none covers Latin', () => {
+    const [wild] = parseFontFaces(
+      '@font-face{font-family:A;src:url(x.woff2);unicode-range:U+4??}@font-face{font-family:A;src:url(y.woff2);unicode-range:U+0-7F}',
+    );
+    expect(wild?.sources[0]?.url).toBe('y.woff2');
+    const [none] = parseFontFaces(
+      '@font-face{font-family:A;src:url(x.woff2);unicode-range:U+0400-045F}@font-face{font-family:A;src:url(y.woff2);unicode-range:U+0370-03FF}',
+    );
+    expect(none?.sources[0]?.url).toBe('x.woff2');
+    expect(none?.skipped).toBe(1);
+  });
+
+  it('groups faces without unicode-range by family, weight and style only', () => {
+    const faces = parseFontFaces(
+      '@font-face{font-family:A;font-weight:400;src:url(a.woff2)}@font-face{font-family:a;font-weight:400;src:url(b.woff2)}@font-face{font-family:A;font-weight:700;src:url(c.woff2)}',
+    );
+    expect(faces.map((face) => [face.weight, face.skipped])).toEqual([
+      ['400', 1],
+      ['700', 0],
+    ]);
+    expect(faces[0]?.sources[0]?.url).toBe('a.woff2');
+  });
+
+  it('keeps a Latin face seen first and counts later subsets', () => {
+    const [face] = parseFontFaces(
+      '@font-face{font-family:A;src:url(x.woff2);unicode-range:U+0000-00FF}@font-face{font-family:A;src:url(y.woff2);unicode-range:U+0400-045F}',
+    );
+    expect(face?.sources[0]?.url).toBe('x.woff2');
+    expect(face?.skipped).toBe(1);
+  });
+
+  it('treats equivalent weight and style spellings as one group', () => {
+    const faces = parseFontFaces(
+      '@font-face{font-family:A;src:url(a.woff2);unicode-range:U+0400-045F}@font-face{font-family:A;font-weight:400;src:url(b.woff2)}@font-face{font-family:A;font-weight:bold;src:url(c.woff2)}@font-face{font-family:A;font-weight:700;src:url(d.woff2)}@font-face{font-family:A;font-style:oblique 10deg;src:url(e.woff2)}@font-face{font-family:A;font-style:italic;src:url(f.woff2)}',
+    );
+    expect(faces.map((face) => face.skipped)).toEqual([1, 1, 1]);
+  });
+
   it('is bounded', () => {
-    const many = '@font-face{font-family:A;src:url(a.woff2)}'.repeat(MAX_FACES + 10);
+    const many = Array.from(
+      { length: MAX_FACES + 10 },
+      (_, weight) => `@font-face{font-family:A;font-weight:${weight};src:url(a.woff2)}`,
+    ).join('');
     expect(parseFontFaces(many)).toHaveLength(MAX_FACES);
   });
 
@@ -117,6 +180,7 @@ describe('pickSource', () => {
     weight: '400',
     style: 'normal',
     sources: urls.map((url) => ({ url, format: null })),
+    skipped: 0,
   });
 
   it('prefers an embedded font over a link, wherever it is listed', () => {

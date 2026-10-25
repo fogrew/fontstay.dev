@@ -1971,6 +1971,27 @@ test.describe('the single input field', () => {
     await expect(page.getByRole('list', { name: 'Matching families' })).toHaveCount(0);
   });
 
+  test('pasted CSS split into subsets lists one row per weight and style', async ({ page }) => {
+    const field = await open(page);
+    const face = (weight: number, range: string, name: string) =>
+      `@font-face { font-family: "Split"; font-weight: ${weight}; src: url(https://fonts.test/${name}.woff2) format("woff2"); unicode-range: ${range}; }`;
+    await field.fill(
+      [400, 700]
+        .flatMap((weight) => [
+          face(weight, 'U+0400-045F', `cyr-${weight}`),
+          face(weight, 'U+0000-00FF', `latin-${weight}`),
+        ])
+        .join('\n'),
+    );
+    const faces = page.getByRole('list', { name: 'Fonts found in the CSS' });
+    await expect(faces.getByRole('listitem')).toHaveCount(2);
+    await expect(faces).toContainText('Other subsets skipped: 1');
+    await expect(faces.getByRole('link', { name: 'Download the file' }).first()).toHaveAttribute(
+      'href',
+      'https://fonts.test/latin-400.woff2',
+    );
+  });
+
   test('text that looks like CSS but has no fonts reports it', async ({ page }) => {
     const field = await open(page);
     await field.fill('@import url("x.css");');
