@@ -2056,3 +2056,41 @@ test('the input field with suggestions and CSS results has no axe violations', a
   const css = await new AxeBuilder({ page }).analyze();
   expect(css.violations).toEqual([]);
 });
+
+test('the tag input commits on Enter, comma and blur, pastes lists and backspaces', async ({
+  page,
+}) => {
+  await page.goto('/en/');
+  await waitForGenerator(page);
+  await openStep(page, 'audience');
+  await fillQuery(page, 'defaults');
+  const input = page.getByLabel('Add a query');
+  const field = queryField(page);
+
+  await input.fill('chrome 120');
+  await input.press('Enter');
+  await expect(field).toHaveAttribute('data-query', 'defaults, chrome 120');
+
+  await input.fill('firefox 121');
+  await input.press(',');
+  await expect(field).toHaveAttribute('data-query', 'defaults, chrome 120, firefox 121');
+
+  await input.fill('safari 17');
+  await input.blur();
+  await expect(field).toHaveAttribute('data-query', 'defaults, chrome 120, firefox 121, safari 17');
+
+  await input.press('Backspace');
+  await expect(field).toHaveAttribute('data-query', 'defaults, chrome 120, firefox 121');
+
+  await input.evaluate((element) => {
+    const data = new DataTransfer();
+    data.setData('text', '# comment\nedge 120\n> 2%');
+    element.dispatchEvent(new ClipboardEvent('paste', { clipboardData: data, cancelable: true }));
+  });
+  await expect(field).toHaveAttribute(
+    'data-query',
+    'defaults, chrome 120, firefox 121, edge 120, > 2%',
+  );
+
+  await expect(page.getByRole('button', { name: '> 2%', exact: true })).toBeDisabled();
+});
