@@ -30,4 +30,12 @@ describe('adding several tags', () => {
   it('skips duplicates', () => {
     expect(addTags('dead', ['dead', '> 1%'])).toBe('dead, > 1%');
   });
+
+  it('replaces the opposite OS tag', () => {
+    expect(addTag('defaults, not os ios', 'os ios')).toBe('defaults, os ios');
+    expect(addTag('defaults, os ios, os linux', 'not os ios')).toBe(
+      'defaults, os linux, not os ios',
+    );
+    expect(addTag('defaults, Not OS iOS', 'os ios')).toBe('defaults, os ios');
+  });
 });

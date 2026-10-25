@@ -106,8 +106,15 @@ export function isExcluded(part: string): boolean {
   return /^not\s/i.test(part);
 }
 
+function oppositeOf(tag: string): string | undefined {
+  const match = /^(not\s+)?(os\s+\S+)$/i.exec(tag);
+  if (!match) return undefined;
+  return (match[1] ? match[2] : `not ${match[2]}`)?.toLowerCase();
+}
+
 export function addTag(query: string, tag: string): string {
-  const parts = splitQuery(query);
+  const opposite = oppositeOf(tag);
+  const parts = splitQuery(query).filter((part) => part.toLowerCase() !== opposite);
   return parts.includes(tag) ? joinQuery(parts) : joinQuery([...parts, tag]);
 }
 
