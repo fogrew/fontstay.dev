@@ -212,6 +212,7 @@
   "cssimport_unsupported": "Source not supported",
   "cssimport_open_google": "Open on Google Fonts",
   "cssimport_too_large": "The CSS is too large to read here.",
+  "cssimport_skipped": "Other subsets skipped: {count}",
   "source_loading": "Loading the catalog…",
   "source_error_catalog": "The catalog could not be loaded.",
   "source_results": "{count} families shown",

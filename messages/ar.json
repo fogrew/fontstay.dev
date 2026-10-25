@@ -212,6 +212,7 @@
   "cssimport_unsupported": "المصدر غير مدعوم",
   "cssimport_open_google": "فتح في Google Fonts",
   "cssimport_too_large": "حجم CSS كبير جدًا لقراءته هنا.",
+  "cssimport_skipped": "مجموعات الرموز الأخرى المتجاوزة: {count}",
   "source_loading": "جارٍ تحميل الفهرس…",
   "source_error_catalog": "تعذّر تحميل الفهرس.",
   "source_results": "تُعرض {count} من العائلات",

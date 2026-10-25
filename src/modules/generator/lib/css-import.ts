@@ -1,5 +1,6 @@
 export const MAX_CSS_CHARS = 14_000_000;
 export const MAX_FACES = 64;
+const MAX_RULES = 1024;
 export const MAX_DATA_URL_BYTES = 10 * 1024 * 1024;
 
 export interface ImportedSource {
@@ -12,6 +13,7 @@ export interface ImportedFace {
   weight: string;
   style: string;
   sources: ImportedSource[];
+  skipped: number;
 }
 
 function stripComments(css: string): string {
@@ -96,13 +98,39 @@ function readSources(value: string): ImportedSource[] {
   return sources;
 }
 
+const weightKey = (weight: string) => {
+  const value = weight.trim().toLowerCase();
+  return value === 'normal' ? '400' : value === 'bold' ? '700' : value;
+};
+const styleKey = (style: string) => (/italic|oblique/i.test(style) ? 'italic' : 'normal');
+
+function coversLatin(range: string | undefined): boolean {
+  if (!range) return true;
+  return range.split(',').some((part) => {
+    const match = /^u\+([0-9a-f?]{1,6})(?:-([0-9a-f]{1,6}))?$/i.exec(part.trim());
+    if (!match) return false;
+    const first = match[1] ?? '';
+    const wild = first.includes('?');
+    const low = Number.parseInt(first.replace(/\?/g, '0'), 16);
+    const high = wild
+      ? Number.parseInt(first.replace(/\?/g, 'f'), 16)
+      : match[2]
+        ? Number.parseInt(match[2], 16)
+        : low;
+    return [0x41, 0x61].some((point) => point >= low && point <= high);
+  });
+}
+
 export function parseFontFaces(css: string): ImportedFace[] {
   if (css.length > MAX_CSS_CHARS) return [];
   const clean = stripComments(css);
   const lower = clean.toLowerCase();
   const faces: ImportedFace[] = [];
+  const slots = new Map<string, number>();
+  const latin = new Set<ImportedFace>();
+  let rules = 0;
   let position = 0;
-  while (faces.length < MAX_FACES) {
+  while (rules < MAX_RULES) {
     const keyword = lower.indexOf('@font-face', position);
     if (keyword < 0) break;
     let cursor = keyword + 10;
@@ -117,14 +145,32 @@ export function parseFontFaces(css: string): ImportedFace[] {
     const values = declarations(clean.slice(cursor + 1, end));
     const family = unquote(values.get('font-family')).slice(0, 200);
     const sources = readSources(values.get('src') ?? '');
-    if (family && sources.length > 0) {
-      faces.push({
-        family,
-        weight: (values.get('font-weight') ?? 'normal').slice(0, 20),
-        style: (values.get('font-style') ?? 'normal').slice(0, 20),
-        sources,
-      });
+    rules++;
+    if (!family || sources.length === 0) continue;
+    const face: ImportedFace = {
+      family,
+      weight: (values.get('font-weight') ?? 'normal').slice(0, 20),
+      style: (values.get('font-style') ?? 'normal').slice(0, 20),
+      sources,
+      skipped: 0,
+    };
+    const covers = coversLatin(values.get('unicode-range')?.slice(0, 4096));
+    const key = `${family.toLowerCase()}|${weightKey(face.weight)}|${styleKey(face.style)}`;
+    const slot = slots.get(key);
+    if (slot === undefined) {
+      if (faces.length >= MAX_FACES) continue;
+      slots.set(key, faces.length);
+      faces.push(face);
+      if (covers) latin.add(face);
+      continue;
     }
+    const current = faces[slot];
+    if (!current) continue;
+    if (covers && !latin.has(current)) {
+      face.skipped = current.skipped + 1;
+      latin.add(face);
+      faces[slot] = face;
+    } else current.skipped++;
   }
   return faces;
 }
