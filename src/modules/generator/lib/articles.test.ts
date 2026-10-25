@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import {
   ARTICLE_LANGUAGES,
   type ArticleId,
+  isMostlyRtl,
   loadArticle,
   siteArticle,
   siteIsMeaningful,
@@ -131,7 +132,6 @@ describe('site articles', () => {
         block('item', 4),
       ],
       'Site',
-      'en',
     );
     expect(article.title).toHaveLength(5);
     expect(article.lead).toHaveLength(10);
@@ -139,5 +139,12 @@ describe('site articles', () => {
     expect(article.columns).toHaveLength(1);
     expect(article.quote.text).toHaveLength(8);
     expect(article.list).toHaveLength(1);
+    expect(article.lang).toBe('');
+  });
+
+  it('is right-to-left only when most letters are', () => {
+    expect(isMostlyRtl('שלום עולם, this is a mostly English paragraph with one quote')).toBe(false);
+    expect(isMostlyRtl('مرحبا بالعالم الجميل في Web')).toBe(true);
+    expect(isMostlyRtl('1234 !!!')).toBe(false);
   });
 });
