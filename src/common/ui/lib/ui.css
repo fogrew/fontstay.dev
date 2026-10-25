@@ -795,3 +795,60 @@ html[data-transition] .ff-dock__panel[data-id="results"] {
     content: "▾" / "";
   }
 }
+.ff-button-group {
+  display: inline-flex;
+  flex-wrap: nowrap;
+  gap: 0;
+  min-inline-size: 0;
+  max-inline-size: 100%;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+.ff-button-group--compact > .ff-button {
+  min-inline-size: 2.75rem;
+  min-block-size: 2rem;
+  padding: 0 var(--ff-space-2);
+}
+.ff-button-group--scroll {
+  overflow-x: auto;
+}
+.ff-button-group--scroll .ff-button {
+  user-select: none;
+}
+.ff-button-group--scroll .ff-button:focus-visible {
+  outline-offset: -2px;
+}
+.ff-button-group > .ff-button,
+.ff-button-group > .ff-popover > .ff-button {
+  border-radius: 0;
+}
+.ff-button-group > :last-child,
+.ff-button-group > :last-child > .ff-button {
+  border-start-end-radius: var(--ff-radius);
+  border-end-end-radius: var(--ff-radius);
+}
+.ff-button-group > :not(legend, :first-child, legend + *) {
+  margin-inline-start: -1px;
+}
+.ff-button-group > :is(:first-child:not(legend), legend + *),
+.ff-button-group > :is(:first-child:not(legend), legend + *) > .ff-button {
+  border-start-start-radius: var(--ff-radius);
+  border-end-start-radius: var(--ff-radius);
+}
+.ff-button-group [aria-pressed="true"],
+.ff-button-group .ff-button:focus-visible {
+  position: relative;
+  z-index: 1;
+}
+.ff-button-group [aria-pressed="true"] {
+  border-color: var(--ff-accent);
+  background: var(--ff-accent);
+  color: var(--ff-on-accent, #fff);
+}
+@media (forced-colors: active) {
+  .ff-button-group [aria-pressed="true"] {
+    outline: 2px solid Highlight;
+    outline-offset: -2px;
+  }
+}
