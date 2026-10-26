@@ -82,6 +82,34 @@ test('the generator reflows at 320 px with a font loaded', async ({ page }) => {
   expect(overflow).toBeLessThanOrEqual(0);
 });
 
+test('the dock columns stack and stay inside the viewport at 320 px', async ({ page }) => {
+  await page.setViewportSize({ width: 320, height: 700 });
+  await page.goto('/en/');
+  await waitForGenerator(page);
+  await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(fontFile);
+  const steps = Object.keys(STEPS) as (keyof typeof STEPS)[];
+  const columns = page.locator('.ff-dock__column');
+  await expect(columns).toHaveCount(steps.length);
+  await closePanels(page);
+  const tops = await columns.evaluateAll((nodes) =>
+    nodes.map((node) => node.getBoundingClientRect().top),
+  );
+  expect(tops).toEqual([...tops].sort((a, b) => a - b));
+  expect(new Set(tops).size).toBe(steps.length);
+  for (const step of steps) {
+    await closePanels(page);
+    await openStep(page, step);
+    const column = page.locator(`.ff-dock__column[data-id="${step}"]`);
+    const box = await column.boundingBox();
+    expect(box?.x, step).toBeGreaterThanOrEqual(0);
+    expect((box?.x ?? 0) + (box?.width ?? 0), step).toBeLessThanOrEqual(320);
+    const overflow = await page.evaluate(
+      () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
+    );
+    expect(overflow, step).toBeLessThanOrEqual(0);
+  }
+});
+
 test('keyboard users can reach the main controls and open the sections', async ({ page }) => {
   await page.goto('/en/');
   await waitForGenerator(page);
