@@ -47,7 +47,7 @@ export function buildTools(host: () => ToolHost): WebMcpTool[] {
     {
       name: 'get-audience',
       description:
-        'Read the current audience: the Browserslist query and the estimated share of each operating system.',
+        'Read the current audience: the Browserslist query, the most used resolved browsers (up to 40, usage in percent), and the estimated share of each operating system.',
       inputSchema: { type: 'object', properties: {} },
       execute: () => text(host().getAudience()),
     },

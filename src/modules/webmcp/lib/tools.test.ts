@@ -21,7 +21,12 @@ function host(overrides: Partial<ToolHost> = {}): ToolHost {
     ],
     selectFont: (id) => id === 1,
     analyzeFont: (id) => (id === 1 ? { glyphs: 300 } : undefined),
-    getAudience: () => ({ query: 'defaults', shares: { windows: 60 } }),
+    getAudience: () => ({
+      query: 'defaults',
+      browserCount: 1,
+      browsers: [{ entry: 'chrome 120', usage: 12.5 }],
+      shares: { windows: 60 },
+    }),
     setAudience: () => ({ ok: true, message: 'applied' }),
     suggest: () => [],
     setFallbacks: () => ({ ok: true, message: 'set' }),
@@ -58,6 +63,7 @@ describe('tools', () => {
 
   it('answers from the host and rejects bad input without throwing', async () => {
     expect(JSON.parse(await run(tools, 'list-fonts'))[0].family).toBe('Inter');
+    expect(JSON.parse(await run(tools, 'get-audience')).browsers[0].entry).toBe('chrome 120');
     expect(await run(tools, 'select-font', { id: 1 })).toBe('Selected.');
     expect(await run(tools, 'select-font', { id: 'x' })).toContain('no font');
     expect(await run(tools, 'analyze-font', { id: 9 })).toContain('no font');

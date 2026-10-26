@@ -511,5 +511,9 @@
   "share_offer_accept": "Загрузить шрифты",
   "share_offer_dismiss": "Пропустить",
   "source_upright": "Прямые",
-  "source_too_many": "Можно добавить ещё не больше {max} шрифтов. Снимите часть начертаний или наборов."
+  "source_too_many": "Можно добавить ещё не больше {max} шрифтов. Снимите часть начертаний или наборов.",
+  "webmcp_announce_font": "Ассистент выбрал шрифт {font}.",
+  "webmcp_announce_audience": "Ассистент запросил аудиторию: {query}.",
+  "webmcp_announce_fallbacks": "Ассистент изменил запасные шрифты системы {system} для {font}.",
+  "webmcp_announce_kind": "Ассистент задал тип шрифта {font}: {kind}."
 }
