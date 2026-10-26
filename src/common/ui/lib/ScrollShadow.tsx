@@ -54,10 +54,19 @@ export function ScrollShadow({
     element.addEventListener('scroll', update, { passive: true });
     const observer = new ResizeObserver(update);
     observer.observe(element);
-    for (const child of element.children) observer.observe(child);
+    const observeChildren = () => {
+      for (const child of element.children) observer.observe(child);
+    };
+    observeChildren();
+    const mutations = new MutationObserver(() => {
+      observeChildren();
+      update();
+    });
+    mutations.observe(element, { childList: true });
     return () => {
       element.removeEventListener('scroll', update);
       observer.disconnect();
+      mutations.disconnect();
     };
   }, []);
   const attach = (element: HTMLDivElement | null) => {
