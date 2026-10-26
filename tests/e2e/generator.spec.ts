@@ -961,9 +961,14 @@ test('spacing adds the fonts-loading CSS and script', async ({ page }) => {
   await waitForGenerator(page);
   await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(sourceSans);
   const code = page.getByRole('region', { name: 'Generated CSS', includeHidden: true });
-  await expect(code).not.toContainText('fonts-loading');
+  await expect(code).toContainText('.fonts-loading');
   await page.getByText('Spacing while fonts load').click();
-  await page.getByRole('checkbox', { name: 'Compensate spacing while the font loads' }).check();
+  const compensate = page.getByRole('checkbox', {
+    name: 'Compensate spacing while the font loads',
+  });
+  await compensate.uncheck();
+  await expect(code).not.toContainText('fonts-loading');
+  await compensate.check();
   const letter = page.getByRole('spinbutton', { name: /Letter spacing/ });
   await letter.fill('0.2');
   await letter.press('Enter');
