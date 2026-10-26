@@ -18,7 +18,8 @@ export interface DockOpenDetail {
 }
 
 const FLOATING_PANELS = '(min-width: 64rem)';
-const KEEP_OPEN_SELECTOR = '.ff-dock, [role="listbox"], [role="dialog"], .ff-popover';
+const KEEP_OPEN_SELECTOR =
+  '.ff-dock, .ff-intro__card, [role="listbox"], [role="dialog"], .ff-popover';
 
 export function Dock({ items, storageKey, nextLabel }: DockProps) {
   const base = useId();
@@ -26,6 +27,7 @@ export function Dock({ items, storageKey, nextLabel }: DockProps) {
   const [active, setActive] = useState<string>();
   const [ready, setReady] = useState(false);
   const root = useRef<HTMLDivElement>(null);
+  const [focusRequest, setFocusRequest] = useState<{ id: string }>();
 
   useEffect(() => {
     const saved = loadLayout<string[]>(storageKey, (value) => {
@@ -40,13 +42,17 @@ export function Dock({ items, storageKey, nextLabel }: DockProps) {
       const { detail } = event as CustomEvent<string | DockOpenDetail>;
       const { id, focus } = typeof detail === 'string' ? { id: detail, focus: false } : detail;
       if (!ids.includes(id)) return;
-      transition(() => setActive(id));
-      if (focus)
-        root.current?.querySelector<HTMLElement>(`#${CSS.escape(`${base}-${id}-button`)}`)?.focus();
+      transition(() => {
+        setActive(id);
+        if (focus) setFocusRequest({ id });
+      });
     };
     window.addEventListener(DOCK_OPEN_EVENT, open);
     return () => window.removeEventListener(DOCK_OPEN_EVENT, open);
   }, []);
+  useEffect(() => {
+    if (focusRequest) document.getElementById(`${base}-${focusRequest.id}-button`)?.focus();
+  }, [focusRequest]);
   useEffect(() => {
     if (ready) saveLayout(storageKey, { opened: active ? [active] : [] });
   }, [ready, active, storageKey]);
