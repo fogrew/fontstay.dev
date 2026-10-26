@@ -1914,6 +1914,9 @@ test('the intro guide explains the jump and opens each step', async ({ page }) =
   await expect(guide).toContainText('layout shift');
   await guide.getByRole('button', { name: /Choose the audience/ }).click();
   await expect(page.getByLabel('Audience').first()).toBeVisible();
+  const heading = page.getByRole('button', { name: '2. Audience', exact: true });
+  await expect(heading).toBeFocused();
+  await expect(heading).toHaveAttribute('aria-expanded', 'true');
 });
 
 test('the intro guide folds into a strip once a font is loaded and can be reopened', async ({
