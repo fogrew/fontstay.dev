@@ -16,3 +16,4 @@ export {
   type FallbackFace,
   type GenericFamily,
 } from './lib/model';
+export { createZip, MAX_ZIP_BYTES, MAX_ZIP_ENTRIES, type ZipEntry, ZipError } from './lib/zip';
