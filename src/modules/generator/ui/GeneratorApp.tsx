@@ -873,7 +873,14 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
       })),
     selectFont: (id) => {
       const found = fonts.find((font) => font.id === id);
-      if (found) setSelectedId(found.id);
+      if (found) {
+        setSelectedId(found.id);
+        setAnnouncement(
+          t.webmcp_announce_font({
+            font: displayName(found.metrics.names.family ?? found.fileName),
+          }),
+        );
+      }
       return Boolean(found);
     },
     analyzeFont: (id) => {
@@ -894,12 +901,18 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
     },
     getAudience: () => ({
       query: query ?? '',
+      browserCount: audience?.entries.length ?? 0,
+      browsers: [...(audience?.entries ?? [])]
+        .sort((a, b) => b.usage - a.usage)
+        .slice(0, 40)
+        .map(({ entry, usage }) => ({ entry, usage: Math.round(usage * 100) / 100 })),
       shares: Object.fromEntries(
         Object.entries(shares ?? {}).map(([os, value]) => [os, Math.round(value * 10) / 10]),
       ),
     }),
     setAudience: (next) => {
       window.dispatchEvent(new CustomEvent(AUDIENCE_SET_EVENT, { detail: next }));
+      setAnnouncement(t.webmcp_announce_audience({ query: next }));
       return {
         ok: true,
         message:
@@ -940,6 +953,12 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
         ...all,
         [font.id]: { ...(all[font.id] ?? presetMap ?? NO_PICKS), [system]: ids },
       }));
+      setAnnouncement(
+        t.webmcp_announce_fallbacks({
+          system,
+          font: displayName(font.metrics.names.family ?? font.fileName),
+        }),
+      );
       return { ok: true, message: `The fallbacks of ${system} were set to ${ids.join(', ')}.` };
     },
     setKind: (fontId, kindValue) => {
@@ -948,6 +967,12 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
       setKindChoices((all) => ({ ...all, [font.id]: kindValue as Category }));
       setPicksByFont((all) => ({ ...all, [font.id]: {} }));
       resetOptimization();
+      setAnnouncement(
+        t.webmcp_announce_kind({
+          font: displayName(font.metrics.names.family ?? font.fileName),
+          kind: kindValue,
+        }),
+      );
       return true;
     },
     getCss: () => exportInput.css,
@@ -1698,6 +1723,8 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
           {t.drop_anywhere()}
         </div>
       )}
+      <LiveRegion>{announcement}</LiveRegion>
+      <LiveRegion>{planIssue || planNote}</LiveRegion>
       <Dock
         storageKey="dock"
         nextLabel={(label) => t.dock_next({ label })}
@@ -1749,8 +1776,6 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
                     {error}
                   </p>
                 )}
-                <LiveRegion>{announcement}</LiveRegion>
-                <LiveRegion>{planIssue || planNote}</LiveRegion>
                 {selected && rankings.noCoverage && Object.keys(rankings.result).length === 0 && (
                   <p role="alert">{t.fit_no_coverage()}</p>
                 )}

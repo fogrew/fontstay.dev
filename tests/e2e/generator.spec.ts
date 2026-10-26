@@ -299,6 +299,9 @@ test('WebMCP tools drive the generator when the browser offers modelContext', as
       fonts: 'arial,segoe-ui',
     }),
   ).toContain('were set');
+  await expect(page.getByRole('status').filter({ hasText: 'An assistant changed' })).toHaveText(
+    /fallbacks of windows/,
+  );
   await expect.poll(() => call('get-css')).toContain('Source Sans Pro Fallback Segoe UI');
   expect(
     await call('set-fallbacks', {
@@ -310,6 +313,12 @@ test('WebMCP tools drive the generator when the browser offers modelContext', as
   await call('set-audience', { query: 'chrome 120' });
   await openStep(page, 'audience');
   await expect(queryField(page)).toHaveAttribute('data-query', 'chrome 120');
+  await expect(page.getByRole('status').filter({ hasText: 'An assistant set' })).toHaveText(
+    /chrome 120/,
+  );
+  await expect
+    .poll(async () => JSON.parse(await call('get-audience')).browsers[0]?.entry)
+    .toContain('chrome');
 });
 
 test('a step panel that scrolls shows an edge shadow only on the side with more content', async ({

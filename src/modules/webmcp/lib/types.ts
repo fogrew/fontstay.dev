@@ -50,7 +50,12 @@ export interface ToolHost {
   listFonts: () => FontInfo[];
   selectFont: (id: number) => boolean;
   analyzeFont: (id: number) => Record<string, unknown> | undefined;
-  getAudience: () => { query: string; shares: Record<string, number> };
+  getAudience: () => {
+    query: string;
+    browserCount: number;
+    browsers: { entry: string; usage: number }[];
+    shares: Record<string, number>;
+  };
   setAudience: (query: string) => { ok: boolean; message: string };
   suggest: () => Suggestion[];
   setFallbacks: (input: { fontId: number; system: string; fonts: string[] }) => {
