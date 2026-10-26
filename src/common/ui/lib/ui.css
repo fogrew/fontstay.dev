@@ -373,8 +373,8 @@
   z-index: 50;
   box-sizing: border-box;
   margin: 0;
-  padding: var(--ff-space-1);
-  overflow-y: auto;
+  padding: 0;
+  overflow: hidden;
   border: 1px solid var(--ff-border);
   border-radius: var(--ff-radius);
   background: var(--ff-surface);
@@ -715,6 +715,12 @@ html[data-transition] .ff-dock__panel[data-id="results"] {
 }
 .ff-shadow__scroll {
   overflow: auto;
+}
+.ff-select__list .ff-shadow__scroll {
+  box-sizing: border-box;
+  max-block-size: calc(var(--ff-list-max) - 2px);
+  scroll-padding-block: var(--ff-shadow-size);
+  padding: var(--ff-space-1);
 }
 .ff-shadow__edge {
   position: absolute;

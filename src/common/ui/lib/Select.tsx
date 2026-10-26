@@ -1,5 +1,6 @@
 import type { ComponentChildren } from 'preact';
 import { useEffect, useId, useRef, useState } from 'preact/hooks';
+import { ScrollShadow } from './ScrollShadow';
 
 export interface SelectOption {
   value: string;
@@ -190,28 +191,31 @@ export function Select({
             bottom: box.bottom === undefined ? undefined : `${box.bottom}px`,
             minWidth: `${box.width}px`,
             maxHeight: `${box.maxHeight}px`,
+            '--ff-list-max': `${box.maxHeight}px`,
           }}
         >
-          {options.map((option, index) => (
-            // biome-ignore lint/a11y/useFocusableInteractive lint/a11y/useKeyWithClickEvents: focus stays on the combobox (aria-activedescendant)
-            <div
-              key={option.value}
-              id={`${id}-o${index}`}
-              data-value={option.value}
-              role="option"
-              aria-selected={index === selectedIndex}
-              aria-disabled={option.disabled ? true : undefined}
-              data-active={index === active ? 'true' : undefined}
-              onPointerDown={(event) => event.preventDefault()}
-              onClick={() => {
-                choose(index);
-                button.current?.focus();
-              }}
-            >
-              {option.icon}
-              {option.label}
-            </div>
-          ))}
+          <ScrollShadow>
+            {options.map((option, index) => (
+              // biome-ignore lint/a11y/useFocusableInteractive lint/a11y/useKeyWithClickEvents: focus stays on the combobox (aria-activedescendant)
+              <div
+                key={option.value}
+                id={`${id}-o${index}`}
+                data-value={option.value}
+                role="option"
+                aria-selected={index === selectedIndex}
+                aria-disabled={option.disabled ? true : undefined}
+                data-active={index === active ? 'true' : undefined}
+                onPointerDown={(event) => event.preventDefault()}
+                onClick={() => {
+                  choose(index);
+                  button.current?.focus();
+                }}
+              >
+                {option.icon}
+                {option.label}
+              </div>
+            ))}
+          </ScrollShadow>
         </div>
       )}
     </div>

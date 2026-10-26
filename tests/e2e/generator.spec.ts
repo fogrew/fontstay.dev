@@ -343,6 +343,26 @@ test('a step panel that scrolls shows an edge shadow only on the side with more 
   );
 });
 
+test('a dropdown list that scrolls shows an edge shadow on the side with more options', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1280, height: 420 });
+  await page.goto('/en/');
+  await waitForGenerator(page);
+  await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(sourceSans);
+  await selectSystem(page, 'windows');
+  await openStep(page, 'tuning');
+  await page.getByLabel('Fallback font 1', { exact: true }).click();
+  const shadow = page.locator('.ff-select__list .ff-shadow');
+  await expect(shadow).toHaveAttribute('data-bottom', 'true');
+  await expect(shadow).toHaveAttribute('data-top', 'false');
+  await shadow.locator('.ff-shadow__scroll').evaluate((node) => {
+    node.scrollTop = node.scrollHeight;
+  });
+  await expect(shadow).toHaveAttribute('data-top', 'true');
+  await expect(shadow).toHaveAttribute('data-bottom', 'false');
+});
+
 test('the loupe shows the comparison only under the lens', async ({ page }) => {
   await page.goto('/en/');
   await waitForGenerator(page);

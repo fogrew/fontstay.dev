@@ -1,7 +1,7 @@
 import { type ComponentChildren, Fragment } from 'preact';
 import { useEffect, useMemo, useRef, useState } from 'preact/hooks';
 import { type Locale, messagesFor } from '@/common/i18n';
-import { Icon, Popover, Select } from '@/common/ui';
+import { Icon, Popover, ScrollShadow, Select } from '@/common/ui';
 import { measureShift, type WidthShift } from '../lib/article-shift';
 import {
   ARTICLE_LANGUAGES,
@@ -277,9 +277,11 @@ function ArticleBody({
         <h4 class="ff-article__heading">{heading(article.glyphsHeading)}</h4>
         <p class="ff-article__glyphs">{body(article.glyphs)}</p>
       </section>
-      <pre class="ff-article__code" lang="en" dir="ltr" tabIndex={focusable ? 0 : undefined}>
-        <code>{SAMPLE_CODE}</code>
-      </pre>
+      <ScrollShadow>
+        <pre class="ff-article__code" lang="en" dir="ltr" tabIndex={focusable ? 0 : undefined}>
+          <code>{SAMPLE_CODE}</code>
+        </pre>
+      </ScrollShadow>
       <footer class="ff-article__footer">{body(article.footer)}</footer>
     </>
   );

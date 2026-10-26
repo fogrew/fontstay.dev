@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'preact/hooks';
 import { type Locale, messagesFor } from '@/common/i18n';
-import { Button, ToggleGroup } from '@/common/ui';
+import { Button, ScrollShadow, ToggleGroup } from '@/common/ui';
 import { FontSourceError } from '../lib/download';
 import { downloadOrigin, type FontOrigin, SOURCES, type SourceId } from '../lib/origin';
 import { CJK_SUBSETS, type FontFamily, parseStyle, searchFamilies } from '../lib/types';
@@ -132,21 +132,23 @@ export function FamilySearch({
         {!loading && hits.length === 0 && !failed && <p class="ff-muted">{t.source_none()}</p>}
       </div>
       {hits.length > 0 && (
-        <ul class="ff-source__list" aria-label={t.source_list_label()}>
-          {hits.map((hit) => (
-            <li key={`${hit.source}-${hit.family.id}`}>
-              <button
-                type="button"
-                class="ff-source__item"
-                aria-pressed={chosen?.source === hit.source && chosen.family.id === hit.family.id}
-                onClick={() => choose(hit)}
-              >
-                <span>{hit.family.name}</span>
-                <span class="ff-muted">{sourceName(hit.source)}</span>
-              </button>
-            </li>
-          ))}
-        </ul>
+        <ScrollShadow class="ff-source__scroll">
+          <ul class="ff-source__list" aria-label={t.source_list_label()}>
+            {hits.map((hit) => (
+              <li key={`${hit.source}-${hit.family.id}`}>
+                <button
+                  type="button"
+                  class="ff-source__item"
+                  aria-pressed={chosen?.source === hit.source && chosen.family.id === hit.family.id}
+                  onClick={() => choose(hit)}
+                >
+                  <span>{hit.family.name}</span>
+                  <span class="ff-muted">{sourceName(hit.source)}</span>
+                </button>
+              </li>
+            ))}
+          </ul>
+        </ScrollShadow>
       )}
       {chosen && (
         <div class="ff-source__chosen">
