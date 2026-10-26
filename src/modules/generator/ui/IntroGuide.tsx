@@ -91,7 +91,9 @@ export function IntroGuide({
                   type="button"
                   class="ff-intro__card"
                   onClick={() =>
-                    window.dispatchEvent(new CustomEvent(DOCK_OPEN_EVENT, { detail: step }))
+                    window.dispatchEvent(
+                      new CustomEvent(DOCK_OPEN_EVENT, { detail: { id: step, focus: true } }),
+                    )
                   }
                 >
                   {card}

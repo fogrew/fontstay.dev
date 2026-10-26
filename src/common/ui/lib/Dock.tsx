@@ -12,6 +12,11 @@ export interface DockProps {
 
 export const DOCK_OPEN_EVENT = 'ff-dock-open';
 
+export interface DockOpenDetail {
+  id: string;
+  focus?: boolean;
+}
+
 const FLOATING_PANELS = '(min-width: 64rem)';
 const KEEP_OPEN_SELECTOR = '.ff-dock, [role="listbox"], [role="dialog"], .ff-popover';
 
@@ -32,8 +37,12 @@ export function Dock({ items, storageKey, nextLabel }: DockProps) {
   }, []);
   useEffect(() => {
     const open = (event: Event) => {
-      const id = (event as CustomEvent<string>).detail;
-      if (ids.includes(id)) setActive(id);
+      const { detail } = event as CustomEvent<string | DockOpenDetail>;
+      const { id, focus } = typeof detail === 'string' ? { id: detail, focus: false } : detail;
+      if (!ids.includes(id)) return;
+      transition(() => setActive(id));
+      if (focus)
+        root.current?.querySelector<HTMLElement>(`#${CSS.escape(`${base}-${id}-button`)}`)?.focus();
     };
     window.addEventListener(DOCK_OPEN_EVENT, open);
     return () => window.removeEventListener(DOCK_OPEN_EVENT, open);
