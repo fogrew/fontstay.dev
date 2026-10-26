@@ -1248,6 +1248,9 @@
   font-size: 0.875em;
   line-height: 1.5;
 }
+.ff-article-view .ff-article__code:focus-visible {
+  outline-offset: -3px;
+}
 .ff-article-view .ff-article__code code {
   font-family: ui-monospace, "Cascadia Mono", Menlo, Consolas, monospace;
   white-space: pre;
