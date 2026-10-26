@@ -238,6 +238,10 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
   };
 
   const [announcement, setAnnouncement] = useState('');
+  const announce = (text: string) => {
+    setAnnouncement('');
+    setTimeout(() => setAnnouncement(text), 50);
+  };
   const [offer, setOffer] = useState<FontOrigin[]>([]);
   useEffect(() => () => parser.current?.dispose(), []);
   useEffect(() => {
@@ -875,7 +879,7 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
       const found = fonts.find((font) => font.id === id);
       if (found) {
         setSelectedId(found.id);
-        setAnnouncement(
+        announce(
           t.webmcp_announce_font({
             font: displayName(found.metrics.names.family ?? found.fileName),
           }),
@@ -912,7 +916,7 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
     }),
     setAudience: (next) => {
       window.dispatchEvent(new CustomEvent(AUDIENCE_SET_EVENT, { detail: next }));
-      setAnnouncement(t.webmcp_announce_audience({ query: next }));
+      announce(t.webmcp_announce_audience({ query: next.slice(0, 80) }));
       return {
         ok: true,
         message:
@@ -953,9 +957,9 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
         ...all,
         [font.id]: { ...(all[font.id] ?? presetMap ?? NO_PICKS), [system]: ids },
       }));
-      setAnnouncement(
+      announce(
         t.webmcp_announce_fallbacks({
-          system,
+          system: t[`audience_os_${system as OsId}`](),
           font: displayName(font.metrics.names.family ?? font.fileName),
         }),
       );
@@ -967,10 +971,12 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
       setKindChoices((all) => ({ ...all, [font.id]: kindValue as Category }));
       setPicksByFont((all) => ({ ...all, [font.id]: {} }));
       resetOptimization();
-      setAnnouncement(
+      announce(
         t.webmcp_announce_kind({
           font: displayName(font.metrics.names.family ?? font.fileName),
-          kind: kindValue,
+          kind: { 'sans-serif': t.type_sans(), serif: t.type_serif(), monospace: t.type_mono() }[
+            kindValue as Category
+          ],
         }),
       );
       return true;

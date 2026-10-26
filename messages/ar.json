@@ -513,7 +513,7 @@
   "source_upright": "عادي",
   "source_too_many": "يتسع لـ {max} خطوط إضافية على الأكثر. ألغِ تحديد بعض الأنماط أو الأنظمة.",
   "webmcp_announce_font": "اختار المساعد الخط {font}.",
-  "webmcp_announce_audience": "ضبط المساعد الجمهور على {query}.",
+  "webmcp_announce_audience": "طلب المساعد ضبط الجمهور على {query}.",
   "webmcp_announce_fallbacks": "غيّر المساعد الخطوط الاحتياطية لنظام {system} للخط {font}.",
   "webmcp_announce_kind": "ضبط المساعد نوع الخط {font} على {kind}."
 }

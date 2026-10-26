@@ -300,7 +300,7 @@ test('WebMCP tools drive the generator when the browser offers modelContext', as
     }),
   ).toContain('were set');
   await expect(page.getByRole('status').filter({ hasText: 'An assistant changed' })).toHaveText(
-    /fallbacks of windows/,
+    /fallbacks of Windows/,
   );
   await expect.poll(() => call('get-css')).toContain('Source Sans Pro Fallback Segoe UI');
   expect(
@@ -313,7 +313,7 @@ test('WebMCP tools drive the generator when the browser offers modelContext', as
   await call('set-audience', { query: 'chrome 120' });
   await openStep(page, 'audience');
   await expect(queryField(page)).toHaveAttribute('data-query', 'chrome 120');
-  await expect(page.getByRole('status').filter({ hasText: 'An assistant set' })).toHaveText(
+  await expect(page.getByRole('status').filter({ hasText: 'An assistant asked' })).toHaveText(
     /chrome 120/,
   );
   await expect

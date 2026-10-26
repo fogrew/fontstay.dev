@@ -513,7 +513,7 @@
   "source_upright": "Upright",
   "source_too_many": "At most {max} more fonts fit. Deselect some styles or scripts.",
   "webmcp_announce_font": "An assistant selected {font}.",
-  "webmcp_announce_audience": "An assistant set the audience to {query}.",
+  "webmcp_announce_audience": "An assistant asked to set the audience to {query}.",
   "webmcp_announce_fallbacks": "An assistant changed the fallbacks of {system} for {font}.",
   "webmcp_announce_kind": "An assistant set the type of {font} to {kind}."
 }
