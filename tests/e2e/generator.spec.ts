@@ -2148,3 +2148,32 @@ test('a page with too little text keeps the built-in article and says so', async
     .click();
   await expect(generator.getByRole('status').filter({ hasText: 'too little text' })).toBeVisible();
 });
+
+test('Baseline tags and chips carry their widely and newly available icons', async ({ page }) => {
+  await page.goto('/en/');
+  await waitForGenerator(page);
+  await openStep(page, 'audience');
+  const symbols = await page.evaluate(async () => {
+    const response = await fetch('/brands.svg');
+    return response.text();
+  });
+  expect(symbols).toContain('id="baseline-widely"');
+  expect(symbols).toContain('id="baseline-newly"');
+
+  const icon = (scope: ReturnType<Page['locator']>) => scope.locator('svg use').first();
+  const chips = page.locator('.ff-chip__label');
+  await expect(icon(chips.filter({ hasText: 'baseline widely available' }))).toHaveAttribute(
+    'href',
+    '/brands.svg#baseline-widely',
+  );
+  const widely = page.getByRole('button', { name: 'baseline widely available', exact: true });
+  const newly = page.getByRole('button', { name: 'baseline newly available', exact: true });
+  await expect(icon(widely)).toHaveAttribute('href', '/brands.svg#baseline-widely');
+  await expect(icon(newly)).toHaveAttribute('href', '/brands.svg#baseline-newly');
+
+  await newly.click();
+  await expect(icon(chips.filter({ hasText: 'baseline newly available' }))).toHaveAttribute(
+    'href',
+    '/brands.svg#baseline-newly',
+  );
+});
