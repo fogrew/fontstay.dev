@@ -14,7 +14,8 @@ describe('bookmarklet', () => {
     expect(source).toContain(JSON.stringify(options.copied));
     expect(source).toContain('"https://fontstay.dev"');
     expect(source).toContain('"/en/import/"');
-    expect(source).not.toContain('__TARGET__');
+    expect(source).not.toMatch(/__[A-Z]+__/);
+    expect(source.split(JSON.stringify(options.failed))).toHaveLength(3);
     expect(source).not.toContain('export ');
   });
 

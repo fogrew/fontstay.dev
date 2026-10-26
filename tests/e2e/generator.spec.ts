@@ -2253,3 +2253,43 @@ test('accepting a site import while a font is still being read keeps the offer',
   await expect(generator.getByText('Another file is still being read.')).toBeVisible();
   await expect(offer).toBeVisible();
 });
+
+test('the bookmarklet copies the metadata to the clipboard when the new tab is blocked', async ({
+  page,
+  context,
+}) => {
+  await context.grantPermissions(['clipboard-read', 'clipboard-write']);
+  await context.route('https://blocked.test/**', async (route) => {
+    const font = new URL(route.request().url()).pathname === '/font.woff2';
+    if (font) await new Promise((resolve) => setTimeout(resolve, 1000));
+    return route.fulfill({
+      status: 200,
+      headers: { 'content-type': font ? 'font/woff2' : 'text/html' },
+      body: font
+        ? readFileSync(sourceSans)
+        : `<!doctype html><title>Blocked page</title><style>@font-face { font-family: "Blocked Sans"; src: url(/font.woff2) format("woff2"); } body { font-family: "Blocked Sans", sans-serif; }</style><h1>Hello</h1><p>${'Words. '.repeat(120)}</p>`,
+    });
+  });
+  await page.goto('/en/');
+  await waitForGenerator(page);
+  await openStep(page, 'inputs');
+  await page.getByRole('button', { name: 'Import from a website…' }).click();
+  const href =
+    (await page.getByRole('link', { name: 'Send to fontstay' }).getAttribute('href')) ?? '';
+
+  const site = await context.newPage();
+  await site.goto('https://blocked.test/');
+  await site.evaluate(() => {
+    window.open = () => null;
+  });
+  const dialog = site.waitForEvent('dialog');
+  await site.evaluate(decodeURIComponent(href.slice('javascript:'.length)));
+  const alert = await dialog;
+  expect(alert.message()).toContain('copied to the clipboard');
+  await alert.accept();
+
+  const copied = JSON.parse(await site.evaluate(() => navigator.clipboard.readText()));
+  expect(copied.files).toEqual([]);
+  expect(copied.title).toBe('Blocked page');
+  expect(JSON.stringify(copied)).toContain('Blocked Sans');
+});
