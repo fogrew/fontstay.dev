@@ -2214,3 +2214,42 @@ test.describe('touch input', () => {
     await expect.poll(async () => (await lens()).radius).toBe(0);
   });
 });
+
+test('accepting a site import while a font is still being read keeps the offer', async ({
+  page,
+  context,
+}) => {
+  await context.addInitScript(() => {
+    const post = Worker.prototype.postMessage;
+    Worker.prototype.postMessage = function (this: Worker, ...args: unknown[]) {
+      setTimeout(() => (post as (...a: unknown[]) => void).apply(this, args), 1500);
+    } as typeof Worker.prototype.postMessage;
+  });
+  await context.route('https://busy.test/**', (route) =>
+    route.fulfill({
+      status: 200,
+      headers: { 'content-type': 'text/html' },
+      body: `<!doctype html><style>body { font-family: sans-serif; }</style><h1>Hello</h1><p>${'Words. '.repeat(120)}</p><p>${'More words. '.repeat(120)}</p>`,
+    }),
+  );
+  await page.goto('/en/');
+  await waitForGenerator(page);
+  await openStep(page, 'inputs');
+  await page.getByRole('button', { name: 'Import from a website…' }).click();
+  const href =
+    (await page.getByRole('link', { name: 'Send to fontstay' }).getAttribute('href')) ?? '';
+
+  const site = await context.newPage();
+  await site.goto('https://busy.test/');
+  const popup = site.waitForEvent('popup');
+  await site.evaluate(decodeURIComponent(href.slice('javascript:'.length)));
+  const generator = await popup;
+  await generator.waitForURL(/\/en\/(#.*)?$/);
+  const offer = generator.getByRole('region', { name: 'Import from https://busy.test?' });
+  await expect(offer).toBeVisible();
+
+  await generator.locator('input[type="file"][accept*="woff2"]').setInputFiles(sourceSans);
+  await offer.getByRole('button', { name: 'Import' }).click();
+  await expect(generator.getByText('Another file is still being read.')).toBeVisible();
+  await expect(offer).toBeVisible();
+});
