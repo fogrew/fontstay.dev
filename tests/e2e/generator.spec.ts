@@ -2177,3 +2177,40 @@ test('Baseline tags and chips carry their widely and newly available icons', asy
     '/brands.svg#baseline-newly',
   );
 });
+
+test.describe('touch input', () => {
+  test.use({ hasTouch: true });
+
+  test('the x-ray lens follows a finger and goes away when it lifts', async ({ page }) => {
+    await page.goto('/en/');
+    await waitForGenerator(page);
+    await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(sourceSans);
+    await closePanels(page);
+    const view = page.getByRole('region', { name: 'Article' });
+    await view.getByRole('button', { name: 'X-ray', exact: true }).click();
+    const loupe = view.getByRole('application', { name: /^X-ray:/ });
+    await loupe.evaluate((node) => node.scrollIntoView({ block: 'start' }));
+    const box = await loupe.boundingBox();
+    if (!box) throw new Error('no loupe');
+    const lens = () =>
+      loupe.evaluate((node) => ({
+        radius: Number.parseFloat(node.style.getPropertyValue('--ff-lens-r') || '0'),
+        x: Number.parseFloat(node.style.getPropertyValue('--ff-lens-x') || '0'),
+      }));
+    const client = await page.context().newCDPSession(page);
+    const touch = (type: 'touchStart' | 'touchMove' | 'touchEnd', x: number) =>
+      client.send('Input.dispatchTouchEvent', {
+        type,
+        touchPoints: type === 'touchEnd' ? [] : [{ x, y: box.y + 150 }],
+      });
+
+    await touch('touchStart', box.x + 100);
+    await touch('touchMove', box.x + 120);
+    await expect.poll(async () => (await lens()).radius).toBe(100);
+    const first = (await lens()).x;
+    await touch('touchMove', box.x + 220);
+    await expect.poll(async () => (await lens()).x).toBeGreaterThan(first);
+    await touch('touchEnd', 0);
+    await expect.poll(async () => (await lens()).radius).toBe(0);
+  });
+});
