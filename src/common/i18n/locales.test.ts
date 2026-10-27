@@ -34,5 +34,6 @@ describe('localeName', () => {
     expect(localeName('ru')).toBe('Русский');
     expect(localeName('ar')).toBe('العربية');
     expect(localeName('es')).toBe('Español');
+    expect(localeName('pt')).toBe('Português');
   });
 });
