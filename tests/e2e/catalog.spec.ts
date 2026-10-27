@@ -1,9 +1,9 @@
 import AxeBuilder from '@axe-core/playwright';
-import { choose, expect, fillQuery, test, waitForGenerator } from './fixtures';
+import { choose, expect, fillQuery, LOCALES, test, waitForGenerator } from './fixtures';
 
 const wcagTags = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'];
 
-for (const locale of ['en', 'ru', 'ar']) {
+for (const locale of LOCALES) {
   test(`${locale}: the catalog and a font page have no accessibility violations`, async ({
     page,
   }) => {
@@ -71,7 +71,7 @@ test('the header navigation marks the current page', async ({ page }) => {
   await expect(page).toHaveURL(/\/en\/$/);
 });
 
-for (const locale of ['en', 'ru', 'ar']) {
+for (const locale of LOCALES) {
   test(`${locale}: the presets page has no accessibility violations`, async ({ page }) => {
     await page.goto(`/${locale}/presets/`);
     await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
@@ -106,7 +106,7 @@ test('a preset opens in the generator with its type and per-system fallbacks', a
   );
 });
 
-for (const locale of ['en', 'ru', 'ar']) {
+for (const locale of LOCALES) {
   test(`${locale}: the guide and credits pages have no accessibility violations`, async ({
     page,
   }) => {

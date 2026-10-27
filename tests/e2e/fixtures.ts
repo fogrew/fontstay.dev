@@ -1,5 +1,8 @@
 import { test as base, expect, type Locator, type Page } from '@playwright/test';
 
+export const LOCALES = ['en', 'ru', 'ar', 'es'] as const;
+export const RTL_LOCALES: readonly string[] = ['ar'];
+
 export const test = base.extend({
   page: async ({ page }, use) => {
     const violations: string[] = [];

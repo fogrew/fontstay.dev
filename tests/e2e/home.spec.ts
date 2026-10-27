@@ -1,9 +1,9 @@
 import AxeBuilder from '@axe-core/playwright';
-import { expect, test } from './fixtures';
+import { expect, LOCALES, RTL_LOCALES, test } from './fixtures';
 
 const wcagTags = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'];
 
-for (const locale of ['en', 'ru', 'ar']) {
+for (const locale of LOCALES) {
   test(`${locale}: renders with the right language`, async ({ page }) => {
     await page.goto(`/${locale}/`);
     await expect(page.locator('html')).toHaveAttribute('lang', locale);
@@ -12,7 +12,10 @@ for (const locale of ['en', 'ru', 'ar']) {
 
   test(`${locale}: sets the text direction of the language`, async ({ page }) => {
     await page.goto(`/${locale}/`);
-    await expect(page.locator('html')).toHaveAttribute('dir', locale === 'ar' ? 'rtl' : 'ltr');
+    await expect(page.locator('html')).toHaveAttribute(
+      'dir',
+      RTL_LOCALES.includes(locale) ? 'rtl' : 'ltr',
+    );
   });
 
   test(`${locale}: header links to the repository`, async ({ page }) => {
@@ -33,10 +36,10 @@ for (const locale of ['en', 'ru', 'ar']) {
 test('a page loads the message file of its own locale only', async ({ page }) => {
   const files: string[] = [];
   page.on('request', (request) => {
-    const match = /\/_astro\/(en|ru|ar)\.[\w-]+\.json$/.exec(request.url());
+    const match = /\/_astro\/(en|ru|ar|es)\.[\w-]+\.json$/.exec(request.url());
     if (match?.[1]) files.push(match[1]);
   });
-  for (const locale of ['en', 'ru', 'ar']) {
+  for (const locale of LOCALES) {
     files.length = 0;
     await page.goto(`/${locale}/`);
     await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
