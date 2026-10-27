@@ -36,7 +36,9 @@ for (const locale of LOCALES) {
 test('a page loads the message file of its own locale only', async ({ page }) => {
   const files: string[] = [];
   page.on('request', (request) => {
-    const match = /\/_astro\/(en|ru|ar|es)\.[\w-]+\.json$/.exec(request.url());
+    const match = new RegExp(`/_astro/(${LOCALES.join('|')})\\.[\\w-]+\\.json$`).exec(
+      request.url(),
+    );
     if (match?.[1]) files.push(match[1]);
   });
   for (const locale of LOCALES) {
