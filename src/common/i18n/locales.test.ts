@@ -14,6 +14,10 @@ describe('pickLocale', () => {
     expect(pickLocale(['ar-EG', 'en'])).toBe('ar');
   });
 
+  it('matches Spanish regional tags', () => {
+    expect(pickLocale(['es-MX', 'en'])).toBe('es');
+  });
+
   it('skips unsupported languages', () => {
     expect(pickLocale(['de', 'ru'])).toBe('ru');
   });
@@ -29,5 +33,6 @@ describe('localeName', () => {
     expect(localeName('en')).toBe('English');
     expect(localeName('ru')).toBe('Русский');
     expect(localeName('ar')).toBe('العربية');
+    expect(localeName('es')).toBe('Español');
   });
 });

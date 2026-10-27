@@ -4,6 +4,7 @@ import { type Locale, messagesFor } from '@/common/i18n';
 import { Icon, Popover, ScrollShadow, Select } from '@/common/ui';
 import { measureShift, type WidthShift } from '../lib/article-shift';
 import {
+  ARTICLE_IDS,
   ARTICLE_LANGUAGES,
   type Article,
   type ArticleId,
@@ -306,7 +307,7 @@ export function ArticleView({
 }) {
   const t = messagesFor(locale);
   const [articleId, setArticleId] = useState<ArticleKey>(
-    locale === 'ru' || locale === 'ar' ? locale : 'en',
+    (ARTICLE_IDS as readonly string[]).includes(locale) ? (locale as ArticleId) : 'en',
   );
   const [positions, setPositions] = useState(PRESETS.overlay);
   const [xray, setXray] = useState(false);

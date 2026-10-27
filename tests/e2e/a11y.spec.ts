@@ -2,6 +2,7 @@ import AxeBuilder from '@axe-core/playwright';
 import {
   closePanels,
   expect,
+  LOCALES,
   openStep,
   openSupport,
   STEPS,
@@ -69,6 +70,26 @@ test('the pages reflow at 320 px without horizontal page scroll', async ({ page 
     }
   }
 });
+
+const ADDED_LOCALES = LOCALES.filter((locale) => !['en', 'ru', 'ar'].includes(locale));
+
+for (const locale of ADDED_LOCALES) {
+  test(`${locale}: the pages have no axe violations and reflow at 320 px`, async ({ page }) => {
+    test.setTimeout(120_000);
+    for (const path of ['/', '/presets/', '/guide/']) {
+      await page.setViewportSize({ width: 1280, height: 800 });
+      await page.goto(`/${locale}${path}`);
+      await page.waitForLoadState('networkidle');
+      const results = await new AxeBuilder({ page }).withTags(tags).analyze();
+      expect(results.violations, `${locale}${path}`).toEqual([]);
+      await page.setViewportSize({ width: 320, height: 700 });
+      const overflow = await page.evaluate(
+        () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
+      );
+      expect(overflow, `${locale}${path}`).toBeLessThanOrEqual(0);
+    }
+  });
+}
 
 test('the generator reflows at 320 px with a font loaded', async ({ page }) => {
   await page.setViewportSize({ width: 320, height: 700 });
