@@ -78,6 +78,7 @@ header {
 }
 .ff-header {
   position: relative;
+  z-index: 40;
   min-block-size: 2.5rem;
   view-transition-name: ff-header;
 }

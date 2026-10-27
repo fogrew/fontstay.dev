@@ -12,43 +12,74 @@ const t = messagesFor(current);
 ---
 
 <nav aria-label={t.locale_switcher_label()}>
-  <ul>
-    {
-      locales.map((locale) => (
-        <li>
-          <a
-            href={localizeHref(path, { locale })}
-            data-locale-link
-            hreflang={locale}
-            lang={locale}
-            aria-current={locale === current ? 'true' : undefined}
-          >
-            {localeName(locale)}
-          </a>
-        </li>
-      ))
-    }
-  </ul>
+  <details data-locale-menu>
+    <summary lang={current}>{localeName(current)}</summary>
+    <ul>
+      {
+        locales.map((locale) => (
+          <li>
+            <a
+              href={localizeHref(path, { locale })}
+              data-locale-link
+              hreflang={locale}
+              lang={locale}
+              aria-current={locale === current ? 'true' : undefined}
+            >
+              {localeName(locale)}
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+  </details>
 </nav>
 
 <style>
+  nav {
+    position: relative;
+  }
+
+  summary {
+    min-block-size: 2rem;
+    padding: 0.25rem 0.5rem;
+    border-radius: var(--ff-radius);
+    font-weight: 700;
+    line-height: 1.5;
+    cursor: pointer;
+  }
+
+  summary:hover,
+  details[open] > summary {
+    background: color-mix(in srgb, var(--ff-accent) 12%, transparent);
+  }
+
   ul {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.5rem;
-    margin: 0;
-    padding: 0;
+    position: absolute;
+    inset-block-start: 100%;
+    inset-inline-end: 0;
+    z-index: 40;
+    display: grid;
+    gap: 0.125rem;
+    min-inline-size: 100%;
+    max-block-size: min(24rem, 70dvh);
+    margin: 0.25rem 0 0;
+    padding: 0.25rem;
+    overflow-y: auto;
+    border: 1px solid var(--ff-border);
+    border-radius: var(--ff-radius);
+    background: var(--ff-surface);
+    box-shadow: 0 8px 24px rgb(0 0 0 / 20%);
     list-style: none;
   }
 
   a {
-    display: inline-block;
+    display: block;
     min-block-size: 2rem;
-    min-inline-size: 2rem;
     padding: 0.25rem 0.5rem;
     border-radius: var(--ff-radius);
     line-height: 1.5;
     text-decoration: none;
+    white-space: nowrap;
   }
 
   a:hover {
@@ -73,4 +104,14 @@ const t = messagesFor(current);
   };
   syncHash();
   addEventListener('hashchange', syncHash);
+
+  const menu = document.querySelector<HTMLDetailsElement>('details[data-locale-menu]');
+  menu?.addEventListener('keydown', (event) => {
+    if (event.key !== 'Escape' || !menu.open) return;
+    menu.open = false;
+    menu.querySelector('summary')?.focus();
+  });
+  document.addEventListener('click', (event) => {
+    if (menu?.open && !menu.contains(event.target as Node)) menu.open = false;
+  });
 </script>

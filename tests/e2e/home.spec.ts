@@ -74,7 +74,11 @@ test('root falls back to the default locale', async ({ browser }) => {
 test('language switcher keeps the page and the URL hash', async ({ page }) => {
   await page.goto('/en/#section');
   const nav = page.getByRole('navigation', { name: 'Language' });
+  await nav.locator('summary').click();
   await expect(nav.getByRole('link', { name: 'English' })).toHaveAttribute('aria-current', 'true');
+  await page.keyboard.press('Escape');
+  await expect(nav.getByRole('link', { name: 'Русский' })).toBeHidden();
+  await nav.locator('summary').click();
   await nav.getByRole('link', { name: 'Русский' }).click();
   await expect(page).toHaveURL(/\/ru\/#section$/);
   await expect(page.getByRole('navigation', { name: 'Язык' })).toBeVisible();
