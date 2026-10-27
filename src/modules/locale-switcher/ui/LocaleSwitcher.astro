@@ -90,6 +90,14 @@ const t = messagesFor(current);
     background: color-mix(in srgb, var(--ff-accent) 18%, transparent);
     font-weight: 700;
   }
+
+  @media (forced-colors: active) {
+    details[open] > summary,
+    a:hover,
+    a[aria-current="true"] {
+      outline: 2px solid Highlight;
+    }
+  }
 </style>
 
 <script>
@@ -110,6 +118,10 @@ const t = messagesFor(current);
     if (event.key !== 'Escape' || !menu.open) return;
     menu.open = false;
     menu.querySelector('summary')?.focus();
+  });
+  menu?.addEventListener('focusout', (event) => {
+    const next = event.relatedTarget as Node | null;
+    if (menu.open && next && !menu.contains(next)) menu.open = false;
   });
   document.addEventListener('click', (event) => {
     if (menu?.open && !menu.contains(event.target as Node)) menu.open = false;

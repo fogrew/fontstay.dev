@@ -78,6 +78,10 @@ test('language switcher keeps the page and the URL hash', async ({ page }) => {
   await expect(nav.getByRole('link', { name: 'English' })).toHaveAttribute('aria-current', 'true');
   await page.keyboard.press('Escape');
   await expect(nav.getByRole('link', { name: 'Русский' })).toBeHidden();
+  await expect(nav.locator('summary')).toBeFocused();
+  await nav.locator('summary').click();
+  await page.getByRole('heading', { level: 1, name: 'fontstay.dev' }).click({ force: true });
+  await expect(nav.getByRole('link', { name: 'Русский' })).toBeHidden();
   await nav.locator('summary').click();
   await nav.getByRole('link', { name: 'Русский' }).click();
   await expect(page).toHaveURL(/\/ru\/#section$/);
