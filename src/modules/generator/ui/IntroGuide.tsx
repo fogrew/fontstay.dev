@@ -46,7 +46,6 @@ export function IntroGuide({
           <figure key={stage} class="ff-intro__frame" data-state={stage}>
             <figcaption>{captions[stage]}</figcaption>
             <p>{t.intro_demo_text()}</p>
-            <span class="ff-intro__button">{t.intro_demo_button()}</span>
           </figure>
         ))}
       </div>
