@@ -12,14 +12,12 @@ const STAGES = ['plain', 'fallback', 'web'] as const;
 
 export function IntroGuide({
   locale,
-  collapsed = false,
+  loaded,
   interactive = true,
-  onToggle,
 }: {
   locale: Locale;
-  collapsed?: boolean;
+  loaded: boolean;
   interactive?: boolean;
-  onToggle?: (() => void) | undefined;
 }) {
   const t = messagesFor(locale);
   const copy = {
@@ -33,26 +31,6 @@ export function IntroGuide({
     fallback: t.intro_demo_fallback(),
     web: t.intro_demo_web(),
   } as const;
-  const toggleLabel = collapsed ? t.intro_show() : t.intro_hide();
-  const toggle =
-    onToggle &&
-    (interactive ? (
-      <button type="button" class="ff-intro__toggle" aria-expanded={!collapsed} onClick={onToggle}>
-        {toggleLabel}
-      </button>
-    ) : (
-      <span class="ff-intro__toggle" aria-hidden="true">
-        {toggleLabel}
-      </span>
-    ));
-  if (collapsed) {
-    return (
-      <section class="ff-intro ff-intro--compact" aria-hidden={interactive ? undefined : 'true'}>
-        <h4 class="ff-article__heading">{t.intro_heading()}</h4>
-        {toggle}
-      </section>
-    );
-  }
   return (
     <section
       class="ff-intro"
@@ -62,7 +40,6 @@ export function IntroGuide({
       <h3 id={interactive ? 'ff-intro-title' : undefined} class="ff-article__title">
         {t.intro_heading()}
       </h3>
-      {toggle}
       <p>{t.intro_what()}</p>
       <div class="ff-intro__demo" aria-hidden="true">
         {STAGES.map((stage) => (
@@ -74,7 +51,9 @@ export function IntroGuide({
         ))}
       </div>
       <p class="ff-muted">{t.intro_demo_note()}</p>
-      <h4 class="ff-article__heading">{t.intro_steps_heading()}</h4>
+      <p class="ff-intro__status" role={interactive ? 'status' : undefined}>
+        {loaded ? t.intro_status_loaded() : t.intro_status_empty()}
+      </p>
       <ol class="ff-intro__steps">
         {STEPS.map(([step, icon]) => {
           const card = (

@@ -640,7 +640,7 @@ test('the article can be shown in many scripts and loads each text on demand', a
     await choose(view.getByLabel('Sample text'), id);
     await expect(article).toHaveAttribute('lang', id);
     await expect(article).toHaveAttribute('dir', direction);
-    await expect(article.locator('.ff-article__title')).not.toBeEmpty();
+    await expect(article.locator('.ff-article__title').last()).not.toBeEmpty();
   }
 });
 
@@ -1750,8 +1750,8 @@ test('the article uses the system font stack until a font is added', async ({ pa
   await page.goto('/en/');
   await waitForGenerator(page);
   await closePanels(page);
-  await expect(page.getByText(/Choose a web font or drop it anywhere/)).toBeVisible();
-  await expect(page.locator('.ff-article:not([data-probe])')).toHaveCSS('font-family', /system-ui/);
+  await expect(page.getByRole('status').filter({ hasText: 'No web font yet' })).toBeVisible();
+  await expect(page.getByRole('article')).toHaveCSS('font-family', /system-ui/);
 });
 
 test('fonts and CSS files can be dropped anywhere on the page', async ({ page }) => {
@@ -1843,9 +1843,6 @@ test('the intro guide has the same height in every article layer', async ({ page
       .evaluateAll((guides) =>
         guides.map((guide) => Math.round(guide.getBoundingClientRect().height)),
       );
-  const collapsed = await heights();
-  expect(new Set(collapsed).size).toBe(1);
-  await view.getByRole('button', { name: 'Show the guide' }).click();
   await expect.poll(async () => new Set(await heights()).size).toBe(1);
 });
 
@@ -1953,21 +1950,36 @@ test('the intro guide explains the jump and opens each step', async ({ page }) =
   await expect(heading).toHaveAttribute('aria-expanded', 'true');
 });
 
-test('the intro guide folds into a strip once a font is loaded and can be reopened', async ({
-  page,
-}) => {
+test('the intro guide stays open and reports the loaded font inline', async ({ page }) => {
   await page.goto('/en/');
   await waitForGenerator(page);
-  await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(sourceSans);
   await closePanels(page);
   const view = page.getByRole('region', { name: 'Article' });
-  const show = view.getByRole('button', { name: 'Show the guide' });
-  await expect(show).toBeVisible();
-  await expect(view.getByRole('button', { name: /Add your font/ })).toHaveCount(0);
-  await show.click();
+  const status = view.getByRole('status').filter({ hasText: /web font/ });
+  await expect(status).toContainText('No web font yet');
+  await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(sourceSans);
+  await expect(status).toContainText('Your web font is loaded');
   await expect(view.getByRole('button', { name: /Add your font/ })).toBeVisible();
-  await view.getByRole('button', { name: 'Hide the guide' }).click();
-  await expect(show).toBeVisible();
+  await expect(view.getByRole('button', { name: 'Hide the guide' })).toHaveCount(0);
+});
+
+test('loading a font does not shift the layout around the article', async ({ page }) => {
+  await page.setViewportSize({ width: 1500, height: 900 });
+  await page.goto('/en/');
+  await waitForGenerator(page);
+  await closePanels(page);
+  const view = page.getByRole('region', { name: 'Article' });
+  const frame = view.locator('.ff-article-view__frame');
+  const toolbar = view.locator('.ff-toolbar');
+  const frameTop = async () => (await frame.boundingBox())?.y;
+  const toolbarBox = async () => toolbar.boundingBox();
+  const before = { frame: await frameTop(), toolbar: await toolbarBox() };
+  await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(sourceSans);
+  await expect(
+    view.getByRole('status').filter({ hasText: 'Your web font is loaded' }),
+  ).toBeVisible();
+  await page.waitForTimeout(1000);
+  expect({ frame: await frameTop(), toolbar: await toolbarBox() }).toEqual(before);
 });
 
 test.describe('the single input field', () => {
