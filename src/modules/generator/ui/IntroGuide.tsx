@@ -51,9 +51,14 @@ export function IntroGuide({
         ))}
       </div>
       <p class="ff-muted">{t.intro_demo_note()}</p>
-      <p class="ff-intro__status" role={interactive ? 'status' : undefined}>
-        {loaded ? t.intro_status_loaded() : t.intro_status_empty()}
-      </p>
+      <div class="ff-intro__status" role={interactive ? 'status' : undefined}>
+        <p data-shown={loaded ? undefined : ''} aria-hidden={loaded ? 'true' : undefined}>
+          {t.intro_status_empty()}
+        </p>
+        <p data-shown={loaded ? '' : undefined} aria-hidden={loaded ? undefined : 'true'}>
+          {t.intro_status_loaded()}
+        </p>
+      </div>
       <ol class="ff-intro__steps">
         {STEPS.map(([step, icon]) => {
           const card = (

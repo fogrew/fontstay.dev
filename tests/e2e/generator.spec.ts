@@ -1963,23 +1963,54 @@ test('the intro guide stays open and reports the loaded font inline', async ({ p
   await expect(view.getByRole('button', { name: 'Hide the guide' })).toHaveCount(0);
 });
 
-test('loading a font does not shift the layout around the article', async ({ page }) => {
-  await page.setViewportSize({ width: 1500, height: 900 });
-  await page.goto('/en/');
-  await waitForGenerator(page);
-  await closePanels(page);
-  const view = page.getByRole('region', { name: 'Article' });
-  const frame = view.locator('.ff-article-view__frame');
-  const toolbar = view.locator('.ff-toolbar');
-  const frameTop = async () => (await frame.boundingBox())?.y;
-  const toolbarBox = async () => toolbar.boundingBox();
-  const before = { frame: await frameTop(), toolbar: await toolbarBox() };
-  await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(sourceSans);
-  await expect(
-    view.getByRole('status').filter({ hasText: 'Your web font is loaded' }),
-  ).toBeVisible();
-  await page.waitForTimeout(1000);
-  expect({ frame: await frameTop(), toolbar: await toolbarBox() }).toEqual(before);
+test.describe('loading a font does not shift the layout', () => {
+  for (const [name, width] of [
+    ['desktop', 1500],
+    ['phone', 360],
+  ] as const) {
+    test(`${name}: CLS stays near zero and the layout around the article holds`, async ({
+      page,
+    }) => {
+      await page.setViewportSize({ width, height: 900 });
+      await page.addInitScript(() => {
+        const state = window as unknown as { shifts: number };
+        state.shifts = 0;
+        new PerformanceObserver((list) => {
+          for (const entry of list.getEntries() as unknown as {
+            value: number;
+            hadRecentInput: boolean;
+          }[]) {
+            if (!entry.hadRecentInput) state.shifts += entry.value;
+          }
+        }).observe({ type: 'layout-shift', buffered: true });
+      });
+      await page.goto('/en/');
+      await waitForGenerator(page);
+      await closePanels(page);
+      const view = page.getByRole('region', { name: 'Article' });
+      const layout = () =>
+        view.evaluate((root) => {
+          const top = (selector: string) =>
+            Math.round(root.querySelector(selector)?.getBoundingClientRect().top ?? -1);
+          return {
+            toolbar: top('.ff-toolbar'),
+            frame: top('.ff-article-view__frame'),
+            intro: top('.ff-article:not([data-probe]) .ff-intro'),
+          };
+        });
+      const shifts = () => page.evaluate(() => (window as unknown as { shifts: number }).shifts);
+      const before = await layout();
+      const loadShifts = await shifts();
+      await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(sourceSans);
+      await expect(
+        view.getByRole('status').filter({ hasText: 'Your web font is loaded' }),
+      ).toBeVisible();
+      await page.waitForTimeout(1000);
+      expect(await layout()).toEqual(before);
+      expect((await shifts()) - loadShifts).toBeLessThan(0.02);
+      if (width > 1000) expect(loadShifts).toBeLessThan(0.02);
+    });
+  }
 });
 
 test.describe('the single input field', () => {

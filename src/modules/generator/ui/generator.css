@@ -1066,6 +1066,11 @@
 .ff-article-view .ff-toolbar .ff-button {
   white-space: nowrap;
 }
+@media (max-width: 40rem) {
+  .ff-toolbar .ff-shift {
+    min-block-size: 4rem;
+  }
+}
 .ff-toolbar .ff-shift .ff-popover {
   max-inline-size: 100%;
 }
@@ -1085,9 +1090,22 @@
   margin-block-end: var(--ff-space-6);
   font-family: system-ui, sans-serif;
 }
+.ff-article-view .ff-intro .ff-article__title {
+  font-family: inherit;
+}
 .ff-article-view .ff-intro p {
   max-inline-size: 70ch;
   margin: 0;
+}
+.ff-article-view .ff-intro__status {
+  display: grid;
+  font-weight: 600;
+}
+.ff-article-view .ff-intro__status > p {
+  grid-area: 1 / 1;
+}
+.ff-article-view .ff-intro__status > p:not([data-shown]) {
+  visibility: hidden;
 }
 .ff-intro__demo {
   display: flex;
@@ -1132,10 +1150,6 @@
   background: var(--ff-accent);
   color: var(--ff-on-accent);
   font-size: 0.875rem;
-}
-.ff-article-view .ff-intro__status {
-  min-block-size: calc(2 * 1lh);
-  font-weight: 600;
 }
 .ff-intro__steps {
   display: grid;
