@@ -324,22 +324,6 @@ export function ArticleView({
   const [lensShows, setLensShows] = useState<LensShows>('overlay');
   const [lensSize, setLensSize] = useState(200);
   const [split, setSplit] = useState(50);
-  const [introOpen, setIntroOpen] = useState(() => {
-    try {
-      return localStorage.getItem('fontstay:intro') === 'open';
-    } catch {
-      return false;
-    }
-  });
-  const toggleIntro = () => {
-    const next = !introOpen;
-    setIntroOpen(next);
-    try {
-      localStorage.setItem('fontstay:intro', next ? 'open' : 'closed');
-    } catch {
-      // storage may be unavailable
-    }
-  };
   const slider = useRef<HTMLDivElement>(null);
   const loupe = useRef<HTMLDivElement>(null);
   const arrangement = arrangementOf(positions);
@@ -664,14 +648,10 @@ export function ArticleView({
       aria-hidden={ghost || copy ? 'true' : undefined}
       data-render={styled && kind !== 'plain' ? layers[kind].render : undefined}
       data-guides={guides && kind !== 'plain' ? '' : undefined}
-      style={pageStyle(kind, styled)}
+      data-idle={empty && ghost ? '' : undefined}
+      style={hydrated ? pageStyle(kind, styled) : undefined}
     >
-      <IntroGuide
-        locale={locale}
-        collapsed={!introOpen}
-        interactive={kind === 'web' && !ghost && !copy}
-        onToggle={toggleIntro}
-      />
+      <IntroGuide locale={locale} loaded={!empty} interactive={kind === 'web' && !ghost && !copy} />
       <ArticleBody
         article={article}
         coverage={coverageFor(ghost || copy || kind !== 'web')}
@@ -948,25 +928,6 @@ export function ArticleView({
     </p>
   );
 
-  if (empty) {
-    return (
-      <section class="ff-article-view" aria-label={t.article_heading()}>
-        {fewText}
-        <p class="ff-article-view__hint">{t.article_empty_hint()}</p>
-        <div class="ff-article-view__controls">{contentGroup}</div>
-        <article
-          class={`ff-article${wrap === 'nowrap' ? ' ff-article--nowrap' : ''}`}
-          lang={article.lang}
-          dir={article.dir}
-          style={hydrated ? pageStyle('web') : undefined}
-        >
-          <IntroGuide locale={locale} interactive />
-          <ArticleBody article={article} coverage={coverageFor(true)} focusable />
-        </article>
-      </section>
-    );
-  }
-
   return (
     <section class="ff-article-view" aria-label={t.article_heading()} ref={view}>
       {fewText}
@@ -978,7 +939,7 @@ export function ArticleView({
             class={`ff-article${wrap === 'nowrap' ? ' ff-article--nowrap' : ''}`}
             lang={article.lang}
             dir={article.dir}
-            style={pageStyle(kind)}
+            style={hydrated ? pageStyle(kind) : undefined}
           >
             <ArticleBody article={article} coverage={coverageFor(true)} />
           </article>
@@ -995,6 +956,7 @@ export function ArticleView({
               aria-pressed={preset === value}
               aria-label={presetLabel(value)}
               title={presetLabel(value)}
+              disabled={empty}
               onClick={() => setPositions(PRESETS[value])}
             >
               <ToolIcon name={value} />
@@ -1013,7 +975,7 @@ export function ArticleView({
               aria-pressed={stacked === (kind === 'stacked')}
               aria-label={kind === 'stacked' ? t.side_stacked() : t.side_horizontal()}
               title={kind === 'stacked' ? t.side_stacked() : t.side_horizontal()}
-              disabled={arrangement !== 'columns' && !clipped}
+              disabled={empty || (arrangement !== 'columns' && !clipped)}
               onClick={() => setStacked(kind === 'stacked')}
             >
               <span class="ff-arrange-icon" data-kind={kind} aria-hidden="true" />
@@ -1027,15 +989,16 @@ export function ArticleView({
             aria-pressed={xray}
             aria-label={t.mode_loupe()}
             title={t.mode_loupe()}
+            disabled={empty}
             onClick={() => setXray((on) => !on)}
           >
             <ToolIcon name="xray" />
           </button>
-          <Popover label={t.loupe_settings()} compact>
+          <Popover label={t.loupe_settings()} compact disabled={empty}>
             {xrayContent}
           </Popover>
         </div>
-        <fieldset class="ff-toolbar__guides ff-button-group" disabled={!inspectable}>
+        <fieldset class="ff-toolbar__guides ff-button-group" disabled={empty || !inspectable}>
           <legend class="ff-sr-only">{t.guides_enable()}</legend>
           {GUIDES.map((id) => (
             <button
@@ -1063,7 +1026,9 @@ export function ArticleView({
           </button>
         </fieldset>
         <Popover label={t.article_group_content()}>{contentGroup}</Popover>
-        <Popover label={t.article_group_inspect()}>{inspectContent}</Popover>
+        <Popover label={t.article_group_inspect()} disabled={empty}>
+          {inspectContent}
+        </Popover>
         <DeviceShift
           locale={locale}
           results={shiftResults?.adjusted}

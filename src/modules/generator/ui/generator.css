@@ -549,6 +549,9 @@
   text-decoration: underline dotted var(--ff-layer-color) 2px;
   text-underline-offset: 0.15em;
 }
+.ff-article-view .ff-article--ghost[data-idle] {
+  visibility: hidden;
+}
 .ff-article-view .ff-article[data-render="fill"] {
   color: var(--ff-layer-color);
 }
@@ -793,10 +796,6 @@
   font-size: 1.5rem;
   font-weight: 700;
   pointer-events: none;
-}
-.ff-article-view__hint {
-  margin: 0;
-  font-weight: 600;
 }
 .ff-article-view {
   position: relative;
@@ -1051,6 +1050,10 @@
 }
 .ff-toolbar .ff-shift {
   display: flex;
+  justify-content: flex-end;
+  min-inline-size: min(32rem, 100%);
+  max-inline-size: 100%;
+  min-block-size: 2.125rem;
   flex-wrap: wrap;
   gap: var(--ff-space-1) var(--ff-space-3);
   align-items: center;
@@ -1062,6 +1065,18 @@
 }
 .ff-article-view .ff-toolbar .ff-button {
   white-space: nowrap;
+}
+@media (max-width: 40rem) {
+  .ff-toolbar .ff-shift {
+    min-block-size: 4rem;
+  }
+}
+.ff-toolbar .ff-shift .ff-popover {
+  max-inline-size: 100%;
+}
+.ff-article-view .ff-toolbar .ff-shift .ff-popover__button {
+  max-inline-size: 100%;
+  white-space: normal;
 }
 @media (min-width: 75rem) {
   .ff-toolbar .ff-preview__modes {
@@ -1075,9 +1090,22 @@
   margin-block-end: var(--ff-space-6);
   font-family: system-ui, sans-serif;
 }
+.ff-article-view .ff-intro .ff-article__title {
+  font-family: inherit;
+}
 .ff-article-view .ff-intro p {
   max-inline-size: 70ch;
   margin: 0;
+}
+.ff-article-view .ff-intro__status {
+  display: grid;
+  font-weight: 600;
+}
+.ff-article-view .ff-intro__status > p {
+  grid-area: 1 / 1;
+}
+.ff-article-view .ff-intro__status > p:not([data-shown]) {
+  visibility: hidden;
 }
 .ff-intro__demo {
   display: flex;
@@ -1255,29 +1283,9 @@
   font-family: ui-monospace, "Cascadia Mono", Menlo, Consolas, monospace;
   white-space: pre;
 }
-.ff-article-view .ff-intro--compact {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--ff-space-2) var(--ff-space-3);
-  align-items: baseline;
-  margin-block-end: 0;
-}
-.ff-article-view .ff-intro--compact h4 {
-  margin: 0;
-}
-.ff-article-view .ff-intro__toggle {
-  justify-self: start;
-  padding: 0;
-  border: 0;
-  background: transparent;
-  color: var(--ff-accent);
-  font: inherit;
-  font-size: 0.875em;
-  text-decoration: underline;
-  cursor: pointer;
-}
 .ff-share {
-  flex: 0 0 auto;
+  flex: 0 1 auto;
+  max-inline-size: 100%;
   display: flex;
   flex-wrap: wrap;
   gap: var(--ff-space-2);

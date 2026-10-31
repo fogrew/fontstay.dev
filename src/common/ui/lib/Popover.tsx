@@ -6,6 +6,7 @@ export interface PopoverProps {
   badge?: string | number | undefined;
   align?: 'start' | 'end';
   compact?: boolean;
+  disabled?: boolean;
   children: ComponentChildren;
 }
 
@@ -14,6 +15,7 @@ export function Popover({
   badge,
   align = 'start',
   compact = false,
+  disabled = false,
   children,
 }: PopoverProps) {
   const id = useId();
@@ -47,12 +49,13 @@ export function Popover({
         aria-label={badge ? `${label} (${badge})` : label}
         title={compact ? label : undefined}
         aria-controls={id}
+        disabled={disabled}
         onClick={() => setOpen(!open)}
       >
         {!compact && label}
         {badge !== undefined && badge !== 0 && <span class="ff-popover__badge">{badge}</span>}
       </button>
-      <fieldset id={id} class="ff-popover__panel" hidden={!open}>
+      <fieldset id={id} class="ff-popover__panel" hidden={!open || disabled}>
         <legend class="ff-sr-only">{label}</legend>
         {children}
       </fieldset>
