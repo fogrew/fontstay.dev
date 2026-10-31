@@ -1284,7 +1284,8 @@
   white-space: pre;
 }
 .ff-share {
-  flex: 0 0 auto;
+  flex: 0 1 auto;
+  max-inline-size: 100%;
   display: flex;
   flex-wrap: wrap;
   gap: var(--ff-space-2);
