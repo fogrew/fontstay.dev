@@ -455,7 +455,7 @@
   "frame_width_label": "Largura da prévia: arraste para simular uma tela mais estreita, as teclas de seta redimensionam, End restaura a largura total",
   "article_shift_details": "Deslocamento de layout por largura",
   "intro_heading": "Impeça que a página pule quando a sua fonte carregar",
-  "intro_what": "O navegador mostra primeiro o texto em uma fonte de fallback e depois aplica a sua fonte web. Se elas diferirem em tamanho, as linhas quebram de outro modo e a página pula (deslocamento de layout, medido como CLS). O fontstay cria um fallback com as métricas da sua fonte, e a troca não move nada. Quatro passos:",
+  "intro_what": "O navegador mostra primeiro o texto em uma fonte de fallback e depois aplica a sua fonte web. Se elas diferirem em tamanho, as linhas quebram de outro modo e a página pula (deslocamento de layout, que o Google mede como CLS). O fontstay cria um fallback com as métricas da sua fonte, e a troca não move nada. Quatro passos:",
   "intro_status_empty": "Ainda não há fonte web: o artigo usa a pilha de fontes do sistema. Escolha uma fonte ou solte um arquivo em qualquer lugar.",
   "intro_status_loaded": "A sua fonte web está carregada: o artigo a usa, com o fallback ajustado até ela chegar.",
   "intro_demo_text": "As fontes decidem onde cada linha quebra.",

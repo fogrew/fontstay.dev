@@ -455,7 +455,7 @@
   "frame_width_label": "Preview width: drag to simulate a narrower screen, arrow keys resize, End restores the full width",
   "article_shift_details": "Layout shift by width",
   "intro_heading": "Stop the page from jumping when your font loads",
-  "intro_what": "Browsers show text in a fallback font first, then swap in your web font. If the two differ in size, lines wrap differently and the page jumps (layout shift, measured as CLS). fontstay builds a fallback that matches your font's metrics, so the swap moves nothing. Four steps:",
+  "intro_what": "Browsers show text in a fallback font first, then swap in your web font. If the two differ in size, lines wrap differently and the page jumps (layout shift, which Google measures as CLS). fontstay builds a fallback that matches your font's metrics, so the swap moves nothing. Four steps:",
   "intro_status_empty": "No web font yet: the article uses the system font stack. Choose a font or drop a file anywhere.",
   "intro_status_loaded": "Your web font is loaded: the article uses it, with the tuned fallback until it arrives.",
   "intro_demo_text": "Fonts decide where every line breaks.",

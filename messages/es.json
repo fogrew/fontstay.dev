@@ -455,7 +455,7 @@
   "frame_width_label": "Ancho de la vista previa: arrastra para simular una pantalla más estrecha, las teclas de flecha redimensionan, Fin restaura el ancho completo",
   "article_shift_details": "Desplazamiento de diseño por ancho",
   "intro_heading": "Evita que la página salte cuando se carga tu fuente",
-  "intro_what": "El navegador muestra primero el texto con una fuente de respaldo y luego pone tu fuente web. Si difieren en tamaño, las líneas se ajustan distinto y la página salta (desplazamiento de diseño, medido como CLS). fontstay crea un respaldo con las métricas de tu fuente, así el cambio no mueve nada. Cuatro pasos:",
+  "intro_what": "El navegador muestra primero el texto con una fuente de respaldo y luego pone tu fuente web. Si difieren en tamaño, las líneas se ajustan distinto y la página salta (desplazamiento de diseño, que Google mide como CLS). fontstay crea un respaldo con las métricas de tu fuente, así el cambio no mueve nada. Cuatro pasos:",
   "intro_status_empty": "Aún no hay fuente web: el artículo usa la pila de fuentes del sistema. Elige una fuente o suelta un archivo en cualquier parte.",
   "intro_status_loaded": "Tu fuente web está cargada: el artículo la usa, con el respaldo ajustado hasta que llegue.",
   "intro_demo_text": "Las fuentes deciden dónde se rompe cada línea.",
