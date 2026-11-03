@@ -23,9 +23,6 @@ export interface DockOpenDetail {
   focus?: boolean;
 }
 
-const FLOATING_PANELS = '(min-width: 64rem)';
-const KEEP_OPEN_SELECTOR = '.ff-dock, [role="listbox"], [role="dialog"], .ff-popover';
-
 export function Dock({ items, storageKey, nextLabel }: DockProps) {
   const base = useId();
   const ids = items.map((item) => item.id);
@@ -67,31 +64,6 @@ export function Dock({ items, storageKey, nextLabel }: DockProps) {
     if (ready && !skippedRestore.current)
       saveLayout(storageKey, { opened: active ? [active] : [] });
   }, [ready, active, storageKey]);
-
-  useEffect(() => {
-    const element = root.current;
-    if (!element || !active) return;
-    const measureRoom = () => {
-      const panel = element.querySelector<HTMLElement>('.ff-dock__panel:not([hidden])');
-      if (!panel) return;
-      const room = window.innerHeight - panel.getBoundingClientRect().top;
-      element.style.setProperty('--ff-dock-room', `${Math.max(0, Math.floor(room))}px`);
-    };
-    const close = (event: PointerEvent) => {
-      if (!window.matchMedia(FLOATING_PANELS).matches) return;
-      if (event.target instanceof Element && event.target.closest(KEEP_OPEN_SELECTOR)) return;
-      transition(() => setActive(undefined));
-    };
-    measureRoom();
-    window.addEventListener('scroll', measureRoom, { passive: true });
-    window.addEventListener('resize', measureRoom);
-    document.addEventListener('pointerdown', close);
-    return () => {
-      window.removeEventListener('scroll', measureRoom);
-      window.removeEventListener('resize', measureRoom);
-      document.removeEventListener('pointerdown', close);
-    };
-  }, [active]);
 
   const activeIndex = ids.indexOf(active ?? '');
   return (

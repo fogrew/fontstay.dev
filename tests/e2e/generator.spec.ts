@@ -139,9 +139,7 @@ for (const { width, height } of [
   { width: 1366, height: 768 },
   { width: 1920, height: 1080 },
 ]) {
-  test(`${width}x${height}: the panels are docked at the top and the article spans the width`, async ({
-    page,
-  }) => {
+  test(`${width}x${height}: settings sit beside a readable article`, async ({ page }) => {
     await page.setViewportSize({ width, height });
     await page.goto('/en/');
     await waitForGenerator(page);
@@ -153,7 +151,7 @@ for (const { width, height } of [
       .toBeLessThan(150);
     await expect
       .poll(async () => (await article.boundingBox())?.width ?? 0)
-      .toBeGreaterThan(width * 0.85);
+      .toBeGreaterThan(width * 0.4);
     for (const name of ['1. Inputs', '2. Audience', '3. Fine-tuning', '4. Results']) {
       await expect(page.getByRole('button', { name, exact: true })).toBeVisible();
     }
@@ -1071,7 +1069,7 @@ test('the dock stays pinned to the top while the article scrolls', async ({ page
   await page.mouse.wheel(0, 900);
   await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(300);
   const dock = await page.locator('.ff-dock').boundingBox();
-  expect(dock?.y).toBeLessThan(2);
+  expect(dock?.y).toBeLessThanOrEqual(16);
   await expect(page.getByRole('button', { name: '4. Results', exact: true })).toBeInViewport();
 });
 
@@ -1922,14 +1920,14 @@ test('article typography reaches the intro in every comparison mode', async ({ p
     .toBe(true);
 });
 
-test('an open panel fills the screen down to its bottom edge', async ({ page }) => {
+test('an open panel leaves room for all four step headings', async ({ page }) => {
   await page.setViewportSize({ width: 1500, height: 900 });
   await page.goto('/en/');
   await waitForGenerator(page);
   await openStep(page, 'audience');
   const box = await page.locator('.ff-dock__panel:not([hidden])').boundingBox();
   const bottom = (box?.y ?? 0) + (box?.height ?? 0);
-  expect(bottom).toBeGreaterThan(895);
+  expect(bottom).toBeGreaterThan(500);
   expect(bottom).toBeLessThanOrEqual(900);
 });
 
@@ -1947,13 +1945,13 @@ test('the next button moves to the following panel and the last one has none', a
   await expect(page.getByRole('button', { name: /^Next:/ })).toHaveCount(0);
 });
 
-test('a click outside an open panel closes it', async ({ page }) => {
+test('a click outside keeps settings open beside the article', async ({ page }) => {
   await page.setViewportSize({ width: 1500, height: 900 });
   await page.goto('/en/');
   await waitForGenerator(page);
   await openStep(page, 'tuning');
   await page.locator('.ff-header').click({ position: { x: 700, y: 5 } });
-  await expect(page.locator('.ff-dock__panel:not([hidden])')).toHaveCount(0);
+  await expect(page.locator('.ff-dock__panel:not([hidden])')).toHaveCount(1);
 });
 
 test('the layout shift score shows the value before and after in rating colours', async ({
@@ -2461,4 +2459,68 @@ test('the bookmarklet copies the metadata to the clipboard when the new tab is b
   expect(copied.files).toEqual([]);
   expect(copied.title).toBe('Blocked page');
   expect(JSON.stringify(copied)).toContain('Blocked Sans');
+});
+
+test('desktop settings never overlap the article and survive mobile resizing', async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await page.goto('/en/');
+  await waitForGenerator(page);
+  for (const step of ['inputs', 'audience', 'tuning', 'results'] as const) {
+    await openStep(page, step);
+    const panel = await page.locator('.ff-dock__panel:not([hidden])').boundingBox();
+    const article = await page.locator('.ff-generator__stage').boundingBox();
+    expect(panel).not.toBeNull();
+    expect(article).not.toBeNull();
+    if (!panel || !article) throw new Error('Missing settings or preview');
+    expect(panel.x + panel.width).toBeLessThanOrEqual(article.x);
+    expect(article.width).toBeGreaterThan(400);
+  }
+  await openStep(page, 'audience');
+  for (const width of [375, 320, 768, 1024, 1440]) {
+    await page.setViewportSize({ width, height: 800 });
+    await expect(page.getByRole('button', { name: '2. Audience', exact: true })).toHaveAttribute(
+      'aria-expanded',
+      'true',
+    );
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(
+      true,
+    );
+  }
+});
+
+test('metric sliders update the visible article with settings open', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto('/en/');
+  await waitForGenerator(page);
+  await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(sourceSans);
+  await selectSystem(page, 'windows');
+  const slider = page.getByRole('slider', { name: /Size adjust/ }).first();
+  await slider.focus();
+  const before = await slider.inputValue();
+  await slider.press('ArrowRight');
+  const track = await slider.boundingBox();
+  if (!track) throw new Error('Missing metric slider');
+  await page.mouse.move(track.x + track.width / 2, track.y + track.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(track.x + track.width * 0.7, track.y + track.height / 2, { steps: 8 });
+  await page.mouse.up();
+  await expect(slider).not.toHaveValue(before);
+  const value = await slider.inputValue();
+  await expect
+    .poll(() =>
+      page.evaluate(() =>
+        document.adoptedStyleSheets
+          .flatMap((sheet) => [...sheet.cssRules].map((rule) => rule.cssText))
+          .join('\n'),
+      ),
+    )
+    .toContain(`size-adjust: ${value}%`);
+  await expect(
+    page.locator('.ff-dock__column[data-id="tuning"] button[aria-expanded="true"]').first(),
+  ).toBeVisible();
+  await expect(page.locator('.ff-generator__stage')).toBeInViewport();
+  await page.setViewportSize({ width: 375, height: 800 });
+  await expect(slider).toHaveValue(value);
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await expect(slider).toHaveValue(value);
 });
