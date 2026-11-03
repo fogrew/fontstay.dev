@@ -353,7 +353,7 @@
   "col_inputs": "1. Entradas",
   "col_audience": "2. Audiencia",
   "col_tuning": "3. Ajuste fino",
-  "col_results": "4. Resultados",
+  "col_export": "4. Exportar",
   "dock_next": "Siguiente: {label}",
   "tuning_empty": "Añade una fuente para ajustar sus respaldos.",
   "preview_not_installed_note": "La vista previa recurre a una fuente genérica; los valores y la matriz de compatibilidad se calculan igualmente para ella.",

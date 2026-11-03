@@ -353,7 +353,7 @@
   "col_inputs": "1. Entradas",
   "col_audience": "2. Público",
   "col_tuning": "3. Ajuste fino",
-  "col_results": "4. Resultados",
+  "col_export": "4. Exportar",
   "dock_next": "Próximo: {label}",
   "tuning_empty": "Adicione uma fonte para ajustar seus fallbacks.",
   "preview_not_installed_note": "A prévia recorre a uma fonte genérica; os valores e a matriz de compatibilidade continuam sendo calculados para ela.",

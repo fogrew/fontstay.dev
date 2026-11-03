@@ -472,13 +472,21 @@
     align-self: start;
     display: flex;
     flex-direction: column;
-    block-size: calc(100dvh - 2 * var(--ff-space-2));
+    block-size: calc(100dvh - var(--ff-dock-top, 3.3125rem) - var(--ff-space-2));
+  }
+  .ff-dock:not([data-ready]) {
+    visibility: hidden;
   }
   .ff-dock__column {
-    display: contents;
+    display: flex;
+    flex: 0 0 auto;
+    flex-direction: column;
+  }
+  .ff-dock__column[data-open="true"] {
+    flex: 1 1 auto;
+    min-block-size: 0;
   }
   .ff-dock__heading {
-    order: 0;
     flex: 0 0 auto;
   }
   .ff-dock__footer {
@@ -488,11 +496,13 @@
     border-color: var(--ff-accent);
   }
   .ff-dock__panel {
-    order: 1;
     display: flex;
     flex: 1 1 auto;
     flex-direction: column;
     min-block-size: 0;
+  }
+  .ff-dock__panel[hidden] {
+    display: none;
   }
   .ff-dock__panel > .ff-shadow {
     flex: 1 1 auto;
@@ -523,8 +533,8 @@ html[data-transition] .ff-dock__panel[data-id="inputs"] {
 html[data-transition] .ff-dock__panel[data-id="tuning"] {
   view-transition-name: ff-dock-tuning;
 }
-html[data-transition] .ff-dock__panel[data-id="results"] {
-  view-transition-name: ff-dock-results;
+html[data-transition] .ff-dock__panel[data-id="export"] {
+  view-transition-name: ff-dock-export;
 }
 ::view-transition-group(*) {
   animation-duration: 0.25s;

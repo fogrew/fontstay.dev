@@ -43,7 +43,7 @@ test('the extension sends the page to the import page of fontstay.dev', async ({
   await context.addInitScript(() => {
     localStorage.setItem(
       'fontstay:layout:dock',
-      JSON.stringify({ sizes: {}, opened: ['inputs', 'tuning', 'results'] }),
+      JSON.stringify({ sizes: {}, opened: ['inputs', 'tuning', 'export'] }),
     );
   });
   await context.route('https://site.test/**', (route) => {

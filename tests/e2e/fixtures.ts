@@ -46,7 +46,7 @@ export const STEPS = {
   inputs: '1. Inputs',
   audience: '2. Audience',
   tuning: '3. Fine-tuning',
-  results: '4. Results',
+  export: '4. Export',
 } as const;
 
 const stepButton = (page: Page, step: keyof typeof STEPS) =>
@@ -73,9 +73,7 @@ export async function openSupport(page: Page) {
 }
 
 export async function openExport(page: Page) {
-  await openStep(page, 'results');
-  const button = page.getByRole('button', { name: 'Export', exact: true });
-  if ((await button.getAttribute('aria-expanded')) === 'false') await button.click();
+  await openStep(page, 'export');
 }
 
 export async function choose(
