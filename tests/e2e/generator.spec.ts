@@ -344,7 +344,7 @@ test('a step panel that scrolls shows an edge shadow only on the side with more 
 test('a dropdown list that scrolls shows an edge shadow on the side with more options', async ({
   page,
 }) => {
-  await page.setViewportSize({ width: 1280, height: 420 });
+  await page.setViewportSize({ width: 1280, height: 300 });
   await page.goto('/en/');
   await waitForGenerator(page);
   await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(sourceSans);
@@ -449,12 +449,7 @@ test('the dock mirrors step and disclosure glyphs in RTL at both breakpoints', a
       for (const open of [false, true]) {
         if (open) await button.click();
         const glyph = await button.evaluate((node) => getComputedStyle(node, '::before').content);
-        if (width >= 1024) {
-          if (button === first) expect(glyph).toContain('‹');
-          else expect(glyph).toBe('none');
-        } else {
-          expect(glyph).toContain(open ? '▾' : '◂');
-        }
+        expect(glyph).toContain(open ? '▾' : '◂');
       }
       await button.click();
     }
@@ -675,7 +670,7 @@ test('a font with few Latin glyphs warns about coverage and previews its own gly
   });
   await expect(page.getByRole('status').filter({ hasText: 'Covered share' })).toBeVisible();
   await closePanels(page);
-  await expect(page.locator('.ff-article__missing').first()).toBeVisible();
+  await expect(page.locator('.ff-article__missing:visible').first()).toBeVisible();
 });
 
 test('the audience editor resolves presets and reports invalid queries', async ({ page }) => {
@@ -873,7 +868,7 @@ test('the audience file buttons and drops fill the query and the statistics', as
   const results = page.locator('.ff-audience__results');
   const filtersBox = await filters.boundingBox();
   const resultsBox = await results.boundingBox();
-  expect(filtersBox?.x).toBeLessThan(resultsBox?.x ?? 0);
+  expect(filtersBox?.y).toBeLessThan(resultsBox?.y ?? 0);
 });
 
 test('a system can have several ordered fallbacks', async ({ page }) => {

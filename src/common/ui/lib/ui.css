@@ -717,13 +717,11 @@ html[data-transition] .ff-dock__panel[data-id="results"] {
 .ff-collapsible__toggle[aria-expanded="true"]:dir(rtl)::before {
   content: "▾" / "";
 }
-@media (width < 64rem) {
-  .ff-dock__heading button:dir(rtl)::before {
-    content: "◂" / "";
-  }
-  .ff-dock__heading button[aria-expanded="true"]:dir(rtl)::before {
-    content: "▾" / "";
-  }
+.ff-dock__heading button:dir(rtl)::before {
+  content: "◂" / "";
+}
+.ff-dock__heading button[aria-expanded="true"]:dir(rtl)::before {
+  content: "▾" / "";
 }
 .ff-button-group {
   display: inline-flex;
