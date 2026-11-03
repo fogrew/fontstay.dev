@@ -1,31 +1,19 @@
 import { type Locale, messagesFor } from '@/common/i18n';
-import { DOCK_OPEN_EVENT, Icon, type IconName } from '@/common/ui';
-
-const STEPS = [
-  ['inputs', 'download'],
-  ['audience', 'browserslist'],
-  ['tuning', 'ruler'],
-  ['results', 'css'],
-] as const satisfies readonly (readonly [string, IconName])[];
 
 const STAGES = ['plain', 'fallback', 'web'] as const;
 
 export function IntroGuide({
   locale,
   loaded,
+  demoFonts,
   interactive = true,
 }: {
   locale: Locale;
   loaded: boolean;
+  demoFonts: Record<(typeof STAGES)[number], string> | undefined;
   interactive?: boolean;
 }) {
   const t = messagesFor(locale);
-  const copy = {
-    inputs: [t.intro_step_inputs(), t.intro_step_inputs_text()],
-    audience: [t.intro_step_audience(), t.intro_step_audience_text()],
-    tuning: [t.intro_step_tuning(), t.intro_step_tuning_text()],
-    results: [t.intro_step_results(), t.intro_step_results_text()],
-  } as const;
   const captions = {
     plain: t.intro_demo_plain(),
     fallback: t.intro_demo_fallback(),
@@ -45,7 +33,9 @@ export function IntroGuide({
         {STAGES.map((stage) => (
           <figure key={stage} class="ff-intro__frame" data-state={stage}>
             <figcaption>{captions[stage]}</figcaption>
-            <p>{t.intro_demo_text()}</p>
+            <p style={demoFonts ? { fontFamily: demoFonts[stage] } : undefined}>
+              {t.intro_demo_text()}
+            </p>
           </figure>
         ))}
       </div>
@@ -58,36 +48,6 @@ export function IntroGuide({
           {t.intro_status_loaded()}
         </p>
       </div>
-      <ol class="ff-intro__steps">
-        {STEPS.map(([step, icon]) => {
-          const card = (
-            <>
-              <Icon name={icon} />
-              <strong>{copy[step][0]}</strong>
-              <span class="ff-muted">{copy[step][1]}</span>
-            </>
-          );
-          return (
-            <li key={step}>
-              {interactive ? (
-                <button
-                  type="button"
-                  class="ff-intro__card"
-                  onClick={() =>
-                    window.dispatchEvent(
-                      new CustomEvent(DOCK_OPEN_EVENT, { detail: { id: step, focus: true } }),
-                    )
-                  }
-                >
-                  {card}
-                </button>
-              ) : (
-                <div class="ff-intro__card">{card}</div>
-              )}
-            </li>
-          );
-        })}
-      </ol>
     </section>
   );
 }

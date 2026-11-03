@@ -529,6 +529,11 @@ export function ArticleView({
     if (kind === 'fallback') return `"${key} Fallback", ${substitute}`;
     return categoryOf(family);
   };
+  const demoFonts = {
+    plain: stack(bodyFamily, 'plain'),
+    fallback: stack(bodyFamily, 'fallback'),
+    web: stack(bodyFamily, 'web'),
+  };
   const pageStyle = (kind: LayerId, styled = false) => {
     const layer = layers[kind];
     const metrics = kind === 'plain' ? undefined : guideMetrics[kind];
@@ -651,7 +656,12 @@ export function ArticleView({
       data-idle={empty && ghost ? '' : undefined}
       style={hydrated ? pageStyle(kind, styled) : undefined}
     >
-      <IntroGuide locale={locale} loaded={!empty} interactive={kind === 'web' && !ghost && !copy} />
+      <IntroGuide
+        demoFonts={hydrated ? demoFonts : undefined}
+        locale={locale}
+        loaded={!empty}
+        interactive={kind === 'web' && !ghost && !copy}
+      />
       <ArticleBody
         article={article}
         coverage={coverageFor(ghost || copy || kind !== 'web')}
@@ -941,6 +951,12 @@ export function ArticleView({
             dir={article.dir}
             style={hydrated ? pageStyle(kind) : undefined}
           >
+            <IntroGuide
+              demoFonts={hydrated ? demoFonts : undefined}
+              locale={locale}
+              loaded={!empty}
+              interactive={false}
+            />
             <ArticleBody article={article} coverage={coverageFor(true)} />
           </article>
         ))}

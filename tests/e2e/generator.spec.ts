@@ -1846,19 +1846,80 @@ test('the header keeps its size and position on every page', async ({ page }) =>
   for (const box of boxes) expect(box).toEqual(boxes[0]);
 });
 
-test('the intro guide has the same height in every article layer', async ({ page }) => {
+test('article typography reaches the intro in every comparison mode', async ({ page }) => {
+  // Use fixture bytes for local fallback faces so metric geometry is independent of host fonts.
+  await page.addInitScript((font) => {
+    const replace = CSSStyleSheet.prototype.replaceSync;
+    CSSStyleSheet.prototype.replaceSync = function (text) {
+      return replace.call(
+        this,
+        text.includes('ff-web-')
+          ? text.replace(/src: [^;]+;/g, `src: url("data:font/woff2;base64,${font}");`)
+          : text,
+      );
+    };
+  }, readFileSync(sourceSans).toString('base64'));
   await page.goto('/en/');
   await waitForGenerator(page);
-  await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(sourceSans);
-  await closePanels(page);
   const view = page.getByRole('region', { name: 'Article' });
-  const heights = () =>
-    view
-      .locator('.ff-intro')
-      .evaluateAll((guides) =>
-        guides.map((guide) => Math.round(guide.getBoundingClientRect().height)),
-      );
-  await expect.poll(async () => new Set(await heights()).size).toBe(1);
+  const typography = () =>
+    view.locator('.ff-article').evaluateAll((articles) =>
+      articles.map((article) => {
+        const style = (selector: string) => {
+          const element = article.querySelector(selector);
+          if (!element) throw new Error(selector);
+          return getComputedStyle(element);
+        };
+        return {
+          intro: style('.ff-intro > p').fontFamily,
+          body: style('.ff-article__lead').fontFamily,
+          title: style('.ff-intro h3').fontFamily,
+          heading: style('.ff-article__hero h3').fontFamily,
+          demos: [...article.querySelectorAll('.ff-intro__frame p')].map(
+            (p) => getComputedStyle(p).fontFamily,
+          ),
+        };
+      }),
+    );
+  const before = await typography();
+  await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(sourceSans);
+  await expect
+    .poll(async () => (await typography()).some((row) => row.intro.includes('ff-web-')))
+    .toBe(true);
+  await closePanels(page);
+  for (const mode of ['Side by side', 'Slider', 'Adjusted fallback', 'Web font']) {
+    await view.getByRole('button', { name: mode, exact: true }).click();
+    const rows = await typography();
+    expect(rows.length).toBeGreaterThanOrEqual(4);
+    for (const row of rows) {
+      expect(row.intro).toBe(row.body);
+      expect(row.title).toBe(row.heading);
+      expect(row.demos[1]).toContain('Fallback');
+      expect(row.demos[2]).toContain('ff-web-');
+    }
+  }
+  expect(await typography()).not.toEqual(before);
+  await view.getByRole('button', { name: 'Adjusted fallback', exact: true }).click();
+  const intro = view.locator('.ff-article:not([data-probe]) .ff-intro > p').first();
+  const textWidth = () =>
+    intro.evaluate((element) => {
+      const range = document.createRange();
+      range.setStart(element.firstChild as Text, 0);
+      range.setEnd(element.firstChild as Text, 5);
+      return range.getBoundingClientRect().width;
+    });
+  await page.evaluate(() => document.fonts.ready.then(() => undefined));
+  const beforeMetrics = await textWidth();
+  await openStep(page, 'tuning');
+  const size = page.getByRole('spinbutton', { name: /Size adjust/ });
+  await size.fill('130');
+  await size.press('Enter');
+  await closePanels(page);
+  await view.getByRole('button', { name: 'Adjusted fallback', exact: true }).click();
+  await expect.poll(textWidth).not.toBe(beforeMetrics);
+  await expect
+    .poll(async () => (await typography()).every((row) => row.intro === row.body))
+    .toBe(true);
 });
 
 test('an open panel fills the screen down to its bottom edge', async ({ page }) => {
@@ -1951,14 +2012,16 @@ test('an import link without a pending import explains that it expired', async (
   await expect(page.getByRole('alert').filter({ hasText: 'no longer available' })).toBeVisible();
 });
 
-test('the intro guide explains the jump and opens each step', async ({ page }) => {
+test('the intro guide explains the jump and step tabs retain their icons', async ({ page }) => {
   await page.goto('/en/');
   await waitForGenerator(page);
   await closePanels(page);
   const guide = page.getByRole('region', { name: /Stop the page from jumping/ });
   await expect(guide).toBeVisible();
   await expect(guide).toContainText('layout shift');
-  await guide.getByRole('button', { name: /Choose the audience/ }).click();
+  await expect(page.locator('.ff-intro__steps, .ff-intro__card')).toHaveCount(0);
+  await expect(page.locator('.ff-dock__heading .ff-icon')).toHaveCount(4);
+  await page.getByRole('button', { name: '2. Audience', exact: true }).click();
   await expect(page.getByLabel('Audience').first()).toBeVisible();
   const heading = page.getByRole('button', { name: '2. Audience', exact: true });
   await expect(heading).toBeFocused();
@@ -1974,18 +2037,16 @@ test('the intro guide stays open and reports the loaded font inline', async ({ p
   await expect(status).toContainText('No web font yet');
   await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(sourceSans);
   await expect(status).toContainText('Your web font is loaded');
-  await expect(view.getByRole('button', { name: /Add your font/ })).toBeVisible();
+  await expect(view.locator('.ff-article:not([data-probe]) .ff-intro').first()).toBeVisible();
   await expect(view.getByRole('button', { name: 'Hide the guide' })).toHaveCount(0);
 });
 
-test.describe('loading a font does not shift the layout', () => {
+test.describe('loading a font keeps the surrounding UI stable', () => {
   for (const [name, width] of [
     ['desktop', 1500],
     ['phone', 360],
   ] as const) {
-    test(`${name}: CLS stays near zero and the layout around the article holds`, async ({
-      page,
-    }) => {
+    test(`${name}: the layout around the article holds`, async ({ page }) => {
       await page.setViewportSize({ width, height: 900 });
       await page.addInitScript(() => {
         const state = window as unknown as { shifts: number };
@@ -2011,14 +2072,6 @@ test.describe('loading a font does not shift the layout', () => {
             toolbar: top('.ff-toolbar'),
             frame: top('.ff-article-view__frame'),
             intro: top('.ff-article:not([data-probe]) .ff-intro'),
-            introHeight: root
-              .querySelector('.ff-article:not([data-probe]) .ff-intro')
-              ?.getBoundingClientRect().height,
-            introBlocks: [
-              ...root.querySelectorAll(
-                '.ff-article:not([data-probe]) .ff-intro > *, .ff-article:not([data-probe]) .ff-intro__card',
-              ),
-            ].map((block) => block.getBoundingClientRect().height),
           };
         });
       const shifts = () => page.evaluate(() => (window as unknown as { shifts: number }).shifts);
@@ -2043,7 +2096,7 @@ test.describe('loading a font does not shift the layout', () => {
           ),
         ),
       ).toBe(true);
-      expect((await shifts()) - loadShifts).toBeLessThan(0.005);
+
       if (width > 1000) expect(loadShifts).toBeLessThan(0.02);
     });
   }

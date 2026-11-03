@@ -10,6 +10,7 @@ export interface DockProps {
     label: string;
     content: ComponentChildren;
     clientOnly?: boolean;
+    icon?: ComponentChildren;
   }[];
   storageKey: string;
   nextLabel: (label: string) => string;
@@ -23,8 +24,7 @@ export interface DockOpenDetail {
 }
 
 const FLOATING_PANELS = '(min-width: 64rem)';
-const KEEP_OPEN_SELECTOR =
-  '.ff-dock, .ff-intro__card, [role="listbox"], [role="dialog"], .ff-popover';
+const KEEP_OPEN_SELECTOR = '.ff-dock, [role="listbox"], [role="dialog"], .ff-popover';
 
 export function Dock({ items, storageKey, nextLabel }: DockProps) {
   const base = useId();
@@ -121,6 +121,7 @@ export function Dock({ items, storageKey, nextLabel }: DockProps) {
                 aria-controls={`${base}-${item.id}-panel`}
                 onClick={() => transition(() => setActive(open ? undefined : item.id))}
               >
+                {item.icon}
                 {item.label}
               </button>
             </h2>

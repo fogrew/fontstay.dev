@@ -1738,6 +1738,7 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
           {
             id: 'inputs',
             label: t.col_inputs(),
+            icon: <Icon name="download" />,
             content: (
               <div class="ff-generator__settings" id="ff-settings">
                 <FontInput
@@ -1793,6 +1794,7 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
             id: 'audience',
             label: t.col_audience(),
             clientOnly: true,
+            icon: <Icon name="browserslist" />,
             content: (
               <div class="ff-generator__settings">
                 {restored && (
@@ -1812,6 +1814,7 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
           {
             id: 'tuning',
             label: t.col_tuning(),
+            icon: <Icon name="ruler" />,
             content: (
               <div class="ff-generator__settings">
                 {warnings}
@@ -1845,6 +1848,7 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
           {
             id: 'results',
             label: t.col_results(),
+            icon: <Icon name="css" />,
             content: showResults ? (
               <Accordion
                 storageKey="results"
