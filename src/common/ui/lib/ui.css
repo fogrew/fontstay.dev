@@ -433,6 +433,10 @@
   text-align: start;
   cursor: pointer;
 }
+.ff-dock__heading .ff-icon {
+  margin-inline-end: var(--ff-space-2);
+  vertical-align: -0.125em;
+}
 .ff-dock__heading button:hover {
   background: color-mix(in srgb, var(--ff-accent) 10%, var(--ff-surface));
 }
