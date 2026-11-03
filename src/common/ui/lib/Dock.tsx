@@ -32,6 +32,7 @@ export function Dock({ items, storageKey, nextLabel }: DockProps) {
   const [active, setActive] = useState<string>();
   const [ready, setReady] = useState(false);
   const root = useRef<HTMLDivElement>(null);
+  const skippedRestore = useRef(false);
   const [focusRequest, setFocusRequest] = useState<{ id: string }>();
 
   useEffect(() => {
@@ -41,7 +42,8 @@ export function Dock({ items, storageKey, nextLabel }: DockProps) {
     });
     const first = saved?.[0];
     const skip = items.find((item) => item.id === first)?.clientOnly;
-    setActive(skip && !window.matchMedia(FLOATING_PANELS).matches ? undefined : first);
+    skippedRestore.current = !!skip && !window.matchMedia(FLOATING_PANELS).matches;
+    setActive(skippedRestore.current ? undefined : first);
     setReady(true);
   }, []);
   useEffect(() => {
@@ -61,7 +63,9 @@ export function Dock({ items, storageKey, nextLabel }: DockProps) {
     if (focusRequest) document.getElementById(`${base}-${focusRequest.id}-button`)?.focus();
   }, [focusRequest]);
   useEffect(() => {
-    if (ready) saveLayout(storageKey, { opened: active ? [active] : [] });
+    if (active) skippedRestore.current = false;
+    if (ready && !skippedRestore.current)
+      saveLayout(storageKey, { opened: active ? [active] : [] });
   }, [ready, active, storageKey]);
 
   useEffect(() => {
