@@ -206,6 +206,47 @@ main > h1 {
   padding: 0;
   list-style: none;
 }
+.ff-header__toggle {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  min-inline-size: 2rem;
+  min-block-size: 2rem;
+  padding: 0.25rem;
+  border: 1px solid var(--ff-border);
+  border-radius: var(--ff-radius);
+  background: transparent;
+  color: var(--ff-text);
+  cursor: pointer;
+}
+.ff-header__toggle:hover {
+  background: color-mix(in srgb, var(--ff-accent) 12%, transparent);
+}
+.ff-header__toggle .ff-icon {
+  margin: 0;
+  inline-size: 1.25em;
+  block-size: 1.25em;
+}
+@media (max-width: 47.999rem) {
+  .ff-header__toggle:not([hidden]) {
+    display: inline-flex;
+  }
+  .ff-header nav {
+    order: 3;
+    inline-size: 100%;
+  }
+  .ff-header[data-menu="closed"] nav {
+    display: none;
+  }
+  .ff-header__nav {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .ff-header__nav a {
+    display: block;
+    padding-block: 0.5rem;
+  }
+}
 .ff-header__nav a,
 .ff-header__link {
   border-radius: var(--ff-radius);

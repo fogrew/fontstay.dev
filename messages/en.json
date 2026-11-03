@@ -175,6 +175,7 @@
   "style_bold_italic": "Bold italic",
   "style_unmatched": "No metrics for this style: {fonts}. They use the regular face and the browser synthesizes the style.",
   "nav_label": "Main",
+  "nav_menu": "Menu",
   "nav_generator": "Generator",
   "nav_fonts": "System fonts",
   "catalog_heading": "System fonts",
