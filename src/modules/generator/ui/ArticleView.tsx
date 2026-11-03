@@ -525,7 +525,7 @@ export function ArticleView({
   const stack = (family: string | undefined, kind: LayerId) => {
     if (!family || family === SYSTEM) return 'system-ui, sans-serif';
     const key = keyOf(family);
-    if (kind === 'web') return `"${key}", ${substitute}`;
+    if (kind === 'web') return `"${key}", "${key} Fallback", ${substitute}`;
     if (kind === 'fallback') return `"${key} Fallback", ${substitute}`;
     return categoryOf(family);
   };

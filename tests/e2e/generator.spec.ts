@@ -2005,9 +2005,22 @@ test.describe('loading a font does not shift the layout', () => {
       await expect(
         view.getByRole('status').filter({ hasText: 'Your web font is loaded' }),
       ).toBeVisible();
+      const article = view.locator('.ff-article:not([data-probe]) .ff-article__title').last();
+      await expect(article).toBeVisible();
+      const settled = await article.boundingBox();
       await page.waitForTimeout(1000);
       expect(await layout()).toEqual(before);
-      expect((await shifts()) - loadShifts).toBeLessThan(0.02);
+      expect(await article.boundingBox()).toEqual(settled);
+      expect(
+        await view.evaluate((root) =>
+          [...root.querySelectorAll('.ff-article:not([data-probe])')].some((element) =>
+            /^"[^"]+", "[^"]+ Fallback"/.test(
+              getComputedStyle(element).getPropertyValue('--ff-article-body').trim(),
+            ),
+          ),
+        ),
+      ).toBe(true);
+      expect((await shifts()) - loadShifts).toBeLessThan(0.005);
       if (width > 1000) expect(loadShifts).toBeLessThan(0.02);
     });
   }
