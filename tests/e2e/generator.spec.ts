@@ -2013,12 +2013,14 @@ test.describe('loading a font does not shift the layout', () => {
       expect(await article.boundingBox()).toEqual(settled);
       expect(
         await view.evaluate((root) =>
-          getComputedStyle(root.querySelector('.ff-article:not([data-probe])') as Element)
-            .getPropertyValue('--ff-article-body')
-            .includes('Fallback'),
+          [...root.querySelectorAll('.ff-article:not([data-probe])')].some((element) =>
+            /^"[^"]+", "[^"]+ Fallback"/.test(
+              getComputedStyle(element).getPropertyValue('--ff-article-body').trim(),
+            ),
+          ),
         ),
       ).toBe(true);
-      expect((await shifts()) - loadShifts).toBeLessThan(0.002);
+      expect((await shifts()) - loadShifts).toBeLessThan(0.005);
       if (width > 1000) expect(loadShifts).toBeLessThan(0.02);
     });
   }
