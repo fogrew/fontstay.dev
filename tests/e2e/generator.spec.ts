@@ -1996,6 +1996,11 @@ test.describe('loading a font does not shift the layout', () => {
             toolbar: top('.ff-toolbar'),
             frame: top('.ff-article-view__frame'),
             intro: top('.ff-article:not([data-probe]) .ff-intro'),
+            introBlocks: [
+              ...root.querySelectorAll(
+                '.ff-article:not([data-probe]) .ff-intro > *, .ff-article:not([data-probe]) .ff-intro__card',
+              ),
+            ].map((block) => block.getBoundingClientRect().height),
           };
         });
       const shifts = () => page.evaluate(() => (window as unknown as { shifts: number }).shifts);

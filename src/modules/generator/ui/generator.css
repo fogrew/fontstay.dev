@@ -1086,6 +1086,7 @@
 }
 .ff-intro {
   display: grid;
+  align-content: start;
   gap: var(--ff-space-3);
   margin-block-end: var(--ff-space-6);
   font-family: system-ui, sans-serif;
