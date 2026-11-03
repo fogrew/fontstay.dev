@@ -1847,6 +1847,18 @@ test('the header keeps its size and position on every page', async ({ page }) =>
 });
 
 test('article typography reaches the intro in every comparison mode', async ({ page }) => {
+  // Use fixture bytes for local fallback faces so metric geometry is independent of host fonts.
+  await page.addInitScript((font) => {
+    const replace = CSSStyleSheet.prototype.replaceSync;
+    CSSStyleSheet.prototype.replaceSync = function (text) {
+      return replace.call(
+        this,
+        text.includes('ff-web-')
+          ? text.replace(/src: [^;]+;/g, `src: url("data:font/woff2;base64,${font}");`)
+          : text,
+      );
+    };
+  }, readFileSync(sourceSans).toString('base64'));
   await page.goto('/en/');
   await waitForGenerator(page);
   const view = page.getByRole('region', { name: 'Article' });
@@ -1889,16 +1901,22 @@ test('article typography reaches the intro in every comparison mode', async ({ p
   expect(await typography()).not.toEqual(before);
   await view.getByRole('button', { name: 'Adjusted fallback', exact: true }).click();
   const intro = view.locator('.ff-article:not([data-probe]) .ff-intro > p').first();
-  const beforeMetrics = await intro.boundingBox();
+  const textWidth = () =>
+    intro.evaluate((element) => {
+      const range = document.createRange();
+      range.setStart(element.firstChild as Text, 0);
+      range.setEnd(element.firstChild as Text, 5);
+      return range.getBoundingClientRect().width;
+    });
+  await page.evaluate(() => document.fonts.ready.then(() => undefined));
+  const beforeMetrics = await textWidth();
   await openStep(page, 'tuning');
   const size = page.getByRole('spinbutton', { name: /Size adjust/ });
   await size.fill('130');
   await size.press('Enter');
   await closePanels(page);
   await view.getByRole('button', { name: 'Adjusted fallback', exact: true }).click();
-  await expect
-    .poll(async () => (await intro.boundingBox())?.height)
-    .not.toBe(beforeMetrics?.height);
+  await expect.poll(textWidth).not.toBe(beforeMetrics);
   await expect
     .poll(async () => (await typography()).every((row) => row.intro === row.body))
     .toBe(true);
