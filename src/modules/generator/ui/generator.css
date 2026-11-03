@@ -531,6 +531,7 @@
   position: relative;
   box-sizing: border-box;
   display: grid;
+  align-content: start;
   gap: calc(var(--ff-article-size) * 1.5);
   min-inline-size: 0;
   padding: var(--ff-space-6);

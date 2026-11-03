@@ -1793,24 +1793,39 @@ test('fonts and CSS files can be dropped anywhere on the page', async ({ page })
   await expect(page.getByRole('alert')).toContainText('Only font files');
 });
 
-test('the generator page itself does not shift while it loads', async ({ page }) => {
-  await page.setViewportSize({ width: 1500, height: 900 });
-  await page.addInitScript(() => {
-    (window as unknown as { shifts: number }).shifts = 0;
-    new PerformanceObserver((list) => {
-      for (const entry of list.getEntries() as unknown as {
-        value: number;
-        hadRecentInput: boolean;
-      }[]) {
-        if (!entry.hadRecentInput) (window as unknown as { shifts: number }).shifts += entry.value;
-      }
-    }).observe({ type: 'layout-shift', buffered: true });
-  });
-  await page.goto('/en/');
-  await waitForGenerator(page);
-  await page.waitForTimeout(1500);
-  const total = await page.evaluate(() => (window as unknown as { shifts: number }).shifts);
-  expect(total).toBeLessThan(0.02);
+test.describe('the generator page itself does not shift while it loads', () => {
+  for (const [name, width, budget] of [
+    ['desktop', 1500, 0.003],
+    ['phone', 360, 0.001],
+  ] as const) {
+    for (const opened of [undefined, 'inputs', 'audience', 'tuning', 'results']) {
+      test(`${name}, ${opened ? `${opened} panel saved open` : 'no saved panel'}`, async ({
+        page,
+      }) => {
+        await page.setViewportSize({ width, height: 900 });
+        await page.addInitScript((id) => {
+          const key = 'fontstay:layout:dock';
+          if (id) localStorage.setItem(key, JSON.stringify({ opened: [id] }));
+          else localStorage.removeItem(key);
+          (window as unknown as { shifts: number }).shifts = 0;
+          new PerformanceObserver((list) => {
+            for (const entry of list.getEntries() as unknown as {
+              value: number;
+              hadRecentInput: boolean;
+            }[]) {
+              if (!entry.hadRecentInput)
+                (window as unknown as { shifts: number }).shifts += entry.value;
+            }
+          }).observe({ type: 'layout-shift', buffered: true });
+        }, opened);
+        await page.goto('/en/');
+        await waitForGenerator(page);
+        await page.waitForTimeout(1500);
+        const total = await page.evaluate(() => (window as unknown as { shifts: number }).shifts);
+        expect(total).toBeLessThan(budget);
+      });
+    }
+  }
 });
 
 test('the header keeps its size and position on every page', async ({ page }) => {
@@ -1996,6 +2011,9 @@ test.describe('loading a font does not shift the layout', () => {
             toolbar: top('.ff-toolbar'),
             frame: top('.ff-article-view__frame'),
             intro: top('.ff-article:not([data-probe]) .ff-intro'),
+            introHeight: root
+              .querySelector('.ff-article:not([data-probe]) .ff-intro')
+              ?.getBoundingClientRect().height,
             introBlocks: [
               ...root.querySelectorAll(
                 '.ff-article:not([data-probe]) .ff-intro > *, .ff-article:not([data-probe]) .ff-intro__card',

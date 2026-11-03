@@ -73,6 +73,7 @@ const indexable = !process.env.WORKERS_CI_BRANCH || process.env.WORKERS_CI_BRANC
       <link rel="alternate" hreflang={code} href={new URL(localizeHref(path, { locale: code }), Astro.site)} />
     ))}
     {!indexable && <meta name="robots" content="noindex" />}
+    <slot name="head" />
   </head>
   <body>
     <a class="ff-skip-link" href="#main-content">{t.ui_skip_content()}</a>

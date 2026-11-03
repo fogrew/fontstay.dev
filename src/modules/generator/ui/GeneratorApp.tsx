@@ -1792,6 +1792,7 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
           {
             id: 'audience',
             label: t.col_audience(),
+            clientOnly: true,
             content: (
               <div class="ff-generator__settings">
                 {restored && (

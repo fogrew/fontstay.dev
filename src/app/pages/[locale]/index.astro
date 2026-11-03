@@ -11,5 +11,6 @@ const locale = assertIsLocale(Astro.params.locale);
 ---
 
 <BaseLayout {locale} path="/">
+  <script is:inline slot="head" src="/dock-restore.js"></script>
   <HomePage {locale} />
 </BaseLayout>
