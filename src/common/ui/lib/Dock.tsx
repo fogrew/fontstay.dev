@@ -23,6 +23,8 @@ export interface DockOpenDetail {
   focus?: boolean;
 }
 
+const DESKTOP_LAYOUT = '(min-width: 64rem)';
+
 export function Dock({ items, storageKey, nextLabel }: DockProps) {
   const base = useId();
   const ids = items.map((item) => item.id);
@@ -39,7 +41,7 @@ export function Dock({ items, storageKey, nextLabel }: DockProps) {
     });
     const first = saved?.[0];
     const skip = items.find((item) => item.id === first)?.clientOnly;
-    skippedRestore.current = !!skip && !window.matchMedia(FLOATING_PANELS).matches;
+    skippedRestore.current = !!skip && !window.matchMedia(DESKTOP_LAYOUT).matches;
     setActive(skippedRestore.current ? undefined : first);
     setReady(true);
   }, []);

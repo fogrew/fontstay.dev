@@ -475,15 +475,12 @@
     block-size: calc(100dvh - 2 * var(--ff-space-2));
   }
   .ff-dock__column {
+    display: contents;
+  }
+  .ff-dock__heading {
+    order: 0;
     flex: 0 0 auto;
-    min-block-size: 0;
   }
-  .ff-dock__column[data-open="true"] {
-    display: flex;
-    flex: 1 1 auto;
-    flex-direction: column;
-  }
-  .ff-dock__heading,
   .ff-dock__footer {
     flex: 0 0 auto;
   }
@@ -491,6 +488,7 @@
     border-color: var(--ff-accent);
   }
   .ff-dock__panel {
+    order: 1;
     display: flex;
     flex: 1 1 auto;
     flex-direction: column;

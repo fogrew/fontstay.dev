@@ -1915,15 +1915,22 @@ test('article typography reaches the intro in every comparison mode', async ({ p
     .toBe(true);
 });
 
-test('an open panel leaves room for all four step headings', async ({ page }) => {
+test('an open panel stays below all four step headings', async ({ page }) => {
   await page.setViewportSize({ width: 1500, height: 900 });
   await page.goto('/en/');
   await waitForGenerator(page);
+  const heading = page.locator('.ff-dock__heading');
+  const before = await heading.evaluateAll((all) => all.map((h) => h.getBoundingClientRect().y));
   await openStep(page, 'audience');
-  const box = await page.locator('.ff-dock__panel:not([hidden])').boundingBox();
-  const bottom = (box?.y ?? 0) + (box?.height ?? 0);
-  expect(bottom).toBeGreaterThan(500);
-  expect(bottom).toBeLessThanOrEqual(900);
+  const after = await heading.evaluateAll((all) => all.map((h) => h.getBoundingClientRect().y));
+  expect(after).toEqual(before);
+  const panel = await page.locator('.ff-dock__panel:not([hidden])').boundingBox();
+  const dock = await page.locator('.ff-dock').boundingBox();
+  const last = before[before.length - 1] ?? 0;
+  expect(panel?.y ?? 0).toBeGreaterThan(last);
+  expect((panel?.y ?? 0) + (panel?.height ?? 0)).toBeLessThanOrEqual(
+    (dock?.y ?? 0) + (dock?.height ?? 0) + 1,
+  );
 });
 
 test('the next button moves to the following panel and the last one has none', async ({ page }) => {
