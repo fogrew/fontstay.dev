@@ -5,7 +5,12 @@ import { ScrollShadow } from './ScrollShadow';
 import { transition } from './transition';
 
 export interface DockProps {
-  items: readonly { id: string; label: string; content: ComponentChildren }[];
+  items: readonly {
+    id: string;
+    label: string;
+    content: ComponentChildren;
+    clientOnly?: boolean;
+  }[];
   storageKey: string;
   nextLabel: (label: string) => string;
 }
@@ -27,6 +32,7 @@ export function Dock({ items, storageKey, nextLabel }: DockProps) {
   const [active, setActive] = useState<string>();
   const [ready, setReady] = useState(false);
   const root = useRef<HTMLDivElement>(null);
+  const skippedRestore = useRef(false);
   const [focusRequest, setFocusRequest] = useState<{ id: string }>();
 
   useEffect(() => {
@@ -34,7 +40,10 @@ export function Dock({ items, storageKey, nextLabel }: DockProps) {
       if (typeof value !== 'object' || value === null) return undefined;
       return parseIds((value as Record<string, unknown>).opened, ids);
     });
-    setActive(saved?.[0]);
+    const first = saved?.[0];
+    const skip = items.find((item) => item.id === first)?.clientOnly;
+    skippedRestore.current = !!skip && !window.matchMedia(FLOATING_PANELS).matches;
+    setActive(skippedRestore.current ? undefined : first);
     setReady(true);
   }, []);
   useEffect(() => {
@@ -54,7 +63,9 @@ export function Dock({ items, storageKey, nextLabel }: DockProps) {
     if (focusRequest) document.getElementById(`${base}-${focusRequest.id}-button`)?.focus();
   }, [focusRequest]);
   useEffect(() => {
-    if (ready) saveLayout(storageKey, { opened: active ? [active] : [] });
+    if (active) skippedRestore.current = false;
+    if (ready && !skippedRestore.current)
+      saveLayout(storageKey, { opened: active ? [active] : [] });
   }, [ready, active, storageKey]);
 
   useEffect(() => {
@@ -88,13 +99,20 @@ export function Dock({ items, storageKey, nextLabel }: DockProps) {
       ref={root}
       class="ff-dock"
       data-active={active}
+      data-ready={ready || undefined}
       data-edge={activeIndex === 0 ? 'start' : activeIndex === ids.length - 1 ? 'end' : undefined}
     >
       {items.map((item, index) => {
         const open = item.id === active;
         const next = items[index + 1];
         return (
-          <section class="ff-dock__column" data-open={open} data-id={item.id} key={item.id}>
+          <section
+            class="ff-dock__column"
+            data-open={open}
+            data-id={item.id}
+            data-client-only={item.clientOnly || undefined}
+            key={item.id}
+          >
             <h2 class="ff-dock__heading">
               <button
                 type="button"
