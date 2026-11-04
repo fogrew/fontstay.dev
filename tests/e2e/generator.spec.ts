@@ -1484,9 +1484,11 @@ test('fonts and settings survive a reload and the share link restores the settin
   await fresh.close();
 
   await page.getByRole('button', { name: 'Forget', exact: true }).click();
-  await expect(
-    page.getByRole('status').filter({ hasText: /were removed from this browser/ }),
-  ).toBeVisible();
+  await expect(page.getByRole('button', { name: /^Remove: .*\.(woff2|ttf)/ })).toHaveCount(0);
+  await waitForGenerator(page);
+  await openStep(page, 'inputs');
+  await expect(page.getByText('Add a font', { exact: true })).toBeVisible();
+  expect(new URL(page.url()).hash).toBe('');
   await page.reload();
   await waitForGenerator(page);
   await expect(page.getByRole('button', { name: /^Remove: .*\.(woff2|ttf)/ })).toHaveCount(0);

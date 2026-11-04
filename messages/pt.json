@@ -263,7 +263,6 @@
   "share_forget": "Esquecer dados salvos",
   "share_copied": "O link foi copiado.",
   "share_failed": "Não foi possível copiar o link.",
-  "share_forgotten": "As fontes e configurações salvas foram removidas deste navegador.",
   "nav_presets": "Predefinições",
   "presets_heading": "Predefinições de pilhas de fontes",
   "presets_intro": "Pilhas selecionadas de fontes que acompanham os sistemas. Copie a pilha ou abra-a no gerador, que pré-seleciona os fallbacks correspondentes para cada sistema.",

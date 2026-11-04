@@ -1150,10 +1150,10 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
     }
   };
   const forget = async () => {
+    setForgotten(stateKey);
     await clearStorage();
     clearLayouts();
-    setForgotten(stateKey);
-    setShareMessage(t.share_forgotten());
+    location.assign(location.pathname + location.search);
   };
   const actions = useRef({ copyLink, forget });
   actions.current = { copyLink, forget };

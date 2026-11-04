@@ -263,7 +263,6 @@
   "share_forget": "Olvidar datos guardados",
   "share_copied": "Se copió el enlace.",
   "share_failed": "No se pudo copiar el enlace.",
-  "share_forgotten": "Se eliminaron las fuentes y los ajustes guardados de este navegador.",
   "nav_presets": "Preajustes",
   "presets_heading": "Preajustes de pilas de fuentes",
   "presets_intro": "Pilas de fuentes seleccionadas que se incluyen con los sistemas. Copia la pila o ábrela en el generador, que preselecciona los respaldos correspondientes para cada sistema.",
