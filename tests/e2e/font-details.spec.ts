@@ -8,6 +8,7 @@ const fonts = new URL('../fixtures/fonts/', import.meta.url).pathname.replace(
 );
 const sourceSans = `${fonts}SourceSansPro-Regular.woff2`;
 const mada = `${fonts}Mada-VF.ttf`;
+const fira = `${fonts}FiraSans-Regular.ttf`;
 
 async function openDetails(page: Page, file: string, locale = 'en', heading = 'Font details') {
   await page.goto(`/${locale}/`);
@@ -34,8 +35,8 @@ test('the details panel lists the features, name table and languages of a font',
   for (const tag of ['liga', 'kern', 'smcp', 'onum', 'ss01']) {
     await expect(features.locator('.ff-details__tag', { hasText: tag })).toBeVisible();
   }
-  await expect(features.getByLabel('Apply liga')).toBeChecked();
-  await expect(features.getByLabel('Apply smcp')).not.toBeChecked();
+  await expect(features.getByRole('checkbox', { name: /^liga / })).toBeChecked();
+  await expect(features.getByRole('checkbox', { name: /^smcp / })).not.toBeChecked();
 
   await page.getByRole('tab', { name: 'Languages' }).click();
   const languages = page.getByRole('tabpanel', { name: 'Languages' });
@@ -55,10 +56,10 @@ test('ticking features and moving axes generates the matching CSS', async ({ pag
 
   await page.getByRole('tab', { name: 'Features' }).click();
   const features = page.getByRole('tabpanel', { name: 'Features' });
-  await features.getByLabel('Apply smcp').check();
-  await features.getByLabel('Apply onum').check();
-  await features.getByLabel('Apply ss01').check();
-  await features.getByLabel('Apply liga').uncheck();
+  await features.getByRole('checkbox', { name: /^smcp / }).check();
+  await features.getByRole('checkbox', { name: /^onum / }).check();
+  await features.getByRole('checkbox', { name: /^ss01 / }).check();
+  await features.getByRole('checkbox', { name: /^liga / }).uncheck();
   await expect(page.locator('.ff-details__stage')).toHaveCSS(
     'font-feature-settings',
     '"liga" 0, "onum", "smcp", "ss01"',
@@ -114,4 +115,23 @@ test('the details panel is localized and passes the accessibility audit', async 
     .withTags(['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa'])
     .analyze();
   expect(results.violations).toEqual([]);
+});
+
+test('a static TrueType font lists its stylistic sets and writes ligature and caps variants', async ({
+  page,
+}) => {
+  await openDetails(page, fira);
+  await page.getByRole('tab', { name: 'Features' }).click();
+  const features = page.getByRole('tabpanel', { name: 'Features' });
+  for (const tag of ['liga', 'kern', 'smcp', 'ss01', 'frac']) {
+    await expect(features.locator('.ff-details__tag', { hasText: tag })).toBeVisible();
+  }
+  await features.getByRole('checkbox', { name: /^liga / }).uncheck();
+  await features.getByRole('checkbox', { name: /^clig / }).uncheck();
+  await features.getByRole('checkbox', { name: /^smcp / }).check();
+  await features.getByRole('checkbox', { name: /^c2sc / }).check();
+  await page.getByRole('tab', { name: 'CSS' }).click();
+  const css = page.getByRole('tabpanel', { name: 'CSS' });
+  await expect(css).toContainText('font-variant-ligatures: no-common-ligatures;');
+  await expect(css).toContainText('font-variant-caps: all-small-caps;');
 });

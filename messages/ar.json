@@ -548,7 +548,6 @@
   "details_kind_static": "خط ثابت",
   "details_features_summary": "عدد ميزات OpenType: {count}. حدّد ميزة لتطبيقها على المعاينات وشيفرة CSS.",
   "details_features_none": "لا يحتوي الخط على ميزات تخطيط OpenType.",
-  "details_feature_toggle": "تطبيق {tag}",
   "details_feature_default_on": "مفعّلة افتراضياً",
   "details_feature_gsub": "استبدال",
   "details_feature_gpos": "تموضع",

@@ -191,7 +191,6 @@ export function FontDetailsPanel({ locale, metrics, bytes, fontId }: FontDetails
                   class="ff-details__check"
                   type="checkbox"
                   checked={on}
-                  aria-label={t.details_feature_toggle({ tag: feature.tag })}
                   onChange={(event) =>
                     setFeatures({ ...features, [feature.tag]: event.currentTarget.checked })
                   }
@@ -350,7 +349,7 @@ export function FontDetailsPanel({ locale, metrics, bytes, fontId }: FontDetails
             </p>
             <ul class="ff-details__palettes">
               {details.palettes.palettes.map((palette, index) => (
-                <li key={palette.join()} class="ff-details__palette">
+                <li key={index} class="ff-details__palette">
                   <span>{t.details_palette_label({ number: index + 1 })}</span>
                   <span class="ff-details__swatches" role="img" aria-label={palette.join(', ')}>
                     {palette.map((color, position) => (

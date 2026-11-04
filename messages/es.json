@@ -548,7 +548,6 @@
   "details_kind_static": "Fuente estática",
   "details_features_summary": "{count} funciones OpenType. Marca una para aplicarla a las vistas previas y al CSS.",
   "details_features_none": "La fuente no tiene funciones de maquetación OpenType.",
-  "details_feature_toggle": "Aplicar {tag}",
   "details_feature_default_on": "Activada por defecto",
   "details_feature_gsub": "Sustitución",
   "details_feature_gpos": "Posicionamiento",

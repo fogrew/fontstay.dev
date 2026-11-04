@@ -548,7 +548,6 @@
   "details_kind_static": "Fonte estática",
   "details_features_summary": "{count} recursos OpenType. Marque um para aplicá-lo às prévias e ao CSS.",
   "details_features_none": "A fonte não tem recursos de layout OpenType.",
-  "details_feature_toggle": "Aplicar {tag}",
   "details_feature_default_on": "Ativado por padrão",
   "details_feature_gsub": "Substituição",
   "details_feature_gpos": "Posicionamento",

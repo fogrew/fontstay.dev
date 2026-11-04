@@ -548,7 +548,6 @@
   "details_kind_static": "Статичный шрифт",
   "details_features_summary": "Возможностей OpenType: {count}. Отметьте возможность, чтобы применить её к примерам и CSS.",
   "details_features_none": "В шрифте нет возможностей разметки OpenType.",
-  "details_feature_toggle": "Применить {tag}",
   "details_feature_default_on": "Включено по умолчанию",
   "details_feature_gsub": "Замена глифов",
   "details_feature_gpos": "Позиционирование",

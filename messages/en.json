@@ -548,7 +548,6 @@
   "details_kind_static": "Static font",
   "details_features_summary": "{count} OpenType features. Tick a feature to apply it to the previews and the CSS.",
   "details_features_none": "The font has no OpenType layout features.",
-  "details_feature_toggle": "Apply {tag}",
   "details_feature_default_on": "On by default",
   "details_feature_gsub": "Substitution",
   "details_feature_gpos": "Positioning",
