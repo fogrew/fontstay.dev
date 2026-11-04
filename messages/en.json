@@ -263,7 +263,6 @@
   "share_forget": "Forget saved data",
   "share_copied": "The link was copied.",
   "share_failed": "The link could not be copied.",
-  "share_forgotten": "Saved fonts and settings were removed from this browser.",
   "nav_presets": "Presets",
   "presets_heading": "Font stack presets",
   "presets_intro": "Curated stacks of fonts that ship with the systems. Copy the stack or open it in the generator, which preselects the matching fallbacks for every system.",
