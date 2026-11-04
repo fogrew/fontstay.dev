@@ -175,6 +175,7 @@
   "style_bold_italic": "Negrita cursiva",
   "style_unmatched": "No hay métricas para este estilo: {fonts}. Usan la variante normal y el navegador sintetiza el estilo.",
   "nav_label": "Principal",
+  "nav_menu": "Menú",
   "nav_generator": "Generador",
   "nav_fonts": "Fuentes del sistema",
   "catalog_heading": "Fuentes del sistema",

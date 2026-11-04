@@ -175,6 +175,7 @@
   "style_bold_italic": "عريض مائل",
   "style_unmatched": "لا توجد مقاييس لهذا النمط: {fonts}. تستخدم الوجه العادي ويولّد المتصفح النمط صناعيًا.",
   "nav_label": "الرئيسية",
+  "nav_menu": "القائمة",
   "nav_generator": "المولِّد",
   "nav_fonts": "خطوط النظام",
   "catalog_heading": "خطوط النظام",

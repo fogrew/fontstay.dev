@@ -344,7 +344,7 @@ test('a step panel that scrolls shows an edge shadow only on the side with more 
 test('a dropdown list that scrolls shows an edge shadow on the side with more options', async ({
   page,
 }) => {
-  await page.setViewportSize({ width: 1280, height: 300 });
+  await page.setViewportSize({ width: 1280, height: 340 });
   await page.goto('/en/');
   await waitForGenerator(page);
   await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(sourceSans);

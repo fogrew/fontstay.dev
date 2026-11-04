@@ -175,6 +175,7 @@
   "style_bold_italic": "Negrito itálico",
   "style_unmatched": "Sem métricas para este estilo: {fonts}. Elas usam a face regular e o navegador sintetiza o estilo.",
   "nav_label": "Principal",
+  "nav_menu": "Menu",
   "nav_generator": "Gerador",
   "nav_fonts": "Fontes do sistema",
   "catalog_heading": "Fontes do sistema",

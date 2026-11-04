@@ -19,7 +19,7 @@ const t = messagesFor(locale);
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
   </head>
   <body>
-    <main class="ff-page" data-import data-after={`/${locale}/#import`} data-failed={t.import_nothing()}>
+    <main class="ff-main ff-page" data-import data-after={`/${locale}/#import`} data-failed={t.import_nothing()}>
       <p role="status" data-status>{t.import_receiving()}</p>
       <p hidden data-home><a href={localizeHref('/', { locale })}>{t.import_back()}</a></p>
     </main>
