@@ -96,14 +96,14 @@ const indexable = !process.env.WORKERS_CI_BRANCH || process.env.WORKERS_CI_BRANC
         </ul>
       </nav>
       <div class="ff-header__end">
-        <div class="ff-header__group"><LocaleSwitcher current={locale} {path} /></div>
         <a class="ff-header__link" href="https://github.com/fogrew/fontstay.dev" title={t.header_github()}><Icon name="github" /><span class="ff-sr-only">{t.header_github()}</span></a>
+        <div class="ff-header__group"><LocaleSwitcher current={locale} {path} /></div>
         <button class="ff-header__toggle" type="button" hidden aria-expanded="false" aria-controls="ff-nav" aria-label={t.nav_menu()} data-nav-toggle>
           <svg class="ff-icon" width="1em" height="1em" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M4 7h16M4 12h16M4 17h16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" /></svg>
         </button>
       </div>
     </header>
-    <main id="main-content" tabindex="-1"><slot /></main>
+    <main class="ff-main" id="main-content" tabindex="-1"><slot /></main>
     <script>
       const header = document.querySelector<HTMLElement>('[data-header]');
       const toggle = header?.querySelector<HTMLButtonElement>('[data-nav-toggle]');
@@ -114,9 +114,17 @@ const indexable = !process.env.WORKERS_CI_BRANCH || process.env.WORKERS_CI_BRANC
           toggle.setAttribute('aria-expanded', String(open));
           header.dataset.menu = open ? 'open' : 'closed';
         };
+        const locale = document.querySelector<HTMLDetailsElement>('[data-locale-menu]');
         toggle.hidden = false;
         setOpen(false);
-        toggle.addEventListener('click', () => setOpen(toggle.getAttribute('aria-expanded') !== 'true'));
+        toggle.addEventListener('click', () => {
+          const open = toggle.getAttribute('aria-expanded') !== 'true';
+          if (open && locale) locale.open = false;
+          setOpen(open);
+        });
+        locale?.addEventListener('toggle', () => {
+          if (locale.open) setOpen(false);
+        });
         header.addEventListener('keydown', (event) => {
           if (event.key !== 'Escape' || toggle.getAttribute('aria-expanded') !== 'true') return;
           setOpen(false);

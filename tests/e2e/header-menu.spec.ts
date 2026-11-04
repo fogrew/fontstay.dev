@@ -32,6 +32,19 @@ test.describe('mobile header menu', () => {
     await expect(nav).toBeHidden();
   });
 
+  test('keeps a single dropdown open at a time', async ({ page }) => {
+    await page.goto('/en/');
+    const toggle = page.getByRole('button', { name: 'Menu' });
+    const language = page.locator('[data-locale-menu]');
+    await toggle.click();
+    await language.locator('summary').click();
+    await expect(language).toHaveJSProperty('open', true);
+    await expect(toggle).toHaveAttribute('aria-expanded', 'false');
+    await toggle.click();
+    await expect(language).toHaveJSProperty('open', false);
+    await expect(toggle).toHaveAttribute('aria-expanded', 'true');
+  });
+
   for (const locale of LOCALES) {
     test(`${locale}: the open header does not overflow horizontally`, async ({ page }) => {
       await page.goto(`/${locale}/`);

@@ -101,4 +101,6 @@ Release procedure:
 - Every external source of data, code or inspiration is added to [`CREDITS.md`](CREDITS.md) in the same PR.
 - UI strings only via i18n messages (`messages/<locale>.json`, English is the source of truth); in components use `messagesFor(locale)` from `@/common/i18n` and pass `locale` explicitly (pages are prerendered, so the global locale must not be relied on). Never hardcode user-visible text.
 - Animate UI state changes with view transitions (FLIP-like): wrap panel and layout changes in `transition()` from `@/common/ui`, name the transitioned elements only while a transition runs (a permanent `view-transition-name` creates a stacking context), prefer panels over page navigation, and always respect `prefers-reduced-motion`.
+- CSS uses class selectors only, named with [BEM](https://getbem.com/) (`block`, `block__element`, `block--modifier`, prefixed `ff-`); no element (tag) selectors for styling, except global resets on `html`, `body` and `*`. Components own their block, and a block is styled only by its own rules.
+- Only one dropdown (menu, popover, details-based switcher) is open at a time; opening one closes the others.
 - Accessibility target: WCAG 2.2 AA.
