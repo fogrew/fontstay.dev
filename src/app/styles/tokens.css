@@ -57,6 +57,7 @@ body {
   padding-inline: var(--ff-space-4);
 }
 .ff-main {
+  padding-inline: var(--ff-space-4);
   flex: 1;
   inline-size: 100%;
   max-inline-size: 90rem;
