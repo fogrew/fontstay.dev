@@ -359,7 +359,6 @@
   "preview_not_installed_note": "A prévia recorre a uma fonte genérica; os valores e a matriz de compatibilidade continuam sendo calculados para ela.",
   "results_pick_font": "Escolha uma única fonte na primeira coluna para ver isto.",
   "tuning_all_note": "Abra uma fonte para ajustar seus fallbacks. O artigo usa todas as fontes; ele mostra os fallbacks do sistema selecionado abaixo.",
-  "tuning_system_label": "Sistema",
   "article_heading": "Artigo",
   "article_view_plain": "Fallback simples",
   "preset_applied_heading": "Predefinição de pilha",
