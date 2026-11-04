@@ -1,5 +1,5 @@
 {
-  "source": "https://github.com/unicode-org/cldr-json (cldr-misc-full, main exemplar characters)",
+  "source": "https://github.com/unicode-org/cldr-json/tree/7d2b9cb11cec08f4d333ad73209deb3df0711c3b (cldr-misc-full, main exemplar characters)",
   "languages": [
     ["ady", "абвгдежзийклмнопрстуфхцчшщъыьэюяёӏ"],
     ["af", "abcdefghijklmnopqrstuvwxyz"],

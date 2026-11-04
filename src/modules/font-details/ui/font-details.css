@@ -8,7 +8,7 @@
   gap: var(--ff-space-2);
   justify-items: start;
 }
-.ff-details__preview .ff-field {
+.ff-details__field {
   inline-size: min(100%, 36rem);
 }
 .ff-details__stage {

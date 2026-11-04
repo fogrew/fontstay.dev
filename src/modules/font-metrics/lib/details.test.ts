@@ -140,3 +140,67 @@ describe('colour palettes', () => {
     expect(readFontDetails(stub({}, { CPAL })).palettes).toBeNull();
   });
 });
+
+describe('hostile tags and strings', () => {
+  const axis = (axisTag: string, minValue = 0, defaultValue = 1, maxValue = 2) => ({
+    axisTag,
+    name: { en: axisTag },
+    minValue,
+    defaultValue,
+    maxValue,
+  });
+
+  it('rejects feature tags that are not alphanumeric', () => {
+    const bytes = new Uint8Array(10 + 2 + 12);
+    const view = new DataView(bytes.buffer);
+    view.setUint16(6, 10);
+    view.setUint16(10, 2);
+    bytes.set(
+      [...'a"}b'].map((char) => char.charCodeAt(0)),
+      12,
+    );
+    bytes.set(
+      [...'ss1 '].map((char) => char.charCodeAt(0)),
+      18,
+    );
+    expect(readFontDetails(stub({ GSUB: bytes })).features.map((feature) => feature.tag)).toEqual([
+      'ss1',
+    ]);
+  });
+
+  it('keeps the scripts when the feature list is malformed', () => {
+    const bytes = new Uint8Array(40);
+    const view = new DataView(bytes.buffer);
+    view.setUint16(4, 10);
+    view.setUint16(6, 0xfff0);
+    view.setUint16(10, 1);
+    bytes.set(
+      [...'latn'].map((char) => char.charCodeAt(0)),
+      12,
+    );
+    expect(readFontDetails(stub({ GSUB: bytes })).scripts).toEqual(['latn']);
+  });
+
+  it('drops malformed, duplicate and inverted axes and keeps the coordinates aligned', () => {
+    const fvar = {
+      axis: [
+        axis('w"}x'),
+        axis('wght', 100, 400, 900),
+        axis('wght'),
+        axis('wdth', 90, 80, 100),
+        axis('opsz'),
+      ],
+      instance: [{ name: { en: 'Bold' }, coord: [1, 700, 5, 6, 12] }],
+    };
+    const details = readFontDetails(stub({}, { fvar }));
+    expect(details.axes.map((item) => item.tag)).toEqual(['wght', 'opsz']);
+    expect(details.instances).toEqual([{ name: 'Bold', coordinates: { wght: 700, opsz: 12 } }]);
+  });
+
+  it('strips control and bidi characters from names', () => {
+    const records = { designer: { en: 'Ann‮e\u0007 Lee' }, license: { en: 'One\r\nTwo​' } };
+    const { names } = readFontDetails(stub({}, { name: { records } }));
+    expect(names.designer).toBe('Anne Lee');
+    expect(names.license).toBe('One\nTwo');
+  });
+});

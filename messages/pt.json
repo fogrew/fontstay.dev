@@ -609,7 +609,6 @@
   "details_axes_summary": "{count} eixos variáveis e {instances} instâncias nomeadas.",
   "details_axis_range": "de {min} a {max}, padrão {initial}",
   "details_axis_label": "{name} ({tag})",
-  "details_axis_value": "Valor de {name}",
   "details_instances_heading": "Instâncias nomeadas",
   "details_instances_label": "Aplicar uma instância nomeada",
   "details_languages_loading": "Verificando idiomas…",

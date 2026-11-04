@@ -609,7 +609,6 @@
   "details_axes_summary": "Осей вариативности: {count}, именованных экземпляров: {instances}.",
   "details_axis_range": "от {min} до {max}, по умолчанию {initial}",
   "details_axis_label": "{name} ({tag})",
-  "details_axis_value": "Значение: {name}",
   "details_instances_heading": "Именованные экземпляры",
   "details_instances_label": "Применить именованный экземпляр",
   "details_languages_loading": "Проверка языков…",

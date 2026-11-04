@@ -609,7 +609,6 @@
   "details_axes_summary": "{count} ejes variables y {instances} instancias con nombre.",
   "details_axis_range": "de {min} a {max}, predeterminado {initial}",
   "details_axis_label": "{name} ({tag})",
-  "details_axis_value": "Valor de {name}",
   "details_instances_heading": "Instancias con nombre",
   "details_instances_label": "Aplicar una instancia con nombre",
   "details_languages_loading": "Comprobando idiomas…",

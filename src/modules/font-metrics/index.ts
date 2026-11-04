@@ -9,11 +9,6 @@ export {
 } from './lib/collection';
 export { emptyFontDetails } from './lib/details';
 export {
-  type LanguageRequirement,
-  loadLanguageRequirements,
-  supportedLanguages,
-} from './lib/languages';
-export {
   FONT_PARSE_TIMEOUT_MS,
   type FontAxis,
   type FontCategory,

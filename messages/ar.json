@@ -609,7 +609,6 @@
   "details_axes_summary": "عدد المحاور المتغيرة: {count}، والنماذج المسمّاة: {instances}.",
   "details_axis_range": "من {min} إلى {max}، الافتراضي {initial}",
   "details_axis_label": "{name} ({tag})",
-  "details_axis_value": "قيمة {name}",
   "details_instances_heading": "النماذج المسمّاة",
   "details_instances_label": "تطبيق نموذج مسمّى",
   "details_languages_loading": "جارٍ فحص اللغات…",

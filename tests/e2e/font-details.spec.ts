@@ -126,12 +126,12 @@ test('a static TrueType font lists its stylistic sets and writes ligature and ca
   for (const tag of ['liga', 'kern', 'smcp', 'ss01', 'frac']) {
     await expect(features.locator('.ff-details__tag', { hasText: tag })).toBeVisible();
   }
-  await features.getByRole('checkbox', { name: /^liga / }).uncheck();
-  await features.getByRole('checkbox', { name: /^clig / }).uncheck();
+  await features.getByRole('checkbox', { name: /^calt / }).uncheck();
+  await features.getByRole('checkbox', { name: /^dlig / }).check();
   await features.getByRole('checkbox', { name: /^smcp / }).check();
   await features.getByRole('checkbox', { name: /^c2sc / }).check();
   await page.getByRole('tab', { name: 'CSS' }).click();
   const css = page.getByRole('tabpanel', { name: 'CSS' });
-  await expect(css).toContainText('font-variant-ligatures: no-common-ligatures;');
+  await expect(css).toContainText('font-variant-ligatures: no-contextual discretionary-ligatures;');
   await expect(css).toContainText('font-variant-caps: all-small-caps;');
 });

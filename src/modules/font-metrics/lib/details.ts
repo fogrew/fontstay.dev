@@ -62,6 +62,12 @@ const NAME_FIELDS: Record<keyof FontNames, string> = {
 };
 const LABELLED_FEATURE = /^(?:ss(?:0[1-9]|1\d|20)|cv(?:0[1-9]|[1-9]\d))$/;
 
+const TAG = /^[A-Za-z0-9]+ *$/;
+
+function cleanTag(value: string): string | null {
+  return value.length === 4 && TAG.test(value) ? value.trimEnd() : null;
+}
+
 class Reader {
   constructor(private readonly view: DataView) {}
 
@@ -73,12 +79,8 @@ class Reader {
   tag(offset: number): string | null {
     if (offset < 0 || offset + 4 > this.view.byteLength) throw new RangeError('out of bounds');
     let text = '';
-    for (let i = 0; i < 4; i++) {
-      const code = this.view.getUint8(offset + i);
-      if (code < 0x20 || code > 0x7e) return null;
-      text += String.fromCharCode(code);
-    }
-    return text;
+    for (let i = 0; i < 4; i++) text += String.fromCharCode(this.view.getUint8(offset + i));
+    return cleanTag(text);
   }
 }
 
@@ -105,14 +107,21 @@ function text(record: unknown): string | null {
 }
 
 function clean(value: string): string | null {
-  const trimmed = value.replace(/\0/g, '').trim().slice(0, MAX_NAME_LENGTH);
+  const printable = value
+    .replace(/\r\n?/g, '\n')
+    .replace(/[\p{Cc}\p{Cf}]/gu, (char) => (char === '\n' || char === '\t' ? char : ''));
+  const trimmed = printable.trim().slice(0, MAX_NAME_LENGTH);
   return trimmed === '' ? null : trimmed;
 }
 
-function readLayout(font: RawFont, table: LayoutTable, features: Map<string, FontFeature>) {
+function readLayout(
+  font: RawFont,
+  table: LayoutTable,
+  features: Map<string, FontFeature>,
+  scripts: Set<string>,
+) {
   const bytes = tableBytes(font, table);
-  const scripts: string[] = [];
-  if (!bytes || bytes.length < 10) return scripts;
+  if (!bytes || bytes.length < 10) return;
   const reader = new Reader(new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength));
   const scriptList = reader.u16(4);
   const featureList = reader.u16(6);
@@ -121,7 +130,7 @@ function readLayout(font: RawFont, table: LayoutTable, features: Map<string, Fon
     const count = Math.min(reader.u16(scriptList), MAX_SCRIPTS);
     for (let i = 0; i < count; i++) {
       const tag = reader.tag(scriptList + 2 + i * 6);
-      if (tag) scripts.push(tag);
+      if (tag) scripts.add(tag);
     }
   }
 
@@ -146,7 +155,6 @@ function readLayout(font: RawFont, table: LayoutTable, features: Map<string, Fon
       features.set(tag, { tag, tables: [table], label });
     }
   }
-  return scripts;
 }
 
 function readFeatures(font: RawFont): Pick<FontDetails, 'features' | 'scripts'> {
@@ -154,7 +162,7 @@ function readFeatures(font: RawFont): Pick<FontDetails, 'features' | 'scripts'> 
   const scripts = new Set<string>();
   for (const table of ['GSUB', 'GPOS'] as const) {
     try {
-      for (const script of readLayout(font, table, features)) scripts.add(script);
+      readLayout(font, table, features, scripts);
     } catch {
       // A malformed layout table only loses that table's feature list.
     }
@@ -173,23 +181,23 @@ function readVariations(font: RawFont): Pick<FontDetails, 'axes' | 'instances'> 
   const table = font.fvar;
   if (!table?.axis) return { axes: [], instances: [] };
   const axes: FontAxis[] = [];
-  const tags: string[] = [];
-  for (const axis of table.axis.slice(0, MAX_AXES)) {
-    const tag = axis.axisTag.trim();
+  const positions: number[] = [];
+  table.axis.slice(0, MAX_AXES).forEach((axis, position) => {
+    const tag = cleanTag(axis.axisTag);
     const min = finite(axis.minValue);
     const def = finite(axis.defaultValue);
     const max = finite(axis.maxValue);
-    if (tag === '' || min === null || def === null || max === null)
-      return { axes: [], instances: [] };
-    tags.push(tag);
+    if (tag === null || min === null || def === null || max === null) return;
+    if (min > def || def > max || axes.some((known) => known.tag === tag)) return;
+    positions.push(position);
     axes.push({ tag, name: text(axis.name) ?? tag, min, default: def, max });
-  }
+  });
   const instances: FontInstance[] = [];
   for (const instance of (table.instance ?? []).slice(0, MAX_INSTANCES)) {
     const coordinates: Record<string, number> = {};
-    tags.forEach((tag, index) => {
-      const value = finite(instance.coord[index]);
-      if (value !== null) coordinates[tag] = value;
+    axes.forEach((axis, index) => {
+      const value = finite(instance.coord[positions[index] ?? -1]);
+      if (value !== null) coordinates[axis.tag] = value;
     });
     instances.push({ name: text(instance.name) ?? '', coordinates });
   }

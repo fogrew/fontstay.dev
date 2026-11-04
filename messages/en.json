@@ -609,7 +609,6 @@
   "details_axes_summary": "{count} variable axes and {instances} named instances.",
   "details_axis_range": "{min} to {max}, default {initial}",
   "details_axis_label": "{name} ({tag})",
-  "details_axis_value": "Value of {name}",
   "details_instances_heading": "Named instances",
   "details_instances_label": "Apply a named instance",
   "details_languages_loading": "Checking languages…",

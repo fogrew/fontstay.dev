@@ -1,14 +1,10 @@
 import { useEffect, useMemo, useState } from 'preact/hooks';
 import { type Locale, type Messages, messagesFor } from '@/common/i18n';
 import { Button, CodeBlock, Tabs } from '@/common/ui';
-import {
-  type FontFeature,
-  type FontMetrics,
-  loadLanguageRequirements,
-  supportedLanguages,
-} from '@/modules/font-metrics';
+import type { FontFeature, FontMetrics } from '@/modules/font-metrics';
 import { buildDetailsCss, changedAxes, changedFeatures } from '../lib/css';
 import { classifyFeature, DEFAULT_PREVIEW, isDefaultOn, sampleFor } from '../lib/features';
+import { loadLanguageRequirements, supportedLanguages } from '../lib/languages';
 import './font-details.css';
 
 export interface FontDetailsPanelProps {
@@ -24,7 +20,7 @@ function safeUrl(value: string | null): string | null {
   if (!value) return null;
   try {
     const url = new URL(value);
-    return URL_PROTOCOLS.has(url.protocol) ? url.href : null;
+    return URL_PROTOCOLS.has(url.protocol) && !url.username && !url.password ? url.href : null;
   } catch {
     return null;
   }
@@ -86,9 +82,12 @@ export function FontDetailsPanel({ locale, metrics, bytes, fontId }: FontDetails
   useEffect(() => {
     let cancelled = false;
     setLanguages(undefined);
-    void loadLanguageRequirements().then((requirements) => {
-      if (!cancelled) setLanguages(supportedLanguages(metrics.codePoints, requirements));
-    });
+    loadLanguageRequirements()
+      .then((requirements) => supportedLanguages(metrics.codePoints, requirements))
+      .catch(() => [])
+      .then((supported) => {
+        if (!cancelled) setLanguages(supported);
+      });
     return () => {
       cancelled = true;
     };
@@ -131,9 +130,12 @@ export function FontDetailsPanel({ locale, metrics, bytes, fontId }: FontDetails
         {value === null ? (
           <span class="ff-muted">{t.details_none()}</span>
         ) : href ? (
-          <a href={href} target="_blank" rel="noopener noreferrer">
-            {value}
-          </a>
+          <>
+            <a href={href} target="_blank" rel="noopener noreferrer">
+              {value}
+            </a>{' '}
+            <span class="ff-details__meta">({new URL(href).host})</span>
+          </>
         ) : (
           value
         )}
@@ -181,9 +183,9 @@ export function FontDetailsPanel({ locale, metrics, bytes, fontId }: FontDetails
           {t.details_features_summary({ count: details.features.length })}
         </p>
         <ul class="ff-details__features">
-          {details.features.map((feature) => {
+          {details.features.map((feature, index) => {
             const on = features[feature.tag] ?? isDefaultOn(feature.tag);
-            const id = `ff-details-${fontId}-${feature.tag}`;
+            const id = `ff-details-${fontId}-${index}`;
             return (
               <li key={feature.tag} class="ff-details__feature">
                 <input
@@ -242,21 +244,20 @@ export function FontDetailsPanel({ locale, metrics, bytes, fontId }: FontDetails
         <ul class="ff-details__axes">
           {details.axes.map((axis) => {
             const value = axisValues[axis.tag] ?? axis.default;
-            const step = axis.max - axis.min <= 10 ? 0.01 : 1;
             const name = t.details_axis_label({ name: axis.name, tag: axis.tag });
             return (
               <li key={axis.tag} class="ff-details__axis">
-                <label class="ff-field">
-                  <span>{name}</span>
+                <div class="ff-field">
+                  <span id={`ff-details-${fontId}-axis-${axis.tag}`}>{name}</span>
                   <span class="ff-details__axis-controls">
                     <input
                       type="range"
                       class="ff-details__range"
                       min={axis.min}
                       max={axis.max}
-                      step={step}
+                      step="any"
                       value={value}
-                      aria-label={t.details_axis_value({ name })}
+                      aria-labelledby={`ff-details-${fontId}-axis-${axis.tag}`}
                       onInput={(event) =>
                         setAxisValues({
                           ...axisValues,
@@ -266,7 +267,7 @@ export function FontDetailsPanel({ locale, metrics, bytes, fontId }: FontDetails
                     />
                     <output class="ff-details__axis-value">{number.format(value)}</output>
                   </span>
-                </label>
+                </div>
                 <span class="ff-details__meta">
                   {t.details_axis_range({
                     min: number.format(axis.min),
@@ -377,7 +378,7 @@ export function FontDetailsPanel({ locale, metrics, bytes, fontId }: FontDetails
   return (
     <div class="ff-details">
       <div class="ff-details__preview">
-        <label class="ff-field">
+        <label class="ff-field ff-details__field">
           <span>{t.details_preview_label()}</span>
           <input
             class="ff-input"
@@ -394,16 +395,15 @@ export function FontDetailsPanel({ locale, metrics, bytes, fontId }: FontDetails
             {t.details_load_failed()}
           </p>
         )}
-        {touched && (
-          <Button
-            onClick={() => {
-              setFeatures({});
-              setAxisValues({});
-            }}
-          >
-            {t.details_preview_reset()}
-          </Button>
-        )}
+        <Button
+          disabled={!touched}
+          onClick={() => {
+            setFeatures({});
+            setAxisValues({});
+          }}
+        >
+          {t.details_preview_reset()}
+        </Button>
       </div>
       <Tabs
         label={t.details_tabs_label()}

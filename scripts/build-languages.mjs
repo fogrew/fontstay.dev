@@ -1,10 +1,10 @@
-// Regenerates src/modules/font-metrics/data/languages.json from CLDR exemplar characters.
+// Regenerates src/modules/font-details/data/languages.json from CLDR exemplar characters.
 import { writeFileSync } from 'node:fs';
 
-const BASE =
-  'https://raw.githubusercontent.com/unicode-org/cldr-json/main/cldr-json/cldr-misc-full/main/';
-const LISTING =
-  'https://api.github.com/repos/unicode-org/cldr-json/contents/cldr-json/cldr-misc-full/main';
+const REF = '7d2b9cb11cec08f4d333ad73209deb3df0711c3b';
+const BASE = `https://raw.githubusercontent.com/unicode-org/cldr-json/${REF}/cldr-json/cldr-misc-full/main/`;
+const LISTING = `https://api.github.com/repos/unicode-org/cldr-json/contents/cldr-json/cldr-misc-full/main?ref=${REF}`;
+const CODE = /^[a-z]{2,3}(-[A-Za-z]{4})?$/;
 const EXTRA = ['sr-Latn'];
 const MAX_CHARS = 300;
 
@@ -35,7 +35,7 @@ function expand(set) {
 const listing = await (await fetch(LISTING)).json();
 const codes = listing
   .map((entry) => entry.name)
-  .filter((name) => !name.includes('-') || EXTRA.includes(name));
+  .filter((name) => CODE.test(name) && (!name.includes('-') || EXTRA.includes(name)));
 
 const languages = [];
 for (const code of codes) {
@@ -51,7 +51,7 @@ for (const code of codes) {
 
 languages.sort((a, b) => a[0].localeCompare(b[0]));
 writeFileSync(
-  new URL('../src/modules/font-metrics/data/languages.json', import.meta.url),
-  `${JSON.stringify({ source: 'https://github.com/unicode-org/cldr-json (cldr-misc-full, main exemplar characters)', languages })}\n`,
+  new URL('../src/modules/font-details/data/languages.json', import.meta.url),
+  `${JSON.stringify({ source: `https://github.com/unicode-org/cldr-json/tree/${REF} (cldr-misc-full, main exemplar characters)`, languages })}\n`,
 );
 console.log(`${languages.length} languages`);
