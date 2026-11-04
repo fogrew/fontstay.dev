@@ -358,7 +358,7 @@
   "tuning_empty": "Añade una fuente para ajustar sus respaldos.",
   "preview_not_installed_note": "La vista previa recurre a una fuente genérica; los valores y la matriz de compatibilidad se calculan igualmente para ella.",
   "results_pick_font": "Elige una sola fuente en la primera columna para ver esto.",
-  "tuning_all_note": "Abre una fuente para ajustar sus respaldos. El artículo usa todas las fuentes; muestra los respaldos del sistema seleccionado abajo.",
+  "tuning_all_note": "Abre una fuente para ajustar sus respaldos. El artículo usa todas las fuentes y muestra los respaldos de tu propio sistema.",
   "article_heading": "Artículo",
   "article_view_plain": "Respaldo sin ajustar",
   "preset_applied_heading": "Preajuste de pila",

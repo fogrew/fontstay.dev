@@ -358,7 +358,7 @@
   "tuning_empty": "Add a font to tune its fallbacks.",
   "preview_not_installed_note": "The preview falls back to a generic font; the values and the support matrix are still calculated for it.",
   "results_pick_font": "Choose a single font in the first column to see this.",
-  "tuning_all_note": "Open a font to tune its fallbacks. The article uses every font; it shows the fallbacks for the system selected below.",
+  "tuning_all_note": "Open a font to tune its fallbacks. The article uses every font and shows the fallbacks for your own system.",
   "article_heading": "Article",
   "article_view_plain": "Plain fallback",
   "preset_applied_heading": "Stack preset",
