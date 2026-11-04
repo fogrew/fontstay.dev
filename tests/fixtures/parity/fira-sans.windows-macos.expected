@@ -1,0 +1,35 @@
+@font-face {
+  font-family: "Fira Sans Fallback";
+  src: local("Trebuchet MS"), local("TrebuchetMS");
+  size-adjust: 100.3942%;
+  ascent-override: 93.1328%;
+  descent-override: 26.3959%;
+  line-gap-override: 0%;
+}
+
+@font-face {
+  font-family: "Fira Sans Fallback";
+  src: local("Trebuchet MS"), local("TrebuchetMS");
+  size-adjust: 103.4935%;
+  ascent-override: 90.3438%;
+  descent-override: 25.6055%;
+  line-gap-override: 0%;
+  unicode-range: U+400-52F, U+1C80-1C8F, U+2DE0-2DFF, U+A640-A69F;
+}
+
+@font-face {
+  font-family: "Fira Sans Fallback";
+  src: local("Trebuchet MS"), local("TrebuchetMS");
+  size-adjust: 101.9142%;
+  ascent-override: 91.7439%;
+  descent-override: 26.0023%;
+  line-gap-override: 0%;
+  unicode-range: U+370-3FF, U+1F00-1FFF;
+}
+
+body {
+  font-family: "Fira Sans", "Fira Sans Fallback", sans-serif;
+  /* Safari has no vertical overrides: match the x-height and fix the line box */
+  font-size-adjust: 0.527;
+  line-height: 1.4;
+}

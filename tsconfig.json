@@ -1,7 +1,7 @@
 {
   "extends": "astro/tsconfigs/strictest",
   "include": [".astro/types.d.ts", "**/*"],
-  "exclude": ["dist", "src/common/i18n/paraglide"],
+  "exclude": ["dist", "packages/fontstay/dist", "src/common/i18n/paraglide"],
   "compilerOptions": {
     "jsx": "react-jsx",
     "jsxImportSource": "preact",

@@ -10,6 +10,7 @@ Static Astro site that generates metric-adjusted fallback font stacks. Full scop
 | `pnpm check` | Compile messages, then typecheck (`astro check`) |
 | `pnpm changelog` | Regenerate `CHANGELOG.md` (the `Unreleased` section) from Conventional Commits with git-cliff (`cliff.toml`) |
 | `pnpm release <semver>` | On `release/v<semver>`: bump `package.json`, stamp `CHANGELOG.md` with the version; commit and signed tag are manual |
+| `pnpm cli:build` | Bundle the Node library and CLI of the fit engine from `packages/fontstay/src` into `packages/fontstay/dist/` (rolldown; `browserslist` stays external). `packages/fontstay/index.d.ts` is hand-written and checked against the implementation by `astro check` |
 | `pnpm i18n:add <locale>` | Scaffold a new locale (settings, `messages/<locale>.json` copied from English, catalog entry) |
 | `pnpm i18n:compile` | Regenerate the Paraglide runtime in `src/common/i18n/paraglide/` (gitignored) |
 | `pnpm lint` / `pnpm lint:fix` / `pnpm format` | Biome lint + format |

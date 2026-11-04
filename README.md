@@ -54,6 +54,10 @@ pnpm perf      # initial JavaScript budget (after a build)
 - Export as CSS, CSS custom properties, Tailwind v4, Next.js, Nuxt Fonts, Astro, WordPress theme.json, Fontaine (Vite), JSON, preload tags, a Font Loading API script, or a Markdown impact report.
 - Share links (`#s=...`), local persistence of fonts and settings, presets, a system font catalog, a guide.
 
+## Node library and CLI
+
+`packages/fontstay` publishes the fit engine without the UI: `fontstay fit font.woff2 --systems windows,macos --audience defaults` prints the same `@font-face` CSS as the app, for CI and build pipelines. Build it with `pnpm cli:build`; usage and the library API are in [`packages/fontstay/README.md`](packages/fontstay/README.md).
+
 ## Data scripts
 
 Generated data is committed; the scripts need network access (and, for Windows metrics, a Windows machine):

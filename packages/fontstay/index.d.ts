@@ -1,0 +1,97 @@
+export type OsId = 'windows' | 'macos' | 'ios' | 'android' | 'linux' | 'chromeos';
+export type Category = 'sans-serif' | 'serif' | 'monospace';
+export type ExportFormat =
+  | 'css'
+  | 'variables'
+  | 'tailwind'
+  | 'next'
+  | 'nuxt'
+  | 'astro'
+  | 'preload'
+  | 'loading';
+export type FitErrorCode = 'invalid-audience' | 'no-systems' | 'no-fit';
+export type FontParseErrorCode =
+  | 'too-large'
+  | 'invalid-font'
+  | 'unsupported-format'
+  | 'timeout'
+  | 'worker-error'
+  | 'busy'
+  | 'disposed';
+
+export declare const OS_IDS: readonly OsId[];
+export declare const CATEGORIES: readonly Category[];
+export declare const EXPORT_FORMATS: readonly ExportFormat[];
+
+export interface FontFile {
+  /** Name used for the export and in messages, for example `inter.woff2`. */
+  fileName: string;
+  /** Raw bytes of a WOFF2, WOFF, TTF or OTF file. */
+  data: Uint8Array;
+}
+
+export interface FitOptions {
+  fonts: readonly FontFile[];
+  /** Browserslist query, optionally with `os <system>` and `not os <system>` parts. */
+  audience?: string;
+  /** Restrict the fit to these systems. */
+  systems?: readonly OsId[];
+  /** Frequency profile of the fit. Default `en`. */
+  locale?: 'en' | 'ru';
+  /** Generic family of the fallbacks. Default: detected from the font. */
+  kind?: Category;
+  /** Add `unicode-range` with the glyphs each font covers. */
+  unicodeRange?: boolean;
+  /** Emit separate faces for other scripts than the primary one. Default `true`. */
+  scripts?: boolean;
+  /** Format of `file`. Default `css`. */
+  format?: ExportFormat;
+}
+
+export interface ExportFile {
+  text: string;
+  fileName: string;
+  language: 'css' | 'js' | 'ts' | 'html';
+}
+
+export interface FitFontReport {
+  fileName: string;
+  family: string;
+  kind: Category;
+  language: 'en' | 'ru';
+  /** Share of the glyph weight that the fallbacks have in common with the font, 0 to 1. */
+  coverage: number;
+  picks: { system: OsId; share: number; family: string }[];
+  fallbackFamilies: string[];
+}
+
+export interface FitOutput {
+  /** `@font-face` rules and `font-family` rules, the same text as the `css` export. */
+  css: string;
+  /** The output in the requested format. */
+  file: ExportFile;
+  fonts: FitFontReport[];
+  /** Audience share of each system, in percent. */
+  shares: Partial<Record<OsId, number>>;
+  /** Systems that have a fallback fitted. */
+  systems: OsId[];
+  /** Systems in the audience without any fallback font to fit. */
+  uncovered: OsId[];
+  audience: { query: string; browsers: number };
+}
+
+export declare class FitRunError extends Error {
+  readonly code: FitErrorCode;
+  constructor(code: FitErrorCode, message: string);
+}
+
+export declare class FontParseError extends Error {
+  readonly code: FontParseErrorCode;
+  constructor(code: FontParseErrorCode);
+}
+
+export declare function fit(options: FitOptions): Promise<FitOutput>;
+export declare function fitFiles(
+  paths: readonly string[],
+  options?: Omit<FitOptions, 'fonts'>,
+): Promise<FitOutput>;
