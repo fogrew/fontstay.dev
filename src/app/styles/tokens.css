@@ -228,6 +228,9 @@ main > h1 {
   block-size: 1.25em;
 }
 @media (max-width: 47.999rem) {
+  .ff-header {
+    padding: var(--ff-space-2) var(--ff-space-6);
+  }
   .ff-header__toggle:not([hidden]) {
     display: inline-flex;
   }
@@ -245,6 +248,7 @@ main > h1 {
   .ff-header__nav a {
     display: block;
     padding-block: 0.5rem;
+    text-align: right;
   }
 }
 .ff-header__nav a,
