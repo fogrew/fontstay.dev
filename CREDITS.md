@@ -69,3 +69,4 @@
 - [WAI-ARIA APG select-only combobox](https://www.w3.org/WAI/ARIA/apg/patterns/combobox/examples/combobox-select-only/) — keyboard and ARIA model of the custom dropdown.
 - [Google Translate](https://translate.google.com/) — machine translation used while developing as a second opinion on the Arabic messages (back-translation to English and a forward comparison); no output is shipped verbatim.
 - [Shiki](https://shiki.style/) (MIT) — syntax highlighting of the export code: the JavaScript regex engine and the CSS, HTML, JavaScript, TypeScript and Markdown grammars with a CSS-variables theme, rendered as class names.
+- [WordPress theme.json font library reference](https://developer.wordpress.org/themes/global-settings-and-styles/settings/typography/#registering-font-families) and [Fontaine README](https://github.com/unjs/fontaine#readme) (MIT) — the `fontFamilies`/`fontFace` structure and the `FontaineTransform.vite` options used by the export formats.
