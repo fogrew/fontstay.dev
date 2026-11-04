@@ -60,6 +60,8 @@ export function ExportPanel({
     next: t.export_next(),
     nuxt: t.export_nuxt(),
     astro: t.export_astro(),
+    wordpress: t.export_wordpress(),
+    fontaine: t.export_fontaine(),
     preload: t.export_preload(),
     loading: t.export_loading(),
   };
@@ -80,6 +82,7 @@ export function ExportPanel({
           {reordered && ` ${t.plan_reordered()}`}
         </p>
       )}
+      {format === 'wordpress' && <p class="ff-muted">{t.wordpress_note()}</p>}
       {format === 'loading' && <p class="ff-muted">{t.loading_note()}</p>}
       <CodeBlock
         locale={locale}

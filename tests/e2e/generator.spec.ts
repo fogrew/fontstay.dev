@@ -1409,6 +1409,8 @@ test('every export format can be shown, copied and downloaded', async ({ page })
     ['Next.js (next/font/local)', 'font.ts', /localFont\(/],
     ['Nuxt Fonts', 'nuxt.config.ts', /@nuxt\/fonts/],
     ['Astro fonts config', 'astro.config.mjs', /provider: 'local'/],
+    ['WordPress (theme.json)', 'theme.json', /"fontFamilies": \[/],
+    ['Fontaine (Vite config)', 'vite.config.ts', /FontaineTransform\.vite/],
     ['Preload tag', 'preload.html', /rel="preload"/],
     ['Font Loading API script', 'font-loading.js', /document\.fonts\.load/],
   ];
