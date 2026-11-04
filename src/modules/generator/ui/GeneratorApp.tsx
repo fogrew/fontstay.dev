@@ -539,7 +539,7 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
   const [own, setOwn] = useState<OsId>();
   useEffect(() => setOwn(ownOs()), []);
   const current =
-    !allMode && activeOs && systems.includes(activeOs)
+    activeOs && systems.includes(activeOs)
       ? activeOs
       : own && systems.includes(own)
         ? own
@@ -802,7 +802,10 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
       if (failure instanceof CssExportError) return undefined;
       throw failure;
     }
-    const fallback = currentFallback(fontPlan, fontChosen, current);
+    const ownCandidates = own && !listsByOs[own] ? rankOf(font, own, lang, fontStyle) : undefined;
+    const fallback =
+      currentFallback(fontPlan, fontChosen, own) ??
+      ownCandidates?.candidates.find((item) => item.category === fontKind);
     return {
       font,
       family,

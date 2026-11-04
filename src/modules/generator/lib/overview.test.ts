@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { type FontOutput, groupFonts, mergeOutputs, slugOf } from './overview';
+import { currentFallback, type FontOutput, groupFonts, mergeOutputs, slugOf } from './overview';
+import type { Candidate, Plan } from './per-os';
 
 const face = (weight: number) =>
   `@font-face {\n  font-family: "Averia Fallback";\n  src: local("Arial");\n  font-weight: ${weight};\n}`;
@@ -72,5 +73,24 @@ describe('mergeOutputs', () => {
     expect(slugOf('Source Sans Pro')).toBe('source-sans-pro');
     expect(slugOf('  !!!  ')).toBe('font');
     expect(slugOf('1Password')).toBe('font-1password');
+  });
+});
+
+describe('currentFallback', () => {
+  const plan = { resolution: { platforms: [] } } as unknown as Plan;
+  const pick = (os: 'windows' | 'macos', id: string) => ({
+    os,
+    faceId: id,
+    candidate: { id } as Candidate,
+  });
+
+  it('returns the candidate of the requested system only', () => {
+    const chosen = [pick('windows', 'a'), pick('macos', 'b')];
+    expect(currentFallback(plan, chosen, 'macos')?.id).toBe('b');
+  });
+
+  it('never borrows a candidate from another system', () => {
+    expect(currentFallback(plan, [pick('windows', 'a')], 'macos')).toBeUndefined();
+    expect(currentFallback(plan, [pick('windows', 'a')], undefined)).toBeUndefined();
   });
 });
