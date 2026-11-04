@@ -92,7 +92,7 @@ test('the fallback list follows the selected system and reports shadowing with a
   await choose(fallback, 'helvetica');
   await selectSystem(page, 'windows');
   await choose(fallback, 'arial');
-  await openStep(page, 'results');
+  await openStep(page, 'export');
   await expect(page.getByText('The fallback order was changed automatically')).toBeVisible();
   await expect(page.locator('p.ff-error', { hasText: /would be used instead of/ })).toHaveCount(0);
 });
@@ -152,7 +152,7 @@ for (const { width, height } of [
     await expect
       .poll(async () => (await article.boundingBox())?.width ?? 0)
       .toBeGreaterThan(width * 0.4);
-    for (const name of ['1. Inputs', '2. Audience', '3. Fine-tuning', '4. Results']) {
+    for (const name of ['1. Inputs', '2. Audience', '3. Fine-tuning', '4. Export']) {
       await expect(page.getByRole('button', { name, exact: true })).toBeVisible();
     }
   });
@@ -642,7 +642,7 @@ test('the CSS stays reachable while the article is large', async ({ page }) => {
   await page.goto('/en/');
   await waitForGenerator(page);
   await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(sourceSans);
-  await openStep(page, 'results');
+  await openStep(page, 'export');
   const code = page.getByRole('region', { name: 'Generated CSS', includeHidden: true });
   await expect(code).toBeInViewport();
   const box = await code.boundingBox();
@@ -1065,7 +1065,7 @@ test('the dock stays pinned to the top while the article scrolls', async ({ page
   await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(300);
   const dock = await page.locator('.ff-dock').boundingBox();
   expect(dock?.y).toBeLessThanOrEqual(16);
-  await expect(page.getByRole('button', { name: '4. Results', exact: true })).toBeInViewport();
+  await expect(page.getByRole('button', { name: '4. Export', exact: true })).toBeInViewport();
 });
 
 test('a system with a single known font explains why no fallback can be added', async ({
@@ -1539,7 +1539,7 @@ test('the steps are equal columns and only one is open at a time', async ({ page
   await expect(page.locator('.ff-dock__separator')).toHaveCount(0);
 
   await openStep(page, 'inputs');
-  await openStep(page, 'results');
+  await openStep(page, 'export');
   await expect(page.getByRole('button', { name: '1. Inputs', exact: true })).toHaveAttribute(
     'aria-expanded',
     'false',
@@ -1791,7 +1791,7 @@ test.describe('the generator page itself does not shift while it loads', () => {
     ['desktop', 1500, 0.003],
     ['phone', 360, 0.001],
   ] as const) {
-    for (const opened of [undefined, 'inputs', 'audience', 'tuning', 'results']) {
+    for (const opened of [undefined, 'inputs', 'audience', 'tuning', 'export']) {
       test(`${name}, ${opened ? `${opened} panel saved open` : 'no saved panel'}`, async ({
         page,
       }) => {
@@ -1915,22 +1915,24 @@ test('article typography reaches the intro in every comparison mode', async ({ p
     .toBe(true);
 });
 
-test('an open panel stays below all four step headings', async ({ page }) => {
+test('an open panel sits right below its own step heading and fits the viewport', async ({
+  page,
+}) => {
   await page.setViewportSize({ width: 1500, height: 900 });
   await page.goto('/en/');
   await waitForGenerator(page);
-  const heading = page.locator('.ff-dock__heading');
-  const before = await heading.evaluateAll((all) => all.map((h) => h.getBoundingClientRect().y));
+  await page.evaluate(() => window.scrollTo(0, 0));
   await openStep(page, 'audience');
-  const after = await heading.evaluateAll((all) => all.map((h) => h.getBoundingClientRect().y));
-  expect(after).toEqual(before);
+  const heading = await page
+    .getByRole('button', { name: '2. Audience', exact: true })
+    .boundingBox();
+  const next = await page
+    .getByRole('button', { name: '3. Fine-tuning', exact: true })
+    .boundingBox();
   const panel = await page.locator('.ff-dock__panel:not([hidden])').boundingBox();
-  const dock = await page.locator('.ff-dock').boundingBox();
-  const last = before[before.length - 1] ?? 0;
-  expect(panel?.y ?? 0).toBeGreaterThan(last);
-  expect((panel?.y ?? 0) + (panel?.height ?? 0)).toBeLessThanOrEqual(
-    (dock?.y ?? 0) + (dock?.height ?? 0) + 1,
-  );
+  expect(panel?.y ?? 0).toBeGreaterThan((heading?.y ?? 0) + (heading?.height ?? 0) - 1);
+  expect(next?.y ?? 0).toBeGreaterThan((panel?.y ?? 0) + (panel?.height ?? 0) - 1);
+  await expect(page.getByRole('button', { name: 'Next: 3. Fine-tuning' })).toBeInViewport();
 });
 
 test('the next button moves to the following panel and the last one has none', async ({ page }) => {
@@ -1943,7 +1945,7 @@ test('the next button moves to the following panel and the last one has none', a
     'aria-expanded',
     'true',
   );
-  await openStep(page, 'results');
+  await openStep(page, 'export');
   await expect(page.getByRole('button', { name: /^Next:/ })).toHaveCount(0);
 });
 
@@ -1976,7 +1978,7 @@ test('share sits next to download and copy in the code block and spacing is on b
   await page.goto('/en/');
   await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
   await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(sourceSans);
-  await openStep(page, 'results');
+  await openStep(page, 'export');
   const header = page.locator('.ff-dock__panel:not([hidden]) .ff-code__header');
   await expect(header.getByRole('button', { name: 'Share', exact: true })).toBeVisible();
   await expect(header.getByRole('button', { name: /^Download/ })).toBeVisible();
@@ -1996,7 +1998,7 @@ test('the generated code stays left to right and queries stay readable on an Ara
   await page.goto('/ar/');
   await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
   await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(sourceSans);
-  await openStep(page, 'results');
+  await openStep(page, 'export');
   await expect(page.locator('.ff-dock__panel:not([hidden]) .ff-code pre').first()).toHaveAttribute(
     'dir',
     'ltr',
@@ -2467,7 +2469,7 @@ test('desktop settings never overlap the article and survive mobile resizing', a
   await page.setViewportSize({ width: 1280, height: 800 });
   await page.goto('/en/');
   await waitForGenerator(page);
-  for (const step of ['inputs', 'audience', 'tuning', 'results'] as const) {
+  for (const step of ['inputs', 'audience', 'tuning', 'export'] as const) {
     await openStep(page, step);
     const panel = await page.locator('.ff-dock__panel:not([hidden])').boundingBox();
     const article = await page.locator('.ff-generator__stage').boundingBox();

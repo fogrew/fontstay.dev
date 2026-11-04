@@ -491,7 +491,6 @@
   --ff-guide-descender: var(--ff-muted);
   display: grid;
   gap: var(--ff-space-3);
-  margin-block-start: var(--ff-space-3);
 }
 .ff-article-view__controls .ff-field {
   flex: 0 0 auto;

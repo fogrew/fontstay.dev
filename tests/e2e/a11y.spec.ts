@@ -139,7 +139,7 @@ test('keyboard users can reach the main controls and open the sections', async (
   await page.keyboard.press('Enter');
   await expect(page.locator('#main-content')).toBeFocused();
   await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(fontFile);
-  await openStep(page, 'results');
+  await openStep(page, 'export');
   const section = page.getByRole('button', { name: 'Browser support', exact: true });
   await section.focus();
   await expect(section).toHaveAttribute('aria-expanded', 'false');

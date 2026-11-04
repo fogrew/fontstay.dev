@@ -353,7 +353,7 @@
   "col_inputs": "1. المدخلات",
   "col_audience": "2. الجمهور",
   "col_tuning": "3. الضبط الدقيق",
-  "col_results": "4. النتائج",
+  "col_export": "4. التصدير",
   "dock_next": "التالي: {label}",
   "tuning_empty": "أضف خطًا لضبط خطوطه الاحتياطية.",
   "preview_not_installed_note": "تعود المعاينة إلى خط عام؛ ولا تزال القيم ومصفوفة الدعم تُحسب له.",

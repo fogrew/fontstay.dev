@@ -1846,36 +1846,23 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
             ),
           },
           {
-            id: 'results',
-            label: t.col_results(),
+            id: 'export',
+            label: t.col_export(),
             icon: <Icon name="css" />,
             content: showResults ? (
-              <Accordion
-                storageKey="results"
-                resizable={false}
-                resizeLabel={(above, below) => t.accordion_resize({ above, below })}
-                items={[
-                  {
-                    id: 'export',
-                    label: t.export_heading(),
-                    content: (
-                      <ExportPanel
-                        locale={locale}
-                        input={exportInput}
-                        report={reportText}
-                        reordered={reordered}
-                        multi={allMode}
-                        note={shareMessage}
-                        actions={
-                          <Button onClick={() => void copyLink()} title={shareNote}>
-                            <Icon name="share" />
-                            {t.share_copy_short()}
-                          </Button>
-                        }
-                      />
-                    ),
-                  },
-                ]}
+              <ExportPanel
+                locale={locale}
+                input={exportInput}
+                report={reportText}
+                reordered={reordered}
+                multi={allMode}
+                note={shareMessage}
+                actions={
+                  <Button onClick={() => void copyLink()} title={shareNote}>
+                    <Icon name="share" />
+                    {t.share_copy_short()}
+                  </Button>
+                }
               />
             ) : (
               <p class="ff-generator__empty">{t.results_empty()}</p>
