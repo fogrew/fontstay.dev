@@ -396,8 +396,9 @@ export function FontDetailsPanel({ locale, metrics, bytes, fontId }: FontDetails
           </p>
         )}
         <Button
-          disabled={!touched}
+          aria-disabled={!touched}
           onClick={() => {
+            if (!touched) return;
             setFeatures({});
             setAxisValues({});
           }}

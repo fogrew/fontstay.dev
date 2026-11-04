@@ -62,10 +62,15 @@ const NAME_FIELDS: Record<keyof FontNames, string> = {
 };
 const LABELLED_FEATURE = /^(?:ss(?:0[1-9]|1\d|20)|cv(?:0[1-9]|[1-9]\d))$/;
 
-const TAG = /^[A-Za-z0-9]+ *$/;
+const CSS_TAG = /^[A-Za-z0-9]{4}$/;
+const SCRIPT_TAG = /^[A-Za-z0-9]+ *$/;
 
 function cleanTag(value: string): string | null {
-  return value.length === 4 && TAG.test(value) ? value.trimEnd() : null;
+  return CSS_TAG.test(value) ? value : null;
+}
+
+function scriptTag(value: string): string | null {
+  return value.length === 4 && SCRIPT_TAG.test(value) ? value.trimEnd() : null;
 }
 
 class Reader {
@@ -76,11 +81,11 @@ class Reader {
     return this.view.getUint16(offset);
   }
 
-  tag(offset: number): string | null {
+  tag(offset: number, script = false): string | null {
     if (offset < 0 || offset + 4 > this.view.byteLength) throw new RangeError('out of bounds');
     let text = '';
     for (let i = 0; i < 4; i++) text += String.fromCharCode(this.view.getUint8(offset + i));
-    return cleanTag(text);
+    return script ? scriptTag(text) : cleanTag(text);
   }
 }
 
@@ -129,7 +134,7 @@ function readLayout(
   if (scriptList) {
     const count = Math.min(reader.u16(scriptList), MAX_SCRIPTS);
     for (let i = 0; i < count; i++) {
-      const tag = reader.tag(scriptList + 2 + i * 6);
+      const tag = reader.tag(scriptList + 2 + i * 6, true);
       if (tag) scripts.add(tag);
     }
   }

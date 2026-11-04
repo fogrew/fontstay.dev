@@ -6,9 +6,11 @@ export function LazyFontDetails(props: FontDetailsPanelProps) {
   const [Panel, setPanel] = useState<ComponentType<FontDetailsPanelProps>>();
   useEffect(() => {
     let cancelled = false;
-    void import('./FontDetailsPanel').then((module) => {
-      if (!cancelled) setPanel(() => module.FontDetailsPanel);
-    });
+    import('./FontDetailsPanel')
+      .then((module) => {
+        if (!cancelled) setPanel(() => module.FontDetailsPanel);
+      })
+      .catch(() => undefined);
     return () => {
       cancelled = true;
     };

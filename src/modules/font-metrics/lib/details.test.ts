@@ -151,20 +151,22 @@ describe('hostile tags and strings', () => {
   });
 
   it('rejects feature tags that are not alphanumeric', () => {
-    const bytes = new Uint8Array(10 + 2 + 12);
+    const bytes = new Uint8Array(10 + 2 + 18);
     const view = new DataView(bytes.buffer);
     view.setUint16(6, 10);
-    view.setUint16(10, 2);
-    bytes.set(
-      [...'a"}b'].map((char) => char.charCodeAt(0)),
-      12,
-    );
-    bytes.set(
-      [...'ss1 '].map((char) => char.charCodeAt(0)),
-      18,
-    );
+    view.setUint16(10, 3);
+    for (const [at, tag] of [
+      [12, 'a"}b'],
+      [18, 'ab  '],
+      [24, 'ss01'],
+    ] as const) {
+      bytes.set(
+        [...tag].map((char) => char.charCodeAt(0)),
+        at,
+      );
+    }
     expect(readFontDetails(stub({ GSUB: bytes })).features.map((feature) => feature.tag)).toEqual([
-      'ss1',
+      'ss01',
     ]);
   });
 
