@@ -241,7 +241,7 @@ h3 {
   .ff-header__toggle:not([hidden]) {
     display: inline-flex;
   }
-  #ff-nav {
+  .ff-header[data-menu] #ff-nav {
     position: absolute;
     inset-block-start: 100%;
     inset-inline-end: var(--ff-space-4);
@@ -268,7 +268,7 @@ h3 {
     min-block-size: 2rem;
     padding-block: 0.25rem;
     line-height: 1.5;
-    text-align: right;
+    text-align: end;
     white-space: nowrap;
   }
 }

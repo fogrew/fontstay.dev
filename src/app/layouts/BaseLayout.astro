@@ -117,10 +117,14 @@ const indexable = !process.env.WORKERS_CI_BRANCH || process.env.WORKERS_CI_BRANC
         const locale = document.querySelector<HTMLDetailsElement>('[data-locale-menu]');
         toggle.hidden = false;
         setOpen(false);
-        toggle.addEventListener('click', () => {
+        toggle.addEventListener('click', (event) => {
           const open = toggle.getAttribute('aria-expanded') !== 'true';
           if (open && locale) locale.open = false;
           setOpen(open);
+          if (open && event.detail === 0) nav.querySelector<HTMLElement>('a')?.focus();
+        });
+        document.addEventListener('click', (event) => {
+          if (!header.contains(event.target as Node)) setOpen(false);
         });
         locale?.addEventListener('toggle', () => {
           if (locale.open) setOpen(false);

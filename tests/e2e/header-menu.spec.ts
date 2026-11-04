@@ -45,6 +45,23 @@ test.describe('mobile header menu', () => {
     await expect(toggle).toHaveAttribute('aria-expanded', 'true');
   });
 
+  test('opening with the keyboard focuses the first link', async ({ page }) => {
+    await page.goto('/en/');
+    const toggle = page.getByRole('button', { name: 'Menu' });
+    await toggle.focus();
+    await page.keyboard.press('Enter');
+    await expect(page.locator('#ff-nav a').first()).toBeFocused();
+  });
+
+  test('closes when clicking outside the header', async ({ page }) => {
+    await page.goto('/en/');
+    const toggle = page.getByRole('button', { name: 'Menu' });
+    await toggle.click();
+    await expect(toggle).toHaveAttribute('aria-expanded', 'true');
+    await page.mouse.click(10, 600);
+    await expect(toggle).toHaveAttribute('aria-expanded', 'false');
+  });
+
   for (const locale of LOCALES) {
     test(`${locale}: the open header does not overflow horizontally`, async ({ page }) => {
       await page.goto(`/${locale}/`);

@@ -15,7 +15,7 @@ const t = messagesFor(current);
   <details data-locale-menu>
     <summary title={t.locale_switcher_label()}>
       <svg width="1em" height="1em" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><g fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9" /><path d="M3 12h18" /><ellipse cx="12" cy="12" rx="4" ry="9" /></g></svg>
-      <span class="ff-sr-only" lang={current}>{localeName(current)}</span>
+      <span class="ff-sr-only">{t.locale_switcher_label()}: <span lang={current}>{localeName(current)}</span></span>
     </summary>
     <ul>
       {
@@ -100,7 +100,7 @@ const t = messagesFor(current);
     padding: 0.25rem 0.5rem;
     border-radius: var(--ff-radius);
     line-height: 1.5;
-    text-align: right;
+    text-align: end;
     text-decoration: none;
     white-space: nowrap;
   }
