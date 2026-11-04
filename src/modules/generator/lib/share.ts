@@ -35,7 +35,7 @@ export interface ShareState extends FontState {
 }
 
 const OS_LIST: readonly OsId[] = ['windows', 'macos', 'ios', 'android', 'linux', 'chromeos'];
-const KINDS: readonly Category[] = ['sans-serif', 'serif', 'monospace'];
+const KINDS: readonly Category[] = ['sans-serif', 'serif', 'monospace', 'cursive'];
 const STYLES: readonly FontStyleKey[] = ['regular', 'bold', 'italic', 'bold-italic'];
 const ID = /^[a-z0-9-]{1,40}$/;
 const LIMITS: Record<ManualKey, [number, number]> = {

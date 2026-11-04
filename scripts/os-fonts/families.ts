@@ -27,6 +27,8 @@ export const FAMILIES: readonly FamilySpec[] = [
   shared('times-new-roman', 'Times New Roman', 'serif'),
   shared('georgia', 'Georgia', 'serif'),
   shared('courier-new', 'Courier New', 'monospace'),
+  shared('comic-sans-ms', 'Comic Sans MS', 'cursive'),
+  { id: 'segoe-script', family: 'Segoe Script', category: 'cursive', windows: 'Segoe Script' },
   { id: 'segoe-ui', family: 'Segoe UI', category: 'sans-serif', windows: 'Segoe UI' },
   { id: 'calibri', family: 'Calibri', category: 'sans-serif', windows: 'Calibri' },
   { id: 'candara', family: 'Candara', category: 'sans-serif', windows: 'Candara' },

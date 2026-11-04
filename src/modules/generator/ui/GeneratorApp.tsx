@@ -49,10 +49,21 @@ import {
   isFontCollection,
   MAX_FONT_BYTES,
 } from '@/modules/font-metrics';
-import { downloadOrigin, type FontOrigin, sameOrigin } from '@/modules/font-sources';
+import {
+  downloadOrigin,
+  type FontOrigin,
+  isHandwritingOrigin,
+  sameOrigin,
+} from '@/modules/font-sources';
 import type { SiteImport } from '@/modules/import-receiver';
 import { LayoutShiftPanel, type PanelInput, ratingOf, worstShift } from '@/modules/layout-shift';
-import { type Category, loadVariantMetrics, type OsId, osFontsDataset } from '@/modules/os-fonts';
+import {
+  CATEGORIES,
+  type Category,
+  loadVariantMetrics,
+  type OsId,
+  osFontsDataset,
+} from '@/modules/os-fonts';
 import { cssStack, PRESETS, type PresetId, presetName, presetPicks } from '@/modules/presets';
 import { discardPending, ImportConfirm, PENDING_HASH, takePending } from '@/modules/site-import';
 import type { ShiftReport, ToolHost } from '@/modules/webmcp';
@@ -147,6 +158,12 @@ const AUTO: Values = {
 
 export function GeneratorApp({ locale }: { locale: Locale }) {
   const t = messagesFor(locale);
+  const kindLabels: Record<Category, string> = {
+    'sans-serif': t.type_sans(),
+    serif: t.type_serif(),
+    monospace: t.type_mono(),
+    cursive: t.type_cursive(),
+  };
   const errors: Record<string, string> = {
     'too-large': t.error_too_large(),
     'invalid-font': t.error_invalid_font(),
@@ -302,10 +319,15 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
             const result = await parser.current.parse(data);
             if (result.ok) {
               const origin = origins?.get(file);
+              const handwriting = origin
+                ? await isHandwritingOrigin(origin).catch(() => false)
+                : false;
               added.push({
                 id: nextId.current++,
                 fileName: name,
-                metrics: result.font,
+                metrics: handwriting
+                  ? { ...result.font, style: { ...result.font.style, category: 'cursive' } }
+                  : result.font,
                 bytes,
                 ...(origin ? { origin } : {}),
               });
@@ -972,16 +994,14 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
     },
     setKind: (fontId, kindValue) => {
       const font = fonts.find((item) => item.id === fontId);
-      if (!font || !['sans-serif', 'serif', 'monospace'].includes(kindValue)) return false;
+      if (!font || !CATEGORIES.includes(kindValue as Category)) return false;
       setKindChoices((all) => ({ ...all, [font.id]: kindValue as Category }));
       setPicksByFont((all) => ({ ...all, [font.id]: {} }));
       resetOptimization();
       announce(
         t.webmcp_announce_kind({
           font: displayName(font.metrics.names.family ?? font.fileName),
-          kind: { 'sans-serif': t.type_sans(), serif: t.type_serif(), monospace: t.type_mono() }[
-            kindValue as Category
-          ],
+          kind: kindLabels[kindValue as Category],
         }),
       );
       return true;
@@ -1389,6 +1409,7 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
             { value: 'sans-serif', label: t.type_sans() },
             { value: 'serif', label: t.type_serif() },
             { value: 'monospace', label: t.type_mono() },
+            { value: 'cursive', label: t.type_cursive() },
           ]}
           onChange={(value) => {
             setKindChoices((all) => ({ ...all, [selected.id]: value as Category }));

@@ -25,6 +25,12 @@ describe('rankFor', () => {
     expect(ranked.slice(0, full.length)).toEqual(full);
   });
 
+  it('offers cursive script fonts as candidates on Windows', () => {
+    const candidates = rankFor(font(ascii, 520), 'windows', 'en').candidates;
+    const cursive = candidates.filter((item) => item.category === 'cursive').map((item) => item.id);
+    expect(cursive).toEqual(expect.arrayContaining(['comic-sans-ms', 'segoe-script']));
+  });
+
   it('shares one fallback between systems when it is nearly as good as the best of each', () => {
     const web = font(ascii, 520);
     const lists = {

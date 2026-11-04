@@ -4,7 +4,7 @@ export interface VerticalMetrics {
   lineGap: number;
 }
 
-export type FontCategory = 'sans-serif' | 'serif' | 'monospace';
+export type FontCategory = 'sans-serif' | 'serif' | 'monospace' | 'cursive';
 
 export interface FontStyleInfo {
   weight: number;

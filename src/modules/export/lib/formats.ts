@@ -94,6 +94,7 @@ const camelOf = (name: string) =>
 
 function themeName(generic: string): string {
   if (generic === 'serif') return '--font-serif';
+  if (generic === 'cursive') return '--font-cursive';
   return generic === 'monospace' ? '--font-mono' : '--font-sans';
 }
 

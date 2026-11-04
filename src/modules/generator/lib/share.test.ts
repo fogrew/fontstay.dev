@@ -90,7 +90,7 @@ describe('parseShareState', () => {
       parseShareState({
         v: 1,
         query: 'x'.repeat(501),
-        kind: 'cursive',
+        kind: 'fantasy',
         disabled: ['linux', 'beos', 5],
         picks: { windows: ['arial', '../etc', 'A B'], nope: ['x'] },
         manual: {

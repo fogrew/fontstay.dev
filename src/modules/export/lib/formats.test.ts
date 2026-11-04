@@ -55,7 +55,9 @@ describe('buildExport', () => {
     const serif: ExportInput = { ...input, families: [{ ...inter, generic: 'serif' }] };
     const mono: ExportInput = { ...input, families: [{ ...inter, generic: 'monospace' }] };
     expect(buildExport('tailwind', serif).text).toContain('--font-serif:');
+    const cursive: ExportInput = { ...input, families: [{ ...inter, generic: 'cursive' }] };
     expect(buildExport('tailwind', mono).text).toContain('--font-mono:');
+    expect(buildExport('tailwind', cursive).text).toContain('--font-cursive:');
   });
 
   it('names the variables after the families when there are several', () => {

@@ -7,7 +7,7 @@ import {
 } from './model';
 import { validateFontBuffer } from './validate';
 
-const CATEGORIES = new Set(['sans-serif', 'serif', 'monospace']);
+const CATEGORIES = new Set(['sans-serif', 'serif', 'monospace', 'cursive']);
 
 function isStyleInfo(style: unknown): boolean {
   if (typeof style !== 'object' || style === null) return false;

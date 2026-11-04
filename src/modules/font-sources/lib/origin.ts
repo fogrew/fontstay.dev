@@ -38,3 +38,10 @@ export async function downloadOrigin(origin: FontOrigin): Promise<File> {
   }
   return source.download(family, origin.style, origin.subset);
 }
+
+export async function isHandwritingOrigin(origin: FontOrigin): Promise<boolean> {
+  const family = (await SOURCES[origin.source].loadCatalog()).find(
+    (item) => item.id === origin.family,
+  );
+  return family?.category === 'Handwriting';
+}

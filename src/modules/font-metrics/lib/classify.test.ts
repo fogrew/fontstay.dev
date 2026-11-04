@@ -14,7 +14,7 @@ describe('classifyFont', () => {
     expect(classifyFont({ panose: [2, 0], familyClass: 0x0801, monospaced: false })).toBe(
       'sans-serif',
     );
-    expect(classifyFont({ panose: undefined, familyClass: 0x0a00, monospaced: false })).toBeNull();
+    expect(classifyFont({ panose: undefined, familyClass: 0x0900, monospaced: false })).toBeNull();
   });
 
   it.each([
@@ -39,6 +39,63 @@ describe('classifyFont', () => {
     expect(classifyFont({ ...base, names: ['Noto Sans Mono', null, null] })).toBe('monospace');
     expect(classifyFont({ ...base, names: ['Fira Code', null, null] })).toBe('monospace');
     expect(classifyFont({ ...base, names: ['Inter', null, null] })).toBe('sans-serif');
+  });
+
+  describe('cursive', () => {
+    it('reads the PANOSE Latin hand written family type', () => {
+      expect(classifyFont({ panose: [3, 15], familyClass: 0, monospaced: false })).toBe('cursive');
+    });
+
+    it('reads the IBM scripts family class', () => {
+      expect(classifyFont({ panose: undefined, familyClass: 0x0a01, monospaced: false })).toBe(
+        'cursive',
+      );
+    });
+
+    it('prefers the tables over a sans or serif word in the name', () => {
+      expect(
+        classifyFont({
+          panose: [3, 15],
+          familyClass: 0x0a00,
+          monospaced: false,
+          names: ['Comic Sans MS', null, null],
+        }),
+      ).toBe('cursive');
+    });
+
+    it.each(['Brush Script MT', 'Permanent Marker', 'Patrick Hand', 'MyHandwriting'])(
+      'uses the name %s as a weak hint when the tables say nothing',
+      (name) => {
+        expect(
+          classifyFont({ panose: [0, 0], familyClass: 0, monospaced: false, names: [name] }),
+        ).toBe('cursive');
+      },
+    );
+
+    it('lets the tables win over the weak name hint', () => {
+      expect(
+        classifyFont({
+          panose: [2, 11],
+          familyClass: 0,
+          monospaced: false,
+          names: ['Script Sans Text'],
+        }),
+      ).toBe('sans-serif');
+      expect(
+        classifyFont({
+          panose: [2, 2],
+          familyClass: 0,
+          monospaced: false,
+          names: ['Handel Gothic'],
+        }),
+      ).toBe('sans-serif');
+    });
+
+    it('does not match partial words', () => {
+      expect(
+        classifyFont({ panose: [0, 0], familyClass: 0, monospaced: false, names: ['Handjet'] }),
+      ).toBeNull();
+    });
   });
 
   it('prefers monospace over the tables', () => {

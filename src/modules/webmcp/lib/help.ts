@@ -12,7 +12,7 @@ export const HELP: Record<string, string> = {
   fallback:
     'A system font that is shown instead of the web font while it loads. The tool picks one per operating system and tunes it to the web font with size-adjust and the vertical overrides.',
   'font-kind':
-    'sans-serif, serif or monospace. It decides which system fonts are candidates and what generic family ends the stack.',
+    'sans-serif, serif, monospace or cursive. It decides which system fonts are candidates and what generic family ends the stack.',
   'layout-shift':
     'How much the page moves when the web font replaces the fallback, measured like the CLS metric. Below 0.1 is good, above 0.25 is poor. The tool shows it with and without the adjusted fallback.',
   'unicode-range':

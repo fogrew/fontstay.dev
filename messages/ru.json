@@ -45,6 +45,7 @@
   "type_sans": "Без засечек",
   "type_serif": "С засечками",
   "type_mono": "Моноширинный",
+  "type_cursive": "Рукописный",
   "preview_mode_label": "Вид",
   "mode_side": "Рядом",
   "mode_overlay": "Наложение",
