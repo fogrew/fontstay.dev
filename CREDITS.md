@@ -6,6 +6,7 @@
 - [Font Fallback Stack Generator](https://abacktools.com/tools/design/font-tools/font-fallback-stack-generator) by Aback Tools — curated stack presets.
 - [CSS Font Stack](https://cssfontstack.com/) — font availability per operating system.
 - [Everything Fonts](https://everythingfonts.com/) — font inspector ideas: `@font-face` syntax and browser support, licenses and specifications, colour and background previews, waterfall, glyph viewer, Unicode map and glyph coverage.
+- [Wakamai Fondue](https://wakamaifondue.com/) by Roel Nieskens — the idea of a font details panel: OpenType features with live samples, variable axes, supported languages and copyable CSS.
 
 ## Data
 
@@ -30,6 +31,7 @@
 | [Fontsource API](https://fontsource.org/docs/api) (`api.fontsource.org`) and [jsDelivr](https://www.jsdelivr.com/) | Catalog of the non-Google open fonts (names, categories, weights, styles, subsets) and, at run time, the user-chosen font download from `cdn.jsdelivr.net/fontsource/fonts/` | Catalog facts; fonts are OFL-1.1 (a few CC0, Apache-2.0, MIT, Unlicense) and are not redistributed |
 | [Google Fonts CSS API](https://developers.google.com/fonts/docs/css2) subset `unicode-range` values | Definitions of the named subsets (latin, cyrillic, greek, ...) | Facts (numeric ranges) |
 | [Unicode Character Database `Blocks.txt`](https://www.unicode.org/Public/16.0.0/ucd/Blocks.txt) | Block names and ranges for the glyph coverage table and map | Unicode License v3 |
+| [Unicode CLDR](https://cldr.unicode.org/) (`cldr-misc-full` exemplar characters, via [cldr-json](https://github.com/unicode-org/cldr-json)) | Standard letters per language, to list the languages a font covers (`scripts/build-languages.mjs`) | Unicode License v3 |
 | [MDN browser-compat-data](https://github.com/mdn/browser-compat-data) | `@font-face` descriptor support | CC0-1.0 |
 | [StatCounter Global Stats](https://gs.statcounter.com/) via [Wikipedia: Usage share of operating systems](https://en.wikipedia.org/wiki/Usage_share_of_operating_systems) | Default desktop OS split (worldwide desktop, June 2026: Windows 62.16%, macOS 14.58%, Linux 3.09%, ChromeOS 1.42%, unknown 18.75% redistributed proportionally) | CC BY-SA 3.0 |
 | [Capsize unpack 4.0.1](https://github.com/seek-oss/capsize/tree/master/packages/unpack) | English/Latin frequency weights, sampled from English Wikinews abstracts | MIT; underlying Wikinews content CC BY 2.5 |

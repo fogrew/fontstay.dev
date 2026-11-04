@@ -1,4 +1,4 @@
-import type { FontMetrics } from '@/modules/font-metrics';
+import { emptyFontDetails, type FontMetrics } from '@/modules/font-metrics';
 
 export function font(codePoints: number[], advance: number): FontMetrics {
   return {
@@ -13,5 +13,6 @@ export function font(codePoints: number[], advance: number): FontMetrics {
     advances: Float64Array.from(codePoints, () => advance),
     isVariable: false,
     style: { weight: 400, italic: false, category: null },
+    details: emptyFontDetails(),
   };
 }
