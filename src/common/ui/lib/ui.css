@@ -323,6 +323,7 @@
 }
 .ff-code__actions {
   display: inline-flex;
+  flex-wrap: wrap;
   gap: var(--ff-space-2);
 }
 .ff-icon {
@@ -461,7 +462,10 @@
 }
 .ff-dock__footer {
   display: flex;
+  flex-wrap: wrap;
+  align-items: center;
   justify-content: flex-end;
+  gap: var(--ff-space-2);
   padding: var(--ff-space-2) var(--ff-space-3);
   border-block-start: 1px solid var(--ff-border);
 }

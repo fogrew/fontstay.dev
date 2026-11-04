@@ -2,7 +2,7 @@ import './lib/ui.css';
 
 export { Accordion, type AccordionProps } from './lib/Accordion';
 export { Button, type ButtonProps } from './lib/Button';
-export { CodeBlock } from './lib/CodeBlock';
+export { CodeActions, CodeBlock } from './lib/CodeBlock';
 export { Collapsible, type CollapsibleProps } from './lib/Collapsible';
 export { Disclosure } from './lib/Disclosure';
 export { DOCK_OPEN_EVENT, Dock, type DockOpenDetail, type DockProps } from './lib/Dock';

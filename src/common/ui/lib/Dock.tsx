@@ -11,6 +11,7 @@ export interface DockProps {
     content: ComponentChildren;
     clientOnly?: boolean;
     icon?: ComponentChildren;
+    footer?: ComponentChildren;
   }[];
   storageKey: string;
   nextLabel: (label: string) => string;
@@ -133,16 +134,20 @@ export function Dock({ items, storageKey, nextLabel }: DockProps) {
               hidden={!open}
             >
               <ScrollShadow class="ff-dock__scroll">{item.content}</ScrollShadow>
-              {next && (
-                <div class="ff-dock__footer">
-                  <button
-                    type="button"
-                    class="ff-button ff-button--primary"
-                    onClick={() => transition(() => setActive(next.id))}
-                  >
-                    {nextLabel(next.label)}
-                  </button>
-                </div>
+              {item.footer ? (
+                <div class="ff-dock__footer">{item.footer}</div>
+              ) : (
+                next && (
+                  <div class="ff-dock__footer">
+                    <button
+                      type="button"
+                      class="ff-button ff-button--primary"
+                      onClick={() => transition(() => setActive(next.id))}
+                    >
+                      {nextLabel(next.label)}
+                    </button>
+                  </div>
+                )
               )}
             </div>
           </section>
