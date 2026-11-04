@@ -20,6 +20,7 @@ Raise a limit only with a justification in the PR. The limits were raised for th
 - **Bold and italic metrics** (`os-fonts/data/variants.json`, about 580 kB raw): imported when a style other than regular is used.
 - **Syntax highlighting** (Shiki core, the JavaScript regex engine and one grammar per language): loaded when a code block first renders.
 - **Google Fonts catalog** (about 160 kB raw): imported when the picker is first opened.
+- **Language requirements** (`font-details/data/languages.json`, about 20 kB raw): imported when the font details panel mounts.
 - **Unicode blocks and coverage map**: part of the generator chunk, small.
 
 ## Hydration
