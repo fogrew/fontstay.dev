@@ -1,4 +1,4 @@
-import { mkdtempSync, readFileSync, rmSync } from 'node:fs';
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterAll, describe, expect, it } from 'vitest';
@@ -91,6 +91,15 @@ describe('fontstay fit', () => {
     const invalid = await cli('fit', join(import.meta.dirname, 'cli.ts'));
     expect(invalid.code).toBe(1);
     expect(invalid.stderr).toContain('could not be read');
+  });
+
+  it('rejects a file over the size limit and a directory without reading them', async () => {
+    const big = join(scratch, 'big.woff2');
+    writeFileSync(big, Buffer.alloc(10 * 1024 * 1024 + 1));
+    const tooLarge = await cli('fit', big);
+    expect(tooLarge.code).toBe(1);
+    expect(tooLarge.stderr).toContain('too-large');
+    expect((await cli('fit', scratch)).code).toBe(1);
   });
 
   it('reports an invalid audience with exit code 1', async () => {

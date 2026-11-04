@@ -1,4 +1,4 @@
-import { readFile, stat } from 'node:fs/promises';
+import { open } from 'node:fs/promises';
 import { basename } from 'node:path';
 import { buildExport, EXPORT_FORMATS, type ExportFile, type ExportFormat } from '@/modules/export';
 import { FontParseError, type FontParseErrorCode, MAX_FONT_BYTES } from '@/modules/font-metrics';
@@ -78,16 +78,24 @@ export async function fit(options: FitOptions): Promise<FitOutput> {
   };
 }
 
+async function readFont(path: string): Promise<Uint8Array> {
+  const handle = await open(path, 'r');
+  try {
+    if (!(await handle.stat()).isFile()) throw new FontParseError('invalid-font');
+    const buffer = Buffer.alloc(MAX_FONT_BYTES + 1);
+    const { bytesRead } = await handle.read(buffer, 0, buffer.length, 0);
+    if (bytesRead > MAX_FONT_BYTES) throw new FontParseError('too-large');
+    return buffer.subarray(0, bytesRead);
+  } finally {
+    await handle.close();
+  }
+}
+
 export async function fitFiles(
   paths: readonly string[],
   options: Omit<FitOptions, 'fonts'> = {},
 ): Promise<FitOutput> {
   const fonts: FontFile[] = [];
-  for (const path of paths) {
-    const info = await stat(path);
-    if (!info.isFile()) throw new FontParseError('invalid-font');
-    if (info.size > MAX_FONT_BYTES) throw new FontParseError('too-large');
-    fonts.push({ fileName: basename(path), data: await readFile(path) });
-  }
+  for (const path of paths) fonts.push({ fileName: basename(path), data: await readFont(path) });
   return fit({ ...options, fonts });
 }
