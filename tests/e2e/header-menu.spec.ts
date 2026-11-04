@@ -12,6 +12,7 @@ test.describe('mobile header menu', () => {
     await expect(toggle).toHaveAttribute('aria-expanded', 'false');
     await expect(toggle).toHaveAttribute('aria-controls', 'ff-nav');
     await expect(nav).toBeHidden();
+    await expect(page.locator('[data-locale-menu] > summary')).toBeVisible();
 
     await toggle.click();
     await expect(toggle).toHaveAttribute('aria-expanded', 'true');
