@@ -195,18 +195,29 @@ function astroBlock(input: ExportInput, family: ExportFamily): string {
 const jsonEscaped = (json: string) =>
   json.replace(/[\u007f-\u009f\u2028\u2029]/g, (char) => escapeUnit(char.charCodeAt(0)));
 
-function wordpressFamily(family: ExportFamily) {
+function wordpressFamily(family: ExportFamily, slug: string) {
   return {
     name: family.targetFamily,
-    slug: slugOf(family.targetFamily),
+    slug,
     fontFamily: stackOf(family),
     fontFace: fontsOf(family).map((font) => ({
       fontFamily: family.targetFamily,
       fontWeight: String(font.weight),
       fontStyle: font.style,
-      src: [`file:./assets/fonts/${fileOf(font)}`],
+      src: [`file:./assets/fonts/${encodeURIComponent(fileOf(font))}`],
     })),
   };
+}
+
+function wordpressFamilies(families: readonly ExportFamily[]) {
+  const used = new Set<string>();
+  return families.map((family) => {
+    const base = slugOf(family.targetFamily);
+    let slug = base;
+    for (let count = 2; used.has(slug); count++) slug = `${base}-${count}`;
+    used.add(slug);
+    return wordpressFamily(family, slug);
+  });
 }
 
 function fontaineEntry(family: ExportFamily): string {
@@ -296,7 +307,7 @@ export function buildExport(format: ExportFormat, input: ExportInput): ExportFil
             {
               $schema: 'https://schemas.wp.org/trunk/theme.json',
               version: 3,
-              settings: { typography: { fontFamilies: families.map(wordpressFamily) } },
+              settings: { typography: { fontFamilies: wordpressFamilies(families) } },
             },
             null,
             2,
@@ -308,7 +319,7 @@ export function buildExport(format: ExportFormat, input: ExportInput): ExportFil
     case 'fontaine':
       return {
         text: [
-          `// Put ${singleLine(filesOf(input).join(', '))} into ./public/fonts/, declare their @font-face rules in your CSS and add "<family> fallback" to the font stacks. In Nuxt, put the plugin under vite.plugins.`,
+          `// Put ${singleLine(filesOf(input).join(', '))} into ./public/fonts/ and declare their @font-face rules in your CSS. In Nuxt, put the plugin under vite.plugins.`,
           "import { FontaineTransform } from 'fontaine';",
           "import { defineConfig } from 'vite';",
           '',

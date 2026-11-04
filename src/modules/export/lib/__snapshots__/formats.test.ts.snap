@@ -79,7 +79,7 @@ exports[`buildExport > produces a stable fontaine export 1`] = `
 {
   "fileName": "vite.config.ts",
   "language": "ts",
-  "text": "// Put Inter-Regular.woff2 into ./public/fonts/, declare their @font-face rules in your CSS and add "<family> fallback" to the font stacks. In Nuxt, put the plugin under vite.plugins.
+  "text": "// Put Inter-Regular.woff2 into ./public/fonts/ and declare their @font-face rules in your CSS. In Nuxt, put the plugin under vite.plugins.
 import { FontaineTransform } from 'fontaine';
 import { defineConfig } from 'vite';
 
@@ -100,7 +100,7 @@ exports[`buildExport > produces a stable fontaine export for several families 1`
 {
   "fileName": "vite.config.ts",
   "language": "ts",
-  "text": "// Put Inter-Regular.woff2, Merriweather-Regular.woff2, Merriweather-Bold.woff2, Merriweather-Italic.woff2 into ./public/fonts/, declare their @font-face rules in your CSS and add "<family> fallback" to the font stacks. In Nuxt, put the plugin under vite.plugins.
+  "text": "// Put Inter-Regular.woff2, Merriweather-Regular.woff2, Merriweather-Bold.woff2, Merriweather-Italic.woff2 into ./public/fonts/ and declare their @font-face rules in your CSS. In Nuxt, put the plugin under vite.plugins.
 import { FontaineTransform } from 'fontaine';
 import { defineConfig } from 'vite';
 

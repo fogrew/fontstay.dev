@@ -103,6 +103,33 @@ describe('buildExport', () => {
     ]);
   });
 
+  it('gives unique slugs to families that collapse to the same one', () => {
+    const twin: ExportFamily = { ...inter, targetFamily: 'INTER' };
+    const json = JSON.parse(buildExport('wordpress', { ...input, families: [inter, twin] }).text);
+    expect(
+      json.settings.typography.fontFamilies.map((item: { slug: string }) => item.slug),
+    ).toEqual(['inter', 'inter-2']);
+  });
+
+  it('encodes file names in the WordPress font sources', () => {
+    const odd: ExportFamily = {
+      ...inter,
+      fonts: [{ fileName: 'My Font #2.woff2', weight: 400, style: 'normal' }],
+    };
+    const json = JSON.parse(buildExport('wordpress', { ...input, families: [odd] }).text);
+    expect(json.settings.typography.fontFamilies[0].fontFace[0].src).toEqual([
+      'file:./assets/fonts/My%20Font%20%232.woff2',
+    ]);
+  });
+
+  it('falls back to Arial and a default file when a family has no data', () => {
+    const bare: ExportFamily = { ...inter, systemFonts: [], fonts: [] };
+    expect(buildExport('fontaine', { ...input, families: [bare] }).text).toContain("['Arial']");
+    expect(buildExport('wordpress', { ...input, families: [bare] }).text).toContain(
+      'file:./assets/fonts/font.woff2',
+    );
+  });
+
   it('gives Fontaine the system fonts of each family', () => {
     const { text } = buildExport('fontaine', several);
     expect(text).toContain("'Inter': ['Arial'],");
