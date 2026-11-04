@@ -241,7 +241,9 @@ h3 {
   .ff-header__toggle:not([hidden]) {
     display: inline-flex;
   }
-  .ff-header[data-menu] #ff-nav {
+}
+@media (max-width: 47.999rem) and (scripting: enabled) {
+  .ff-header #ff-nav {
     position: absolute;
     inset-block-start: 100%;
     inset-inline-end: var(--ff-space-4);
@@ -256,7 +258,7 @@ h3 {
     background: var(--ff-surface);
     box-shadow: 0 8px 24px rgb(0 0 0 / 20%);
   }
-  .ff-header[data-menu="closed"] #ff-nav {
+  .ff-header:not([data-menu="open"]) #ff-nav {
     display: none;
   }
   .ff-header__nav {
