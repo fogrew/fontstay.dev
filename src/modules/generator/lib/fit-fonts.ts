@@ -142,6 +142,7 @@ function fitFont(
     const candidate = chosen.find((item) => item.faceId === id)?.candidate;
     if (!candidate) return [];
     const adjustment = adjustmentOf(candidate.adjustment, {});
+    const faceStyle = candidate.style;
     return [
       {
         family: candidate.family,
@@ -161,8 +162,9 @@ function fitFont(
             }))
           : undefined,
         unicodeRange: range,
-        fontWeight: style === 'bold' || style === 'bold-italic' ? 700 : undefined,
-        fontStyle: style === 'italic' || style === 'bold-italic' ? ('italic' as const) : undefined,
+        fontWeight: faceStyle === 'bold' || faceStyle === 'bold-italic' ? 700 : undefined,
+        fontStyle:
+          faceStyle === 'italic' || faceStyle === 'bold-italic' ? ('italic' as const) : undefined,
       },
     ];
   });
@@ -215,18 +217,19 @@ export async function fitFonts(options: FitOptions): Promise<FitResult> {
       `Invalid audience "${query}": ${resolution.detail || resolution.code}`,
     );
   }
-  const wanted = options.systems ? new Set<string>(options.systems) : undefined;
   const shares = computeOsShares(
     resolution.entries,
     DEFAULT_DESKTOP_SPLIT,
     (os) =>
       !osQuery.exclude.includes(os) &&
-      (osQuery.include.length === 0 || osQuery.include.includes(os)) &&
-      (!wanted || wanted.has(os)),
+      (osQuery.include.length === 0 || osQuery.include.includes(os)),
   );
-  const systems = systemsWithFonts()
+  const wanted = options.systems ? new Set<string>(options.systems) : undefined;
+  const isWanted = (os: OsId) => !wanted || wanted.has(os);
+  const available = systemsWithFonts()
     .filter((os) => shares[os] >= MIN_SHARE)
     .sort((a, b) => shares[b] - shares[a]);
+  const systems = available.filter(isWanted);
   if (systems.length === 0) {
     throw new FitRunError('no-systems', 'No system in the audience has fallback fonts to fit.');
   }
@@ -254,7 +257,9 @@ export async function fitFonts(options: FitOptions): Promise<FitResult> {
     css: mergeOutputs(outputs, loadingCss({ letter: 0, word: 0 })),
     loadingScript: loadingScript(families.map((family) => family.targetFamily)),
   };
-  const uncovered = ALL_SYSTEMS.filter((os) => shares[os] >= MIN_SHARE && !systems.includes(os));
+  const uncovered = ALL_SYSTEMS.filter(
+    (os) => isWanted(os) && shares[os] >= MIN_SHARE && !available.includes(os),
+  );
   return {
     input,
     fonts: reports,

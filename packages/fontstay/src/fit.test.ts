@@ -1,5 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
+import { parseFontBuffer } from '@/modules/font-metrics/lib/parse';
+import { fitFonts } from '@/modules/generator';
 import { FitRunError, fit } from './index';
 
 const fixture = (path: string) =>
@@ -45,7 +47,9 @@ describe('fit', () => {
     expect(fonts).toHaveLength(1);
     expect(fonts[0]?.family).toBe('Source Sans Pro');
     expect(fonts[0]?.picks.map((pick) => pick.system)).toEqual(['windows']);
-    expect(shares).toEqual({ windows: 100 });
+    expect(Object.keys(shares)).toEqual(['windows']);
+    expect(shares.windows).toBeGreaterThan(1);
+    expect(shares.windows).toBeLessThan(100);
   });
 
   it('adds unicode-range of the covered glyphs on request and omits per-script faces on request', async () => {
@@ -82,5 +86,21 @@ describe('fit', () => {
     await expect(
       fit({ fonts: [fira()], audience: 'defaults, os ios, not os ios' }),
     ).rejects.toBeInstanceOf(FitRunError);
+  });
+});
+
+describe('font-face descriptors of bold and italic fonts', () => {
+  it('are added to every face of a bold font with bold fallback faces', async () => {
+    const parsed = parseFontBuffer(Uint8Array.from(fixture('fonts/FiraSans-Regular.ttf')).buffer);
+    const bold = { ...parsed, style: { ...parsed.style, weight: 700 } };
+    const result = await fitFonts({
+      fonts: [{ fileName: 'FiraSans-Bold.ttf', metrics: bold }],
+      audience: 'defaults',
+      scripts: false,
+    });
+    const faces = result.input.fontFaces.split('\n\n');
+    const weighted = faces.filter((face) => face.includes('font-weight: 700'));
+    expect(weighted.length).toBeGreaterThan(0);
+    expect(weighted).toHaveLength(faces.length);
   });
 });

@@ -1,7 +1,7 @@
-import { readFile } from 'node:fs/promises';
+import { readFile, stat } from 'node:fs/promises';
 import { basename } from 'node:path';
 import { buildExport, EXPORT_FORMATS, type ExportFile, type ExportFormat } from '@/modules/export';
-import { FontParseError, type FontParseErrorCode } from '@/modules/font-metrics';
+import { FontParseError, type FontParseErrorCode, MAX_FONT_BYTES } from '@/modules/font-metrics';
 // Not in the module's public API: its barrel would put the parser into the site's initial JavaScript.
 import { parseFontBuffer } from '@/modules/font-metrics/lib/parse';
 import { type FitErrorCode, type FitFontReport, FitRunError, fitFonts } from '@/modules/generator';
@@ -77,8 +77,12 @@ export async function fitFiles(
   paths: readonly string[],
   options: Omit<FitOptions, 'fonts'> = {},
 ): Promise<FitOutput> {
-  const fonts = await Promise.all(
-    paths.map(async (path) => ({ fileName: basename(path), data: await readFile(path) })),
-  );
+  const fonts: FontFile[] = [];
+  for (const path of paths) {
+    const info = await stat(path);
+    if (!info.isFile()) throw new FontParseError('invalid-font');
+    if (info.size > MAX_FONT_BYTES) throw new FontParseError('too-large');
+    fonts.push({ fileName: basename(path), data: await readFile(path) });
+  }
   return fit({ ...options, fonts });
 }

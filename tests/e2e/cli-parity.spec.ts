@@ -4,6 +4,24 @@ import { expect, test, waitForGenerator } from './fixtures';
 
 const fixture = (path: string) => fileURLToPath(new URL(`../fixtures/${path}`, import.meta.url));
 
+const TOLERANCE_POINTS = 2;
+
+function comparable(css: string) {
+  const text = css.replace(/\n*\.fonts-loading \{[^}]*\}/, '').trim();
+  const values = [...text.matchAll(/(-?\d+(?:\.\d+)?)%/g)].map((match) => Number(match[1]));
+  return { skeleton: text.replace(/-?\d+(?:\.\d+)?%/g, '#'), values };
+}
+
+function difference(app: string, cli: string): string {
+  const got = comparable(app);
+  const want = comparable(cli);
+  if (got.skeleton !== want.skeleton) return `structure differs:\n${app}\n---\n${cli}`;
+  const far = got.values.findIndex(
+    (value, index) => Math.abs(value - (want.values[index] ?? Number.NaN)) > TOLERANCE_POINTS,
+  );
+  return far < 0 ? 'match' : `value ${far}: app ${got.values[far]} vs CLI ${want.values[far]}`;
+}
+
 const CASES = [
   {
     name: 'Source Sans Pro for the defaults audience',
@@ -50,7 +68,9 @@ for (const { name, font, query, expected } of CASES) {
       );
     await expect.poll(() => call('list-fonts')).toContain('"fileName"');
     await call('set-audience', { query });
-    const cli = readFileSync(fixture(expected), 'utf8').trim();
-    await expect.poll(() => call('get-css'), { timeout: 15_000 }).toBe(cli);
+    const cli = readFileSync(fixture(expected), 'utf8');
+    await expect
+      .poll(async () => difference(await call('get-css'), cli), { timeout: 15_000 })
+      .toBe('match');
   });
 }

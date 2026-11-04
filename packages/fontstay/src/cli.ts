@@ -85,6 +85,9 @@ export async function run(argv: readonly string[], io: Io): Promise<number> {
         version: { type: 'boolean', short: 'v' },
       },
     });
+    if (values.systems !== undefined && systemsOf(values.systems).length === 0) {
+      throw new UsageError('--systems needs at least one system.');
+    }
     if (values.help) {
       io.stdout(USAGE);
       return 0;
@@ -146,20 +149,17 @@ export async function run(argv: readonly string[], io: Io): Promise<number> {
       io.stderr(`error: the font could not be read (${failure.code})\n`);
       return 1;
     }
-    if (failure instanceof Error && 'code' in failure && typeof failure.code === 'string') {
-      const fileError = failure as NodeJS.ErrnoException;
-      if (
-        fileError.code === 'ENOENT' ||
-        fileError.code === 'EISDIR' ||
-        fileError.code === 'EACCES'
-      ) {
-        io.stderr(`error: ${fileError.path ?? ''}: ${fileError.code}\n`);
-        return 1;
-      }
-    }
-    if (failure instanceof TypeError && 'code' in failure) {
-      io.stderr(`error: ${failure.message}\n\n${USAGE}`);
+    const code = failure instanceof Error ? (failure as NodeJS.ErrnoException).code : undefined;
+    if (code?.startsWith('ERR_PARSE_ARGS')) {
+      io.stderr(`error: ${(failure as Error).message}
+
+${USAGE}`);
       return 2;
+    }
+    if (code !== undefined && /^E[A-Z]+$/.test(code)) {
+      io.stderr(`error: ${(failure as Error).message}
+`);
+      return 1;
     }
     throw failure;
   }
