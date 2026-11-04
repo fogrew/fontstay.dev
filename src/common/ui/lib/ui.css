@@ -321,6 +321,12 @@
 .ff-accordion__item[data-open="false"] {
   flex: none;
 }
+.ff-dock__footer .ff-error,
+.ff-code__actions .ff-error {
+  flex: 1 1 100%;
+  margin: 0;
+  padding-inline: 0;
+}
 .ff-code__actions {
   display: inline-flex;
   flex-wrap: wrap;

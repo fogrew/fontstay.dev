@@ -1659,6 +1659,7 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
   const showResults = allMode ? overviewReady.length > 0 : Boolean(output && selected);
   const exportFormat = effectiveFormat(exportChoice, allMode);
   const exportFile = showResults ? exportFileFor(exportFormat, exportInput, reportText) : undefined;
+  const exportLabel = exportFormat === 'css' ? t.css_code_label() : (exportFile?.fileName ?? '');
   const fontDetails = fonts.map((font) => {
     const isOpen = fonts.length === 1 ? fontOpen : !allMode && font.id === selected?.id;
     return (
@@ -1839,7 +1840,7 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
               <CodeActions
                 locale={locale}
                 code={exportFile.text}
-                label={exportFormat === 'css' ? t.css_code_label() : exportFile.fileName}
+                label={exportLabel}
                 fileName={exportFile.fileName}
               />
             ),
@@ -1851,7 +1852,7 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
                 file={exportFile}
                 reordered={reordered}
                 multi={allMode}
-                note={shareMessage}
+                label={exportLabel}
               />
             ) : (
               <p class="ff-generator__empty">{t.results_empty()}</p>

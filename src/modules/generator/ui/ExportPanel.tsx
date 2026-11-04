@@ -1,4 +1,3 @@
-import type { ComponentChildren } from 'preact';
 import { type Locale, messagesFor } from '@/common/i18n';
 import { CodeBlock, type CodeLanguage, Icon, type IconName, Select } from '@/common/ui';
 import { buildExport, EXPORT_FORMATS, type ExportFormat, type ExportInput } from '@/modules/export';
@@ -41,8 +40,7 @@ export function ExportPanel({
   file,
   reordered = false,
   multi = false,
-  actions,
-  note,
+  label,
 }: {
   locale: Locale;
   chosen: ExportChoice;
@@ -50,8 +48,7 @@ export function ExportPanel({
   file: ExportFile;
   reordered?: boolean;
   multi?: boolean;
-  actions?: ComponentChildren;
-  note?: string;
+  label: string;
 }) {
   const t = messagesFor(locale);
   const format = effectiveFormat(chosen, multi);
@@ -86,18 +83,12 @@ export function ExportPanel({
       {format === 'loading' && <p class="ff-muted">{t.loading_note()}</p>}
       <CodeBlock
         locale={locale}
-        label={format === 'css' ? t.css_code_label() : file.fileName}
+        label={label}
         code={file.text}
         fileName={file.fileName}
         language={file.language}
-        actions={actions}
         controls={false}
       />
-      {note && (
-        <p class="ff-muted" role="status">
-          {note}
-        </p>
-      )}
     </div>
   );
 }
