@@ -61,7 +61,7 @@ export function CodeActions({
         {t.ui_copy_code()}
       </Button>
       {status === 'failed' && (
-        <p class="ff-error" role="alert">
+        <p class="ff-error ff-code__error" role="alert">
           {t.ui_copy_failed()}
         </p>
       )}
