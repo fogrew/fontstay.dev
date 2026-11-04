@@ -1,12 +1,29 @@
-import type { ComponentChildren } from 'preact';
-import { useState } from 'preact/hooks';
 import { type Locale, messagesFor } from '@/common/i18n';
-import { CodeBlock, Icon, type IconName, Select } from '@/common/ui';
+import { CodeBlock, type CodeLanguage, Icon, type IconName, Select } from '@/common/ui';
 import { buildExport, EXPORT_FORMATS, type ExportFormat, type ExportInput } from '@/modules/export';
 
-type Choice = ExportFormat | 'report';
+export type ExportChoice = ExportFormat | 'report';
+export interface ExportFile {
+  text: string;
+  fileName: string;
+  language: CodeLanguage;
+}
 
-const FORMAT_ICONS: Partial<Record<Choice, IconName>> = {
+export function effectiveFormat(chosen: ExportChoice, multi: boolean): ExportChoice {
+  return multi && chosen === 'report' ? 'css' : chosen;
+}
+
+export function exportFileFor(
+  format: ExportChoice,
+  input: ExportInput,
+  report: () => string,
+): ExportFile {
+  return format === 'report'
+    ? { text: report(), fileName: 'impact-report.md', language: 'markdown' }
+    : buildExport(format, input);
+}
+
+const FORMAT_ICONS: Partial<Record<ExportChoice, IconName>> = {
   css: 'css',
   variables: 'css',
   preload: 'html',
@@ -18,25 +35,24 @@ const FORMAT_ICONS: Partial<Record<Choice, IconName>> = {
 
 export function ExportPanel({
   locale,
-  input,
-  report,
+  chosen,
+  onFormat,
+  file,
   reordered = false,
   multi = false,
-  actions,
-  note,
+  label,
 }: {
   locale: Locale;
-  input: ExportInput;
-  report: () => string;
+  chosen: ExportChoice;
+  onFormat: (format: ExportChoice) => void;
+  file: ExportFile;
   reordered?: boolean;
   multi?: boolean;
-  actions?: ComponentChildren;
-  note?: string;
+  label: string;
 }) {
   const t = messagesFor(locale);
-  const [chosen, setFormat] = useState<Choice>('css');
-  const format: Choice = multi && chosen === 'report' ? 'css' : chosen;
-  const labels: Record<Choice, string> = {
+  const format = effectiveFormat(chosen, multi);
+  const labels: Record<ExportChoice, string> = {
     report: t.export_report(),
     css: t.export_css(),
     variables: t.export_variables(),
@@ -47,10 +63,6 @@ export function ExportPanel({
     preload: t.export_preload(),
     loading: t.export_loading(),
   };
-  const file =
-    format === 'report'
-      ? { text: report(), fileName: 'impact-report.md', language: 'markdown' as const }
-      : buildExport(format, input);
   return (
     <div class="ff-export">
       <Select
@@ -60,7 +72,7 @@ export function ExportPanel({
           const name = FORMAT_ICONS[value];
           return { value, label: labels[value], icon: name && <Icon name={name} /> };
         })}
-        onChange={(value) => setFormat(value as Choice)}
+        onChange={(value) => onFormat(value as ExportChoice)}
       />
       {format === 'css' && (
         <p class="ff-muted">
@@ -71,17 +83,12 @@ export function ExportPanel({
       {format === 'loading' && <p class="ff-muted">{t.loading_note()}</p>}
       <CodeBlock
         locale={locale}
-        label={format === 'css' ? t.css_code_label() : file.fileName}
+        label={label}
         code={file.text}
         fileName={file.fileName}
         language={file.language}
-        actions={actions}
+        controls={false}
       />
-      {note && (
-        <p class="ff-muted" role="status">
-          {note}
-        </p>
-      )}
     </div>
   );
 }

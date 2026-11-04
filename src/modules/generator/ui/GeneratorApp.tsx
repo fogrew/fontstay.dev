@@ -3,6 +3,7 @@ import { type Locale, messagesFor } from '@/common/i18n';
 import {
   Accordion,
   Button,
+  CodeActions,
   Collapsible,
   clearLayouts,
   Disclosure,
@@ -103,7 +104,7 @@ import {
 } from '../lib/storage';
 import { ArticleView } from './ArticleView';
 import { CoverageMap } from './CoverageMap';
-import { ExportPanel } from './ExportPanel';
+import { type ExportChoice, ExportPanel, effectiveFormat, exportFileFor } from './ExportPanel';
 import { FontInput } from './FontInput';
 import './generator.css';
 
@@ -162,6 +163,7 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
   const [fontOpen, setFontOpen] = useState(true);
   const [kindChoices, setKindChoices] = useState<Record<number, Category>>({});
   const [presetId, setPresetId] = useState<PresetId>();
+  const [exportChoice, setExportChoice] = useState<ExportChoice>('css');
   const [styleChoices, setStyleChoices] = useState<Record<number, FontStyleKey>>({});
   const [shares, setShares] = useState<OsShares>();
   const [audience, setAudience] = useState<AudienceData>();
@@ -1655,6 +1657,9 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
     </>
   );
   const showResults = allMode ? overviewReady.length > 0 : Boolean(output && selected);
+  const exportFormat = effectiveFormat(exportChoice, allMode);
+  const exportFile = showResults ? exportFileFor(exportFormat, exportInput, reportText) : undefined;
+  const exportLabel = exportFormat === 'css' ? t.css_code_label() : (exportFile?.fileName ?? '');
   const fontDetails = fonts.map((font) => {
     const isOpen = fonts.length === 1 ? fontOpen : !allMode && font.id === selected?.id;
     return (
@@ -1831,20 +1836,23 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
             id: 'export',
             label: t.col_export(),
             icon: <Icon name="css" />,
-            content: showResults ? (
+            footer: exportFile && (
+              <CodeActions
+                locale={locale}
+                code={exportFile.text}
+                label={exportLabel}
+                fileName={exportFile.fileName}
+              />
+            ),
+            content: exportFile ? (
               <ExportPanel
                 locale={locale}
-                input={exportInput}
-                report={reportText}
+                chosen={exportChoice}
+                onFormat={setExportChoice}
+                file={exportFile}
                 reordered={reordered}
                 multi={allMode}
-                note={shareMessage}
-                actions={
-                  <Button onClick={() => void copyLink()} title={shareNote}>
-                    <Icon name="share" />
-                    {t.share_copy_short()}
-                  </Button>
-                }
+                label={exportLabel}
               />
             ) : (
               <p class="ff-generator__empty">{t.results_empty()}</p>

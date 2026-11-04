@@ -1974,17 +1974,20 @@ test('the layout shift score shows the value before and after in rating colours'
   await expect(page.locator('.ff-shift__arrow')).toBeVisible();
 });
 
-test('share sits next to download and copy in the code block and spacing is on by default', async ({
+test('the last step puts download and copy in the dock footer without share, and spacing is on by default', async ({
   page,
 }) => {
   await page.goto('/en/');
   await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
   await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(sourceSans);
   await openStep(page, 'export');
-  const header = page.locator('.ff-dock__panel:not([hidden]) .ff-code__header');
-  await expect(header.getByRole('button', { name: 'Share', exact: true })).toBeVisible();
-  await expect(header.getByRole('button', { name: /^Download/ })).toBeVisible();
-  await expect(header.getByRole('button', { name: /^Copy code/ })).toBeVisible();
+  const panel = page.locator('.ff-dock__panel:not([hidden])');
+  const footer = panel.locator('.ff-dock__footer');
+  await expect(footer.getByRole('button', { name: /^Download/ })).toBeVisible();
+  await expect(footer.getByRole('button', { name: /^Copy code/ })).toBeVisible();
+  await expect(footer.getByRole('button', { name: 'Next', exact: false })).toHaveCount(0);
+  await expect(panel.getByRole('button', { name: 'Share', exact: true })).toHaveCount(0);
+  await expect(panel.locator('.ff-code__header').getByRole('button')).toHaveCount(0);
   await expect(page.getByRole('button', { name: 'Copy share link' })).toHaveCount(0);
 
   await openStep(page, 'tuning');
