@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { parseFontBuffer } from '@/modules/font-metrics/lib/parse';
-import { fitFonts } from '@/modules/generator';
+import { fitFonts } from '@/modules/generator/lib/fit-fonts';
 import { FitRunError, fit } from './index';
 
 const fixture = (path: string) =>

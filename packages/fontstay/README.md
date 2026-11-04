@@ -17,7 +17,7 @@ fontstay fit regular.woff2 bold.woff2 --format tailwind
 | `-s, --systems <list>` | Systems to fit: `windows`, `macos`, `ios`, `android`, `linux`, `chromeos`. Default: every system with a share of at least 1% in the audience. Shares stay those of the whole audience, as when a system is switched off in the app. |
 | `-a, --audience <query>` | [Browserslist](https://browsersl.ist) query, including `baseline widely available`. `os <system>` and `not os <system>` parts select systems like the app. Default: `baseline widely available`. |
 | `-f, --format <format>` | `css` (default), `variables`, `tailwind`, `next`, `nuxt`, `astro`, `preload`, `loading`. |
-| `-k, --kind <kind>` | Generic family of the fallbacks: `sans-serif`, `serif`, `monospace`. Default: detected from the font. |
+| `-k, --kind <kind>` | Generic family of the fallbacks: `sans-serif`, `serif`, `monospace`, `cursive`. Default: detected from the font. |
 | `--locale <en\|ru>` | Frequency profile of the fit. `ru` applies to fonts that cover Cyrillic. Default: `en`. |
 | `--unicode-range` | Add `unicode-range` with the glyphs each font covers. |
 | `--no-scripts` | Do not emit separate faces for Cyrillic and Greek. |

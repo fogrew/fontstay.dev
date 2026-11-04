@@ -1,5 +1,5 @@
 export type OsId = 'windows' | 'macos' | 'ios' | 'android' | 'linux' | 'chromeos';
-export type Category = 'sans-serif' | 'serif' | 'monospace';
+export type Category = 'sans-serif' | 'serif' | 'monospace' | 'cursive';
 export type ExportFormat =
   | 'css'
   | 'variables'

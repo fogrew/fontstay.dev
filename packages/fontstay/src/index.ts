@@ -2,9 +2,14 @@ import { readFile, stat } from 'node:fs/promises';
 import { basename } from 'node:path';
 import { buildExport, EXPORT_FORMATS, type ExportFile, type ExportFormat } from '@/modules/export';
 import { FontParseError, type FontParseErrorCode, MAX_FONT_BYTES } from '@/modules/font-metrics';
-// Not in the module's public API: its barrel would put the parser into the site's initial JavaScript.
+// Deep imports: exporting these from the module barrels would add them to the site's initial JavaScript.
 import { parseFontBuffer } from '@/modules/font-metrics/lib/parse';
-import { type FitErrorCode, type FitFontReport, FitRunError, fitFonts } from '@/modules/generator';
+import {
+  type FitErrorCode,
+  type FitFontReport,
+  FitRunError,
+  fitFonts,
+} from '@/modules/generator/lib/fit-fonts';
 import { CATEGORIES, type Category, OS_IDS, type OsId } from '@/modules/os-fonts';
 
 export type {
