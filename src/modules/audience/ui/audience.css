@@ -23,6 +23,9 @@
   margin: 0;
   overflow-wrap: anywhere;
 }
+.ff-generator .ff-disclosure {
+  border-block: 0;
+}
 .ff-generator .ff-disclosure summary {
   min-block-size: 2rem;
   padding-block: var(--ff-space-1);
@@ -34,7 +37,6 @@
   display: grid;
   gap: var(--ff-space-1);
   padding-block-start: var(--ff-space-2);
-  border-block-start: 1px solid var(--ff-border);
 }
 .ff-audience__stats p {
   margin: 0;
