@@ -802,7 +802,10 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
       if (failure instanceof CssExportError) return undefined;
       throw failure;
     }
-    const fallback = currentFallback(fontPlan, fontChosen, current);
+    const ownCandidates = own && !listsByOs[own] ? rankOf(font, own, lang, fontStyle) : undefined;
+    const fallback =
+      currentFallback(fontPlan, fontChosen, own) ??
+      ownCandidates?.candidates.find((item) => item.category === fontKind);
     return {
       font,
       family,
@@ -1598,22 +1601,6 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
       </section>
     ) : null;
 
-  const systemSelect =
-    current && systems.length > 0 ? (
-      <Select
-        label={t.tuning_system_label()}
-        value={current}
-        options={systems.map((os) => ({
-          value: os,
-          label: t.systems_share({ system: systemName(os), share: percent(shares?.[os] ?? 0) }),
-          icon: <OsIcon os={os} />,
-        }))}
-        onChange={(os) => {
-          setActiveOs(os as OsId);
-          setOpenSystem(os as OsId);
-        }}
-      />
-    ) : null;
   const previewItems: PreviewItem[] = overviewReady.flatMap((entry) =>
     entry.fallback && entry.adjustment
       ? [
@@ -1835,12 +1822,7 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
                   </section>
                 )}
                 {fonts.length === 0 && <p class="ff-muted">{t.tuning_empty()}</p>}
-                {allMode && (
-                  <>
-                    <p class="ff-muted">{t.tuning_all_note()}</p>
-                    {systemSelect}
-                  </>
-                )}
+                {allMode && <p class="ff-muted">{t.tuning_all_note()}</p>}
                 {fontDetails}
               </div>
             ),

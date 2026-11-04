@@ -33,8 +33,7 @@ export function currentFallback(
     : undefined;
   return (
     chosen.find((item) => item.os === os && item.faceId === winner)?.candidate ??
-    chosen.find((item) => item.os === os)?.candidate ??
-    chosen[0]?.candidate
+    chosen.find((item) => item.os === os)?.candidate
   );
 }
 
