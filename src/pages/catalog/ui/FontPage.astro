@@ -38,7 +38,7 @@ const vertical = metrics
     </ol>
   </nav>
   <h1>{font.family}</h1>
-  <p>{font.category === 'serif' ? t.type_serif() : font.category === 'monospace' ? t.type_mono() : t.type_sans()}</p>
+  <p>{font.category === 'serif' ? t.type_serif() : font.category === 'monospace' ? t.type_mono() : font.category === 'cursive' ? t.type_cursive() : t.type_sans()}</p>
 
   <h2>{t.font_specimen_heading()}</h2>
   <link rel="stylesheet" href="/specimens/fonts.css" />

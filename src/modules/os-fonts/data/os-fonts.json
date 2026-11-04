@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "generated": "2026-10-14",
+  "generated": "2026-11-04",
   "platforms": {
     "windows": {
       "versions": ["10", "11"]
@@ -288,6 +288,62 @@
           "versions": ["10.15"],
           "status": "preinstalled",
           "source": "https://raw.githubusercontent.com/adrg/os-font-list/master/csv/macOS/macOS-10.15_Catalina.csv"
+        }
+      ]
+    },
+    {
+      "id": "comic-sans-ms",
+      "family": "Comic Sans MS",
+      "category": "cursive",
+      "availability": [
+        {
+          "os": "windows",
+          "versions": ["10"],
+          "status": "preinstalled",
+          "source": "https://learn.microsoft.com/en-us/typography/fonts/windows_10_font_list"
+        },
+        {
+          "os": "windows",
+          "versions": ["11"],
+          "status": "preinstalled",
+          "source": "https://learn.microsoft.com/en-us/typography/fonts/windows_11_font_list"
+        },
+        {
+          "os": "macos",
+          "versions": ["current"],
+          "status": "preinstalled",
+          "source": "https://developer.apple.com/fonts/system-fonts/"
+        },
+        {
+          "os": "ios",
+          "versions": ["current"],
+          "status": "on-demand",
+          "source": "https://developer.apple.com/fonts/system-fonts/"
+        },
+        {
+          "os": "macos",
+          "versions": ["10.15"],
+          "status": "preinstalled",
+          "source": "https://raw.githubusercontent.com/adrg/os-font-list/master/csv/macOS/macOS-10.15_Catalina.csv"
+        }
+      ]
+    },
+    {
+      "id": "segoe-script",
+      "family": "Segoe Script",
+      "category": "cursive",
+      "availability": [
+        {
+          "os": "windows",
+          "versions": ["10"],
+          "status": "preinstalled",
+          "source": "https://learn.microsoft.com/en-us/typography/fonts/windows_10_font_list"
+        },
+        {
+          "os": "windows",
+          "versions": ["11"],
+          "status": "preinstalled",
+          "source": "https://learn.microsoft.com/en-us/typography/fonts/windows_11_font_list"
         }
       ]
     },

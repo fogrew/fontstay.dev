@@ -25,7 +25,7 @@ interface Filters {
 }
 
 const NO_FILTERS: Filters = { name: '', category: '', levels: {}, minCoverage: '' };
-const CATEGORIES = ['serif', 'sans-serif', 'monospace'] as const;
+const CATEGORIES = ['serif', 'sans-serif', 'monospace', 'cursive'] as const;
 const LEVELS: readonly Level[] = ['preinstalled', 'partial', 'on-demand', 'unknown'];
 
 function matches(
@@ -87,6 +87,7 @@ export function CatalogTable({ locale }: { locale: Locale }) {
   };
   const categoryLabel = (category: string) => {
     if (category === 'serif') return t.type_serif();
+    if (category === 'cursive') return t.type_cursive();
     return category === 'monospace' ? t.type_mono() : t.type_sans();
   };
 

@@ -45,6 +45,7 @@
   "type_sans": "بلا زوائد (Sans-serif)",
   "type_serif": "بزوائد (Serif)",
   "type_mono": "أحادي المسافة (Monospace)",
+  "type_cursive": "خط يدوي (Cursive)",
   "preview_mode_label": "طريقة العرض",
   "mode_side": "جنبًا إلى جنب",
   "mode_overlay": "تراكب",

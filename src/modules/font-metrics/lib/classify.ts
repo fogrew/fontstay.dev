@@ -3,6 +3,8 @@ import type { FontCategory } from './model';
 const SANS_SERIF_STYLES = new Set([11, 12, 13, 14, 15]);
 const SERIF_FAMILY_CLASSES = new Set([1, 2, 3, 4, 5, 7]);
 const LATIN_TEXT = 2;
+const LATIN_HAND_WRITTEN = 3;
+const SCRIPT_FAMILY_CLASS = 10;
 const SANS_FAMILY_CLASS = 8;
 const MIN_PROBE_GLYPHS = 20;
 
@@ -27,6 +29,7 @@ export function isMonospaced(codePoints: ArrayLike<number>, advances: ArrayLike<
 const MONO_WORDS = new Set(['mono', 'monospace', 'monospaced', 'code', 'courier', 'typewriter']);
 const SANS_WORDS = new Set(['sans', 'grotesk', 'grotesque', 'gothic']);
 const SERIF_WORDS = new Set(['serif', 'slab', 'antiqua', 'garamond', 'didone', 'mincho']);
+const CURSIVE_WORDS = new Set(['script', 'hand', 'handwriting', 'handwritten', 'brush', 'marker']);
 
 function words(names: readonly (string | null)[]): string[] {
   return names
@@ -42,6 +45,10 @@ export function categoryFromNames(names: readonly (string | null)[]): FontCatego
   return list.some((word) => SERIF_WORDS.has(word)) ? 'serif' : null;
 }
 
+function isCursiveName(names: readonly (string | null)[]): boolean {
+  return words(names).some((word) => CURSIVE_WORDS.has(word));
+}
+
 export function classifyFont(input: {
   panose: readonly number[] | undefined;
   familyClass: number | undefined;
@@ -49,13 +56,15 @@ export function classifyFont(input: {
   names?: readonly (string | null)[];
 }): FontCategory | null {
   if (input.monospaced) return 'monospace';
+  const [kind, serifStyle] = input.panose ?? [];
+  const familyClass = (input.familyClass ?? 0) >> 8;
+  if (kind === LATIN_HAND_WRITTEN || familyClass === SCRIPT_FAMILY_CLASS) return 'cursive';
   const named = categoryFromNames(input.names ?? []);
   if (named) return named;
-  const [kind, serifStyle] = input.panose ?? [];
   if (kind === LATIN_TEXT && serifStyle !== undefined && serifStyle > 1) {
     return SANS_SERIF_STYLES.has(serifStyle) ? 'sans-serif' : 'serif';
   }
-  const familyClass = (input.familyClass ?? 0) >> 8;
   if (SERIF_FAMILY_CLASSES.has(familyClass)) return 'serif';
-  return familyClass === SANS_FAMILY_CLASS ? 'sans-serif' : null;
+  if (familyClass === SANS_FAMILY_CLASS) return 'sans-serif';
+  return isCursiveName(input.names ?? []) ? 'cursive' : null;
 }

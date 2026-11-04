@@ -45,6 +45,7 @@
   "type_sans": "Sans-serif",
   "type_serif": "Serif",
   "type_mono": "Monospace",
+  "type_cursive": "Cursive",
   "preview_mode_label": "View",
   "mode_side": "Side by side",
   "mode_overlay": "Overlay",

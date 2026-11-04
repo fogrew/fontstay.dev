@@ -98,6 +98,8 @@ export const VARIANT_SOURCES: Readonly<Record<string, VariantSources>> = {
   cambria: local('cambriab.ttf', 'cambriai.ttf', 'cambriaz.ttf'),
   constantia: local('constanb.ttf', 'constani.ttf', 'constanz.ttf'),
   'palatino-linotype': local('palab.ttf', 'palai.ttf', 'palabi.ttf'),
+  'comic-sans-ms': local('comicbd.ttf', 'comici.ttf', 'comicz.ttf'),
+  'segoe-script': local('segoescb.ttf'),
   consolas: local('consolab.ttf', 'consolai.ttf', 'consolaz.ttf'),
   roboto: variable(
     'Roboto',

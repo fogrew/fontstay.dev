@@ -30,6 +30,8 @@ export const METRICS_SOURCES: readonly MetricsSource[] = [
   { id: 'times-new-roman', family: 'Times New Roman', files: ['times.ttf'] },
   { id: 'georgia', family: 'Georgia', files: ['georgia.ttf'] },
   { id: 'courier-new', family: 'Courier New', files: ['cour.ttf'] },
+  { id: 'comic-sans-ms', family: 'Comic Sans MS', files: ['comic.ttf'] },
+  { id: 'segoe-script', family: 'Segoe Script', files: ['segoesc.ttf'] },
   { id: 'segoe-ui', family: 'Segoe UI', files: ['segoeui.ttf'] },
   { id: 'calibri', family: 'Calibri', files: ['calibri.ttf'] },
   { id: 'candara', family: 'Candara', files: ['Candara.ttf'] },

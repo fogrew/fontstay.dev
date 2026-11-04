@@ -113,7 +113,7 @@ export function buildTools(host: () => ToolHost): WebMcpTool[] {
           kind: {
             type: 'string',
             description: 'Font type.',
-            enum: ['sans-serif', 'serif', 'monospace'],
+            enum: ['sans-serif', 'serif', 'monospace', 'cursive'],
           },
         },
         required: ['fontId', 'kind'],

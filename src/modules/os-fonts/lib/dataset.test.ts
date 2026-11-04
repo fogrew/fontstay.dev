@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { osFontsDataset } from './dataset';
+import { osFontMetrics } from './metrics';
 import { fontsAvailableOn, osAvailability } from './query';
 import { validateDataset } from './validate';
 
@@ -32,6 +33,18 @@ describe('bundled dataset', () => {
       'preinstalled',
     );
     expect(osAvailability(byId('lato'), 'linux', osFontsDataset).level).toBe('partial');
+  });
+
+  it('offers measured cursive system fonts', () => {
+    const cursive = osFontsDataset.fonts.filter((font) => font.category === 'cursive');
+    expect(cursive.map((font) => font.id)).toEqual(
+      expect.arrayContaining(['comic-sans-ms', 'segoe-script']),
+    );
+    expect(osAvailability(byId('comic-sans-ms'), 'windows', osFontsDataset).level).toBe(
+      'preinstalled',
+    );
+    const measured = new Set(osFontMetrics().map((metrics) => metrics.id));
+    for (const font of cursive) expect(measured.has(font.id), font.id).toBe(true);
   });
 
   it('lists fonts per system', () => {

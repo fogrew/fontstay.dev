@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { FontSourceError } from './download';
-import { downloadOrigin, sameOrigin } from './origin';
+import { downloadOrigin, isHandwritingOrigin, sameOrigin } from './origin';
 
 const origin = { source: 'google', family: 'Open Sans', style: '400', subset: 'latin' } as const;
 
@@ -18,5 +18,11 @@ describe('font origins', () => {
     ]) {
       await expect(downloadOrigin(bad)).rejects.toBeInstanceOf(FontSourceError);
     }
+  });
+
+  it('treats the Handwriting category as cursive and nothing else', async () => {
+    expect(await isHandwritingOrigin({ ...origin, family: 'Allison' })).toBe(true);
+    expect(await isHandwritingOrigin(origin)).toBe(false);
+    expect(await isHandwritingOrigin({ ...origin, family: 'No Such Family' })).toBe(false);
   });
 });

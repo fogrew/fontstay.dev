@@ -38,7 +38,7 @@ import { IntroGuide } from './IntroGuide';
 import { ToolIcon } from './ToolIcons';
 
 type Wrap = 'wrap' | 'balance' | 'pretty' | 'stable' | 'nowrap';
-type Substitute = 'sans-serif' | 'serif' | 'monospace' | 'system-ui';
+type Substitute = 'sans-serif' | 'serif' | 'monospace' | 'cursive' | 'system-ui';
 type Layer = 'web' | 'fallback';
 type LensShows = 'overlay' | 'fallback' | 'plain';
 type Render = 'fill' | 'outline';
@@ -89,7 +89,13 @@ body {
   font-family: "Brand", "Brand Fallback", sans-serif;
 }`;
 const WRAPS: readonly Wrap[] = ['wrap', 'balance', 'pretty', 'stable', 'nowrap'];
-const SUBSTITUTES: readonly Substitute[] = ['sans-serif', 'serif', 'monospace', 'system-ui'];
+const SUBSTITUTES: readonly Substitute[] = [
+  'sans-serif',
+  'serif',
+  'monospace',
+  'cursive',
+  'system-ui',
+];
 const KEY_PREFIX = 'ff-web-';
 const SYSTEM = '__system__';
 
@@ -623,6 +629,7 @@ export function ArticleView({
   const substituteLabel = (value: Substitute) => {
     if (value === 'serif') return t.type_serif();
     if (value === 'monospace') return t.type_mono();
+    if (value === 'cursive') return t.type_cursive();
     return value === 'system-ui' ? t.missing_system() : t.type_sans();
   };
   const coverageFor = (plain: boolean): Coverage => ({
