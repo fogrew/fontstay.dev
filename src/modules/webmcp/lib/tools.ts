@@ -135,7 +135,7 @@ export function buildTools(host: () => ToolHost): WebMcpTool[] {
     {
       name: 'get-export',
       description:
-        'Return the output in another format: CSS variables, Tailwind theme, Next.js, Nuxt, Astro, preload tags or a loading script.',
+        'Return the output in another format: CSS variables, Tailwind theme, Next.js, Nuxt, Astro, WordPress theme.json, Fontaine config, preload tags or a loading script.',
       inputSchema: {
         type: 'object',
         properties: { format: { type: 'string', description: 'Export format id.' } },

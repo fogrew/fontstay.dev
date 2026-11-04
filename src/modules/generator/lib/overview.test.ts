@@ -10,6 +10,7 @@ const output = (overrides: Partial<FontOutput>): FontOutput => ({
   generic: 'serif',
   fontFaces: '',
   families: ['"Averia"', '"Averia Fallback"'],
+  systemFonts: ['Georgia'],
   strategy: '',
   fileName: 'Averia-Regular.woff2',
   weight: 400,

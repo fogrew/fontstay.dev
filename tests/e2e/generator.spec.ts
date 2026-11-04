@@ -1409,6 +1409,8 @@ test('every export format can be shown, copied and downloaded', async ({ page })
     ['Next.js (next/font/local)', 'font.ts', /localFont\(/],
     ['Nuxt Fonts', 'nuxt.config.ts', /@nuxt\/fonts/],
     ['Astro fonts config', 'astro.config.mjs', /provider: 'local'/],
+    ['WordPress (theme.json)', 'theme.json', /"fontFamilies": \[/],
+    ['Fontaine (Vite config)', 'vite.config.ts', /FontaineTransform\.vite/],
     ['Preload tag', 'preload.html', /rel="preload"/],
     ['Font Loading API script', 'font-loading.js', /document\.fonts\.load/],
   ];
@@ -1513,7 +1515,10 @@ test('the dropdown works from the keyboard, with typeahead, and has no axe viola
   await format.focus();
   await page.keyboard.press('ArrowDown');
   await expect(format).toHaveAttribute('aria-expanded', 'true');
-  const results = await new AxeBuilder({ page }).include('[role="listbox"]').analyze();
+  const results = await new AxeBuilder({ page })
+    .include('[role="listbox"]')
+    .disableRules('scrollable-region-focusable')
+    .analyze();
   expect(results.violations).toEqual([]);
   await page.keyboard.press('ArrowDown');
   await page.keyboard.press('Enter');

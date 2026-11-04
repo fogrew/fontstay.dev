@@ -8,6 +8,7 @@ export interface FontOutput {
   generic: string;
   fontFaces: string;
   families: readonly string[];
+  systemFonts: readonly string[];
   strategy: string;
   fileName: string;
   weight: number;
@@ -38,15 +39,22 @@ export function currentFallback(
 }
 
 export function groupFonts(outputs: readonly FontOutput[]): ExportFamily[] {
-  const groups = new Map<string, { generic: string; families: string[]; fonts: ExportFont[] }>();
+  const groups = new Map<
+    string,
+    { generic: string; families: string[]; systemFonts: string[]; fonts: ExportFont[] }
+  >();
   for (const output of outputs) {
     const group = groups.get(output.targetFamily) ?? {
       generic: output.generic,
       families: [],
+      systemFonts: [],
       fonts: [],
     };
     for (const family of output.families) {
       if (!group.families.includes(family)) group.families.push(family);
+    }
+    for (const name of output.systemFonts) {
+      if (!group.systemFonts.includes(name)) group.systemFonts.push(name);
     }
     group.fonts.push({ fileName: output.fileName, weight: output.weight, style: output.style });
     groups.set(output.targetFamily, group);

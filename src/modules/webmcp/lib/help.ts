@@ -20,5 +20,5 @@ export const HELP: Record<string, string> = {
   'per-script':
     'When letters of another script (for example Cyrillic) are proportionally wider or narrower than Latin ones, the fallback gets its own face with its own size-adjust for that script.',
   'export-formats':
-    'CSS, CSS variables, Tailwind theme, Next.js, Nuxt and Astro font configs, preload tags and a Font Loading API script.',
+    'CSS, CSS variables, Tailwind theme, Next.js, Nuxt, Astro, WordPress theme.json and Fontaine font configs, preload tags and a Font Loading API script.',
 };

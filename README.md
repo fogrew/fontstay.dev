@@ -51,7 +51,7 @@ pnpm perf      # initial JavaScript budget (after a build)
 - Upload WOFF2/WOFF/TTF/OTF/TTC fonts, paste `@font-face` CSS, or pick a Google Fonts family; everything is parsed locally in a worker.
 - Per-system fallbacks (Windows, macOS, Linux, ChromeOS, Android, iOS) chosen from a dataset of preinstalled fonts, with `size-adjust` and the vertical overrides fitted automatically and an estimate of the layout shift per browser of your audience.
 - Browser support matrix from a browserslist query, usage statistics or a manual system mix.
-- Export as CSS, CSS custom properties, Tailwind v4, Next.js, Nuxt Fonts, Astro, JSON, preload tags, a Font Loading API script, or a Markdown impact report.
+- Export as CSS, CSS custom properties, Tailwind v4, Next.js, Nuxt Fonts, Astro, WordPress theme.json, Fontaine (Vite), JSON, preload tags, a Font Loading API script, or a Markdown impact report.
 - Share links (`#s=...`), local persistence of fonts and settings, presets, a system font catalog, a guide.
 
 ## Data scripts

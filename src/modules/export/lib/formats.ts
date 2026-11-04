@@ -8,6 +8,7 @@ export interface ExportFamily {
   targetFamily: string;
   generic: string;
   families: readonly string[];
+  systemFonts: readonly string[];
   fonts: readonly ExportFont[];
 }
 
@@ -26,6 +27,8 @@ export const EXPORT_FORMATS = [
   'next',
   'nuxt',
   'astro',
+  'wordpress',
+  'fontaine',
   'preload',
   'loading',
 ] as const;
@@ -35,7 +38,7 @@ export type ExportFormat = (typeof EXPORT_FORMATS)[number];
 export interface ExportFile {
   text: string;
   fileName: string;
-  language: 'css' | 'js' | 'ts' | 'html';
+  language: 'css' | 'js' | 'ts' | 'html' | 'json';
 }
 
 const stackOf = (family: ExportFamily) => `${family.families.join(', ')}, ${family.generic}`;
@@ -189,6 +192,39 @@ function astroBlock(input: ExportInput, family: ExportFamily): string {
   ].join('\n');
 }
 
+const jsonEscaped = (json: string) =>
+  json.replace(/[\u007f-\u009f\u2028\u2029]/g, (char) => escapeUnit(char.charCodeAt(0)));
+
+function wordpressFamily(family: ExportFamily, slug: string) {
+  return {
+    name: family.targetFamily,
+    slug,
+    fontFamily: stackOf(family),
+    fontFace: fontsOf(family).map((font) => ({
+      fontFamily: family.targetFamily,
+      fontWeight: String(font.weight),
+      fontStyle: font.style,
+      src: [`file:./assets/fonts/${encodeURIComponent(fileOf(font))}`],
+    })),
+  };
+}
+
+function wordpressFamilies(families: readonly ExportFamily[]) {
+  const used = new Set<string>();
+  return families.map((family) => {
+    const base = slugOf(family.targetFamily);
+    let slug = base;
+    for (let count = 2; used.has(slug); count++) slug = `${base}-${count}`;
+    used.add(slug);
+    return wordpressFamily(family, slug);
+  });
+}
+
+function fontaineEntry(family: ExportFamily): string {
+  const fonts = family.systemFonts.length > 0 ? family.systemFonts : ['Arial'];
+  return `        ${quoted(family.targetFamily)}: [${fonts.map(quoted).join(', ')}],`;
+}
+
 export function buildExport(format: ExportFormat, input: ExportInput): ExportFile {
   const families = input.families;
   switch (format) {
@@ -263,6 +299,43 @@ export function buildExport(format: ExportFormat, input: ExportInput): ExportFil
         ].join('\n'),
         fileName: 'astro.config.mjs',
         language: 'js',
+      };
+    case 'wordpress':
+      return {
+        text: jsonEscaped(
+          JSON.stringify(
+            {
+              $schema: 'https://schemas.wp.org/trunk/theme.json',
+              version: 3,
+              settings: { typography: { fontFamilies: wordpressFamilies(families) } },
+            },
+            null,
+            2,
+          ),
+        ),
+        fileName: 'theme.json',
+        language: 'json',
+      };
+    case 'fontaine':
+      return {
+        text: [
+          `// Put ${singleLine(filesOf(input).join(', '))} into ./public/fonts/ and declare their @font-face rules in your CSS. In Nuxt, put the plugin under vite.plugins.`,
+          "import { FontaineTransform } from 'fontaine';",
+          "import { defineConfig } from 'vite';",
+          '',
+          'export default defineConfig({',
+          '  plugins: [',
+          '    FontaineTransform.vite({',
+          '      fallbacks: {',
+          families.map(fontaineEntry).join('\n'),
+          '      },',
+          `      resolvePath: (id) => new URL(\`./public\${id}\`, import.meta.url),`,
+          '    }),',
+          '  ],',
+          '});',
+        ].join('\n'),
+        fileName: 'vite.config.ts',
+        language: 'ts',
       };
     case 'preload':
       return {

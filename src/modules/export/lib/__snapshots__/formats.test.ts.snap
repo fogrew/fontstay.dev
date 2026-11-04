@@ -75,6 +75,49 @@ exports[`buildExport > produces a stable css export for several families 1`] = `
 }
 `;
 
+exports[`buildExport > produces a stable fontaine export 1`] = `
+{
+  "fileName": "vite.config.ts",
+  "language": "ts",
+  "text": "// Put Inter-Regular.woff2 into ./public/fonts/ and declare their @font-face rules in your CSS. In Nuxt, put the plugin under vite.plugins.
+import { FontaineTransform } from 'fontaine';
+import { defineConfig } from 'vite';
+
+export default defineConfig({
+  plugins: [
+    FontaineTransform.vite({
+      fallbacks: {
+        'Inter': ['Arial'],
+      },
+      resolvePath: (id) => new URL(\`./public\${id}\`, import.meta.url),
+    }),
+  ],
+});",
+}
+`;
+
+exports[`buildExport > produces a stable fontaine export for several families 1`] = `
+{
+  "fileName": "vite.config.ts",
+  "language": "ts",
+  "text": "// Put Inter-Regular.woff2, Merriweather-Regular.woff2, Merriweather-Bold.woff2, Merriweather-Italic.woff2 into ./public/fonts/ and declare their @font-face rules in your CSS. In Nuxt, put the plugin under vite.plugins.
+import { FontaineTransform } from 'fontaine';
+import { defineConfig } from 'vite';
+
+export default defineConfig({
+  plugins: [
+    FontaineTransform.vite({
+      fallbacks: {
+        'Inter': ['Arial'],
+        'Merriweather': ['Georgia', 'Times New Roman'],
+      },
+      resolvePath: (id) => new URL(\`./public\${id}\`, import.meta.url),
+    }),
+  ],
+});",
+}
+`;
+
 exports[`buildExport > produces a stable loading export 1`] = `
 {
   "fileName": "font-loading.js",
@@ -283,6 +326,101 @@ body {
   font-family: var(--font-inter);
   font-size-adjust: 0.4877;
   line-height: 1.4;
+}",
+}
+`;
+
+exports[`buildExport > produces a stable wordpress export 1`] = `
+{
+  "fileName": "theme.json",
+  "language": "json",
+  "text": "{
+  "$schema": "https://schemas.wp.org/trunk/theme.json",
+  "version": 3,
+  "settings": {
+    "typography": {
+      "fontFamilies": [
+        {
+          "name": "Inter",
+          "slug": "inter",
+          "fontFamily": "\\"Inter\\", \\"Inter Fallback Arial\\", sans-serif",
+          "fontFace": [
+            {
+              "fontFamily": "Inter",
+              "fontWeight": "400",
+              "fontStyle": "normal",
+              "src": [
+                "file:./assets/fonts/Inter-Regular.woff2"
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  }
+}",
+}
+`;
+
+exports[`buildExport > produces a stable wordpress export for several families 1`] = `
+{
+  "fileName": "theme.json",
+  "language": "json",
+  "text": "{
+  "$schema": "https://schemas.wp.org/trunk/theme.json",
+  "version": 3,
+  "settings": {
+    "typography": {
+      "fontFamilies": [
+        {
+          "name": "Inter",
+          "slug": "inter",
+          "fontFamily": "\\"Inter\\", \\"Inter Fallback Arial\\", sans-serif",
+          "fontFace": [
+            {
+              "fontFamily": "Inter",
+              "fontWeight": "400",
+              "fontStyle": "normal",
+              "src": [
+                "file:./assets/fonts/Inter-Regular.woff2"
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Merriweather",
+          "slug": "merriweather",
+          "fontFamily": "\\"Merriweather\\", \\"Merriweather Fallback Georgia\\", serif",
+          "fontFace": [
+            {
+              "fontFamily": "Merriweather",
+              "fontWeight": "400",
+              "fontStyle": "normal",
+              "src": [
+                "file:./assets/fonts/Merriweather-Regular.woff2"
+              ]
+            },
+            {
+              "fontFamily": "Merriweather",
+              "fontWeight": "700",
+              "fontStyle": "normal",
+              "src": [
+                "file:./assets/fonts/Merriweather-Bold.woff2"
+              ]
+            },
+            {
+              "fontFamily": "Merriweather",
+              "fontWeight": "400",
+              "fontStyle": "italic",
+              "src": [
+                "file:./assets/fonts/Merriweather-Italic.woff2"
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  }
 }",
 }
 `;

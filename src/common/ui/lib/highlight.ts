@@ -1,7 +1,7 @@
 import { createCssVariablesTheme, createHighlighterCore, type HighlighterCore } from 'shiki/core';
 import { createJavaScriptRegexEngine } from 'shiki/engine/javascript';
 
-export type CodeLanguage = 'css' | 'html' | 'js' | 'ts' | 'markdown';
+export type CodeLanguage = 'css' | 'html' | 'js' | 'json' | 'ts' | 'markdown';
 
 export interface Token {
   text: string;
@@ -17,6 +17,7 @@ const loaders: Record<CodeLanguage, () => Promise<unknown>> = {
   css: () => import('shiki/langs/css.mjs'),
   html: () => import('shiki/langs/html.mjs'),
   js: () => import('shiki/langs/javascript.mjs'),
+  json: () => import('shiki/langs/json.mjs'),
   ts: () => import('shiki/langs/typescript.mjs'),
   markdown: () => import('shiki/langs/markdown.mjs'),
 };

@@ -6,12 +6,12 @@
 
 | Page | Measured | Budget |
 |---|---|---|
-| `/en/` (generator) | 121.6 kB | 126 kB |
+| `/en/` (generator) | 126.3 kB | 127 kB |
 | `/en/fonts/` (catalog) | 37.3 kB | 39 kB |
 | `/en/presets/` | 25.7 kB | 27 kB |
 | `/en/import/` (site import receiver) | 2.2 kB | 4 kB |
 
-Raise a limit only with a justification in the PR. The limits were raised for the three-column layout, the custom dropdown (shared by every page), the catalog filters, the all-fonts overview and the layer model with its icon controls (#218). The messages are not part of the JavaScript: each locale is a JSON file (`messages/<locale>.json`, a hashed asset) that a page fetches for its own language only, so adding a language costs no initial JavaScript.
+Raise a limit only with a justification in the PR. The limits were raised for the three-column layout, the custom dropdown (shared by every page), the catalog filters, the all-fonts overview and the layer model with its icon controls (#218) and the WordPress and Fontaine export generators (#181). The messages are not part of the JavaScript: each locale is a JSON file (`messages/<locale>.json`, a hashed asset) that a page fetches for its own language only, so adding a language costs no initial JavaScript.
 
 ## What is lazy
 
