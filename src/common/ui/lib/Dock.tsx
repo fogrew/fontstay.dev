@@ -14,6 +14,7 @@ export interface DockProps {
     footer?: ComponentChildren;
   }[];
   storageKey: string;
+  defaultOpen?: string;
   nextLabel: (label: string) => string;
 }
 
@@ -26,10 +27,10 @@ export interface DockOpenDetail {
 
 const DESKTOP_LAYOUT = '(min-width: 64rem)';
 
-export function Dock({ items, storageKey, nextLabel }: DockProps) {
+export function Dock({ items, storageKey, defaultOpen, nextLabel }: DockProps) {
   const base = useId();
   const ids = items.map((item) => item.id);
-  const [active, setActive] = useState<string>();
+  const [active, setActive] = useState<string | undefined>(defaultOpen);
   const [ready, setReady] = useState(false);
   const root = useRef<HTMLDivElement>(null);
   const skippedRestore = useRef(false);
@@ -40,7 +41,7 @@ export function Dock({ items, storageKey, nextLabel }: DockProps) {
       if (typeof value !== 'object' || value === null) return undefined;
       return parseIds((value as Record<string, unknown>).opened, ids);
     });
-    const first = saved?.[0];
+    const first = saved ? saved[0] : defaultOpen;
     const skip = items.find((item) => item.id === first)?.clientOnly;
     skippedRestore.current = !!skip && !window.matchMedia(DESKTOP_LAYOUT).matches;
     setActive(skippedRestore.current ? undefined : first);
