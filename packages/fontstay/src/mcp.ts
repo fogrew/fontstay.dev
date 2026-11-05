@@ -22,7 +22,8 @@ const MAX_FONTS = 16;
 const MAX_STRING = 2000;
 const LOW_COVERAGE = 0.9;
 // Browserslist loads packages from the working directory for these queries.
-const EXTERNAL_QUERY = /\bextends\b|\bin\s+(?!(?:my\s+stats|[a-z]{2}|alt-[a-z]{2})\b(?!-))/i;
+const EXTERNAL_QUERY =
+  /\bextends\b|\bin\s+(?!(?:my\s+stats|(?:alt-)?[a-z]{2}(?!\s+stats))\b(?!-))/i;
 
 type Json = Record<string, unknown>;
 

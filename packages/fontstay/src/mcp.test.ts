@@ -117,6 +117,11 @@ describe('protocol', () => {
     ]);
   });
 
+  it('answers an invalid id with a null id', async () => {
+    const [reply] = await exchange([JSON.stringify({ jsonrpc: '1.0', id: {}, method: 'ping' })]);
+    expect(reply?.id).toBeNull();
+  });
+
   it('rejects an oversized message and keeps serving', async () => {
     const replies = await exchange([
       `{"pad":"${'x'.repeat(2 * 1024 * 1024)}"}`,
@@ -193,17 +198,30 @@ describe('tools', () => {
       'extends browserslist-config-x',
       '> 1% in browserslist-config-x',
       'last 2 versions, > 1% in my-stats-pkg',
+      '> 5% in ab stats',
+      '> 5% in alt-eu stats',
+      'cover 99% in ab stats',
+      '> 1% in US-pkg',
+      '> 1% IN pkg',
+      '> 1% in	pkg',
+      'EXTENDS browserslist-config-x',
     ]) {
       const reply = await call('get_css', { paths: [fixture('FiraSans-Regular.ttf')], audience });
       expect(reply.result.isError, audience).toBe(true);
       expect(text(reply), audience).toMatch(/"audience"/);
     }
-    const ok = await call('get_css', {
-      paths: [fixture('FiraSans-Regular.ttf')],
-      audience: 'last 2 versions and > 1% in US',
-      systems: ['windows'],
-    });
-    expect(ok.result.isError).toBeUndefined();
+    for (const audience of [
+      'last 2 versions and > 1% in US',
+      '> 1% in alt-eu',
+      'last 2 versions',
+    ]) {
+      const ok = await call('get_css', {
+        paths: [fixture('FiraSans-Regular.ttf')],
+        audience,
+        systems: ['windows'],
+      });
+      expect(ok.result.isError, audience).toBeUndefined();
+    }
   });
 
   it.runIf(process.platform === 'win32')('does not open network paths', async () => {
