@@ -1,7 +1,6 @@
-import { open } from 'node:fs/promises';
 import { basename } from 'node:path';
 import { buildExport, EXPORT_FORMATS, type ExportFile, type ExportFormat } from '@/modules/export';
-import { FontParseError, type FontParseErrorCode, MAX_FONT_BYTES } from '@/modules/font-metrics';
+import { FontParseError, type FontParseErrorCode } from '@/modules/font-metrics';
 // Deep imports: exporting these from the module barrels would add them to the site's initial JavaScript.
 import { parseFontBuffer } from '@/modules/font-metrics/lib/parse';
 import {
@@ -11,6 +10,7 @@ import {
   fitFonts,
 } from '@/modules/generator/lib/fit-fonts';
 import { CATEGORIES, type Category, OS_IDS, type OsId } from '@/modules/os-fonts';
+import { arrayBufferOf, readFont } from './read-font';
 
 export type {
   Category,
@@ -49,10 +49,6 @@ export interface FitOutput {
   audience: { query: string; browsers: number };
 }
 
-function arrayBufferOf(data: Uint8Array): ArrayBuffer {
-  return data.buffer.slice(data.byteOffset, data.byteOffset + data.byteLength) as ArrayBuffer;
-}
-
 export async function fit(options: FitOptions): Promise<FitOutput> {
   if (options.fonts.length === 0) throw new FitRunError('no-fit', 'No font files given.');
   const result = await fitFonts({
@@ -76,19 +72,6 @@ export async function fit(options: FitOptions): Promise<FitOutput> {
     uncovered: result.uncovered,
     audience: result.audience,
   };
-}
-
-async function readFont(path: string): Promise<Uint8Array> {
-  const handle = await open(path, 'r');
-  try {
-    if (!(await handle.stat()).isFile()) throw new FontParseError('invalid-font');
-    const buffer = Buffer.alloc(MAX_FONT_BYTES + 1);
-    const { bytesRead } = await handle.read(buffer, 0, buffer.length, 0);
-    if (bytesRead > MAX_FONT_BYTES) throw new FontParseError('too-large');
-    return buffer.subarray(0, bytesRead);
-  } finally {
-    await handle.close();
-  }
 }
 
 export async function fitFiles(

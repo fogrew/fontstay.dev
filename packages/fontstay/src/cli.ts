@@ -14,8 +14,12 @@ import {
 } from './index';
 
 export const USAGE = `Usage: fontstay fit <font-file...> [options]
+       fontstay mcp
 
 Generate metric-adjusted fallback @font-face rules for web fonts.
+
+fontstay mcp starts an MCP server on stdio (tools: analyze_font, suggest_fallbacks, get_css,
+get_export) for coding agents.
 
 Options:
   -s, --systems <list>     Comma-separated systems to fit: ${OS_IDS.join(', ')}
