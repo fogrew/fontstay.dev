@@ -122,7 +122,10 @@ describe('protocol', () => {
       `{"pad":"${'x'.repeat(2 * 1024 * 1024)}"}`,
       request(1, 'ping'),
     ]);
-    expect(replies.map((reply) => reply.error?.code ?? reply.result)).toEqual([-32600, {}]);
+    expect(replies.map((reply) => reply.error?.message ?? reply.result)).toEqual([
+      'Message too large.',
+      {},
+    ]);
   });
 
   it('does not answer notifications of unknown methods', async () => {

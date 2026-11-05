@@ -479,7 +479,9 @@ export async function serve(input: Readable, output: Writable): Promise<void> {
       const line = pending.subarray(0, end);
       pending = pending.subarray(end + 1);
       if (discarding) discarding = false;
-      else if (line.length > 0) handleLine(line.toString('utf8'));
+      else if (line.length > MAX_LINE_BYTES) {
+        enqueue(() => send(failure(null, -32600, 'Message too large.')));
+      } else if (line.length > 0) handleLine(line.toString('utf8'));
     }
     if (pending.length > MAX_LINE_BYTES) {
       if (!discarding) enqueue(() => send(failure(null, -32600, 'Message too large.')));
