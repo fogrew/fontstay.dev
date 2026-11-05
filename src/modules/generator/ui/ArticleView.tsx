@@ -409,7 +409,9 @@ export function ArticleView({
     baseView,
   );
   const viewKey = JSON.stringify(viewDiff);
-  useLayoutEffect(() => onView?.(viewDiff), [viewKey]);
+  useLayoutEffect(() => {
+    onView?.(viewDiff);
+  }, [viewKey]);
   useEffect(() => {
     if (!restore) return;
     const next: PreviewView = applyView(baseView, restore);

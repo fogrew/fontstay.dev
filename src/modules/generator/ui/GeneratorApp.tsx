@@ -373,8 +373,8 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
     let current = true;
     void (async () => {
       const payload = payloadFromHash(location.hash);
-      let state = payload ? await decodeShareState(payload) : null;
-      state ??= loadSettings();
+      const linked = payload ? await decodeShareState(payload) : null;
+      const state = linked ?? loadSettings();
       if (payload && state) history.replaceState(null, '', location.pathname + location.search);
       if (state && current) {
         setInitialQuery(state.query);
@@ -392,7 +392,7 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
           });
         }
         pending.current = state;
-        if (payload) {
+        if (linked) {
           linkPanel.current = state.panel ?? DEFAULT_PANEL;
           setViewRestore(state.view ?? {});
           if (state.os) setActiveOs(state.os);
@@ -456,7 +456,8 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
   useEffect(() => {
     const state = pending.current;
     if (!state || fonts.length === 0) return;
-    if (state.fontName === undefined && fonts.length > 1) {
+    if (state.all && fonts.length < 2 && !(restored && offer.length === 0)) return;
+    if (state.fontName === undefined && !state.all && fonts.length > 1) {
       pending.current = null;
       return;
     }
@@ -469,7 +470,7 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
       return;
     }
     pending.current = null;
-    setSelectedId(fonts.length > 1 ? target.id : undefined);
+    setSelectedId(fonts.length > 1 && !state.all ? target.id : undefined);
     const restoredValues: Record<string, Values> = {};
     const apply = (font: LoadedFont, saved: FontState) => {
       if (saved.picks) {
@@ -1086,6 +1087,7 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
     return {
       query,
       fontName: selected && !allMode ? selected.fileName : undefined,
+      all: allMode,
       preset: presetId,
       basePicks: presetMap,
       selected: selected && { ...choicesOf(selected), picks },
@@ -1110,7 +1112,7 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
     buildShareState({
       ...shareInput(),
       panel: panel.current,
-      os: current,
+      os: activeOs,
       face: editId,
       view: viewDiff.current,
     });

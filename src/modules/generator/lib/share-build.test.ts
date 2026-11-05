@@ -39,6 +39,12 @@ describe('buildShareState', () => {
     expect(mergePicks(preset, undefined)).toEqual(preset);
   });
 
+  it('marks a link made in the all-fonts mode', () => {
+    expect(buildShareState({ all: true }).all).toBe(true);
+    expect(parseShareState({ v: 1, all: true })?.all).toBe(true);
+    expect(buildShareState({ all: false }).all).toBeUndefined();
+  });
+
   it('records the panel only when it is not the default, including a closed dock', () => {
     expect(buildShareState({ panel: 'tuning' }).panel).toBe('tuning');
     expect(buildShareState({ panel: 'none' }).panel).toBe('none');
@@ -57,6 +63,7 @@ describe('buildShareState', () => {
     const state = buildShareState({
       query: 'defaults',
       fontName: 'Inter.woff2',
+      all: false,
       preset: 'system',
       basePicks: preset,
       selected: {

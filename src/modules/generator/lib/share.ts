@@ -32,6 +32,7 @@ export interface ShareState extends FontState {
   v: number;
   query?: string;
   fontName?: string;
+  all?: boolean;
   preset?: string;
   others?: Record<string, FontState>;
   sources?: FontOrigin[];
@@ -133,6 +134,7 @@ export function parseShareState(
   if (typeof input.fontName === 'string' && input.fontName.length <= 200) {
     state.fontName = input.fontName;
   }
+  if (input.all === true) state.all = true;
   Object.assign(state, parseFontState(input));
   if (typeof input.preset === 'string' && ID.test(input.preset)) state.preset = input.preset;
   if (Array.isArray(input.disabled)) {

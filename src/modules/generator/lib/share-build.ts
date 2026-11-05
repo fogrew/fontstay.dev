@@ -24,6 +24,7 @@ export interface FontChoices {
 export interface ShareInput {
   query?: string | undefined;
   fontName?: string | undefined;
+  all?: boolean | undefined;
   preset?: string | undefined;
   basePicks?: Picks | undefined;
   selected?: FontChoices | undefined;
@@ -83,6 +84,7 @@ export function buildShareState(input: ShareInput): ShareState {
     v: SHARE_VERSION,
     ...(input.query ? { query: input.query } : {}),
     ...(input.fontName ? { fontName: input.fontName } : {}),
+    ...(input.all ? { all: true } : {}),
     ...(input.preset ? { preset: input.preset } : {}),
     ...fontPart(input.selected, base),
     ...(input.disabled && input.disabled.length > 0 ? { disabled: [...input.disabled] } : {}),
