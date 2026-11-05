@@ -28,6 +28,31 @@ Several font files are merged into one stylesheet, as in the app. Warnings (low 
 
 The output is the engine's fit: the same fallbacks, order, scripts and `unicode-range` as the app's CSS export for the same font and audience. The app then runs an optimizer that measures text in the browser and nudges the values (and may add a `.fonts-loading` letter-spacing rule); that step needs a browser and a wall-clock budget, so the CLI does not run it and its numbers can differ from the app's by a fraction of a percent. `tests/e2e/cli-parity.spec.ts` compares the test fonts with the app: identical structure and values within 2 points. Making the optimizer shared and deterministic is tracked in #384.
 
+## MCP server
+
+`fontstay mcp` runs a [Model Context Protocol](https://modelcontextprotocol.io) server on stdio, so an agent in an editor can analyze local font files and write the fallback CSS for them. It reads only the font files the agent names, writes nothing and makes no network requests. Protocol versions 2025-11-25, 2025-06-18, 2025-03-26 and 2024-11-05; tools only.
+
+```json
+{
+  "mcpServers": {
+    "fontstay": { "command": "npx", "args": ["-y", "fontstay", "mcp"] }
+  }
+}
+```
+
+Claude Code: `claude mcp add fontstay -- npx -y fontstay mcp`. From a checkout, use `node /path/to/packages/fontstay/dist/bin.js mcp` after `pnpm cli:build`. Relative paths resolve against the directory the editor starts the server in.
+
+| Tool | Input | Result |
+|---|---|---|
+| `analyze_font` | `path` | Names, weight and style, detected type, vertical metrics, scripts, glyph count, variable axes, OpenType feature tags, license. |
+| `suggest_fallbacks` | `paths`, fit options | JSON: the fallback family chosen per system, the audience share of each system, glyph-weight coverage per font, systems without fallbacks. |
+| `get_css` | `paths`, fit options | The `@font-face` and `font-family` CSS, as in `fontstay fit`. |
+| `get_export` | `paths`, `format`, fit options | The same fit as `css`, `variables`, `tailwind`, `next`, `nuxt`, `astro`, `wordpress`, `fontaine`, `preload` or `loading`, then the suggested file name. |
+
+`paths` takes 1 to 16 files of up to 10 MB (WOFF2, WOFF, TTF, OTF); several files are merged into one result. Fit options mirror the CLI: `audience` (Browserslist query), `systems`, `locale`, `kind`, `unicode_range`, `scripts`. Low glyph overlap and systems without fallback fonts are reported as warnings after the result. Bad input (missing file, invalid font, invalid audience) comes back as a tool error that the agent can read and correct.
+
+The WebMCP tools of the app that change the session (`set_audience`, `set_fallbacks`, font selection) have no counterpart here: the server is stateless and each call carries its own audience.
+
 ## Library
 
 ```js

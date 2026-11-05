@@ -56,7 +56,7 @@ pnpm perf      # initial JavaScript budget (after a build)
 
 ## Node library and CLI
 
-`packages/fontstay` publishes the fit engine without the UI: `fontstay fit font.woff2 --systems windows,macos --audience defaults` prints the same `@font-face` CSS as the app, for CI and build pipelines. Build it with `pnpm cli:build`; usage and the library API are in [`packages/fontstay/README.md`](packages/fontstay/README.md).
+`packages/fontstay` publishes the fit engine without the UI: `fontstay fit font.woff2 --systems windows,macos --audience defaults` prints the same `@font-face` CSS as the app, for CI and build pipelines. Build it with `pnpm cli:build`; `fontstay mcp` starts an MCP server on stdio so coding agents can analyze fonts and generate the CSS from local files. Usage, the MCP tools and the library API are in [`packages/fontstay/README.md`](packages/fontstay/README.md).
 
 ## Data scripts
 
