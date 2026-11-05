@@ -96,6 +96,27 @@ describe('protocol', () => {
     expect(replies[2]?.id).toBe(1);
   });
 
+  it('drops a message that grows past the line cap across chunks and keeps serving', async () => {
+    const input = new PassThrough();
+    const output = new PassThrough();
+    const chunks: Buffer[] = [];
+    output.on('data', (chunk: Buffer) => chunks.push(chunk));
+    const done = serve(input, output);
+    for (let part = 0; part < 3; part++) input.write('x'.repeat(512 * 1024));
+    input.write(`\n${request(1, 'ping')}\n`);
+    input.end();
+    await done;
+    const replies = Buffer.concat(chunks)
+      .toString('utf8')
+      .split('\n')
+      .filter(Boolean)
+      .map((line) => JSON.parse(line) as Reply);
+    expect(replies.map((reply) => reply.error?.message ?? reply.result)).toEqual([
+      'Message too large.',
+      {},
+    ]);
+  });
+
   it('rejects an oversized message and keeps serving', async () => {
     const replies = await exchange([
       `{"pad":"${'x'.repeat(2 * 1024 * 1024)}"}`,
@@ -154,6 +175,38 @@ describe('tools', () => {
     });
     expect(text(reply)).toContain('--font-sans');
     expect(text(reply, 1)).toMatch(/^Suggested file name: .+/);
+  });
+
+  it('names the unreadable font among several', async () => {
+    const garbage = join(scratch, 'second.woff2');
+    writeFileSync(garbage, 'not a font');
+    const reply = await call('get_css', { paths: [fixture('FiraSans-Regular.ttf'), garbage] });
+    expect(reply.result.isError).toBe(true);
+    expect(text(reply)).toMatch(/second\.woff2.*could not be read/);
+  });
+
+  it('rejects audience queries that load packages from disk', async () => {
+    for (const audience of [
+      'extends browserslist-config-x',
+      '> 1% in browserslist-config-x',
+      'last 2 versions, > 1% in my-stats-pkg',
+    ]) {
+      const reply = await call('get_css', { paths: [fixture('FiraSans-Regular.ttf')], audience });
+      expect(reply.result.isError, audience).toBe(true);
+      expect(text(reply), audience).toMatch(/"audience"/);
+    }
+    const ok = await call('get_css', {
+      paths: [fixture('FiraSans-Regular.ttf')],
+      audience: 'last 2 versions and > 1% in US',
+      systems: ['windows'],
+    });
+    expect(ok.result.isError).toBeUndefined();
+  });
+
+  it.runIf(process.platform === 'win32')('does not open network paths', async () => {
+    const reply = await call('analyze_font', { path: '//example.invalid/share/x.ttf' });
+    expect(reply.result.isError).toBe(true);
+    expect(text(reply)).toMatch(/network paths/);
   });
 
   it('reports failures as tool errors the agent can act on', async () => {

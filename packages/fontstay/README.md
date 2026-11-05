@@ -32,6 +32,8 @@ The output is the engine's fit: the same fallbacks, order, scripts and `unicode-
 
 `fontstay mcp` runs a [Model Context Protocol](https://modelcontextprotocol.io) server on stdio, so an agent in an editor can analyze local font files and write the fallback CSS for them. It reads only the font files the agent names, writes nothing and makes no network requests. Protocol versions 2025-11-25, 2025-06-18, 2025-03-26 and 2024-11-05; tools only.
 
+Once the package is published to npm, add it to an editor with:
+
 ```json
 {
   "mcpServers": {
@@ -40,7 +42,7 @@ The output is the engine's fit: the same fallbacks, order, scripts and `unicode-
 }
 ```
 
-Claude Code: `claude mcp add fontstay -- npx -y fontstay mcp`. From a checkout, use `node /path/to/packages/fontstay/dist/bin.js mcp` after `pnpm cli:build`. Relative paths resolve against the directory the editor starts the server in.
+Claude Code: `claude mcp add fontstay -- npx -y fontstay mcp`. Before that, or from a checkout, use `node /path/to/packages/fontstay/dist/bin.js mcp` after `pnpm cli:build`. Relative paths resolve against the directory the editor starts the server in.
 
 | Tool | Input | Result |
 |---|---|---|
@@ -49,9 +51,9 @@ Claude Code: `claude mcp add fontstay -- npx -y fontstay mcp`. From a checkout, 
 | `get_css` | `paths`, fit options | The `@font-face` and `font-family` CSS, as in `fontstay fit`. |
 | `get_export` | `paths`, `format`, fit options | The same fit as `css`, `variables`, `tailwind`, `next`, `nuxt`, `astro`, `wordpress`, `fontaine`, `preload` or `loading`, then the suggested file name. |
 
-`paths` takes 1 to 16 files of up to 10 MB (WOFF2, WOFF, TTF, OTF); several files are merged into one result. Fit options mirror the CLI: `audience` (Browserslist query), `systems`, `locale`, `kind`, `unicode_range`, `scripts`. Low glyph overlap and systems without fallback fonts are reported as warnings after the result. Bad input (missing file, invalid font, invalid audience) comes back as a tool error that the agent can read and correct.
+Audience queries that load a shared config or stats file (`extends ...`, `in <package>`) are rejected, and Windows network paths (`\\host\share`) are not read. `paths` takes 1 to 16 files of up to 10 MB (WOFF2, WOFF, TTF, OTF); several files are merged into one result. Fit options mirror the CLI: `audience` (Browserslist query), `systems`, `locale`, `kind`, `unicode_range`, `scripts`. Low glyph overlap and systems without fallback fonts are reported as warnings after the result. Bad input (missing file, invalid font, invalid audience) comes back as a tool error that the agent can read and correct.
 
-The WebMCP tools of the app that change the session (`set_audience`, `set_fallbacks`, font selection) have no counterpart here: the server is stateless and each call carries its own audience.
+The tool names follow the WebMCP set planned in #189. The tools there that keep session state (loaded fonts, `set_audience`, `set_fallback`) have no counterpart: the server is stateless, each call names its files and carries its own audience, and `suggest_fallbacks` returns the resolved audience and system shares. Layout shift (`get_layout_shift`) needs a browser and is not available.
 
 ## Library
 
