@@ -50,7 +50,7 @@ export function FitField({
   };
   return (
     <fieldset class={compact ? 'ff-fit ff-fit--compact' : 'ff-fit'} disabled={disabled}>
-      <legend>
+      <legend class="ff-fit__legend">
         {label} <span class="ff-muted">({unit})</span>
       </legend>
       <div class="ff-fit__inputs">
@@ -58,6 +58,7 @@ export function FitField({
           {label} ({unit}), {t.ui_slider_suffix()}
         </label>
         <input
+          class="ff-fit__range ff-control"
           id={`${id}-slider`}
           type="range"
           min={min}
@@ -72,7 +73,7 @@ export function FitField({
         </label>
         <input
           id={`${id}-number`}
-          class="ff-input ff-fit__number"
+          class="ff-control ff-input ff-fit__number"
           type="number"
           min={min}
           max={max}
@@ -94,6 +95,7 @@ export function FitField({
       <div class="ff-fit__actions">
         <label class="ff-check">
           <input
+            class="ff-check__input ff-control"
             type="checkbox"
             checked={value.mode === 'auto'}
             onChange={(event) =>

@@ -16,6 +16,7 @@ export function Tabs({ label, items }: TabsProps) {
       <div role="tablist" aria-label={label} class="ff-tabs__list">
         {items.map((item, index) => (
           <button
+            class="ff-tabs__tab ff-control"
             key={item.id}
             ref={(element) => {
               if (element) buttons.current.set(item.id, element);

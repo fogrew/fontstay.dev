@@ -119,7 +119,9 @@ export function FontInput({
 
   return (
     <section class="ff-drop" data-over={dragging} aria-labelledby="ff-input-heading">
-      <h2 id="ff-input-heading">{t.input_heading()}</h2>
+      <h2 class="ff-generator__heading ff-heading" id="ff-input-heading">
+        {t.input_heading()}
+      </h2>
       <div class="ff-field">
         <label for="ff-input-text">{t.input_label()}</label>
         <textarea
@@ -136,14 +138,14 @@ export function FontInput({
             setText(event.currentTarget.value);
           }}
         />
-        <p id="ff-input-hint" class="ff-muted ff-drop__hint">
+        <p id="ff-input-hint" class="ff-drop__paragraph ff-muted ff-drop__hint">
           {t.input_hint()} {t.input_formats()}
         </p>
       </div>
-      <p class="ff-drop__links">
+      <p class="ff-drop__paragraph ff-drop__links">
         <button
           type="button"
-          class="ff-link-button"
+          class="ff-control ff-link-button"
           disabled={busy}
           onClick={() => input.current?.click()}
         >
@@ -151,7 +153,7 @@ export function FontInput({
         </button>
         <button
           type="button"
-          class="ff-link-button"
+          class="ff-control ff-link-button"
           aria-expanded={site}
           onClick={() => setSite(!site)}
         >
@@ -159,6 +161,7 @@ export function FontInput({
         </button>
       </p>
       <input
+        class="ff-control"
         ref={input}
         hidden
         type="file"
@@ -170,21 +173,21 @@ export function FontInput({
         }}
       />
       {site && <SiteImportPanel locale={locale} />}
-      {!compact && <p class="ff-muted">{t.upload_local()}</p>}
+      {!compact && <p class="ff-drop__paragraph ff-muted">{t.upload_local()}</p>}
       {kind === 'name' && (
         <FamilySearch locale={locale} busy={busy} query={text} slots={slots} onFiles={onFiles} />
       )}
       <div role="status">
-        {importError && <p class="ff-error">{t.import_paste_error()}</p>}
-        {css?.tooLarge && <p class="ff-error">{t.cssimport_too_large()}</p>}
-        {empty && <p class="ff-error">{t.cssimport_none()}</p>}
+        {importError && <p class="ff-drop__paragraph ff-error">{t.import_paste_error()}</p>}
+        {css?.tooLarge && <p class="ff-drop__paragraph ff-error">{t.cssimport_too_large()}</p>}
+        {empty && <p class="ff-drop__paragraph ff-error">{t.cssimport_none()}</p>}
       </div>
       {css && css.entries.length > 0 && (
-        <ul class="ff-cssimport__list" aria-label={t.cssimport_faces()}>
+        <ul class="ff-generator__list ff-cssimport__list" aria-label={t.cssimport_faces()}>
           {css.entries.map((entry, index) => {
             const { face, pick } = entry;
             return (
-              <li key={`${face.family}-${index}`}>
+              <li class="ff-generator__item" key={`${face.family}-${index}`}>
                 <span>
                   {`${displayName(face.family)} · ${face.weight} · ${face.style}`}
                   {face.skipped > 0 && (
@@ -204,7 +207,12 @@ export function FontInput({
                 )}
                 {pick.kind === 'link' && (
                   <span>
-                    <a href={pick.url.toString()} target="_blank" rel="noopener noreferrer">
+                    <a
+                      class="ff-link"
+                      href={pick.url.toString()}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
                       {t.cssimport_download()}
                     </a>{' '}
                     <span class="ff-muted">({pick.url.hostname})</span>
@@ -217,11 +225,12 @@ export function FontInput({
         </ul>
       )}
       {css && css.google.length > 0 && (
-        <ul class="ff-cssimport__list" aria-label={t.cssimport_google()}>
+        <ul class="ff-generator__list ff-cssimport__list" aria-label={t.cssimport_google()}>
           {css.google.map((family) => (
-            <li key={`${family.name}-${family.styles}`}>
+            <li class="ff-generator__item" key={`${family.name}-${family.styles}`}>
               <span>{displayName(family.name)}</span>
               <a
+                class="ff-link"
                 href={`https://fonts.google.com/specimen/${encodeURIComponent(family.name.replace(/ /g, '+'))}`}
                 target="_blank"
                 rel="noopener noreferrer"

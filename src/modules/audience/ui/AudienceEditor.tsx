@@ -227,6 +227,7 @@ export function AudienceEditor({
               )}
             </div>
             <input
+              class="ff-control"
               ref={fileInput}
               hidden
               type="file"
@@ -237,6 +238,7 @@ export function AudienceEditor({
               }}
             />
             <input
+              class="ff-control"
               ref={listInput}
               hidden
               type="file"
@@ -246,42 +248,46 @@ export function AudienceEditor({
                 event.currentTarget.value = '';
               }}
             />
-            <div role="status">{fileNote && <p class="ff-muted">{fileNote}</p>}</div>
-            <p class="ff-muted">{t.audience_stats_local()}</p>
-            <p class="ff-muted">
+            <div role="status">
+              {fileNote && <p class="ff-audience__text ff-muted">{fileNote}</p>}
+            </div>
+            <p class="ff-audience__text ff-muted">{t.audience_stats_local()}</p>
+            <p class="ff-audience__text ff-muted">
               {t.audience_stats_help()}{' '}
               {GENERATORS.map(([name, href], index) => (
                 <span key={name}>
                   {index > 0 && ', '}
-                  <a href={href} target="_blank" rel="noreferrer noopener">
+                  <a class="ff-link" href={href} target="_blank" rel="noreferrer noopener">
                     {name}
                   </a>
                 </span>
               ))}{' '}
               (
-              <a href={STATS_FORMAT} target="_blank" rel="noreferrer noopener">
+              <a class="ff-link" href={STATS_FORMAT} target="_blank" rel="noreferrer noopener">
                 JSON
               </a>
               )
             </p>
             <div role="status">
               {statsError && (
-                <p class="ff-error" role="alert">
+                <p class="ff-audience__text ff-error" role="alert">
                   {statsError}
                 </p>
               )}
               {stats && (
                 <>
-                  <p>{t.audience_stats_loaded({ count: stats.entries })}</p>
+                  <p class="ff-audience__text">
+                    {t.audience_stats_loaded({ count: stats.entries })}
+                  </p>
                   {stats.unknownBrowsers.length > 0 && (
-                    <p class="ff-muted">
+                    <p class="ff-audience__text ff-muted">
                       {t.audience_stats_unknown_browsers({
                         list: stats.unknownBrowsers.slice(0, 5).join(', '),
                       })}
                     </p>
                   )}
                   {stats.unknownVersions.length > 0 && (
-                    <p class="ff-muted">
+                    <p class="ff-audience__text ff-muted">
                       {t.audience_stats_unknown_versions({
                         count: stats.unknownVersions.length,
                         list: stats.unknownVersions.slice(0, 5).join(', '),
@@ -297,7 +303,9 @@ export function AudienceEditor({
           {'ok' in state && state.ok && (
             <div class="ff-audience__columns">
               <section class="ff-audience__browsers" aria-labelledby={browsersId}>
-                <h3 id={browsersId}>{t.audience_browsers_heading({ count: state.count })}</h3>
+                <h3 class="ff-audience__heading ff-heading" id={browsersId}>
+                  {t.audience_browsers_heading({ count: state.count })}
+                </h3>
                 {state.coverage !== undefined && (
                   <p>
                     {t.audience_coverage({
@@ -310,7 +318,7 @@ export function AudienceEditor({
                 )}
                 <ul class="ff-audience__list" aria-label={t.audience_list_label()}>
                   {state.groups.map((group) => (
-                    <li key={group.id}>
+                    <li class="ff-audience__item" key={group.id}>
                       <span>
                         <BrowserIcon id={group.id} />
                         {group.name}

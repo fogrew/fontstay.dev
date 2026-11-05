@@ -13,7 +13,7 @@
   padding: 0;
   list-style: none;
 }
-.ff-audience__list li {
+.ff-audience__item {
   display: grid;
   gap: 0 var(--ff-space-2);
   grid-template-columns: minmax(8rem, 11rem) minmax(0, 1fr);
@@ -26,11 +26,11 @@
 .ff-generator .ff-disclosure {
   border-block: 0;
 }
-.ff-generator .ff-disclosure summary {
+.ff-generator .ff-disclosure__summary {
   min-block-size: 2rem;
   padding-block: var(--ff-space-1);
 }
-.ff-generator .ff-disclosure > div {
+.ff-generator .ff-disclosure__body {
   padding-block-end: var(--ff-space-2);
 }
 .ff-audience__stats {
@@ -38,7 +38,7 @@
   gap: var(--ff-space-1);
   padding-block-start: var(--ff-space-2);
 }
-.ff-audience__stats p {
+.ff-audience__text {
   margin: 0;
 }
 .ff-audience__actions {
@@ -50,11 +50,7 @@
   display: grid;
   gap: var(--ff-space-2);
 }
-.ff-audience__os h3 {
-  margin: 0;
-  font-size: 0.9375rem;
-}
-.ff-audience fieldset {
+.ff-audience .ff-audience__fieldset {
   display: grid;
   gap: var(--ff-space-1);
   margin: 0;
@@ -75,14 +71,14 @@
   list-style: none;
   font-size: 0.8125rem;
 }
-.ff-matrix__legend li {
+.ff-matrix__legend-item {
   display: flex;
   flex-wrap: wrap;
   gap: var(--ff-space-2);
   align-items: baseline;
 }
 .ff-matrix__chip,
-.ff-matrix li[data-state] {
+.ff-matrix__cell {
   padding: 0.125rem var(--ff-space-2);
   border: 1px solid var(--ff-border);
   border-radius: 0.25rem;
@@ -114,16 +110,14 @@
 .ff-matrix__group {
   flex: none;
 }
-.ff-matrix__group h3,
-.ff-matrix__column h4 {
+.ff-matrix__heading {
   margin: 0;
   font-size: 0.875rem;
 }
-.ff-matrix__group h3 span,
-.ff-matrix__column h4 span {
+.ff-matrix__share {
   font-weight: 400;
 }
-.ff-matrix__group p {
+.ff-matrix__text {
   margin: 0;
   font-size: 0.75rem;
 }
@@ -135,7 +129,7 @@
 .ff-matrix__column {
   min-inline-size: 5.5rem;
 }
-.ff-matrix__column ul {
+.ff-matrix__cells {
   display: grid;
   gap: 2px;
   margin: 0;
@@ -179,14 +173,14 @@
     color: CanvasText;
   }
 }
-.ff-generator .ff-matrix__column li {
+.ff-generator .ff-matrix__cell {
   display: block;
 }
 .ff-tags {
   display: grid;
   gap: var(--ff-space-2);
 }
-.ff-tags h4 {
+.ff-tags__heading {
   margin: 0;
   font-size: 0.875rem;
 }
@@ -281,7 +275,7 @@
   padding-inline: var(--ff-space-1);
   overflow-wrap: anywhere;
 }
-.ff-chip button {
+.ff-chip__remove {
   min-block-size: 1.5rem;
   padding: 0 var(--ff-space-2);
   border: 0;
@@ -384,7 +378,7 @@
   display: grid;
   gap: var(--ff-space-2);
 }
-.ff-audience__browsers h3 {
+.ff-audience__heading {
   margin: 0;
   font-size: 0.9375rem;
 }

@@ -154,7 +154,11 @@ function Runs({ runs, coverage }: { runs: readonly Run[]; coverage: Coverage }) 
         if ('italic' in run) return <em key={index}>{text(run.italic)}</em>;
         if ('sup' in run) return <sup key={index}>{text(run.sup)}</sup>;
         if ('sub' in run) return <sub key={index}>{text(run.sub)}</sub>;
-        return <code key={index}>{text(run.code)}</code>;
+        return (
+          <code class="ff-article__mono" key={index}>
+            {text(run.code)}
+          </code>
+        );
       })}
     </>
   );
@@ -178,29 +182,31 @@ function ArticleBody({
   if (article.id === 'site') {
     return (
       <header class="ff-article__hero">
-        {article.title && <h3 class="ff-article__title">{heading(article.title)}</h3>}
-        {article.lead && <p class="ff-article__lead">{body(article.lead)}</p>}
+        {article.title && (
+          <h3 class="ff-article__head ff-heading ff-article__title">{heading(article.title)}</h3>
+        )}
+        {article.lead && <p class="ff-article__text ff-article__lead">{body(article.lead)}</p>}
         {article.columnsHeading && (
-          <h4 class="ff-article__heading">{heading(article.columnsHeading)}</h4>
+          <h4 class="ff-article__head ff-article__heading">{heading(article.columnsHeading)}</h4>
         )}
         {article.columns.length > 0 && (
           <div class="ff-article__columns">
             {article.columns.map((paragraph, index) => (
-              <p key={index}>
+              <p class="ff-article__text" key={index}>
                 <Runs runs={paragraph} coverage={coverage} />
               </p>
             ))}
           </div>
         )}
         {article.quote.text && (
-          <figure class="ff-article__quote">
-            <blockquote>{body(article.quote.text)}</blockquote>
+          <figure class="ff-article__figure ff-article__quote">
+            <blockquote class="ff-article__blockquote">{body(article.quote.text)}</blockquote>
           </figure>
         )}
         {article.list.length > 0 && (
-          <ul>
+          <ul class="ff-generator__list">
             {article.list.map((item, index) => (
-              <li key={index}>
+              <li class="ff-article__item ff-generator__item" key={index}>
                 <Runs runs={item} coverage={coverage} />
               </li>
             ))}
@@ -212,43 +218,43 @@ function ArticleBody({
   return (
     <>
       <header class="ff-article__hero">
-        <p class="ff-article__kicker">{body(article.kicker)}</p>
-        <h3 class="ff-article__title">{heading(article.title)}</h3>
-        <p class="ff-article__lead">{body(article.lead)}</p>
-        <p class="ff-article__meta">{body(article.meta)}</p>
+        <p class="ff-article__text ff-article__kicker">{body(article.kicker)}</p>
+        <h3 class="ff-article__head ff-heading ff-article__title">{heading(article.title)}</h3>
+        <p class="ff-article__text ff-article__lead">{body(article.lead)}</p>
+        <p class="ff-article__text ff-article__meta">{body(article.meta)}</p>
       </header>
       {article.factors.length > 0 && (
-        <ul class="ff-article__factors">
+        <ul class="ff-generator__list ff-article__factors">
           {article.factors.map((factor) => (
-            <li key={factor.title} class="ff-article__factor">
+            <li key={factor.title} class="ff-article__item ff-generator__item ff-article__factor">
               <Icon name={factor.icon} />
-              <h4>{heading(factor.title)}</h4>
-              <p>{body(factor.text)}</p>
+              <h4 class="ff-article__head ff-article__factor-title">{heading(factor.title)}</h4>
+              <p class="ff-article__text">{body(factor.text)}</p>
             </li>
           ))}
         </ul>
       )}
       <section>
-        <h4 class="ff-article__heading">{heading(article.columnsHeading)}</h4>
+        <h4 class="ff-article__head ff-article__heading">{heading(article.columnsHeading)}</h4>
         <div class="ff-article__columns">
           {article.columns.map((paragraph, index) => (
-            <p key={index}>
+            <p class="ff-article__text" key={index}>
               <Runs runs={paragraph} coverage={coverage} />
             </p>
           ))}
         </div>
       </section>
       <div class="ff-article__split">
-        <figure class="ff-article__quote">
-          <blockquote>{body(article.quote.text)}</blockquote>
-          <figcaption>{body(article.quote.cite)}</figcaption>
+        <figure class="ff-article__figure ff-article__quote">
+          <blockquote class="ff-article__blockquote">{body(article.quote.text)}</blockquote>
+          <figcaption class="ff-article__caption">{body(article.quote.cite)}</figcaption>
         </figure>
         {article.list.length > 0 && (
           <section>
-            <h4 class="ff-article__heading">{heading(article.listHeading)}</h4>
-            <ol>
+            <h4 class="ff-article__head ff-article__heading">{heading(article.listHeading)}</h4>
+            <ol class="ff-article__ordered">
               {article.list.map((item, index) => (
-                <li key={index}>
+                <li class="ff-article__item ff-generator__item" key={index}>
                   <Runs runs={item} coverage={coverage} />
                 </li>
               ))}
@@ -257,12 +263,12 @@ function ArticleBody({
         )}
         {article.tableRows.length > 0 && (
           <section>
-            <h4 class="ff-article__heading">{heading(article.tableHeading)}</h4>
-            <table>
+            <h4 class="ff-article__head ff-article__heading">{heading(article.tableHeading)}</h4>
+            <table class="ff-article__table">
               <thead>
                 <tr>
                   {article.tableHead.map((cell) => (
-                    <th key={cell} scope="col">
+                    <th class="ff-article__cell ff-article__cell--head" key={cell} scope="col">
                       {heading(cell)}
                     </th>
                   ))}
@@ -271,8 +277,10 @@ function ArticleBody({
               <tbody>
                 {article.tableRows.map((row) => (
                   <tr key={row[0]}>
-                    <th scope="row">{heading(row[0])}</th>
-                    <td>{body(row[1])}</td>
+                    <th class="ff-article__cell ff-article__cell--head" scope="row">
+                      {heading(row[0])}
+                    </th>
+                    <td class="ff-article__cell">{body(row[1])}</td>
                   </tr>
                 ))}
               </tbody>
@@ -281,12 +289,12 @@ function ArticleBody({
         )}
       </div>
       <section>
-        <h4 class="ff-article__heading">{heading(article.glyphsHeading)}</h4>
-        <p class="ff-article__glyphs">{body(article.glyphs)}</p>
+        <h4 class="ff-article__head ff-article__heading">{heading(article.glyphsHeading)}</h4>
+        <p class="ff-article__text ff-article__glyphs">{body(article.glyphs)}</p>
       </section>
       <ScrollShadow>
         <pre class="ff-article__code" lang="en" dir="ltr" tabIndex={focusable ? 0 : undefined}>
-          <code>{SAMPLE_CODE}</code>
+          <code class="ff-article__mono ff-article__code-text">{SAMPLE_CODE}</code>
         </pre>
       </ScrollShadow>
       <footer class="ff-article__footer">{body(article.footer)}</footer>
@@ -770,10 +778,13 @@ export function ArticleView({
       />
       <div class="ff-field ff-preview__slider">
         <div class="ff-preview__label">
-          <label for="ff-lens-size">{t.loupe_size()}</label>
+          <label class="ff-preview__caption" for="ff-lens-size">
+            {t.loupe_size()}
+          </label>
           <output for="ff-lens-size">{lensSize}px</output>
         </div>
         <input
+          class="ff-article-view__range ff-control"
           id="ff-lens-size"
           type="range"
           min={80}
@@ -788,7 +799,7 @@ export function ArticleView({
   const inspectContent = (
     <>
       <fieldset class="ff-inspect__section">
-        <legend>{t.article_group_fonts()}</legend>
+        <legend class="ff-inspect__legend">{t.article_group_fonts()}</legend>
         <Select
           compact
           label={t.article_heading_font()}
@@ -812,13 +823,13 @@ export function ArticleView({
         />
       </fieldset>
       <fieldset class="ff-inspect__section ff-layers" disabled={!overlaid}>
-        <legend>{t.article_group_layers()}</legend>
+        <legend class="ff-inspect__legend">{t.article_group_layers()}</legend>
         {LAYERS.map((layer, row) => {
           const name = layer === 'web' ? t.preview_web_label() : t.preview_fallback_label();
           const caption = row === 0 ? undefined : 'ff-sr-only';
           return (
             <fieldset class="ff-layers__row" key={layer}>
-              <legend class="ff-sr-only">{name}</legend>
+              <legend class="ff-inspect__legend ff-sr-only">{name}</legend>
               <span class="ff-layers__name" aria-hidden="true">
                 {name}
               </span>
@@ -845,12 +856,16 @@ export function ArticleView({
               />
               <div class="ff-field ff-preview__slider">
                 <div class="ff-preview__label">
-                  <label class={caption} for={`ff-layer-${layer}-width`}>
+                  <label
+                    class={`ff-preview__caption ${caption ?? ''}`}
+                    for={`ff-layer-${layer}-width`}
+                  >
                     {t.layer_width()}
                   </label>
                   <output for={`ff-layer-${layer}-width`}>{layers[layer].width}px</output>
                 </div>
                 <input
+                  class="ff-article-view__range ff-control"
                   id={`ff-layer-${layer}-width`}
                   type="range"
                   min={0.5}
@@ -863,12 +878,16 @@ export function ArticleView({
               </div>
               <div class="ff-field ff-preview__slider">
                 <div class="ff-preview__label">
-                  <label class={caption} for={`ff-layer-${layer}-opacity`}>
+                  <label
+                    class={`ff-preview__caption ${caption ?? ''}`}
+                    for={`ff-layer-${layer}-opacity`}
+                  >
                     {t.layer_opacity()}
                   </label>
                   <output for={`ff-layer-${layer}-opacity`}>{layers[layer].opacity}%</output>
                 </div>
                 <input
+                  class="ff-article-view__range ff-control"
                   id={`ff-layer-${layer}-opacity`}
                   type="range"
                   min={0}
@@ -889,13 +908,16 @@ export function ArticleView({
   );
   const contentGroup = (
     <fieldset class="ff-article-view__group">
-      <legend>{t.article_group_content()}</legend>
+      <legend class="ff-article-view__group-legend">{t.article_group_content()}</legend>
       <div class="ff-field ff-preview__slider">
         <div class="ff-preview__label">
-          <label for="ff-article-size">{t.preview_size_label()}</label>
+          <label class="ff-preview__caption" for="ff-article-size">
+            {t.preview_size_label()}
+          </label>
           <output for="ff-article-size">{size}px</output>
         </div>
         <input
+          class="ff-article-view__range ff-control"
           id="ff-article-size"
           type="range"
           min={12}
@@ -906,10 +928,13 @@ export function ArticleView({
       </div>
       <div class="ff-field ff-preview__slider">
         <div class="ff-preview__label">
-          <label for="ff-article-line">{t.preview_line_height_label()}</label>
+          <label class="ff-preview__caption" for="ff-article-line">
+            {t.preview_line_height_label()}
+          </label>
           <output for="ff-article-line">{lineHeight}</output>
         </div>
         <input
+          class="ff-article-view__range ff-control"
           id="ff-article-line"
           type="range"
           min={1}
@@ -970,12 +995,12 @@ export function ArticleView({
       </div>
       <div class="ff-article-view__controls ff-toolbar">
         <fieldset class="ff-preview__modes ff-toolbar__modes ff-button-group">
-          <legend class="ff-sr-only">{t.preview_mode_label()}</legend>
+          <legend class="ff-button-group__legend ff-sr-only">{t.preview_mode_label()}</legend>
           {PRESET_ORDER.map((value) => (
             <button
               key={value}
               type="button"
-              class="ff-button ff-button--secondary ff-tool-button"
+              class="ff-control ff-button ff-button--secondary ff-tool-button"
               aria-pressed={preset === value}
               aria-label={presetLabel(value)}
               title={presetLabel(value)}
@@ -994,7 +1019,7 @@ export function ArticleView({
             <button
               key={kind}
               type="button"
-              class="ff-button ff-button--secondary ff-preview__arrange-button"
+              class="ff-control ff-button ff-button--secondary ff-preview__arrange-button"
               aria-pressed={stacked === (kind === 'stacked')}
               aria-label={kind === 'stacked' ? t.side_stacked() : t.side_horizontal()}
               title={kind === 'stacked' ? t.side_stacked() : t.side_horizontal()}
@@ -1008,7 +1033,7 @@ export function ArticleView({
         <div class="ff-button-group ff-toolbar__xray">
           <button
             type="button"
-            class="ff-button ff-button--secondary ff-tool-button"
+            class="ff-control ff-button ff-button--secondary ff-tool-button"
             aria-pressed={xray}
             aria-label={t.mode_loupe()}
             title={t.mode_loupe()}
@@ -1022,12 +1047,12 @@ export function ArticleView({
           </Popover>
         </div>
         <fieldset class="ff-toolbar__guides ff-button-group" disabled={empty || !inspectable}>
-          <legend class="ff-sr-only">{t.guides_enable()}</legend>
+          <legend class="ff-button-group__legend ff-sr-only">{t.guides_enable()}</legend>
           {GUIDES.map((id) => (
             <button
               key={id}
               type="button"
-              class="ff-button ff-button--secondary ff-tool-button"
+              class="ff-control ff-button ff-button--secondary ff-tool-button"
               data-guide={id}
               aria-pressed={guideOn[id]}
               aria-label={guideLabel(id)}
@@ -1039,7 +1064,7 @@ export function ArticleView({
           ))}
           <button
             type="button"
-            class="ff-button ff-button--secondary ff-tool-button"
+            class="ff-control ff-button ff-button--secondary ff-tool-button"
             aria-pressed={boxes}
             aria-label={t.boxes_enable()}
             title={t.boxes_enable()}
@@ -1131,8 +1156,8 @@ export function ArticleView({
               {(['start', 'end'] as const)
                 .flatMap((position) => layersAt(positions, position))
                 .map((id) => (
-                  <figure key={id}>
-                    <figcaption>{presetLabel(id)}</figcaption>
+                  <figure class="ff-article-view__figure" key={id}>
+                    <figcaption class="ff-article-view__caption">{presetLabel(id)}</figcaption>
                     <div data-pane="">{page(id)}</div>
                   </figure>
                 ))}

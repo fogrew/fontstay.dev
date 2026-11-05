@@ -117,8 +117,9 @@ export function Dock({ items, storageKey, defaultOpen, nextLabel }: DockProps) {
             data-client-only={item.clientOnly || undefined}
             key={item.id}
           >
-            <h2 class="ff-dock__heading">
+            <h2 class="ff-heading ff-dock__heading">
               <button
+                class="ff-dock__toggle ff-control"
                 type="button"
                 id={`${base}-${item.id}-button`}
                 aria-expanded={open}
@@ -143,7 +144,7 @@ export function Dock({ items, storageKey, defaultOpen, nextLabel }: DockProps) {
                   <div class="ff-dock__footer">
                     <button
                       type="button"
-                      class="ff-button ff-button--primary"
+                      class="ff-control ff-button ff-button--primary"
                       onClick={() => transition(() => setActive(next.id))}
                     >
                       {nextLabel(next.label)}

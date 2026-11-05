@@ -109,7 +109,11 @@ export function TagEditor({
   const taken = (value: string) => splitQuery(value).every((part) => parts.includes(part));
   return (
     <div class="ff-tags">
-      <fieldset class="ff-tags__field" data-query={query} aria-invalid={invalid}>
+      <fieldset
+        class="ff-audience__fieldset ff-tags__field"
+        data-query={query}
+        aria-invalid={invalid}
+      >
         <legend class="ff-sr-only">{t.audience_tags_label()}</legend>
         <ul class="ff-tags__chips">
           {parts.map((tag, index) => (
@@ -119,7 +123,7 @@ export function TagEditor({
               </span>
               <button
                 type="button"
-                class="ff-chip__remove"
+                class="ff-control ff-chip__remove"
                 aria-label={t.audience_tags_remove({ tag })}
                 onClick={() => onChange(removeTag(query, tag))}
               >
@@ -130,7 +134,7 @@ export function TagEditor({
           <li class="ff-tags__entry">
             <input
               ref={input}
-              class="ff-tags__input"
+              class="ff-control ff-tags__input"
               type="text"
               spellcheck={false}
               autocomplete="off"
@@ -164,7 +168,7 @@ export function TagEditor({
       </p>
       {groups.map((group) => (
         <div key={group.id}>
-          <h4>
+          <h4 class="ff-tags__heading">
             {group.id === 'baseline' && <Icon name="baseline-widely" />}
             {group.title}
           </h4>
@@ -174,7 +178,7 @@ export function TagEditor({
                 {item.exclude && (
                   <button
                     type="button"
-                    class="ff-quick__not"
+                    class="ff-control ff-quick__not"
                     disabled={taken(item.exclude)}
                     aria-label={t.audience_tag_not_action({ tag: item.label })}
                     onClick={() => add(item.exclude ?? '')}
@@ -202,7 +206,7 @@ export function TagEditor({
                 )}
                 <button
                   type="button"
-                  class="ff-tag"
+                  class="ff-control ff-tag"
                   dir="auto"
                   disabled={taken(item.query)}
                   onClick={() => add(item.query)}

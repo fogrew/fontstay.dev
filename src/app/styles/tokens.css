@@ -117,7 +117,7 @@ body {
   padding: 0;
   list-style: none;
 }
-.ff-breadcrumbs li:not(:last-child)::after {
+.ff-breadcrumbs__item:not(:last-child)::after {
   content: "/" / "";
   margin-inline-start: var(--ff-space-1);
 }
@@ -130,11 +130,11 @@ body {
   line-height: 1;
   text-decoration: none;
 }
-.ff-brand img {
+.ff-brand__logo {
   display: block;
   flex: none;
 }
-a {
+:where(.ff-link) {
   color: var(--ff-accent);
 }
 .ff-skip-link {
@@ -150,18 +150,14 @@ a {
 .ff-skip-link:focus {
   transform: none;
 }
-button,
-input,
-select {
+:where(.ff-control) {
   font: inherit;
 }
 :focus-visible {
   outline: 3px solid var(--ff-focus);
   outline-offset: 3px;
 }
-h1,
-h2,
-h3 {
+.ff-heading {
   line-height: 1.2;
 }
 
@@ -188,17 +184,17 @@ h3 {
     --ff-rating-poor-text: CanvasText;
   }
 }
-.ff-main > h1 {
+.ff-main__title {
   margin-block: 0 var(--ff-space-4);
   font-size: 1.5rem;
 }
 @media (min-width: 64rem) and (min-height: 40rem) {
-  .ff-main > h1 {
+  .ff-main__title {
     margin-block-end: var(--ff-space-2);
   }
 }
 @media (min-width: 64rem) and (min-height: 40rem) and (max-height: 48rem) {
-  .ff-main > h1 {
+  .ff-main__title {
     margin-block-end: var(--ff-space-1);
     font-size: 1.25rem;
   }
@@ -243,7 +239,7 @@ h3 {
   }
 }
 @media (max-width: 47.999rem) and (scripting: enabled) {
-  .ff-header #ff-nav {
+  .ff-header__menu {
     position: absolute;
     inset-block-start: 100%;
     inset-inline-end: var(--ff-space-4);
@@ -258,14 +254,14 @@ h3 {
     background: var(--ff-surface);
     box-shadow: 0 8px 24px rgb(0 0 0 / 20%);
   }
-  .ff-header:not([data-menu="open"]) #ff-nav {
+  .ff-header:not([data-menu="open"]) .ff-header__menu {
     display: none;
   }
   .ff-header__nav {
     flex-direction: column;
     gap: 0.125rem;
   }
-  .ff-header .ff-header__nav a {
+  .ff-header .ff-header__nav-link {
     display: block;
     min-block-size: 2rem;
     padding-block: 0.25rem;
@@ -274,20 +270,20 @@ h3 {
     white-space: nowrap;
   }
 }
-.ff-header__nav a,
+.ff-header__nav-link,
 .ff-header__link {
   border-radius: var(--ff-radius);
   text-decoration: none;
 }
-.ff-header__nav a {
+.ff-header__nav-link {
   padding: 0.25rem var(--ff-space-3);
   color: var(--ff-text);
 }
-.ff-header__nav a:hover,
+.ff-header__nav-link:hover,
 .ff-header__link:hover {
   background: color-mix(in srgb, var(--ff-accent) 12%, transparent);
 }
-.ff-header__nav a[aria-current="page"] {
+.ff-header__nav-link[aria-current="page"] {
   background: color-mix(in srgb, var(--ff-accent) 18%, transparent);
   color: var(--ff-accent);
   font-weight: 700;
@@ -310,18 +306,15 @@ h3 {
   max-inline-size: 72rem;
   margin-inline: auto;
 }
-.ff-page h1,
-.ff-page h2,
-.ff-page h3,
-.ff-page p {
+.ff-page__heading,
+.ff-page__text {
   margin: 0;
 }
 .ff-page__table {
   inline-size: 100%;
   border-collapse: collapse;
 }
-.ff-page__table th,
-.ff-page__table td {
+.ff-page__cell {
   padding: var(--ff-space-1) var(--ff-space-2);
   border-block-end: 1px solid var(--ff-border);
   text-align: start;
@@ -332,7 +325,7 @@ h3 {
   gap: var(--ff-space-1) var(--ff-space-4);
   margin: 0;
 }
-.ff-page__metrics dd {
+.ff-page__value {
   margin: 0;
   overflow-wrap: anywhere;
 }
@@ -353,8 +346,8 @@ h3 {
   border: 1px solid var(--ff-border);
   border-radius: var(--ff-radius);
 }
-.ff-presets__item h2,
-.ff-presets__item p {
+.ff-presets__title,
+.ff-presets__text {
   margin: 0;
 }
 .ff-footer {
@@ -368,13 +361,13 @@ h3 {
   line-height: 1.6;
   max-inline-size: 48rem;
 }
-.ff-prose h2 {
+.ff-prose__heading {
   margin-block-start: var(--ff-space-4);
 }
-.ff-prose table {
+.ff-prose__table {
   font-size: 0.9375rem;
 }
-.ff-prose caption {
+.ff-prose__caption {
   text-align: start;
   font-weight: 600;
   margin-block-end: var(--ff-space-1);
@@ -387,26 +380,18 @@ h3 {
   background: var(--ff-surface);
   font-size: 0.875rem;
 }
-.ff-page,
-.ff-page a,
-.ff-page td,
-.ff-page th,
-.ff-page dd {
+.ff-page {
   overflow-wrap: anywhere;
 }
-.ff-header a,
-.ff-footer a,
-.ff-prose td a,
-.ff-page li > a,
-.ff-prose li a {
+.ff-link--tap {
   display: inline-block;
   min-block-size: 1.5rem;
   padding-block: 0.125rem;
 }
-.ff-page ul:not(.ff-presets, .ff-header__nav) li {
+.ff-page__item {
   margin-block: 0.25rem;
 }
-.ff-page ul:not(.ff-presets, .ff-header__nav) {
+.ff-page__list {
   margin-block: 0.25rem;
   padding-block: 0.25rem;
 }

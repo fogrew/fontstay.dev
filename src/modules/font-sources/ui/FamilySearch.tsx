@@ -127,18 +127,20 @@ export function FamilySearch({
   return (
     <div class="ff-source">
       <div role="status">
-        {loading && <p class="ff-muted">{t.source_loading()}</p>}
-        {failed && <p class="ff-error">{t.source_error_catalog()}</p>}
-        {!loading && hits.length === 0 && !failed && <p class="ff-muted">{t.source_none()}</p>}
+        {loading && <p class="ff-source__text ff-muted">{t.source_loading()}</p>}
+        {failed && <p class="ff-source__text ff-error">{t.source_error_catalog()}</p>}
+        {!loading && hits.length === 0 && !failed && (
+          <p class="ff-source__text ff-muted">{t.source_none()}</p>
+        )}
       </div>
       {hits.length > 0 && (
         <ScrollShadow class="ff-source__scroll">
-          <ul class="ff-source__list" aria-label={t.source_list_label()}>
+          <ul class="ff-generator__list ff-source__list" aria-label={t.source_list_label()}>
             {hits.map((hit) => (
-              <li key={`${hit.source}-${hit.family.id}`}>
+              <li class="ff-generator__item" key={`${hit.source}-${hit.family.id}`}>
                 <button
                   type="button"
-                  class="ff-source__item"
+                  class="ff-control ff-source__item"
                   aria-pressed={chosen?.source === hit.source && chosen.family.id === hit.family.id}
                   onClick={() => choose(hit)}
                 >
@@ -152,13 +154,13 @@ export function FamilySearch({
       )}
       {chosen && (
         <div class="ff-source__chosen">
-          <p>
+          <p class="ff-source__text">
             <strong>{chosen.family.name}</strong>{' '}
             <span class="ff-muted">{sourceName(chosen.source)}</span>
           </p>
           <div class="ff-source__groups">
             <fieldset class="ff-toggle-set">
-              <legend>{t.source_style_label()}</legend>
+              <legend class="ff-toggle-set__legend">{t.source_style_label()}</legend>
               {[false, true].map((italic) => {
                 const keys = chosen.family.styles.filter(
                   (key) => parseStyle(key).italic === italic,
@@ -184,7 +186,7 @@ export function FamilySearch({
               })}
             </fieldset>
             <fieldset class="ff-toggle-set">
-              <legend>{t.source_subset_label()}</legend>
+              <legend class="ff-toggle-set__legend">{t.source_subset_label()}</legend>
               <ToggleGroup
                 key={chosen.family.id}
                 label={t.source_subset_label()}
@@ -206,20 +208,30 @@ export function FamilySearch({
           </div>
         </div>
       )}
-      <p role="status" class="ff-muted">
+      <p role="status" class="ff-source__text ff-muted">
         {message}
       </p>
-      <p class="ff-muted">
+      <p class="ff-source__text ff-muted">
         {t.source_browse()}{' '}
-        <a href="https://fonts.google.com/" target="_blank" rel="noopener noreferrer">
+        <a
+          class="ff-link"
+          href="https://fonts.google.com/"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
           {t.source_name_google()}
         </a>
         {', '}
-        <a href="https://fontsource.org/fonts" target="_blank" rel="noopener noreferrer">
+        <a
+          class="ff-link"
+          href="https://fontsource.org/fonts"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
           {t.source_name_fontsource()}
         </a>
       </p>
-      <p class="ff-muted">{t.source_note()}</p>
+      <p class="ff-source__text ff-muted">{t.source_note()}</p>
     </div>
   );
 }

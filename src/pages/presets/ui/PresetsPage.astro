@@ -24,7 +24,7 @@ for (const preset of PRESETS) {
 ---
 
 <div class="ff-page">
-  <h1>{t.presets_heading()}</h1>
-  <p>{t.presets_intro()}</p>
+  <h1 class="ff-heading ff-page__heading">{t.presets_heading()}</h1>
+  <p class="ff-page__text">{t.presets_intro()}</p>
   <PresetList locale={locale} links={links} client:load />
 </div>

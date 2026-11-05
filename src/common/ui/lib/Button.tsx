@@ -13,7 +13,11 @@ export function Button({
   ...props
 }: ButtonProps) {
   return (
-    <button {...props} type={type} class={`ff-button ff-button--${variant} ${className ?? ''}`}>
+    <button
+      {...props}
+      type={type}
+      class={`ff-control ff-button ff-button--${variant} ${className ?? ''}`}
+    >
       {children}
     </button>
   );

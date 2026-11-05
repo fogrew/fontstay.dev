@@ -153,8 +153,9 @@ export function Accordion({ items, resizeLabel, storageKey, resizable = true }: 
               }}
               style={open && fraction !== undefined ? { flex: `${fraction} 1 0` } : undefined}
             >
-              <h2 class="ff-accordion__heading">
+              <h2 class="ff-heading ff-accordion__heading">
                 <button
+                  class="ff-accordion__toggle ff-control"
                   type="button"
                   id={`${base}-${item.id}-button`}
                   aria-expanded={open}

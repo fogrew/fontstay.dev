@@ -25,26 +25,40 @@ export function IntroGuide({
       aria-labelledby={interactive ? 'ff-intro-title' : undefined}
       aria-hidden={interactive ? undefined : 'true'}
     >
-      <h3 id={interactive ? 'ff-intro-title' : undefined} class="ff-article__title">
+      <h3
+        id={interactive ? 'ff-intro-title' : undefined}
+        class="ff-heading ff-article__head ff-article__title"
+      >
         {t.intro_heading()}
       </h3>
-      <p>{t.intro_what()}</p>
+      <p class="ff-intro__text">{t.intro_what()}</p>
       <div class="ff-intro__demo" aria-hidden="true">
         {STAGES.map((stage) => (
           <figure key={stage} class="ff-intro__frame" data-state={stage}>
-            <figcaption>{captions[stage]}</figcaption>
-            <p style={demoFonts ? { fontFamily: demoFonts[stage] } : undefined}>
+            <figcaption class="ff-intro__caption">{captions[stage]}</figcaption>
+            <p
+              class="ff-intro__text"
+              style={demoFonts ? { fontFamily: demoFonts[stage] } : undefined}
+            >
               {t.intro_demo_text()}
             </p>
           </figure>
         ))}
       </div>
-      <p class="ff-muted">{t.intro_demo_note()}</p>
+      <p class="ff-intro__text ff-muted">{t.intro_demo_note()}</p>
       <div class="ff-intro__status" role={interactive ? 'status' : undefined}>
-        <p data-shown={loaded ? undefined : ''} aria-hidden={loaded ? 'true' : undefined}>
+        <p
+          class="ff-intro__status-text ff-intro__text"
+          data-shown={loaded ? undefined : ''}
+          aria-hidden={loaded ? 'true' : undefined}
+        >
           {t.intro_status_empty()}
         </p>
-        <p data-shown={loaded ? '' : undefined} aria-hidden={loaded ? undefined : 'true'}>
+        <p
+          class="ff-intro__status-text ff-intro__text"
+          data-shown={loaded ? '' : undefined}
+          aria-hidden={loaded ? undefined : 'true'}
+        >
           {t.intro_status_loaded()}
         </p>
       </div>

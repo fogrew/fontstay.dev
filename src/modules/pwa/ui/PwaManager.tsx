@@ -96,7 +96,7 @@ export function PwaManager({ locale }: { locale: Locale }) {
       <div class="ff-toast">
         {toast.kind === 'update' ? (
           <>
-            <p>
+            <p class="ff-toast__text">
               {toast.version
                 ? t.pwa_update_available_version({ version: toast.version })
                 : t.pwa_update_available()}
@@ -105,7 +105,9 @@ export function PwaManager({ locale }: { locale: Locale }) {
               <Button variant="primary" onClick={apply}>
                 {t.pwa_update()}
               </Button>
-              <a href={changelog(currentVersion())}>{t.pwa_changelog()}</a>
+              <a class="ff-link ff-link--tap" href={changelog(currentVersion())}>
+                {t.pwa_changelog()}
+              </a>
               <Button onClick={() => setToast(undefined)} aria-label={t.pwa_dismiss()}>
                 <span aria-hidden="true">×</span>
               </Button>
@@ -113,9 +115,11 @@ export function PwaManager({ locale }: { locale: Locale }) {
           </>
         ) : (
           <>
-            <p>{t.pwa_updated({ from: toast.from, to: toast.to })}</p>
+            <p class="ff-toast__text">{t.pwa_updated({ from: toast.from, to: toast.to })}</p>
             <div class="ff-toast__actions">
-              <a href={changelog(toast.from)}>{t.pwa_whats_new()}</a>
+              <a class="ff-link ff-link--tap" href={changelog(toast.from)}>
+                {t.pwa_whats_new()}
+              </a>
               <Button onClick={() => setToast(undefined)} aria-label={t.pwa_dismiss()}>
                 <span aria-hidden="true">×</span>
               </Button>

@@ -28,7 +28,7 @@ export function Collapsible({
         {before}
         <button
           type="button"
-          class="ff-collapsible__toggle"
+          class="ff-control ff-collapsible__toggle"
           aria-expanded={open}
           aria-controls={id}
           onClick={() => transition(() => onToggle(!open))}

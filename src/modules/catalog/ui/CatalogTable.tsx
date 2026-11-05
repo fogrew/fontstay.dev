@@ -95,10 +95,10 @@ export function CatalogTable({ locale }: { locale: Locale }) {
     const active = sort.key === key;
     const ariaSort = active ? (sort.descending ? 'descending' : 'ascending') : 'none';
     return (
-      <th scope="col" aria-sort={ariaSort}>
+      <th class="ff-catalog__cell" scope="col" aria-sort={ariaSort}>
         <button
           type="button"
-          class="ff-catalog__sort"
+          class="ff-control ff-catalog__sort"
           onClick={() =>
             setSort(
               active
@@ -117,10 +117,11 @@ export function CatalogTable({ locale }: { locale: Locale }) {
   return (
     <div class="ff-catalog">
       <AudienceEditor locale={locale} onShares={handleShares} active />
-      <p class="ff-muted">{t.catalog_note()}</p>
+      <p class="ff-catalog__text ff-muted">{t.catalog_note()}</p>
       <div class="ff-catalog__toolbar">
         <label>
           <input
+            class="ff-control"
             type="checkbox"
             checked={grouped}
             onChange={(event) => setGrouped(event.currentTarget.checked)}
@@ -136,7 +137,7 @@ export function CatalogTable({ locale }: { locale: Locale }) {
       </div>
       <ul class="ff-catalog__legend">
         {(['preinstalled', 'partial', 'on-demand', 'unknown'] as const).map((level) => (
-          <li key={level} data-level={level}>
+          <li class="ff-catalog__legend-item" key={level} data-level={level}>
             <span aria-hidden="true">{SYMBOLS[level]}</span> {levelLabel(level)}
           </li>
         ))}
@@ -156,16 +157,16 @@ export function CatalogTable({ locale }: { locale: Locale }) {
               {header('coverage', t.catalog_col_coverage())}
             </tr>
             <tr class="ff-catalog__filters">
-              <td>
+              <td class="ff-catalog__cell ff-catalog__cell--filter">
                 <input
-                  class="ff-input"
+                  class="ff-control ff-input"
                   type="search"
                   aria-label={t.catalog_filter_font()}
                   value={filters.name}
                   onInput={(event) => setFilters({ ...filters, name: event.currentTarget.value })}
                 />
               </td>
-              <td>
+              <td class="ff-catalog__cell ff-catalog__cell--filter">
                 <Select
                   compact
                   hideLabel
@@ -182,7 +183,7 @@ export function CatalogTable({ locale }: { locale: Locale }) {
                 />
               </td>
               {CATALOG_SYSTEMS.map((os) => (
-                <td key={os}>
+                <td key={os} class="ff-catalog__cell ff-catalog__cell--filter">
                   <Select
                     compact
                     hideLabel
@@ -201,9 +202,9 @@ export function CatalogTable({ locale }: { locale: Locale }) {
                   />
                 </td>
               ))}
-              <td>
+              <td class="ff-catalog__cell ff-catalog__cell--filter">
                 <input
-                  class="ff-input"
+                  class="ff-control ff-input"
                   type="number"
                   min={0}
                   max={100}
@@ -221,27 +222,33 @@ export function CatalogTable({ locale }: { locale: Locale }) {
             <tbody key={group.key}>
               {grouped && (
                 <tr class="ff-catalog__group">
-                  <th scope="colgroup" colSpan={3 + CATALOG_SYSTEMS.length}>
+                  <th
+                    class="ff-catalog__cell ff-catalog__cell--group"
+                    scope="colgroup"
+                    colSpan={3 + CATALOG_SYSTEMS.length}
+                  >
                     {`${categoryLabel(group.key)} (${group.rows.length})`}
                   </th>
                 </tr>
               )}
               {group.rows.map((row) => (
                 <tr key={row.id}>
-                  <th scope="row">
-                    <a href={localizeHref(`/fonts/${row.id}/`, { locale })}>{row.family}</a>
+                  <th class="ff-catalog__cell" scope="row">
+                    <a class="ff-link" href={localizeHref(`/fonts/${row.id}/`, { locale })}>
+                      {row.family}
+                    </a>
                   </th>
-                  <td>{categoryLabel(row.category)}</td>
+                  <td class="ff-catalog__cell">{categoryLabel(row.category)}</td>
                   {CATALOG_SYSTEMS.map((os) => {
                     const cell = row.cells[os];
                     return (
-                      <td key={os} data-level={cell.level}>
+                      <td class="ff-catalog__cell" key={os} data-level={cell.level}>
                         <span aria-hidden="true">{SYMBOLS[cell.level]}</span>
                         <span class="ff-sr-only">{levelLabel(cell.level)}</span>
                       </td>
                     );
                   })}
-                  <td>{`${number.format(audienceCoverage(row, shares))}%`}</td>
+                  <td class="ff-catalog__cell">{`${number.format(audienceCoverage(row, shares))}%`}</td>
                 </tr>
               ))}
             </tbody>

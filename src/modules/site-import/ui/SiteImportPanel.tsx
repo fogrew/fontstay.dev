@@ -32,12 +32,12 @@ export function SiteImportPanel({ locale }: { locale: Locale }) {
   return (
     <div class="ff-site-import">
       <p class="ff-muted">{t.import_note()}</p>
-      <h3 class="ff-site-import__title">{t.import_bookmarklet_label()}</h3>
+      <h3 class="ff-heading ff-site-import__title">{t.import_bookmarklet_label()}</h3>
       <p class="ff-muted">{t.import_bookmarklet_hint()}</p>
       <p class="ff-site-import__actions">
         {href && (
           <a
-            class="ff-button ff-button--secondary"
+            class="ff-link ff-button ff-button--secondary"
             href={href}
             draggable
             onClick={(event) => {
@@ -52,10 +52,10 @@ export function SiteImportPanel({ locale }: { locale: Locale }) {
           {t.import_bookmarklet_copy()}
         </Button>
       </p>
-      <h3 class="ff-site-import__title">{t.import_extension_label()}</h3>
+      <h3 class="ff-heading ff-site-import__title">{t.import_extension_label()}</h3>
       <p class="ff-muted">
         {t.import_extension_note()}{' '}
-        <a href={EXTENSION_URL} rel="noopener noreferrer" target="_blank">
+        <a class="ff-link" href={EXTENSION_URL} rel="noopener noreferrer" target="_blank">
           {t.import_extension_link()}
         </a>
       </p>
