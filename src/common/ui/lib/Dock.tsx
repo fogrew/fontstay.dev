@@ -1,5 +1,5 @@
 import type { ComponentChildren } from 'preact';
-import { useEffect, useId, useRef, useState } from 'preact/hooks';
+import { useEffect, useId, useLayoutEffect, useRef, useState } from 'preact/hooks';
 import { loadLayout, parseIds, saveLayout } from './persist';
 import { ScrollShadow } from './ScrollShadow';
 import { transition } from './transition';
@@ -16,18 +16,19 @@ export interface DockProps {
   storageKey: string;
   defaultOpen?: string;
   nextLabel: (label: string) => string;
+  onChange?: (id: string | undefined) => void;
 }
 
 export const DOCK_OPEN_EVENT = 'ff-dock-open';
 
 export interface DockOpenDetail {
-  id: string;
+  id: string | null;
   focus?: boolean;
 }
 
 const DESKTOP_LAYOUT = '(min-width: 64rem)';
 
-export function Dock({ items, storageKey, defaultOpen, nextLabel }: DockProps) {
+export function Dock({ items, storageKey, defaultOpen, nextLabel, onChange }: DockProps) {
   const base = useId();
   const ids = items.map((item) => item.id);
   const [active, setActive] = useState<string | undefined>(defaultOpen);
@@ -52,15 +53,18 @@ export function Dock({ items, storageKey, defaultOpen, nextLabel }: DockProps) {
     const open = (event: Event) => {
       const { detail } = event as CustomEvent<string | DockOpenDetail>;
       const { id, focus } = typeof detail === 'string' ? { id: detail, focus: false } : detail;
-      if (!ids.includes(id)) return;
+      if (id !== null && !ids.includes(id)) return;
       transition(() => {
-        setActive(id);
-        if (focus) setFocusRequest({ id });
+        setActive(id ?? undefined);
+        if (focus && id !== null) setFocusRequest({ id });
       });
     };
     window.addEventListener(DOCK_OPEN_EVENT, open);
     return () => window.removeEventListener(DOCK_OPEN_EVENT, open);
   }, []);
+  useLayoutEffect(() => {
+    if (ready) onChange?.(active);
+  }, [ready, active]);
   useEffect(() => {
     if (focusRequest) document.getElementById(`${base}-${focusRequest.id}-button`)?.focus();
   }, [focusRequest]);

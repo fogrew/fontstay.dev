@@ -1,5 +1,5 @@
 import { type ComponentChildren, Fragment } from 'preact';
-import { useEffect, useMemo, useRef, useState } from 'preact/hooks';
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'preact/hooks';
 import { type Locale, messagesFor } from '@/common/i18n';
 import { Icon, Popover, ScrollShadow, Select } from '@/common/ui';
 import { type Device, DevicePicker } from '@/modules/devices';
@@ -34,16 +34,31 @@ import {
 import { codePointLabel, textRuns } from '../lib/missing';
 import { slugOf } from '../lib/overview';
 import type { PreviewItem, SiteData } from '../lib/preview-item';
+import {
+  applyView,
+  COLORS,
+  DEFAULT_LAYERS,
+  defaultView,
+  diffView,
+  LAYER_KINDS,
+  type LayerColor,
+  type LayerKind,
+  type LayerStyle,
+  type LensShows,
+  type PreviewView,
+  RENDERS,
+  type Render,
+  SUBSTITUTES,
+  type Substitute,
+  type ViewDiff,
+  WRAPS,
+  type Wrap,
+} from '../lib/view-state';
 import { DeviceShift } from './DeviceShift';
 import { IntroGuide } from './IntroGuide';
 import { ToolIcon } from './ToolIcons';
 
-type Wrap = 'wrap' | 'balance' | 'pretty' | 'stable' | 'nowrap';
-type Substitute = 'sans-serif' | 'serif' | 'monospace' | 'cursive' | 'system-ui';
-type Layer = 'web' | 'fallback';
-type LensShows = 'overlay' | 'fallback' | 'plain';
-type Render = 'fill' | 'outline';
-type LayerColor = 'text' | 'green' | 'red' | 'blue' | 'amber';
+type Layer = LayerKind;
 
 interface PageOptions {
   ghost?: boolean;
@@ -51,16 +66,6 @@ interface PageOptions {
   copy?: boolean;
 }
 
-interface LayerStyle {
-  render: Render;
-  color: LayerColor;
-  width: number;
-  opacity: number;
-}
-
-const LAYERS: readonly Layer[] = ['web', 'fallback'];
-const RENDERS: readonly Render[] = ['fill', 'outline'];
-const COLORS: readonly LayerColor[] = ['text', 'green', 'red', 'blue', 'amber'];
 const COLOR_TOKENS: Record<LayerColor, string> = {
   text: '--ff-text',
   green: '--ff-accent',
@@ -68,9 +73,9 @@ const COLOR_TOKENS: Record<LayerColor, string> = {
   blue: '--ff-focus',
   amber: '--ff-rating-needs',
 };
-const DEFAULT_LAYERS: Record<LayerId, LayerStyle> = {
-  web: { render: 'fill', color: 'text', width: 1, opacity: 100 },
-  fallback: { render: 'outline', color: 'green', width: 1, opacity: 100 },
+
+const INITIAL_LAYERS: Record<LayerId, LayerStyle> = {
+  ...DEFAULT_LAYERS,
   plain: { render: 'outline', color: 'amber', width: 1, opacity: 100 },
 };
 
@@ -89,14 +94,6 @@ const SAMPLE_CODE = `@font-face {
 body {
   font-family: "Brand", "Brand Fallback", sans-serif;
 }`;
-const WRAPS: readonly Wrap[] = ['wrap', 'balance', 'pretty', 'stable', 'nowrap'];
-const SUBSTITUTES: readonly Substitute[] = [
-  'sans-serif',
-  'serif',
-  'monospace',
-  'cursive',
-  'system-ui',
-];
 const KEY_PREFIX = 'ff-web-';
 const SYSTEM = '__system__';
 
@@ -310,6 +307,8 @@ export function ArticleView({
   site,
   actions,
   onShift,
+  restore,
+  onView,
 }: {
   locale: Locale;
   items: readonly PreviewItem[];
@@ -319,6 +318,8 @@ export function ArticleView({
   onShift?:
     | ((report: { adjusted: WidthShift[]; plain: WidthShift[] } | undefined) => void)
     | undefined;
+  restore?: ViewDiff | undefined;
+  onView?: ((diff: ViewDiff) => void) | undefined;
 }) {
   const t = messagesFor(locale);
   const [articleId, setArticleId] = useState<ArticleKey>(
@@ -336,7 +337,7 @@ export function ArticleView({
   const [substitute, setSubstitute] = useState<Substitute>('sans-serif');
   const [headingPick, setHeadingPick] = useState<string>();
   const [bodyPick, setBodyPick] = useState<string>();
-  const [layers, setLayers] = useState(DEFAULT_LAYERS);
+  const [layers, setLayers] = useState(INITIAL_LAYERS);
   const [stacked, setStacked] = useState(false);
   const [lensShows, setLensShows] = useState<LensShows>('overlay');
   const [lensSize, setLensSize] = useState(200);
@@ -381,6 +382,63 @@ export function ArticleView({
   }>();
   const probe = useRef<HTMLDivElement>(null);
   const [notInstalled, setNotInstalled] = useState<string[]>([]);
+  const localeArticle: ArticleId = (ARTICLE_IDS as readonly string[]).includes(locale)
+    ? (locale as ArticleId)
+    : 'en';
+  const baseView = defaultView(localeArticle);
+  const viewDiff = diffView(
+    {
+      article: articleId === 'site' ? localeArticle : articleId,
+      mode: preset ?? 'overlay',
+      stacked,
+      xray,
+      lensShows,
+      lensSize,
+      guides: activeGuides,
+      boxes,
+      size,
+      lineHeight,
+      wrap,
+      substitute,
+      headingFont: headingPick,
+      bodyFont: bodyPick,
+      layers: { web: layers.web, fallback: layers.fallback },
+      split,
+      frame: frameWidth,
+    },
+    baseView,
+  );
+  const viewKey = JSON.stringify(viewDiff);
+  useLayoutEffect(() => {
+    onView?.(viewDiff);
+  }, [viewKey]);
+  useEffect(() => {
+    if (!restore) return;
+    const next: PreviewView = applyView(baseView, restore);
+    setArticleId(next.article);
+    setPositions(PRESETS[next.mode]);
+    setStacked(next.stacked);
+    setXray(next.xray);
+    setLensShows(next.lensShows);
+    setLensSize(next.lensSize);
+    setGuideOn({
+      ascender: next.guides.includes('ascender'),
+      cap: next.guides.includes('cap'),
+      x: next.guides.includes('x'),
+      baseline: next.guides.includes('baseline'),
+      descender: next.guides.includes('descender'),
+    });
+    setBoxes(next.boxes);
+    setSize(next.size);
+    setLineHeight(next.lineHeight);
+    setWrap(next.wrap);
+    setSubstitute(next.substitute);
+    setHeadingPick(next.headingFont);
+    setBodyPick(next.bodyFont);
+    setLayers((all) => ({ ...all, web: next.layers.web, fallback: next.layers.fallback }));
+    setSplit(next.split);
+    setFrameWidth(next.frame);
+  }, [restore]);
   useEffect(() => {
     if (!site) return;
     if (site.meaningful) setArticleId('site');
@@ -576,7 +634,7 @@ export function ArticleView({
       '--ff-article-body': stack(bodyFamily, kind),
       '--ff-article-size': `${size}px`,
       '--ff-article-line': String(lineHeight),
-      '--ff-layer-color': `var(${COLOR_TOKENS[styled ? layer.color : DEFAULT_LAYERS[kind].color]})`,
+      '--ff-layer-color': `var(${COLOR_TOKENS[styled ? layer.color : INITIAL_LAYERS[kind].color]})`,
       ...(styled ? { '--ff-layer-stroke': `${layer.width}px`, opacity: layer.opacity / 100 } : {}),
       ...(image && guides ? { '--ff-guides': image } : {}),
       textWrap: wrap,
@@ -587,7 +645,7 @@ export function ArticleView({
     let cancelled = false;
     void (async () => {
       const next: Partial<Record<Layer, GuideOffsets>> = {};
-      for (const layer of LAYERS) {
+      for (const layer of LAYER_KINDS) {
         const family = stack(bodyFamily, layer);
         await document.fonts.load(`${size}px ${family}`).catch(() => []);
         const offsets = guideOffsets(family, size, lineHeight);
@@ -847,7 +905,7 @@ export function ArticleView({
       </fieldset>
       <fieldset class="ff-inspect__section ff-layers" disabled={!overlaid}>
         <legend class="ff-inspect__legend">{t.article_group_layers()}</legend>
-        {LAYERS.map((layer, row) => {
+        {LAYER_KINDS.map((layer, row) => {
           const name = layer === 'web' ? t.preview_web_label() : t.preview_fallback_label();
           const caption = row === 0 ? undefined : 'ff-sr-only';
           return (

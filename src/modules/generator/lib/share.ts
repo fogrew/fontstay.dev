@@ -1,6 +1,8 @@
 import type { FontOrigin } from '@/modules/font-sources';
 import type { Category, OsId } from '@/modules/os-fonts';
+import { finite, isRecord, oneOf } from './guard';
 import type { FontStyleKey } from './per-os';
+import { parseViewDiff, type ViewDiff } from './view-state';
 
 export const SHARE_VERSION = 1;
 export const MAX_HASH_CHARS = 8000;
@@ -14,6 +16,11 @@ export const MANUAL_KEYS = [
 ] as const;
 export type ManualKey = (typeof MANUAL_KEYS)[number];
 
+export const PANELS = ['inputs', 'audience', 'tuning', 'export'] as const;
+export type PanelId = (typeof PANELS)[number];
+export const NO_PANEL = 'none';
+export const DEFAULT_PANEL: PanelId = 'inputs';
+
 export interface FontState {
   kind?: Category;
   style?: FontStyleKey;
@@ -25,6 +32,7 @@ export interface ShareState extends FontState {
   v: number;
   query?: string;
   fontName?: string;
+  all?: boolean;
   preset?: string;
   others?: Record<string, FontState>;
   sources?: FontOrigin[];
@@ -32,6 +40,10 @@ export interface ShareState extends FontState {
   range?: boolean;
   scripts?: boolean;
   spacing?: { on: boolean; letter?: number; word?: number };
+  panel?: PanelId | typeof NO_PANEL;
+  os?: OsId;
+  face?: string;
+  view?: ViewDiff;
 }
 
 const OS_LIST: readonly OsId[] = ['windows', 'macos', 'ios', 'android', 'linux', 'chromeos'];
@@ -44,12 +56,6 @@ const LIMITS: Record<ManualKey, [number, number]> = {
   descentOverride: [0, 400],
   lineGapOverride: [0, 400],
 };
-
-const isRecord = (value: unknown): value is Record<string, unknown> =>
-  typeof value === 'object' && value !== null && !Array.isArray(value);
-
-const finite = (value: unknown, min: number, max: number): value is number =>
-  typeof value === 'number' && Number.isFinite(value) && value >= min && value <= max;
 
 type Migration = (state: Record<string, unknown>) => Record<string, unknown>;
 
@@ -128,6 +134,7 @@ export function parseShareState(
   if (typeof input.fontName === 'string' && input.fontName.length <= 200) {
     state.fontName = input.fontName;
   }
+  if (input.all === true) state.all = true;
   Object.assign(state, parseFontState(input));
   if (typeof input.preset === 'string' && ID.test(input.preset)) state.preset = input.preset;
   if (Array.isArray(input.disabled)) {
@@ -154,6 +161,13 @@ export function parseShareState(
     if (finite(input.spacing.letter, -5, 5)) state.spacing.letter = input.spacing.letter;
     if (finite(input.spacing.word, -30, 30)) state.spacing.word = input.spacing.word;
   }
+  const panel = input.panel === NO_PANEL ? NO_PANEL : oneOf(PANELS, input.panel);
+  if (panel) state.panel = panel;
+  const os = oneOf(OS_LIST, input.os);
+  if (os) state.os = os;
+  if (typeof input.face === 'string' && ID.test(input.face)) state.face = input.face;
+  const view = parseViewDiff(input.view);
+  if (view && Object.keys(view).length > 0) state.view = view;
   return state;
 }
 
