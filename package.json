@@ -31,6 +31,7 @@
     "i18n:compile": "node scripts/i18n-compile.mjs",
     "i18n:add": "node scripts/i18n-add.ts",
     "compat:build": "node scripts/compat/build-descriptors.ts",
+    "devices:import": "node scripts/devices/import.mjs",
     "os-fonts:import": "node scripts/os-fonts/import.ts",
     "google-fonts:catalog": "node scripts/font-sources/import-google-catalog.mjs",
     "extension:build": "node scripts/extension/build.mjs",

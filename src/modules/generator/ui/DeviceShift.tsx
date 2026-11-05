@@ -9,11 +9,15 @@ export function DeviceShift({
   locale,
   results,
   baseline,
+  focusWidth,
+  currentWidth,
   fitting = false,
 }: {
   locale: Locale;
   results: readonly WidthShift[] | undefined;
   baseline?: readonly WidthShift[] | undefined;
+  focusWidth?: number | undefined;
+  currentWidth?: number | undefined;
   fitting?: boolean;
 }) {
   const t = messagesFor(locale);
@@ -30,8 +34,11 @@ export function DeviceShift({
     if (rating === 'good') return t.cls_rating_good();
     return rating === 'needs-improvement' ? t.cls_rating_needs() : t.cls_rating_poor();
   };
-  const worstOf = (list: readonly WidthShift[] | undefined) =>
-    list && list.length > 0 ? Math.max(...list.map((item) => item.score)) : undefined;
+  const worstOf = (list: readonly WidthShift[] | undefined) => {
+    const scoped =
+      focusWidth === undefined ? list : list?.filter((item) => item.width === focusWidth);
+    return scoped && scoped.length > 0 ? Math.max(...scoped.map((item) => item.score)) : undefined;
+  };
   const worst = worstOf(results);
   const before = worstOf(baseline);
   const rating = worst === undefined ? undefined : ratingOf(worst);
@@ -46,6 +53,7 @@ export function DeviceShift({
         <>
           <span class="ff-shift__change">
             <span class="ff-shift__label">CLS</span>
+            {focusWidth !== undefined && <span class="ff-shift__at ff-muted">{focusWidth}px</span>}
             {before !== undefined && beforeRating !== undefined && (
               <>
                 <strong
@@ -80,11 +88,20 @@ export function DeviceShift({
               {(results ?? []).map((item) => {
                 const level = ratingOf(item.score);
                 return (
-                  <li class="ff-generator__item" key={item.width} data-rating={level}>
+                  <li
+                    class="ff-generator__item"
+                    key={item.width}
+                    data-rating={level}
+                    aria-current={item.width === currentWidth ? 'true' : undefined}
+                  >
                     <span aria-hidden="true">{SYMBOLS[level]}</span>
                     <span class="ff-shift__width">{item.width}px</span>
                     {format.format(item.score)}
-                    <span class="ff-sr-only"> {label(level)}</span>
+                    <span class="ff-sr-only">
+                      {' '}
+                      {label(level)}
+                      {item.width === currentWidth && `, ${t.article_shift_current()}`}
+                    </span>
                   </li>
                 );
               })}

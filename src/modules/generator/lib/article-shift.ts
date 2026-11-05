@@ -17,10 +17,23 @@ function boxesOf(root: Element, origin: DOMRect): Box[] {
   });
 }
 
-export function measureShift(wrapper: HTMLElement, web: Element, fallback: Element): WidthShift[] {
+export const isProbeWidth = (width: number) => (PROBE_WIDTHS as readonly number[]).includes(width);
+
+export function shiftWidths(extra: number | undefined): number[] {
+  const widths = new Set<number>(PROBE_WIDTHS);
+  if (extra !== undefined && extra > 0) widths.add(Math.round(extra));
+  return [...widths].sort((a, b) => a - b);
+}
+
+export function measureShift(
+  wrapper: HTMLElement,
+  web: Element,
+  fallback: Element,
+  widths: readonly number[] = PROBE_WIDTHS,
+): WidthShift[] {
   const previous = wrapper.style.inlineSize;
   const results: WidthShift[] = [];
-  for (const width of PROBE_WIDTHS) {
+  for (const width of widths) {
     wrapper.style.inlineSize = `${width}px`;
     const origin = wrapper.getBoundingClientRect();
     const before = boxesOf(web, origin);

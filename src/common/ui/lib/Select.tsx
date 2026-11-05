@@ -7,6 +7,7 @@ export interface SelectOption {
   label: string;
   disabled?: boolean;
   icon?: ComponentChildren;
+  group?: string;
 }
 
 export interface SelectProps {
@@ -51,6 +52,16 @@ export function Select({
     options.findIndex((option) => option.value === value),
   );
   const selected = options[selectedIndex];
+
+  const segments = options.reduce<{ group: string | undefined; key: number; indexes: number[] }[]>(
+    (all, option, index) => {
+      const last = all.at(-1);
+      if (last && last.group === option.group) last.indexes.push(index);
+      else all.push({ group: option.group, key: all.length, indexes: [index] });
+      return all;
+    },
+    [],
+  );
 
   const step = (from: number, direction: 1 | -1) => {
     for (let index = from + direction; index >= 0 && index < options.length; index += direction) {
@@ -155,6 +166,30 @@ export function Select({
     }
   };
 
+  const renderOption = (index: number) => {
+    const option = options[index] as SelectOption;
+    return (
+      // biome-ignore lint/a11y/useFocusableInteractive lint/a11y/useKeyWithClickEvents: focus stays on the combobox (aria-activedescendant)
+      <div
+        key={option.value}
+        id={`${id}-o${index}`}
+        data-value={option.value}
+        role="option"
+        aria-selected={index === selectedIndex}
+        aria-disabled={option.disabled ? true : undefined}
+        data-active={index === active ? 'true' : undefined}
+        onPointerDown={(event) => event.preventDefault()}
+        onClick={() => {
+          choose(index);
+          button.current?.focus();
+        }}
+      >
+        {option.icon}
+        {option.label}
+      </div>
+    );
+  };
+
   return (
     <div class="ff-field ff-select" data-compact={compact ? 'true' : undefined} ref={root}>
       <span
@@ -198,26 +233,19 @@ export function Select({
           }}
         >
           <ScrollShadow>
-            {options.map((option, index) => (
-              // biome-ignore lint/a11y/useFocusableInteractive lint/a11y/useKeyWithClickEvents: focus stays on the combobox (aria-activedescendant)
-              <div
-                key={option.value}
-                id={`${id}-o${index}`}
-                data-value={option.value}
-                role="option"
-                aria-selected={index === selectedIndex}
-                aria-disabled={option.disabled ? true : undefined}
-                data-active={index === active ? 'true' : undefined}
-                onPointerDown={(event) => event.preventDefault()}
-                onClick={() => {
-                  choose(index);
-                  button.current?.focus();
-                }}
-              >
-                {option.icon}
-                {option.label}
-              </div>
-            ))}
+            {segments.map((segment) => {
+              const items = segment.indexes.map((index) => renderOption(index));
+              if (segment.group === undefined) return items;
+              return (
+                // biome-ignore lint/a11y/useSemanticElements: a fieldset is not allowed inside a listbox
+                <div key={segment.group} role="group" aria-labelledby={`${id}-g${segment.key}`}>
+                  <div id={`${id}-g${segment.key}`} class="ff-select__group" role="presentation">
+                    {segment.group}
+                  </div>
+                  {items}
+                </div>
+              );
+            })}
           </ScrollShadow>
         </div>
       )}

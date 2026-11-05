@@ -64,6 +64,7 @@ Generated data is committed; the scripts need network access (and, for Windows m
 
 | Script | Output |
 |---|---|
+| `pnpm devices:import` | `src/modules/devices/data/devices.json` (emulated devices from Chrome DevTools) |
 | `pnpm os-fonts:import` | `src/modules/os-fonts/data/os-fonts.json` (availability per OS from vendor sources) |
 | `pnpm os-fonts:metrics` | `metrics.json` and `variants.json` (glyph advances and vertical metrics) |
 | `pnpm compat:build` | `src/modules/audience/data/descriptor-support.json` (MDN browser-compat-data) |

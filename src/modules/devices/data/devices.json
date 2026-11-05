@@ -1,0 +1,123 @@
+{
+  "source": "https://github.com/ChromeDevTools/devtools-frontend/blob/8f629f2e8b07ee00bccb3ba3ff0f57bb6f8f4db0/front_end/models/emulation/EmulatedDevices.ts",
+  "commit": "8f629f2e8b07ee00bccb3ba3ff0f57bb6f8f4db0",
+  "devices": [
+    { "name": "iPhone SE", "group": "phone", "width": 375, "height": 667, "scale": 2 },
+    { "name": "iPhone XR", "group": "phone", "width": 414, "height": 896, "scale": 2 },
+    { "name": "iPhone 12 Pro", "group": "phone", "width": 390, "height": 844, "scale": 3 },
+    { "name": "iPhone 14", "group": "phone", "width": 390, "height": 844, "scale": 3 },
+    { "name": "iPhone 14 Plus", "group": "phone", "width": 428, "height": 926, "scale": 3 },
+    { "name": "iPhone 14 Pro", "group": "phone", "width": 393, "height": 852, "scale": 3 },
+    { "name": "iPhone 14 Pro Max", "group": "phone", "width": 430, "height": 932, "scale": 3 },
+    { "name": "iPhone 15", "group": "phone", "width": 393, "height": 852, "scale": 3 },
+    { "name": "iPhone 15 Plus", "group": "phone", "width": 430, "height": 932, "scale": 3 },
+    { "name": "iPhone 15 Pro", "group": "phone", "width": 393, "height": 852, "scale": 3 },
+    { "name": "iPhone 15 Pro Max", "group": "phone", "width": 430, "height": 932, "scale": 3 },
+    { "name": "iPhone 16e", "group": "phone", "width": 390, "height": 844, "scale": 3 },
+    { "name": "iPhone 16", "group": "phone", "width": 393, "height": 852, "scale": 3 },
+    { "name": "iPhone 16 Plus", "group": "phone", "width": 430, "height": 932, "scale": 3 },
+    { "name": "iPhone 16 Pro", "group": "phone", "width": 402, "height": 874, "scale": 3 },
+    { "name": "iPhone 16 Pro Max", "group": "phone", "width": 440, "height": 956, "scale": 3 },
+    { "name": "Pixel 7", "group": "phone", "width": 412, "height": 915, "scale": 2.625 },
+    { "name": "Pixel 8", "group": "phone", "width": 412, "height": 915, "scale": 2.625 },
+    { "name": "Pixel 8 Pro", "group": "phone", "width": 448, "height": 997, "scale": 3 },
+    { "name": "Pixel 8a", "group": "phone", "width": 412, "height": 915, "scale": 2.625 },
+    { "name": "Pixel 9", "group": "phone", "width": 412, "height": 924, "scale": 2.625 },
+    { "name": "Pixel 9 Pro", "group": "phone", "width": 427, "height": 952, "scale": 3 },
+    { "name": "Pixel 9 Pro XL", "group": "phone", "width": 448, "height": 997, "scale": 3 },
+    { "name": "Pixel 10", "group": "phone", "width": 412, "height": 924, "scale": 2.625 },
+    { "name": "Samsung Galaxy S8+", "group": "phone", "width": 360, "height": 740, "scale": 4 },
+    {
+      "name": "Samsung Galaxy S20 Ultra",
+      "group": "phone",
+      "width": 412,
+      "height": 915,
+      "scale": 3.5
+    },
+    { "name": "Surface Pro 7", "group": "tablet", "width": 912, "height": 1368, "scale": 2 },
+    { "name": "iPad Mini", "group": "tablet", "width": 768, "height": 1024, "scale": 2 },
+    { "name": "iPad Pro 13", "group": "tablet", "width": 1032, "height": 1376, "scale": 2 },
+    { "name": "Surface Pro 10", "group": "tablet", "width": 960, "height": 1440, "scale": 2 },
+    { "name": "Surface Duo", "group": "foldable", "width": 540, "height": 720, "scale": 2.5 },
+    {
+      "name": "Surface Duo (unfolded)",
+      "group": "foldable",
+      "width": 1114,
+      "height": 720,
+      "scale": 2.5
+    },
+    { "name": "Samsung Galaxy A55", "group": "phone", "width": 360, "height": 800, "scale": 2.25 },
+    {
+      "name": "Pixel 9 Pro Fold",
+      "group": "foldable",
+      "width": 412,
+      "height": 922,
+      "scale": 2.625
+    },
+    {
+      "name": "Pixel 9 Pro Fold (unfolded)",
+      "group": "foldable",
+      "width": 836,
+      "height": 842,
+      "scale": 2.625
+    },
+    { "name": "Galaxy Z Fold 6", "group": "foldable", "width": 412, "height": 968, "scale": 2.625 },
+    {
+      "name": "Galaxy Z Fold 6 (unfolded)",
+      "group": "foldable",
+      "width": 744,
+      "height": 860,
+      "scale": 2.625
+    },
+    { "name": "Galaxy Z Fold 5", "group": "foldable", "width": 344, "height": 882, "scale": 2.625 },
+    {
+      "name": "Galaxy Z Fold 5 (unfolded)",
+      "group": "foldable",
+      "width": 690,
+      "height": 829,
+      "scale": 2.625
+    },
+    {
+      "name": "Asus Zenbook Fold",
+      "group": "foldable",
+      "width": 853,
+      "height": 1280,
+      "scale": 1.5
+    },
+    {
+      "name": "Asus Zenbook Fold (unfolded)",
+      "group": "foldable",
+      "width": 1706,
+      "height": 1280,
+      "scale": 1.5
+    },
+    {
+      "name": "Samsung Galaxy A51/71",
+      "group": "phone",
+      "width": 412,
+      "height": 914,
+      "scale": 2.625
+    },
+    { "name": "Nest Hub Max", "group": "desktop", "width": 1280, "height": 800, "scale": 2 },
+    { "name": "Galaxy Tab S4", "group": "phone", "width": 712, "height": 1138, "scale": 2.25 },
+    { "name": "JioPhone 2", "group": "phone", "width": 240, "height": 320, "scale": 1 },
+    { "name": "Laptop with touch", "group": "desktop", "width": 1280, "height": 950, "scale": 1 },
+    {
+      "name": "Laptop with HiDPI screen",
+      "group": "desktop",
+      "width": 1440,
+      "height": 900,
+      "scale": 2
+    },
+    {
+      "name": "Laptop with MDPI screen",
+      "group": "desktop",
+      "width": 1280,
+      "height": 800,
+      "scale": 1
+    },
+    { "name": "Moto G4", "group": "phone", "width": 360, "height": 640, "scale": 3 },
+    { "name": "Moto G Power", "group": "phone", "width": 412, "height": 823, "scale": 1.75 },
+    { "name": "Facebook on Android", "group": "phone", "width": 412, "height": 892, "scale": 3.5 }
+  ]
+}

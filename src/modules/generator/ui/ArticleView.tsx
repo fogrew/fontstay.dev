@@ -2,7 +2,8 @@ import { type ComponentChildren, Fragment } from 'preact';
 import { useEffect, useMemo, useRef, useState } from 'preact/hooks';
 import { type Locale, messagesFor } from '@/common/i18n';
 import { Icon, Popover, ScrollShadow, Select } from '@/common/ui';
-import { measureShift, type WidthShift } from '../lib/article-shift';
+import { type Device, DevicePicker } from '@/modules/devices';
+import { isProbeWidth, measureShift, shiftWidths, type WidthShift } from '../lib/article-shift';
 import {
   ARTICLE_IDS,
   ARTICLE_LANGUAGES,
@@ -326,6 +327,8 @@ export function ArticleView({
   const [positions, setPositions] = useState(PRESETS.overlay);
   const [xray, setXray] = useState(false);
   const [frameWidth, setFrameWidth] = useState<number>();
+  const [device, setDevice] = useState<Device>();
+  const [pageWidth, setPageWidth] = useState(0);
   const frame = useRef<HTMLDivElement>(null);
   const [size, setSize] = useState(18);
   const [lineHeight, setLineHeight] = useState(1.5);
@@ -357,6 +360,17 @@ export function ArticleView({
   const activeGuides = GUIDES.filter((id) => guideOn[id]);
   const guides = activeGuides.length > 0;
   const view = useRef<HTMLElement>(null);
+  useEffect(() => {
+    const element = view.current;
+    if (!element) return;
+    const update = () => setPageWidth(element.clientWidth);
+    update();
+    const observer = new ResizeObserver(update);
+    observer.observe(element);
+    return () => observer.disconnect();
+  }, []);
+  const focusWidth = device?.width ?? frameWidth;
+  const previewWidth = focusWidth ?? pageWidth;
   const [hydrated, setHydrated] = useState(false);
   useEffect(() => setHydrated(true), []);
   const [loadFailed, setLoadFailed] = useState(false);
@@ -511,12 +525,16 @@ export function ArticleView({
         const wrapper = probe.current;
         const [web, fallback, plain] = wrapper?.querySelectorAll('article') ?? [];
         if (cancelled || !wrapper || !web || !fallback || !plain) return;
+        const widths = shiftWidths(previewWidth);
         const report = {
-          adjusted: measureShift(wrapper, web, fallback),
-          plain: measureShift(wrapper, web, plain),
+          adjusted: measureShift(wrapper, web, fallback, widths),
+          plain: measureShift(wrapper, web, plain, widths),
         };
         setShiftResults(report);
-        onShift?.(report);
+        onShift?.({
+          adjusted: report.adjusted.filter((item) => isProbeWidth(item.width)),
+          plain: report.plain.filter((item) => isProbeWidth(item.width)),
+        });
       });
     }, 300);
     return () => {
@@ -533,6 +551,7 @@ export function ArticleView({
     headingFamily,
     bodyFamily,
     substitute,
+    previewWidth,
   ]);
 
   const empty = items.length === 0 || !headingFamily || !bodyFamily;
@@ -751,6 +770,10 @@ export function ArticleView({
         ? undefined
         : Math.max(MIN_FRAME, Math.round(pixels)),
     );
+  const resizeFrame = (pixels: number | undefined) => {
+    setDevice(undefined);
+    sizeFrame(pixels);
+  };
   const currentFrame = () => Math.round(frameWidth ?? fullWidth());
   const moveSplit = (event: { clientX: number; clientY: number }) => {
     const box = slider.current?.getBoundingClientRect();
@@ -1073,6 +1096,14 @@ export function ArticleView({
             <ToolIcon name="boxes" />
           </button>
         </fieldset>
+        <DevicePicker
+          locale={locale}
+          value={device}
+          onChange={(next) => {
+            setDevice(next);
+            sizeFrame(next?.width);
+          }}
+        />
         <Popover label={t.article_group_content()}>{contentGroup}</Popover>
         <Popover label={t.article_group_inspect()} disabled={empty}>
           {inspectContent}
@@ -1080,6 +1111,8 @@ export function ArticleView({
         <DeviceShift
           locale={locale}
           results={shiftResults?.adjusted}
+          focusWidth={focusWidth}
+          currentWidth={previewWidth}
           baseline={shiftResults?.plain}
           fitting={fitting}
         />
@@ -1259,18 +1292,18 @@ export function ArticleView({
           onPointerMove={(event) => {
             const box = frame.current?.getBoundingClientRect();
             if (box && event.currentTarget.hasPointerCapture(event.pointerId)) {
-              sizeFrame(isRtl() ? box.right - event.clientX : event.clientX - box.left);
+              resizeFrame(isRtl() ? box.right - event.clientX : event.clientX - box.left);
             }
           }}
-          onDblClick={() => sizeFrame(undefined)}
+          onDblClick={() => resizeFrame(undefined)}
           onKeyDown={(event) => {
             const step = event.shiftKey ? FRAME_BIG_STEP : FRAME_STEP;
             const shrink = isRtl() ? 'ArrowRight' : 'ArrowLeft';
             const grow = isRtl() ? 'ArrowLeft' : 'ArrowRight';
-            if (event.key === shrink) sizeFrame(currentFrame() - step);
-            else if (event.key === grow) sizeFrame(currentFrame() + step);
-            else if (event.key === 'Home') sizeFrame(MIN_FRAME);
-            else if (event.key === 'End') sizeFrame(undefined);
+            if (event.key === shrink) resizeFrame(currentFrame() - step);
+            else if (event.key === grow) resizeFrame(currentFrame() + step);
+            else if (event.key === 'Home') resizeFrame(MIN_FRAME);
+            else if (event.key === 'End') resizeFrame(undefined);
             else return;
             event.preventDefault();
           }}

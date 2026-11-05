@@ -396,6 +396,14 @@
   white-space: nowrap;
   cursor: pointer;
 }
+.ff-select__group {
+  padding: var(--ff-space-2) var(--ff-space-2) var(--ff-space-1);
+  color: var(--ff-muted);
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
 .ff-select__list [role="option"][aria-selected="true"] {
   font-weight: 700;
 }
