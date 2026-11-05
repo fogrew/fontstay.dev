@@ -44,7 +44,7 @@ export function Popover({
       <button
         ref={button}
         type="button"
-        class="ff-button ff-button--secondary ff-popover__button"
+        class="ff-control ff-button ff-button--secondary ff-popover__button"
         aria-expanded={open}
         aria-label={badge ? `${label} (${badge})` : label}
         title={compact ? label : undefined}

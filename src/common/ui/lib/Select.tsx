@@ -157,14 +157,17 @@ export function Select({
 
   return (
     <div class="ff-field ff-select" data-compact={compact ? 'true' : undefined} ref={root}>
-      <span id={`${id}-label`} class={hideLabel ? 'ff-sr-only' : undefined}>
+      <span
+        id={`${id}-label`}
+        class={hideLabel ? 'ff-select__label ff-sr-only' : 'ff-select__label'}
+      >
         {label}
       </span>
       <button
         ref={button}
         type="button"
         id={id}
-        class="ff-input ff-select__button"
+        class="ff-control ff-input ff-select__button"
         role="combobox"
         aria-haspopup="listbox"
         aria-expanded={open}

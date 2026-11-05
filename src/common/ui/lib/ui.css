@@ -42,7 +42,7 @@
   background: var(--ff-surface);
   border: 0;
 }
-.ff-fit legend {
+.ff-fit__legend {
   padding-inline: var(--ff-space-2);
   font-weight: 600;
 }
@@ -52,7 +52,7 @@
   align-items: center;
   gap: var(--ff-space-3);
 }
-.ff-fit__inputs input[type="range"] {
+.ff-fit__range {
   inline-size: 100%;
   min-inline-size: 0;
   min-block-size: 2.75rem;
@@ -76,14 +76,14 @@
   column-gap: var(--ff-space-3);
   padding: 0 var(--ff-space-3) var(--ff-space-1);
 }
-.ff-fit--compact legend {
+.ff-fit--compact .ff-fit__legend {
   font-size: 0.875rem;
 }
 .ff-fit--compact .ff-fit__inputs {
   grid-template-columns: minmax(0, 1fr) 5rem;
   gap: var(--ff-space-2);
 }
-.ff-fit--compact .ff-fit__inputs input[type="range"] {
+.ff-fit--compact .ff-fit__range {
   min-block-size: 1.75rem;
 }
 .ff-fit--compact .ff-fit__actions {
@@ -100,7 +100,7 @@
   min-block-size: 2.75rem;
   cursor: pointer;
 }
-.ff-check input {
+.ff-check__input {
   inline-size: 1.25rem;
   block-size: 1.25rem;
   accent-color: var(--ff-accent);
@@ -114,7 +114,7 @@
   gap: var(--ff-space-1);
   border-block-end: 1px solid var(--ff-border);
 }
-.ff-tabs__list button {
+.ff-tabs__tab {
   min-block-size: 2.75rem;
   padding: var(--ff-space-2) var(--ff-space-4);
   border: 0;
@@ -146,7 +146,7 @@
   padding: var(--ff-space-3);
   border-block-end: 1px solid var(--ff-border);
 }
-.ff-code pre {
+.ff-code__pre {
   margin: 0;
   padding: var(--ff-space-4);
   font-size: 0.875rem;
@@ -164,12 +164,12 @@
 .ff-disclosure {
   border-block: 1px solid var(--ff-border);
 }
-.ff-disclosure summary {
+.ff-disclosure__summary {
   min-block-size: 2.75rem;
   padding-block: var(--ff-space-3);
   cursor: pointer;
 }
-.ff-disclosure > div {
+.ff-disclosure__body {
   padding-block-end: var(--ff-space-4);
 }
 .ff-sr-only {
@@ -222,7 +222,7 @@
   margin: 0;
   font-size: 1rem;
 }
-.ff-accordion__heading button {
+.ff-accordion__toggle {
   inline-size: 100%;
   min-block-size: 2.25rem;
   padding: var(--ff-space-1) var(--ff-space-3);
@@ -233,12 +233,12 @@
   text-align: start;
   cursor: pointer;
 }
-.ff-accordion__heading button::before {
+.ff-accordion__toggle::before {
   content: "▸" / "";
   display: inline-block;
   margin-inline-end: var(--ff-space-2);
 }
-.ff-accordion__heading button[aria-expanded="true"]::before {
+.ff-accordion__toggle[aria-expanded="true"]::before {
   content: "▾" / "";
 }
 .ff-accordion__panel {
@@ -426,7 +426,7 @@
   margin: 0;
   font-size: 1rem;
 }
-.ff-dock__heading button {
+.ff-dock__toggle {
   display: block;
   inline-size: 100%;
   min-block-size: 2.25rem;
@@ -443,15 +443,15 @@
   margin-inline-end: var(--ff-space-2);
   vertical-align: -0.125em;
 }
-.ff-dock__heading button:hover {
+.ff-dock__toggle:hover {
   background: color-mix(in srgb, var(--ff-accent) 10%, var(--ff-surface));
 }
-.ff-dock__heading button::before {
+.ff-dock__toggle::before {
   content: "▸" / "";
   display: inline-block;
   margin-inline-end: var(--ff-space-2);
 }
-.ff-dock__heading button[aria-expanded="true"]::before {
+.ff-dock__toggle[aria-expanded="true"]::before {
   content: "▾" / "";
 }
 .ff-dock__panel {
@@ -501,7 +501,7 @@
   .ff-dock__footer {
     flex: 0 0 auto;
   }
-  .ff-dock__heading button[aria-expanded="true"] {
+  .ff-dock__toggle[aria-expanded="true"] {
     border-color: var(--ff-accent);
   }
   .ff-dock__panel {
@@ -726,18 +726,18 @@ html[data-transition] .ff-dock__panel[data-id="export"] {
   }
 }
 
-.ff-accordion__heading button:dir(rtl)::before,
+.ff-accordion__toggle:dir(rtl)::before,
 .ff-collapsible__toggle:dir(rtl)::before {
   content: "◂" / "";
 }
-.ff-accordion__heading button[aria-expanded="true"]:dir(rtl)::before,
+.ff-accordion__toggle[aria-expanded="true"]:dir(rtl)::before,
 .ff-collapsible__toggle[aria-expanded="true"]:dir(rtl)::before {
   content: "▾" / "";
 }
-.ff-dock__heading button:dir(rtl)::before {
+.ff-dock__toggle:dir(rtl)::before {
   content: "◂" / "";
 }
-.ff-dock__heading button[aria-expanded="true"]:dir(rtl)::before {
+.ff-dock__toggle[aria-expanded="true"]:dir(rtl)::before {
   content: "▾" / "";
 }
 .ff-button-group {
@@ -773,11 +773,13 @@ html[data-transition] .ff-dock__panel[data-id="export"] {
   border-start-end-radius: var(--ff-radius);
   border-end-end-radius: var(--ff-radius);
 }
-.ff-button-group > :not(legend, :first-child, legend + *) {
+.ff-button-group > :not(.ff-button-group__legend, :first-child, .ff-button-group__legend + *) {
   margin-inline-start: -1px;
 }
-.ff-button-group > :is(:first-child:not(legend), legend + *),
-.ff-button-group > :is(:first-child:not(legend), legend + *) > .ff-button {
+.ff-button-group > :is(:first-child:not(.ff-button-group__legend), .ff-button-group__legend + *),
+.ff-button-group
+  > :is(:first-child:not(.ff-button-group__legend), .ff-button-group__legend + *)
+  > .ff-button {
   border-start-start-radius: var(--ff-radius);
   border-end-start-radius: var(--ff-radius);
 }

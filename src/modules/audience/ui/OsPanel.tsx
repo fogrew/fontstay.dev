@@ -36,10 +36,12 @@ export function OsPanel({
 
   return (
     <section class="ff-audience__os" aria-labelledby={headingId}>
-      <h3 id={headingId}>{t.audience_os_heading_count({ count: listed.length })}</h3>
+      <h3 class="ff-audience__heading ff-heading" id={headingId}>
+        {t.audience_os_heading_count({ count: listed.length })}
+      </h3>
       <ul class="ff-audience__list" aria-label={t.audience_os_shares_label()}>
         {listed.map((id) => (
-          <li key={id}>
+          <li class="ff-audience__item" key={id}>
             <span>
               <OsIcon os={id} />
               {label(id)}

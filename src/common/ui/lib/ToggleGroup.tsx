@@ -40,7 +40,7 @@ export function ToggleGroup({ items, selected, label, onChange }: ToggleGroupPro
         <button
           key={item.key}
           type="button"
-          class="ff-button ff-button--secondary"
+          class="ff-control ff-button ff-button--secondary"
           aria-pressed={selected.has(item.key)}
           aria-label={item.ariaLabel}
           onClick={(event) => click(item.key, event.shiftKey)}

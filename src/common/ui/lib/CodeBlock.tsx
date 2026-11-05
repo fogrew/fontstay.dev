@@ -110,7 +110,7 @@ export function CodeBlock({
         )}
       </div>
       <ScrollShadow class="ff-code__body" tabIndex={0} label={label}>
-        <pre dir="ltr">
+        <pre class="ff-code__pre" dir="ltr">
           <code>
             {tokens?.code === code
               ? tokens.lines.map((line, row) => (

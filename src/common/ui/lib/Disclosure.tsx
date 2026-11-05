@@ -38,11 +38,11 @@ export function Disclosure({
       open={open}
       onToggle={(event) => onToggle?.(event.currentTarget.open)}
     >
-      <summary>
+      <summary class="ff-disclosure__summary">
         {icon}
         {summary}
       </summary>
-      <div>{children}</div>
+      <div class="ff-disclosure__body">{children}</div>
     </details>
   );
 }

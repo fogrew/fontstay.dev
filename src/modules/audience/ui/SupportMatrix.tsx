@@ -41,11 +41,12 @@ export function SupportMatrix({
         <div class="ff-matrix__groups">
           {groups.map((group) => (
             <section class="ff-matrix__group" key={group.os}>
-              <h3>
+              <h3 class="ff-matrix__heading ff-heading">
                 <OsIcon os={group.os} />
-                {t[`audience_os_${group.os}`]()} <span>{number(group.share, 1)}%</span>
+                {t[`audience_os_${group.os}`]()}{' '}
+                <span class="ff-matrix__share">{number(group.share, 1)}%</span>
               </h3>
-              <p class="ff-muted">
+              <p class="ff-matrix__text ff-muted">
                 {group.enabled
                   ? group.fonts
                   : group.available
@@ -55,13 +56,14 @@ export function SupportMatrix({
               <div class="ff-matrix__columns">
                 {group.columns.map((column) => (
                   <div class="ff-matrix__column" key={column.browser}>
-                    <h4>
+                    <h4 class="ff-matrix__heading">
                       <BrowserIcon id={column.browser} />
-                      {shortName(column.name)} <span>{number(column.share, 1)}%</span>
+                      {shortName(column.name)}{' '}
+                      <span class="ff-matrix__share">{number(column.share, 1)}%</span>
                     </h4>
-                    <ul>
+                    <ul class="ff-matrix__cells">
                       {column.cells.map((cell) => (
-                        <li key={cell.label} data-state={cell.state}>
+                        <li class="ff-matrix__cell" key={cell.label} data-state={cell.state}>
                           <span aria-hidden="true">{SYMBOLS[cell.state]}</span>
                           <span class="ff-sr-only">{stateLabel(cell.state)}: </span>
                           {cell.label}
@@ -94,7 +96,9 @@ export function SupportMatrix({
                 ))}
               </div>
               {group.hiddenShare > 0 && (
-                <p class="ff-muted">{t.matrix_hidden({ percent: number(group.hiddenShare, 1) })}</p>
+                <p class="ff-matrix__text ff-muted">
+                  {t.matrix_hidden({ percent: number(group.hiddenShare, 1) })}
+                </p>
               )}
             </section>
           ))}
@@ -102,14 +106,14 @@ export function SupportMatrix({
       </ScrollShadow>
       <ul class="ff-matrix__legend">
         {(['full', 'partial', 'none', 'unknown'] as const).map((state) => (
-          <li key={state}>
+          <li class="ff-matrix__legend-item" key={state}>
             <span class="ff-matrix__chip" data-state={state}>
               <span aria-hidden="true">{SYMBOLS[state]}</span> {stateLabel(state)}
             </span>
             <span class="ff-muted">{stateHint(state)}</span>
           </li>
         ))}
-        <li>
+        <li class="ff-matrix__legend-item">
           <span class="ff-muted">{t.matrix_cls_legend()}</span>
           {(['good', 'needs', 'poor'] as const).map((level) => (
             <span class="ff-matrix__shift" data-rating={level} key={level}>
