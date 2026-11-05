@@ -11,7 +11,7 @@ const t = messagesFor(locale);
 ---
 
 <div class="ff-page">
-  <h1>{t.catalog_heading()}</h1>
-  <p>{t.catalog_intro()}</p>
+  <h1 class="ff-heading ff-page__heading">{t.catalog_heading()}</h1>
+  <p class="ff-page__text">{t.catalog_intro()}</p>
   <CatalogTable locale={locale} client:load />
 </div>

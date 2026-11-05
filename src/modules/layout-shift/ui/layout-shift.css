@@ -3,6 +3,6 @@
   gap: var(--ff-space-1);
   justify-items: start;
 }
-.ff-cls p {
+.ff-cls__text {
   margin: 0;
 }

@@ -37,56 +37,56 @@ const specs = [
 ---
 
 <div class="ff-page ff-prose">
-  <h1>{t.guide_heading()}</h1>
-  <p>{t.guide_intro()}</p>
+  <h1 class="ff-heading ff-page__heading">{t.guide_heading()}</h1>
+  <p class="ff-page__text">{t.guide_intro()}</p>
 
-  <h2>{t.guide_cls_heading()}</h2>
-  <p>{t.guide_cls_text()}</p>
+  <h2 class="ff-heading ff-page__heading ff-prose__heading">{t.guide_cls_heading()}</h2>
+  <p class="ff-page__text">{t.guide_cls_text()}</p>
 
-  <h2>{t.guide_descriptors_heading()}</h2>
-  <p>{t.guide_descriptors_text()}</p>
+  <h2 class="ff-heading ff-page__heading ff-prose__heading">{t.guide_descriptors_heading()}</h2>
+  <p class="ff-page__text">{t.guide_descriptors_text()}</p>
   <!-- biome-ignore lint/a11y/noNoninteractiveTabindex: scrollable code needs a keyboard focus target -->
   <pre class="ff-prose__code" tabindex="0"><code>{example}</code></pre>
-  <table class="ff-page__table">
-    <caption>{t.guide_support_caption({ version: supportData.bcdVersion })}</caption>
+  <table class="ff-prose__table ff-page__table">
+    <caption class="ff-prose__caption">{t.guide_support_caption({ version: supportData.bcdVersion })}</caption>
     <thead>
       <tr>
-        <th scope="col">{t.report_feature()}</th>
-        {browsers.map((browser) => <th scope="col">{browserName(browser)}</th>)}
+        <th class="ff-page__cell" scope="col">{t.report_feature()}</th>
+        {browsers.map((browser) => <th class="ff-page__cell" scope="col">{browserName(browser)}</th>)}
       </tr>
     </thead>
     <tbody>
       {FEATURES.map((feature) => (
         <tr>
-          <th scope="row"><code>{feature}</code></th>
-          {browsers.map((browser) => <td>{support(feature, browser)}</td>)}
+          <th class="ff-page__cell" scope="row"><code>{feature}</code></th>
+          {browsers.map((browser) => <td class="ff-page__cell">{support(feature, browser)}</td>)}
         </tr>
       ))}
     </tbody>
   </table>
-  <p class="ff-muted">{t.guide_support_note()}</p>
+  <p class="ff-page__text ff-muted">{t.guide_support_note()}</p>
 
-  <h2>{t.guide_safari_heading()}</h2>
-  <p>{t.guide_safari_text()}</p>
+  <h2 class="ff-heading ff-page__heading ff-prose__heading">{t.guide_safari_heading()}</h2>
+  <p class="ff-page__text">{t.guide_safari_text()}</p>
 
-  <h2>{t.guide_range_heading()}</h2>
-  <p>{t.guide_range_text()}</p>
+  <h2 class="ff-heading ff-page__heading ff-prose__heading">{t.guide_range_heading()}</h2>
+  <p class="ff-page__text">{t.guide_range_text()}</p>
 
-  <h2>{t.guide_formats_heading()}</h2>
-  <p>{t.guide_formats_text()}</p>
+  <h2 class="ff-heading ff-page__heading ff-prose__heading">{t.guide_formats_heading()}</h2>
+  <p class="ff-page__text">{t.guide_formats_text()}</p>
 
-  <h2>{t.guide_licenses_heading()}</h2>
-  <p>{t.guide_licenses_text()}</p>
-  <ul>
-    <li>{t.guide_license_ofl()}</li>
-    <li>{t.guide_license_apache()}</li>
-    <li>{t.guide_license_ufl()}</li>
-    <li>{t.guide_license_proprietary()}</li>
+  <h2 class="ff-heading ff-page__heading ff-prose__heading">{t.guide_licenses_heading()}</h2>
+  <p class="ff-page__text">{t.guide_licenses_text()}</p>
+  <ul class="ff-page__list">
+    <li class="ff-page__item">{t.guide_license_ofl()}</li>
+    <li class="ff-page__item">{t.guide_license_apache()}</li>
+    <li class="ff-page__item">{t.guide_license_ufl()}</li>
+    <li class="ff-page__item">{t.guide_license_proprietary()}</li>
   </ul>
-  <p>{t.guide_licenses_where()}</p>
+  <p class="ff-page__text">{t.guide_licenses_where()}</p>
 
-  <h2>{t.guide_specs_heading()}</h2>
-  <ul>
-    {specs.map(([name, href]) => <li><a href={href} rel="noopener noreferrer">{name}</a></li>)}
+  <h2 class="ff-heading ff-page__heading ff-prose__heading">{t.guide_specs_heading()}</h2>
+  <ul class="ff-page__list">
+    {specs.map(([name, href]) => <li class="ff-page__item"><a class="ff-link ff-link--tap" href={href} rel="noopener noreferrer">{name}</a></li>)}
   </ul>
 </div>

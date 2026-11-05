@@ -32,27 +32,27 @@ const vertical = metrics
 <div class="ff-page">
   <nav aria-label={t.breadcrumbs_label()}>
     <ol class="ff-breadcrumbs">
-      <li><a href={localizeHref('/', { locale })}>{t.nav_generator()}</a></li>
-      <li><a href={localizeHref('/fonts/', { locale })}>{t.nav_fonts()}</a></li>
-      <li aria-current="page">{font.family}</li>
+      <li class="ff-breadcrumbs__item"><a class="ff-link ff-link--tap" href={localizeHref('/', { locale })}>{t.nav_generator()}</a></li>
+      <li class="ff-breadcrumbs__item"><a class="ff-link ff-link--tap" href={localizeHref('/fonts/', { locale })}>{t.nav_fonts()}</a></li>
+      <li class="ff-breadcrumbs__item" aria-current="page">{font.family}</li>
     </ol>
   </nav>
-  <h1>{font.family}</h1>
-  <p>{font.category === 'serif' ? t.type_serif() : font.category === 'monospace' ? t.type_mono() : font.category === 'cursive' ? t.type_cursive() : t.type_sans()}</p>
+  <h1 class="ff-heading ff-page__heading">{font.family}</h1>
+  <p class="ff-page__text">{font.category === 'serif' ? t.type_serif() : font.category === 'monospace' ? t.type_mono() : font.category === 'cursive' ? t.type_cursive() : t.type_sans()}</p>
 
-  <h2>{t.font_specimen_heading()}</h2>
+  <h2 class="ff-heading ff-page__heading">{t.font_specimen_heading()}</h2>
   <link rel="stylesheet" href="/specimens/fonts.css" />
-  <p class="ff-specimen" data-font={font.id}>{t.preview_sample_default()}</p>
-  <p class="ff-specimen" data-font={font.id}>ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz 0123456789</p>
-  <p class="ff-muted">{t.font_specimen_note()}</p>
+  <p class="ff-page__text ff-specimen" data-font={font.id}>{t.preview_sample_default()}</p>
+  <p class="ff-page__text ff-specimen" data-font={font.id}>ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz 0123456789</p>
+  <p class="ff-page__text ff-muted">{t.font_specimen_note()}</p>
 
-  <h2>{t.font_availability_heading()}</h2>
+  <h2 class="ff-heading ff-page__heading">{t.font_availability_heading()}</h2>
   <table class="ff-page__table">
     <thead>
       <tr>
-        <th scope="col">{t.catalog_col_system()}</th>
-        <th scope="col">{t.catalog_col_availability()}</th>
-        <th scope="col">{t.font_versions()}</th>
+        <th class="ff-page__cell" scope="col">{t.catalog_col_system()}</th>
+        <th class="ff-page__cell" scope="col">{t.catalog_col_availability()}</th>
+        <th class="ff-page__cell" scope="col">{t.font_versions()}</th>
       </tr>
     </thead>
     <tbody>
@@ -60,38 +60,38 @@ const vertical = metrics
         const result = osAvailability(font, os, osFontsDataset);
         return (
           <tr>
-            <th scope="row">{t[`audience_os_${os}`]()}</th>
-            <td>{levelLabel(result.level)}</td>
-            <td>{result.present.join(', ') || '—'}</td>
+            <th class="ff-page__cell" scope="row">{t[`audience_os_${os}`]()}</th>
+            <td class="ff-page__cell">{levelLabel(result.level)}</td>
+            <td class="ff-page__cell">{result.present.join(', ') || '—'}</td>
           </tr>
         );
       })}
     </tbody>
   </table>
-  <h3>{t.font_sources_heading()}</h3>
-  <ul>
+  <h3 class="ff-heading ff-page__heading">{t.font_sources_heading()}</h3>
+  <ul class="ff-page__list">
     {[...new Set(font.availability.map((entry) => entry.source))].map((source) => (
-      <li><a href={source} rel="noopener noreferrer">{source}</a></li>
+      <li class="ff-page__item"><a class="ff-link ff-link--tap" href={source} rel="noopener noreferrer">{source}</a></li>
     ))}
   </ul>
 
-  <h2>{t.font_metrics_heading()}</h2>
+  <h2 class="ff-heading ff-page__heading">{t.font_metrics_heading()}</h2>
   {vertical && metrics ? (
     <dl class="ff-page__metrics">
       <dt>{t.font_metrics_names()}</dt>
-      <dd>{metrics.localNames.join(', ')}</dd>
+      <dd class="ff-page__value">{metrics.localNames.join(', ')}</dd>
       <dt>{t.font_metrics_units()}</dt>
-      <dd>{metrics.unitsPerEm}</dd>
+      <dd class="ff-page__value">{metrics.unitsPerEm}</dd>
       <dt>{t.font_metrics_ascent()}</dt>
-      <dd>{percent(vertical.ascent)}%</dd>
+      <dd class="ff-page__value">{percent(vertical.ascent)}%</dd>
       <dt>{t.font_metrics_descent()}</dt>
-      <dd>{percent(vertical.descent)}%</dd>
+      <dd class="ff-page__value">{percent(vertical.descent)}%</dd>
       <dt>{t.font_metrics_gap()}</dt>
-      <dd>{percent(vertical.lineGap)}%</dd>
+      <dd class="ff-page__value">{percent(vertical.lineGap)}%</dd>
       <dt>{t.font_metrics_glyphs()}</dt>
-      <dd>{metrics.codePoints.length}</dd>
+      <dd class="ff-page__value">{metrics.codePoints.length}</dd>
     </dl>
   ) : (
-    <p class="ff-muted">{t.font_no_metrics()}</p>
+    <p class="ff-page__text ff-muted">{t.font_no_metrics()}</p>
   )}
 </div>

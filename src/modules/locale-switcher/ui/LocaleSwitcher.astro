@@ -11,17 +11,18 @@ const path = Astro.props.path.endsWith('/') ? Astro.props.path : `${Astro.props.
 const t = messagesFor(current);
 ---
 
-<nav aria-label={t.locale_switcher_label()}>
-  <details data-locale-menu>
-    <summary title={t.locale_switcher_label()}>
-      <svg width="1em" height="1em" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><g fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9" /><path d="M3 12h18" /><ellipse cx="12" cy="12" rx="4" ry="9" /></g></svg>
+<nav class="ff-locale" aria-label={t.locale_switcher_label()}>
+  <details class="ff-locale__menu" data-locale-menu>
+    <summary class="ff-locale__summary" title={t.locale_switcher_label()}>
+      <svg class="ff-locale__icon" width="1em" height="1em" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><g fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9" /><path d="M3 12h18" /><ellipse cx="12" cy="12" rx="4" ry="9" /></g></svg>
       <span class="ff-sr-only">{t.locale_switcher_label()}: <span lang={current}>{localeName(current)}</span></span>
     </summary>
-    <ul>
+    <ul class="ff-locale__list">
       {
         locales.map((locale) => (
           <li>
             <a
+              class="ff-link ff-locale__link"
               href={localizeHref(path, { locale })}
               data-locale-link
               hreflang={locale}
@@ -38,11 +39,11 @@ const t = messagesFor(current);
 </nav>
 
 <style>
-  nav {
+  .ff-locale {
     position: relative;
   }
 
-  summary {
+  .ff-locale__summary {
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -56,26 +57,26 @@ const t = messagesFor(current);
     cursor: pointer;
   }
 
-  summary::-webkit-details-marker {
+  .ff-locale__summary::-webkit-details-marker {
     display: none;
   }
 
-  summary svg {
+  .ff-locale__icon {
     inline-size: 1.25em;
     block-size: 1.25em;
   }
 
-  summary:hover {
+  .ff-locale__summary:hover {
     background: color-mix(in srgb, var(--ff-accent) 12%, transparent);
   }
 
-  details[open] > summary {
+  .ff-locale__menu[open] > .ff-locale__summary {
     border-color: var(--ff-accent);
     background: color-mix(in srgb, var(--ff-accent) 18%, transparent);
     color: var(--ff-accent);
   }
 
-  ul {
+  .ff-locale__list {
     position: absolute;
     inset-block-start: 100%;
     inset-inline-end: 0;
@@ -94,7 +95,7 @@ const t = messagesFor(current);
     list-style: none;
   }
 
-  ul a {
+  .ff-locale__link {
     display: block;
     min-block-size: 2rem;
     padding: 0.25rem 0.5rem;
@@ -105,19 +106,19 @@ const t = messagesFor(current);
     white-space: nowrap;
   }
 
-  a:hover {
+  .ff-locale__link:hover {
     background: color-mix(in srgb, var(--ff-accent) 12%, transparent);
   }
 
-  a[aria-current="true"] {
+  .ff-locale__link[aria-current="true"] {
     background: color-mix(in srgb, var(--ff-accent) 18%, transparent);
     font-weight: 700;
   }
 
   @media (forced-colors: active) {
-    details[open] > summary,
-    a:hover,
-    a[aria-current="true"] {
+    .ff-locale__menu[open] > .ff-locale__summary,
+    .ff-locale__link:hover,
+    .ff-locale__link[aria-current="true"] {
       outline: 2px solid Highlight;
     }
   }

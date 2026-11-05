@@ -63,7 +63,7 @@ export function LayoutShiftPanel({
       >
         {t.cls_verify()}
       </Button>
-      <p class="ff-muted" role="status">
+      <p class="ff-cls__text ff-muted" role="status">
         {verified.state === 'running' && t.cls_verifying()}
         {verified.state === 'failed' && t.cls_failed()}
         {verified.state === 'done' &&
