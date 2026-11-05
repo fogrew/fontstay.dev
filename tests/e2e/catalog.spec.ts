@@ -1,5 +1,5 @@
 import AxeBuilder from '@axe-core/playwright';
-import { choose, expect, fillQuery, LOCALES, test, waitForGenerator } from './fixtures';
+import { choose, expect, fillQuery, LOCALES, openStep, test, waitForGenerator } from './fixtures';
 
 const wcagTags = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'];
 
@@ -96,6 +96,7 @@ test('a preset opens in the generator with its type and per-system fallbacks', a
     import.meta.url,
   ).pathname.replace(/^\/([A-Za-z]:)/, '$1');
   await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(font);
+  await openStep(page, 'tuning');
   await expect(page.getByLabel('Font type')).toHaveAttribute('data-value', 'serif', {
     timeout: 15_000,
   });
@@ -171,6 +172,7 @@ test('a preset stays applied to every uploaded font until it is cleared', async 
   await page
     .locator('input[type="file"][accept*="woff2"]')
     .setInputFiles([`${fonts}SourceSansPro-Regular.woff2`, `${fonts}FiraSans-Regular.ttf`]);
+  await openStep(page, 'tuning');
   await expect(page.getByText('Stack preset applied: Classic serif')).toBeVisible();
   await expect(
     page.getByRole('region', { name: 'Generated CSS', includeHidden: true }),
