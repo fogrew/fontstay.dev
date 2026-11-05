@@ -186,6 +186,7 @@ function fitFont(
       generic: kind,
       fontFaces: css.fontFaces,
       families: css.families,
+      systemFonts: faces.map((face) => face.family),
       strategy: strategy && aspect !== null ? safariStrategyCss(aspect, STRATEGY_LINE_HEIGHT) : '',
       fileName: font.fileName,
       weight: style.includes('bold') ? 700 : 400,

@@ -16,7 +16,7 @@ fontstay fit regular.woff2 bold.woff2 --format tailwind
 |---|---|
 | `-s, --systems <list>` | Systems to fit: `windows`, `macos`, `ios`, `android`, `linux`, `chromeos`. Default: every system with a share of at least 1% in the audience. Shares stay those of the whole audience, as when a system is switched off in the app. |
 | `-a, --audience <query>` | [Browserslist](https://browsersl.ist) query, including `baseline widely available`. `os <system>` and `not os <system>` parts select systems like the app. Default: `baseline widely available`. |
-| `-f, --format <format>` | `css` (default), `variables`, `tailwind`, `next`, `nuxt`, `astro`, `preload`, `loading`. |
+| `-f, --format <format>` | `css` (default), `variables`, `tailwind`, `next`, `nuxt`, `astro`, `wordpress`, `fontaine`, `preload`, `loading`. |
 | `-k, --kind <kind>` | Generic family of the fallbacks: `sans-serif`, `serif`, `monospace`, `cursive`. Default: detected from the font. |
 | `--locale <en\|ru>` | Frequency profile of the fit. `ru` applies to fonts that cover Cyrillic. Default: `en`. |
 | `--unicode-range` | Add `unicode-range` with the glyphs each font covers. |
@@ -26,7 +26,7 @@ fontstay fit regular.woff2 bold.woff2 --format tailwind
 
 Several font files are merged into one stylesheet, as in the app. Warnings (low glyph overlap, systems without fallback fonts) go to stderr. Exit codes: `0` success, `1` failure (unreadable or invalid font, invalid audience), `2` usage error.
 
-The output is the engine's fit: the same fallbacks, order, scripts and `unicode-range` as the app's CSS export for the same font and audience. The app then runs an optimizer that measures text in the browser and nudges the values (and may add a `.fonts-loading` letter-spacing rule); that step needs a browser and a wall-clock budget, so the CLI does not run it and its numbers can differ from the app's by a fraction of a percent. `tests/e2e/cli-parity.spec.ts` compares the test fonts with the app: identical structure and values within 2 points.
+The output is the engine's fit: the same fallbacks, order, scripts and `unicode-range` as the app's CSS export for the same font and audience. The app then runs an optimizer that measures text in the browser and nudges the values (and may add a `.fonts-loading` letter-spacing rule); that step needs a browser and a wall-clock budget, so the CLI does not run it and its numbers can differ from the app's by a fraction of a percent. `tests/e2e/cli-parity.spec.ts` compares the test fonts with the app: identical structure and values within 2 points. Making the optimizer shared and deterministic is tracked in #384.
 
 ## Library
 

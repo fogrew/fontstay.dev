@@ -7,6 +7,8 @@ export type ExportFormat =
   | 'next'
   | 'nuxt'
   | 'astro'
+  | 'wordpress'
+  | 'fontaine'
   | 'preload'
   | 'loading';
 export type FitErrorCode = 'invalid-audience' | 'no-systems' | 'no-fit';
@@ -51,7 +53,7 @@ export interface FitOptions {
 export interface ExportFile {
   text: string;
   fileName: string;
-  language: 'css' | 'js' | 'ts' | 'html';
+  language: 'css' | 'js' | 'ts' | 'html' | 'json';
 }
 
 export interface FitFontReport {
