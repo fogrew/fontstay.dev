@@ -39,7 +39,8 @@ export function Dock({ items, storageKey, defaultOpen, nextLabel }: DockProps) {
   useEffect(() => {
     const saved = loadLayout<string[]>(storageKey, (value) => {
       if (typeof value !== 'object' || value === null) return undefined;
-      return parseIds((value as Record<string, unknown>).opened, ids);
+      const { opened } = value as Record<string, unknown>;
+      return Array.isArray(opened) ? parseIds(opened, ids) : undefined;
     });
     const first = saved ? saved[0] : defaultOpen;
     const skip = items.find((item) => item.id === first)?.clientOnly;
