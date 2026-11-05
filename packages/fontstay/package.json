@@ -1,0 +1,37 @@
+{
+  "name": "fontstay",
+  "version": "0.0.0",
+  "description": "Metric-adjusted fallback fonts for web fonts: Node library and CLI of the fontstay.dev fit engine",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/fogrew/fontstay.dev.git",
+    "directory": "packages/fontstay"
+  },
+  "homepage": "https://fontstay.dev",
+  "type": "module",
+  "engines": {
+    "node": ">=24.21.0"
+  },
+  "bin": {
+    "fontstay": "./dist/bin.js"
+  },
+  "main": "./dist/index.js",
+  "types": "./index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist",
+    "index.d.ts",
+    "README.md",
+    "LICENSE"
+  ],
+  "dependencies": {
+    "browserslist": "4.29.4"
+  }
+}

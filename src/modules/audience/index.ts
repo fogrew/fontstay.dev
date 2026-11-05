@@ -6,8 +6,8 @@ export {
 export { buildMatrix, type CellState, type MatrixGroup, type SystemInfo } from './lib/matrix';
 export { browserName } from './lib/names';
 export type { WeightedEntry } from './lib/os';
-export { DEFAULT_DESKTOP_SPLIT, type OsShares } from './lib/os';
-export { PRESETS } from './lib/presets';
+export { computeOsShares, DEFAULT_DESKTOP_SPLIT, type OsShares } from './lib/os';
+export { DEFAULT_QUERY, PRESETS } from './lib/presets';
 export { type BrowserGroup, type Resolution, resolveQuery } from './lib/resolve';
 export { importStats, isStatsFile, parseStats, type UsageStats } from './lib/stats';
 export {
@@ -17,6 +17,7 @@ export {
   lacksVerticalOverrides,
   supportData,
 } from './lib/support';
+export { splitOsQuery } from './lib/tags';
 export {
   AUDIENCE_FILE_EVENT,
   AUDIENCE_SET_EVENT,
