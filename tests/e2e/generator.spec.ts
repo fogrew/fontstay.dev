@@ -1399,6 +1399,7 @@ test('a share link carries Google Fonts choices and downloads them again', async
   await openStep(other, 'inputs');
   await expect(other.getByText(/This link uses 1 fonts/)).toBeVisible();
   await other.getByRole('button', { name: 'Download the fonts' }).click();
+  await expect(other.locator('.ff-dock__panel:not([hidden])')).toHaveCount(0);
   await openStep(other, 'tuning');
   await expect(other.getByRole('button', { name: /^Remove: Open-Sans-400-latin/ })).toBeVisible();
   await fresh.close();
@@ -1537,6 +1538,42 @@ test('fonts and settings survive a reload and the share link restores the settin
   await page.reload();
   await waitForGenerator(page);
   await expect(page.getByRole('button', { name: /^Remove: .*\.(woff2|ttf)/ })).toHaveCount(0);
+});
+
+test('a share link reproduces the open panel and the preview modes with a compact diff', async ({
+  page,
+  context,
+}) => {
+  await context.grantPermissions(['clipboard-read', 'clipboard-write']);
+  await page.goto('/en/');
+  await waitForGenerator(page);
+  await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(sourceSans);
+  await expect(page.getByRole('button', { name: /^Remove: SourceSansPro-Regular/ })).toBeVisible();
+  const step = (target: Page, id: string) =>
+    target.locator(`.ff-dock__column[data-id="${id}"] .ff-dock__heading button`);
+  const pressed = (target: Page, name: string) =>
+    target.getByRole('button', { name, exact: true }).first();
+  await pressed(page, 'Side by side').click();
+  await pressed(page, 'Top and bottom').click();
+  await pressed(page, 'X-ray').click();
+  await openStep(page, 'export');
+  await page.getByRole('button', { name: 'Share', exact: true }).click();
+  await expect(page.getByRole('status').filter({ hasText: /link was copied/ })).toBeVisible();
+  const link = await page.evaluate(() => navigator.clipboard.readText());
+  expect(link.split('#s=')[1]?.length).toBeLessThan(220);
+
+  const fresh = await context.browser()?.newContext();
+  if (!fresh) throw new Error('no browser');
+  const other = await fresh.newPage();
+  await other.goto(link);
+  await waitForGenerator(other);
+  await expect(step(other, 'export')).toHaveAttribute('aria-expanded', 'true');
+  await expect(step(other, 'inputs')).toHaveAttribute('aria-expanded', 'false');
+  for (const name of ['Side by side', 'Top and bottom', 'X-ray']) {
+    await expect(pressed(other, name)).toHaveAttribute('aria-pressed', 'true');
+  }
+  await expect(pressed(other, 'Overlay')).toHaveAttribute('aria-pressed', 'false');
+  await fresh.close();
 });
 
 test.describe('the first visit', () => {

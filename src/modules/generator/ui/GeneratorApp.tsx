@@ -98,14 +98,17 @@ import { buildReport } from '../lib/report';
 import { aspectOf, safariStrategyCss } from '../lib/safari';
 import { detectScripts, type ScriptId, scriptFaces } from '../lib/scripts';
 import {
+  DEFAULT_PANEL,
   decodeShareState,
   encodeShareState,
   type FontState,
   HASH_KEY,
+  NO_PANEL,
+  type PanelId,
   payloadFromHash,
-  SHARE_VERSION,
   type ShareState,
 } from '../lib/share';
+import { buildShareState, mergePicks, type ShareInput } from '../lib/share-build';
 import {
   clearStorage,
   loadSettings,
@@ -114,6 +117,7 @@ import {
   saveSettings,
   storeFont,
 } from '../lib/storage';
+import type { ViewDiff } from '../lib/view-state';
 import { ArticleView } from './ArticleView';
 import { CoverageMap } from './CoverageMap';
 import { type ExportChoice, ExportPanel, effectiveFormat, exportFileFor } from './ExportPanel';
@@ -207,6 +211,10 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
   const [query, setQuery] = useState<string>();
   const [restored, setRestored] = useState(false);
   const pending = useRef<ShareState | null>(null);
+  const linkPanel = useRef<PanelId | typeof NO_PANEL>();
+  const panel = useRef<PanelId | typeof NO_PANEL>(DEFAULT_PANEL);
+  const [viewRestore, setViewRestore] = useState<ViewDiff>();
+  const viewDiff = useRef<ViewDiff>({});
   const [shareMessage, setShareMessage] = useState('');
   const handleShares = useCallback((next: OsShares) => setShares(next), []);
   const resetOptimization = () => {
@@ -384,6 +392,12 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
           });
         }
         pending.current = state;
+        if (payload) {
+          linkPanel.current = state.panel ?? DEFAULT_PANEL;
+          setViewRestore(state.view ?? {});
+          if (state.os) setActiveOs(state.os);
+          if (state.face) setEditId(state.face);
+        }
       }
       const stored = await loadStoredFonts();
       const origins = new Map<File, FontOrigin>();
@@ -403,6 +417,8 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
       if (missing.length > 0 && current) {
         setOffer(missing);
         window.dispatchEvent(new CustomEvent(DOCK_OPEN_EVENT, { detail: 'inputs' }));
+      } else if (current) {
+        openLinkPanel();
       }
       if (current) setRestored(true);
     })();
@@ -410,6 +426,14 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
       current = false;
     };
   }, []);
+  const openLinkPanel = () => {
+    const id = linkPanel.current;
+    if (!id) return;
+    linkPanel.current = undefined;
+    window.dispatchEvent(
+      new CustomEvent(DOCK_OPEN_EVENT, { detail: { id: id === NO_PANEL ? null : id } }),
+    );
+  };
   const acceptOffer = async () => {
     const wanted = offer.slice(0, Math.max(0, MAX_FONTS - fonts.length));
     setOffer([]);
@@ -427,6 +451,7 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
     if (results.some((result) => result.status === 'rejected')) {
       setError((message) => [message, t.share_sources_failed()].filter(Boolean).join(' '));
     }
+    openLinkPanel();
   };
   useEffect(() => {
     const state = pending.current;
@@ -447,7 +472,13 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
     setSelectedId(fonts.length > 1 ? target.id : undefined);
     const restoredValues: Record<string, Values> = {};
     const apply = (font: LoadedFont, saved: FontState) => {
-      setPicksByFont((all) => ({ ...all, [font.id]: saved.picks ?? {} }));
+      if (saved.picks) {
+        const savedPicks = saved.picks;
+        setPicksByFont((all) => ({
+          ...all,
+          [font.id]: mergePicks(presetMap ?? NO_PICKS, savedPicks),
+        }));
+      }
       const savedKind = saved.kind;
       if (savedKind) setKindChoices((all) => ({ ...all, [font.id]: savedKind }));
       const savedStyle = saved.style;
@@ -1043,50 +1074,46 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
     }
     return manual;
   };
-  const othersOf = (): Record<string, FontState> =>
-    Object.fromEntries(
-      fonts
-        .filter((font) => font.id !== selected?.id)
-        .map((font): [string, FontState] => {
-          const manual = manualValuesOf(font.id);
-          return [
-            font.fileName,
-            {
-              ...(kindChoices[font.id] ? { kind: kindChoices[font.id] } : {}),
-              ...(styleChoices[font.id] ? { style: styleChoices[font.id] } : {}),
-              ...(picksByFont[font.id] ? { picks: picksByFont[font.id] } : {}),
-              ...(Object.keys(manual).length > 0 ? { manual } : {}),
-            },
-          ];
-        })
-        .filter(([, saved]) => Object.keys(saved).length > 0),
-    );
-  const currentShareState = (): ShareState => {
-    const manual = selected ? manualValuesOf(selected.id) : {};
+  const choicesOf = (font: LoadedFont) => ({
+    kind: kindChoices[font.id],
+    style: styleChoices[font.id],
+    picks: picksByFont[font.id],
+    manual: manualValuesOf(font.id),
+  });
+  const shareInput = (): ShareInput => {
     const letter = spacingValues.letter;
     const word = spacingValues.word;
-    const sources = fonts.flatMap((font) => (font.origin ? [font.origin] : []));
     return {
-      v: SHARE_VERSION,
-      ...(query ? { query } : {}),
-      ...(selected && !allMode ? { fontName: selected.fileName } : {}),
-      ...(selected && kindChoices[selected.id] ? { kind: kindChoices[selected.id] } : {}),
-      ...(presetId ? { preset: presetId } : {}),
-      ...(selected && styleChoices[selected.id] ? { style: styleChoices[selected.id] } : {}),
+      query,
+      fontName: selected && !allMode ? selected.fileName : undefined,
+      preset: presetId,
+      basePicks: presetMap,
+      selected: selected && { ...choicesOf(selected), picks },
+      others: Object.fromEntries(
+        fonts
+          .filter((font) => font.id !== selected?.id)
+          .map((font) => [font.fileName, choicesOf(font)]),
+      ),
+      sources: fonts.flatMap((font) => (font.origin ? [font.origin] : [])),
       disabled: ALL_SYSTEMS.filter((os) => enabledSystems[os] === false),
-      picks,
-      manual,
-      others: othersOf(),
-      ...(sources.length > 0 ? { sources } : {}),
       range: rangeOn,
-      ...(perScript ? {} : { scripts: false }),
+      perScript,
       spacing: {
         on: spacingOn,
-        ...(letter.mode === 'manual' ? { letter: letter.value } : {}),
-        ...(word.mode === 'manual' ? { word: word.value } : {}),
+        letter: letter.mode === 'manual' ? letter.value : undefined,
+        word: word.mode === 'manual' ? word.value : undefined,
       },
     };
   };
+  const currentShareState = () => buildShareState(shareInput());
+  const linkShareState = () =>
+    buildShareState({
+      ...shareInput(),
+      panel: panel.current,
+      os: current,
+      face: editId,
+      view: viewDiff.current,
+    });
   const stateKey = restored ? JSON.stringify(currentShareState()) : '';
   useEffect(() => {
     if (!restored || stateKey === '' || pending.current || stateKey === forgotten) return;
@@ -1165,7 +1192,7 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
     uploaded.length > 0 || fonts.length === 0 ? t.share_note() : t.share_note_catalog();
   const copyLink = async () => {
     try {
-      const payload = await encodeShareState(currentShareState());
+      const payload = await encodeShareState(linkShareState());
       const link = `${location.origin}${location.pathname}#${HASH_KEY}${payload}`;
       await navigator.clipboard.writeText(link);
       setShareMessage(
@@ -1755,7 +1782,10 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
       <LiveRegion>{planIssue || planNote}</LiveRegion>
       <Dock
         storageKey="dock"
-        defaultOpen="inputs"
+        defaultOpen={DEFAULT_PANEL}
+        onChange={(id) => {
+          panel.current = (id as PanelId | undefined) ?? NO_PANEL;
+        }}
         nextLabel={(label) => t.dock_next({ label })}
         items={[
           {
@@ -1795,6 +1825,7 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
                       onClick={() => {
                         setOffer([]);
                         if (fonts.length === 0) pending.current = null;
+                        openLinkPanel();
                       }}
                     >
                       {t.share_offer_dismiss()}
@@ -1906,6 +1937,10 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
           items={previewItems}
           fitting={fitting}
           site={site}
+          restore={viewRestore}
+          onView={(diff) => {
+            viewDiff.current = diff;
+          }}
           actions={
             <div class="ff-share">
               <Button onClick={() => void copyLink()} title={shareNote}>
