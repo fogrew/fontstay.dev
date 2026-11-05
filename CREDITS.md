@@ -15,6 +15,7 @@
 | [@capsizecss/metrics](https://github.com/seek-oss/capsize/tree/master/packages/metrics) | System and Google Fonts metrics | MIT |
 | [adrg/os-font-list](https://github.com/adrg/os-font-list) | Seed of fonts per OS version | MIT |
 | [Modern Font Stacks](https://github.com/system-fonts/modern-font-stacks) | Presets, availability cross-check | CC0-1.0 |
+| [Chrome DevTools emulated devices](https://github.com/ChromeDevTools/devtools-frontend/blob/main/front_end/models/emulation/EmulatedDevices.ts) (ChromeDevTools/devtools-frontend) | Device names, groups and screen sizes in the preview device picker (`src/modules/devices/data/devices.json`) | BSD-3-Clause |
 | [Browserslist](https://github.com/browserslist/browserslist) | Audience queries | MIT |
 | [caniuse-lite](https://github.com/browserslist/caniuse-lite) / [Can I use](https://caniuse.com/) | Browser usage data | CC BY 4.0 |
 | [Baseline icons](https://github.com/web-platform-dx/baseline-status) (`baseline-icon.js`) | Baseline logo next to every mention of Baseline | Apache-2.0 |

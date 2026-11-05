@@ -529,6 +529,38 @@ test('the preview width is resized by drag and keys to simulate narrower screens
   await expect(frame).not.toHaveAttribute('data-constrained', '');
 });
 
+test('choosing a device sets the preview width and measures the layout shift at it', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1500, height: 900 });
+  await page.goto('/en/');
+  await waitForGenerator(page);
+  await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(sourceSans);
+  await closePanels(page);
+  const view = page.getByRole('region', { name: 'Article' });
+  const frame = view.locator('.ff-article-view__frame');
+  const handle = view.getByRole('slider', { name: /^Preview width/ });
+  const score = /CLS.*\d\.\d{3}/;
+  const status = view.getByRole('status').filter({ hasText: score });
+  await expect(status).toBeVisible({ timeout: 20_000 });
+  await expect(status).not.toContainText('375px');
+
+  await choose(view.getByLabel('Device'), 'iphone-se');
+  await expect(frame).toHaveAttribute('data-constrained', '');
+  await expect(handle).toHaveAttribute('aria-valuenow', '375');
+  await expect(status).toContainText('375px', { timeout: 20_000 });
+  await expect(status).toContainText(score);
+
+  await handle.focus();
+  await page.keyboard.press('ArrowRight');
+  await expect(view.getByLabel('Device')).toContainText('Responsive');
+  await expect(status).toContainText('391px', { timeout: 20_000 });
+
+  await choose(view.getByLabel('Device'), 'responsive');
+  await expect(frame).not.toHaveAttribute('data-constrained', '');
+  await expect(status).not.toContainText('391px', { timeout: 20_000 });
+});
+
 test('the slider moves the divider by drag and keys, vertically or horizontally', async ({
   page,
 }) => {

@@ -1292,3 +1292,7 @@
 .ff-shift__arrow:dir(rtl) {
   transform: scaleX(-1);
 }
+.ff-shift__at {
+  font-size: 0.75rem;
+  font-variant-numeric: tabular-nums;
+}
