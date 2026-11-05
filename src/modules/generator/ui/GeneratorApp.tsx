@@ -1749,6 +1749,7 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
       <LiveRegion>{planIssue || planNote}</LiveRegion>
       <Dock
         storageKey="dock"
+        defaultOpen="inputs"
         nextLabel={(label) => t.dock_next({ label })}
         items={[
           {
