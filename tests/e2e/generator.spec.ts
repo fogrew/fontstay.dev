@@ -1153,6 +1153,7 @@ test('no missing-character highlight before a web font is chosen', async ({ page
   const view = page.getByRole('region', { name: 'Article' });
   await openPopover(view, 'Content');
   await choose(view.getByLabel('Sample text'), 'ja');
+  await expect(view.locator('.ff-article:not([data-probe], .ff-article--ghost)')).toBeVisible();
   await expect(view.locator('.ff-article__missing')).toHaveCount(0);
 });
 
