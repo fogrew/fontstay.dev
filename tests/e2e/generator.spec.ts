@@ -1146,6 +1146,16 @@ test('a font collection is split into separate fonts', async ({ page }) => {
   await expect(page.getByRole('button', { name: 'Remove: pair.ttc #2' })).toBeVisible();
 });
 
+test('no missing-character highlight before a web font is chosen', async ({ page }) => {
+  await page.goto('/en/');
+  await waitForGenerator(page);
+  await closePanels(page);
+  const view = page.getByRole('region', { name: 'Article' });
+  await openPopover(view, 'Content');
+  await choose(view.getByLabel('Sample text'), 'ja');
+  await expect(view.locator('.ff-article__missing')).toHaveCount(0);
+});
+
 test('characters missing from the font are highlighted and explained on focus', async ({
   page,
 }) => {

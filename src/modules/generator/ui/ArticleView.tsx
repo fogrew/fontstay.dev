@@ -671,7 +671,7 @@ export function ArticleView({
       />
       <ArticleBody
         article={article}
-        coverage={coverageFor(ghost || copy || kind !== 'web')}
+        coverage={coverageFor(ghost || copy || kind !== 'web' || empty)}
         focusable={kind === 'web' && !ghost && !copy}
       />
       {boxes && kind !== 'plain' && (
