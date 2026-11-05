@@ -36,7 +36,9 @@ function isFontParseResult(data: unknown): data is FontParseResult {
       typeof font.names === 'object' &&
       font.names !== null &&
       typeof font.hhea === 'object' &&
-      font.hhea !== null
+      font.hhea !== null &&
+      typeof font.details === 'object' &&
+      font.details !== null
     );
   }
   const { error } = data as { error?: { code?: unknown } };

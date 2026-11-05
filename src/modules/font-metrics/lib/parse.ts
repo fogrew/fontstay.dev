@@ -1,5 +1,6 @@
 import { create } from 'fontkitten';
 import { classifyFont, isMonospaced } from './classify';
+import { readFontDetails } from './details';
 import { legacyVerticalMetrics } from './legacy-os2';
 import { type FontMetrics, FontParseError, MAX_CMAP_ENTRIES } from './model';
 import { validateFontBuffer } from './validate';
@@ -112,6 +113,7 @@ export function parseFontBuffer(buffer: ArrayBuffer, options: ParseOptions = {})
           names: [font.familyName, font.fullName, font.postscriptName],
         }),
       },
+      details: readFontDetails(base),
     };
   } catch (error) {
     if (error instanceof FontParseError) throw error;

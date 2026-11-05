@@ -19,3 +19,7 @@ The result retains hhea, typo and Windows vertical metrics in font units; hhea/t
 Variable fonts use their default instance and set `isVariable`; choosing variation axes is a later extension. Glyph advances do not include shaping, kerning or language weighting. Per-language averages and browser metric selection belong to #12. This follows the font parsing findings in [PR #54](https://github.com/fogrew/fontstay.dev/pull/54).
 
 Unit tests read OFL fixtures locally. `pnpm test:e2e` additionally builds a separate test-only Astro site and exercises the bundled worker in Chromium, including transferable arrays and a watchdog against an infinite loop. The test site and its fonts are excluded from the production build.
+
+## Font details
+
+`FontMetrics.details` carries what the font details panel shows: the OpenType feature tags of GSUB and GPOS (with the name-table label of `ss01`-`ss20` and `cv01`-`cv99`), the layout script tags, the variable axes and named instances, the name-table strings (version, designer, manufacturer, description, license, URLs, copyright), the colour tables present (COLR, SVG, sbix, CBDT) and the CPAL palettes. fontkitten does not decode GPOS, so `lib/details.ts` reads the script and feature lists of both tables itself with bounds-checked reads; a malformed table loses only its own feature list, and every section falls back to empty instead of failing the parse. Bounds: 1024 feature tags, 128 scripts, 64 axes, 256 instances, 64 palettes of at most 512 colours, name strings cut at 2000 characters.

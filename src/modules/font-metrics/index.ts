@@ -7,14 +7,22 @@ export {
   isFontCollection,
   MAX_COLLECTION_MEMBERS,
 } from './lib/collection';
+export { emptyFontDetails } from './lib/details';
 export {
   FONT_PARSE_TIMEOUT_MS,
+  type FontAxis,
   type FontCategory,
+  type FontDetails,
+  type FontFeature,
+  type FontInstance,
   type FontMetrics,
+  type FontNames,
+  type FontPalettes,
   FontParseError,
   type FontParseErrorCode,
   type FontParseResult,
   type FontStyleInfo,
+  type LayoutTable,
   MAX_FONT_BYTES,
   type VerticalMetrics,
 } from './lib/model';

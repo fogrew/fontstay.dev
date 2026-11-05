@@ -39,6 +39,7 @@ import {
   type ExportInput,
 } from '@/modules/export';
 import { compactRanges, formatUnicodeRange, StackResolveError } from '@/modules/fallback-fit';
+import { LazyFontDetails } from '@/modules/font-details';
 import {
   collectionMemberIndices,
   createFontParser,
@@ -1924,6 +1925,24 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
                 ) : (
                   selected && (
                     <CoverageMap locale={locale} codePoints={selected.metrics.codePoints} />
+                  )
+                ),
+              },
+              {
+                id: 'details',
+                label: t.details_heading(),
+                open: false,
+                content: allMode ? (
+                  <p class="ff-muted">{t.details_pick_font()}</p>
+                ) : (
+                  selected && (
+                    <LazyFontDetails
+                      key={selected.id}
+                      locale={locale}
+                      metrics={selected.metrics}
+                      bytes={selected.bytes}
+                      fontId={selected.id}
+                    />
                   )
                 ),
               },

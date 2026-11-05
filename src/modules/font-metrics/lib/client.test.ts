@@ -50,6 +50,7 @@ describe('font parser client', () => {
     unitsPerEm: 1000,
     isVariable: false,
     style: { weight: 400, italic: false, category: null },
+    details: {},
   };
   it.each([
     null,
@@ -59,6 +60,7 @@ describe('font parser client', () => {
     { ok: false, error: { code: 'nonsense' } },
     { ok: true, font: { ...shell, names: null, hhea: {} } },
     { ok: true, font: { ...shell, names: {}, hhea: null } },
+    { ok: true, font: { ...shell, names: {}, hhea: {}, details: null } },
   ])('treats a malformed worker reply as a worker error', async (reply) => {
     vi.stubGlobal('Worker', TestWorker);
     const pending = createFontParser().parse(input());
