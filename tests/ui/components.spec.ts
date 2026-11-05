@@ -3,7 +3,7 @@ import { expect, type Page, test } from '@playwright/test';
 
 async function openFixture(page: Page, locale = 'en') {
   await page.goto(`/${locale}/`);
-  await expect(page.locator('.fixture')).toHaveAttribute('data-ready', 'true');
+  await expect(page.locator('.ff-fixture')).toHaveAttribute('data-ready', 'true');
 }
 
 for (const locale of ['en', 'ru']) {

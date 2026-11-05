@@ -76,11 +76,11 @@ export function DeviceShift({
             )}
           </span>
           <Popover label={t.article_shift_details()} align="end">
-            <ul class="ff-shift__widths">
+            <ul class="ff-generator__list ff-shift__widths">
               {(results ?? []).map((item) => {
                 const level = ratingOf(item.score);
                 return (
-                  <li key={item.width} data-rating={level}>
+                  <li class="ff-generator__item" key={item.width} data-rating={level}>
                     <span aria-hidden="true">{SYMBOLS[level]}</span>
                     <span class="ff-shift__width">{item.width}px</span>
                     {format.format(item.score)}

@@ -53,7 +53,9 @@ export function CoverageMap({ locale, codePoints }: { locale: Locale; codePoints
 
   return (
     <div class="ff-map">
-      <p>{t.coverage_summary({ count: codePoints.length, blocks: blocks.length })}</p>
+      <p class="ff-map__text">
+        {t.coverage_summary({ count: codePoints.length, blocks: blocks.length })}
+      </p>
       <div class="ff-map__controls">
         <Select
           label={t.coverage_block_label()}
@@ -132,26 +134,36 @@ export function CoverageMap({ locale, codePoints }: { locale: Locale; codePoints
       {/* biome-ignore-end lint/a11y/useSemanticElements: a grid of cells has no native element */}
       {/* biome-ignore-end lint/a11y/noNoninteractiveTabindex: arrow keys move through the cells */}
       {/* biome-ignore-end lint/a11y/noNoninteractiveElementInteractions: the grid is a pointer and arrow-key readout */}
-      <p class="ff-map__readout" role="status">
+      <p class="ff-map__text ff-map__readout" role="status">
         {readout}
       </p>
       <table class="ff-map__table">
-        <caption>{t.coverage_table_caption()}</caption>
+        <caption class="ff-map__caption">{t.coverage_table_caption()}</caption>
         <thead>
           <tr>
-            <th scope="col">{t.coverage_col_block()}</th>
-            <th scope="col">{t.coverage_col_range()}</th>
-            <th scope="col">{t.coverage_col_covered()}</th>
-            <th scope="col">{t.coverage_col_percent()}</th>
+            <th class="ff-map__table-cell" scope="col">
+              {t.coverage_col_block()}
+            </th>
+            <th class="ff-map__table-cell" scope="col">
+              {t.coverage_col_range()}
+            </th>
+            <th class="ff-map__table-cell" scope="col">
+              {t.coverage_col_covered()}
+            </th>
+            <th class="ff-map__table-cell" scope="col">
+              {t.coverage_col_percent()}
+            </th>
           </tr>
         </thead>
         <tbody>
           {blocks.map((item) => (
             <tr key={item.start}>
-              <th scope="row">{item.name}</th>
-              <td>{`U+${hex(item.start)}–${hex(item.end)}`}</td>
-              <td>{`${item.covered} / ${item.total}`}</td>
-              <td>{`${number.format((item.covered / item.total) * 100)}%`}</td>
+              <th class="ff-map__table-cell" scope="row">
+                {item.name}
+              </th>
+              <td class="ff-map__table-cell">{`U+${hex(item.start)}–${hex(item.end)}`}</td>
+              <td class="ff-map__table-cell">{`${item.covered} / ${item.total}`}</td>
+              <td class="ff-map__table-cell">{`${number.format((item.covered / item.total) * 100)}%`}</td>
             </tr>
           ))}
         </tbody>

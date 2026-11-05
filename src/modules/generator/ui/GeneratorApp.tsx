@@ -1426,6 +1426,7 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
         )}
         <label>
           <input
+            class="ff-control"
             type="checkbox"
             checked={rangeOn}
             onChange={(event) => setRangeOn(event.currentTarget.checked)}
@@ -1437,6 +1438,7 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
           <>
             <label>
               <input
+                class="ff-control"
                 type="checkbox"
                 checked={perScript}
                 onChange={(event) => setPerScript(event.currentTarget.checked)}
@@ -1469,6 +1471,7 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
             }}
             before={
               <input
+                class="ff-control"
                 type="checkbox"
                 aria-label={t.systems_include({ system: systemName(os) })}
                 checked={isEnabled(os)}
@@ -1588,6 +1591,7 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
                       <p class="ff-muted">{t.spacing_note()}</p>
                       <label>
                         <input
+                          class="ff-control"
                           type="checkbox"
                           checked={spacingOn}
                           onChange={(event) => setSpacingOn(event.currentTarget.checked)}
@@ -1658,7 +1662,7 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
         (shadowed.length > 0 || plan.resolution.blockedBy === 'cycle' || uncovered.length > 0) && (
           <div class="ff-generator__notes" id="ff-notes" tabIndex={-1}>
             {shadowed.map((item) => (
-              <p key={item.platform} class="ff-error">
+              <p key={item.platform} class="ff-generator__note ff-error">
                 {t.plan_shadowed({
                   system: systemName(item.platform.split('#')[0] as OsId),
                   winner: familyOf(item.winner ?? ''),
@@ -1666,9 +1670,11 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
                 })}
               </p>
             ))}
-            {plan.resolution.blockedBy === 'cycle' && <p class="ff-error">{t.plan_blocked()}</p>}
+            {plan.resolution.blockedBy === 'cycle' && (
+              <p class="ff-generator__note ff-error">{t.plan_blocked()}</p>
+            )}
             {uncovered.length > 0 && shares && (
-              <p class="ff-muted">
+              <p class="ff-generator__note ff-muted">
                 {t.plan_uncovered({
                   systems: uncovered.map(systemName).join(', '),
                   share: percent(uncovered.reduce((sum, os) => sum + shares[os], 0)),
@@ -1719,7 +1725,7 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
             />
             <button
               type="button"
-              class="ff-icon-button"
+              class="ff-control ff-icon-button"
               aria-label={`${t.upload_remove()}: ${font.fileName}`}
               onClick={() => {
                 void removeStoredFont(font.fileName);
@@ -1781,7 +1787,7 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
                 )}
                 {offer.length > 0 && (
                   <section class="ff-offer" aria-label={t.share_offer_label()}>
-                    <p>{t.share_offer({ count: offer.length })}</p>
+                    <p class="ff-generator__text">{t.share_offer({ count: offer.length })}</p>
                     <Button variant="primary" disabled={busy} onClick={() => void acceptOffer()}>
                       {t.share_offer_accept()}
                     </Button>
@@ -1796,14 +1802,18 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
                   </section>
                 )}
                 {error && (
-                  <p class="ff-error" role="alert">
+                  <p class="ff-generator__text ff-error" role="alert">
                     {error}
                   </p>
                 )}
                 {selected && rankings.noCoverage && Object.keys(rankings.result).length === 0 && (
-                  <p role="alert">{t.fit_no_coverage()}</p>
+                  <p class="ff-generator__text" role="alert">
+                    {t.fit_no_coverage()}
+                  </p>
                 )}
-                {selected && !shares && <p class="ff-muted">{t.plan_waiting()}</p>}
+                {selected && !shares && (
+                  <p class="ff-generator__text ff-muted">{t.plan_waiting()}</p>
+                )}
               </div>
             ),
           },
@@ -1837,8 +1847,10 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
                 {warnings}
                 {preset && (
                   <section class="ff-generator__section" aria-label={t.preset_applied_heading()}>
-                    <p>{t.preset_applied({ name: presetName(t, preset.id) })}</p>
-                    <p class="ff-muted">{cssStack(preset)}</p>
+                    <p class="ff-generator__text">
+                      {t.preset_applied({ name: presetName(t, preset.id) })}
+                    </p>
+                    <p class="ff-generator__text ff-muted">{cssStack(preset)}</p>
                     <Button
                       onClick={() => {
                         setPresetId(undefined);
@@ -1851,8 +1863,10 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
                     </Button>
                   </section>
                 )}
-                {fonts.length === 0 && <p class="ff-muted">{t.tuning_empty()}</p>}
-                {allMode && <p class="ff-muted">{t.tuning_all_note()}</p>}
+                {fonts.length === 0 && (
+                  <p class="ff-generator__text ff-muted">{t.tuning_empty()}</p>
+                )}
+                {allMode && <p class="ff-generator__text ff-muted">{t.tuning_all_note()}</p>}
                 {fontDetails}
               </div>
             ),

@@ -26,7 +26,7 @@ export function ImportConfirm({
   const missing = value.faces.filter((face) => face.url).slice(0, 12);
   return (
     <section class="ff-site-import__confirm" aria-label={title}>
-      <h3 class="ff-site-import__line">{title}</h3>
+      <h3 class="ff-heading ff-site-import__line">{title}</h3>
       <p class="ff-site-import__line">
         {t.import_confirm_summary({
           files: value.files.length,
@@ -40,11 +40,14 @@ export function ImportConfirm({
       {value.files.length === 0 && missing.length > 0 && (
         <>
           <p class="ff-muted ff-site-import__line">{t.import_faces_missing()}</p>
-          <ul>
+          <ul class="ff-generator__list">
             {missing.map((face) => (
-              <li key={`${face.family}-${face.weight}-${face.style}-${face.url}`}>
+              <li
+                class="ff-generator__item"
+                key={`${face.family}-${face.weight}-${face.style}-${face.url}`}
+              >
                 {face.family} {face.weight} {face.style}{' '}
-                <a href={face.url} rel="noopener noreferrer" target="_blank">
+                <a class="ff-link" href={face.url} rel="noopener noreferrer" target="_blank">
                   {t.cssimport_download()} ({hostOf(face.url)})
                 </a>
               </li>

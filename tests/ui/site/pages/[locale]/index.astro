@@ -11,10 +11,10 @@ const t = messagesFor(locale);
 ---
 
 <BaseLayout {locale} path="/">
-    <h1>{t.home_heading()}</h1>
+    <h1 class="ff-heading">{t.home_heading()}</h1>
     <Fixture {locale} client:load />
 </BaseLayout>
 
 <style is:global>
-  .fixture { display: grid; gap: var(--ff-space-6); max-width: 42rem; }
+  .ff-fixture { display: grid; gap: var(--ff-space-6); max-width: 42rem; }
 </style>

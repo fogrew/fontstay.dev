@@ -10,7 +10,7 @@ export function Fixture({ locale }: { locale: Locale }) {
   const [ready, setReady] = useState(false);
   useEffect(() => setReady(true), []);
   return (
-    <div class="fixture" data-ready={ready}>
+    <div class="ff-fixture" data-ready={ready}>
       <FitField
         locale={locale}
         label={t.fit_size_label()}
