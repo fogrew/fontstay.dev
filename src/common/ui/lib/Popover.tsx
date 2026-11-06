@@ -1,5 +1,5 @@
 import type { ComponentChildren } from 'preact';
-import { useEffect, useId, useRef, useState } from 'preact/hooks';
+import { useEffect, useId, useLayoutEffect, useRef, useState } from 'preact/hooks';
 
 export interface PopoverProps {
   label: string;
@@ -22,6 +22,14 @@ export function Popover({
   const [open, setOpen] = useState(false);
   const root = useRef<HTMLDivElement>(null);
   const button = useRef<HTMLButtonElement>(null);
+  const panel = useRef<HTMLFieldSetElement>(null);
+  useLayoutEffect(() => {
+    if (!open || !panel.current || CSS.supports('position-area', 'block-end')) return;
+    root.current?.removeAttribute('data-flip');
+    const rect = panel.current.getBoundingClientRect();
+    const width = document.documentElement.clientWidth;
+    root.current?.toggleAttribute('data-flip', rect.left < 0 || rect.right > width);
+  }, [open]);
   useEffect(() => {
     if (!open) return;
     const close = (event: Event) => {
@@ -55,7 +63,7 @@ export function Popover({
         {!compact && label}
         {badge !== undefined && badge !== 0 && <span class="ff-popover__badge">{badge}</span>}
       </button>
-      <fieldset id={id} class="ff-popover__panel" hidden={!open || disabled}>
+      <fieldset ref={panel} id={id} class="ff-popover__panel" hidden={!open || disabled}>
         <legend class="ff-sr-only">{label}</legend>
         {children}
       </fieldset>

@@ -662,6 +662,40 @@ html[data-transition] .ff-dock__panel[data-id="export"] {
   inset-inline-end: 0;
 }
 
+.ff-popover[data-flip] .ff-popover__panel {
+  inset-inline-start: auto;
+  inset-inline-end: 0;
+}
+.ff-popover[data-align="end"][data-flip] .ff-popover__panel {
+  inset-inline-start: 0;
+  inset-inline-end: auto;
+}
+@supports (position-area: block-end) and (anchor-scope: --ff-popover) {
+  @position-try --ff-popover-wide {
+    position-area: block-end span-all;
+    justify-self: center;
+  }
+  .ff-popover {
+    anchor-scope: --ff-popover;
+  }
+  .ff-popover__button {
+    anchor-name: --ff-popover;
+  }
+  .ff-popover__panel,
+  .ff-popover[data-align="end"] .ff-popover__panel,
+  .ff-popover[data-flip] .ff-popover__panel {
+    position: fixed;
+    position-anchor: --ff-popover;
+    position-area: block-end span-inline-end;
+    position-try-fallbacks: flip-inline, --ff-popover-wide;
+    inset: auto;
+    margin-block-start: var(--ff-space-1);
+  }
+  .ff-popover[data-align="end"] .ff-popover__panel {
+    position-area: block-end span-inline-start;
+  }
+}
+
 .ff-shadow {
   --ff-shadow-size: 1.75rem;
   position: relative;
