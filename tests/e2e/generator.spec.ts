@@ -2915,3 +2915,26 @@ test('metric sliders update the visible article with settings open', async ({ pa
   await page.setViewportSize({ width: 1440, height: 900 });
   await expect(slider).toHaveValue(value);
 });
+
+for (const width of [320, 768, 1280]) {
+  test(`toolbar panels stay inside the viewport at ${width}px`, async ({ page }) => {
+    await page.setViewportSize({ width, height: 800 });
+    await page.goto('/en/');
+    await waitForGenerator(page);
+    await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(sourceSans);
+    await closePanels(page);
+    const view = page.getByRole('region', { name: 'Article' });
+    for (const name of ['Content', 'Inspect']) {
+      await openPopover(view, name);
+      const panel = view.locator('.ff-popover__panel:not([hidden])');
+      await expect(panel).toBeVisible();
+      const box = await panel.boundingBox();
+      expect(box?.x).toBeGreaterThanOrEqual(-0.5);
+      expect((box?.x ?? 0) + (box?.width ?? 0)).toBeLessThanOrEqual(width + 0.5);
+      await view
+        .getByRole('button', { name: new RegExp(`^${name}`) })
+        .first()
+        .click();
+    }
+  });
+}
