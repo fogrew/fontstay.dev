@@ -25,10 +25,17 @@ export function Popover({
   const panel = useRef<HTMLFieldSetElement>(null);
   useLayoutEffect(() => {
     if (!open || !panel.current || CSS.supports('position-area', 'block-end')) return;
-    root.current?.removeAttribute('data-flip');
-    const rect = panel.current.getBoundingClientRect();
-    const width = document.documentElement.clientWidth;
-    root.current?.toggleAttribute('data-flip', rect.left < 0 || rect.right > width);
+    const place = () => {
+      const el = panel.current;
+      if (!el) return;
+      root.current?.removeAttribute('data-flip');
+      const rect = el.getBoundingClientRect();
+      const width = document.documentElement.clientWidth;
+      root.current?.toggleAttribute('data-flip', rect.left < 0 || rect.right > width);
+    };
+    place();
+    addEventListener('resize', place);
+    return () => removeEventListener('resize', place);
   }, [open]);
   useEffect(() => {
     if (!open) return;
