@@ -45,7 +45,15 @@ for (const locale of ['en', 'ru']) {
   test(`only the ${locale} generator page may compile WebAssembly`, async ({ page }) => {
     await page.goto(`/${locale}/`);
     expect(await policyOf(page)).toContain("'wasm-unsafe-eval'");
-    for (const path of ['guide/', 'presets/', 'credits/', 'changelog/', 'fonts/', 'import/']) {
+    for (const path of [
+      'guide/',
+      'mcp/',
+      'presets/',
+      'credits/',
+      'changelog/',
+      'fonts/',
+      'import/',
+    ]) {
       await page.goto(`/${locale}/${path}`);
       expect(await policyOf(page), path).not.toContain('wasm-unsafe-eval');
     }

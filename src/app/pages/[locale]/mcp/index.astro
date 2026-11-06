@@ -1,0 +1,22 @@
+---
+import { assertIsLocale, locales, messagesFor } from '@/common/i18n';
+import { McpPage } from '@/pages/mcp';
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+
+export function getStaticPaths() {
+  return locales.map((locale) => ({ params: { locale } }));
+}
+
+const locale = assertIsLocale(Astro.params.locale);
+const t = messagesFor(locale);
+---
+
+<BaseLayout
+  {locale}
+  path="/mcp/"
+  page="mcp"
+  title={t.mcp_title()}
+  description={t.mcp_description()}
+>
+  <McpPage {locale} />
+</BaseLayout>

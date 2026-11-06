@@ -1,0 +1,112 @@
+---
+import { type Locale, messagesFor } from '@/common/i18n';
+
+interface Props {
+  locale: Locale;
+}
+
+const { locale } = Astro.props;
+const t = messagesFor(locale);
+const tools = [
+  ['analyze_font', t.mcp_tool_analyze()],
+  ['suggest_fallbacks', t.mcp_tool_suggest()],
+  ['get_css', t.mcp_tool_css()],
+  ['get_export', t.mcp_tool_export()],
+] as const;
+const prompts = [t.mcp_prompt_1(), t.mcp_prompt_2(), t.mcp_prompt_3()];
+const limits = [t.mcp_limit_1(), t.mcp_limit_2(), t.mcp_limit_3(), t.mcp_limit_4()];
+const claudeCode = 'claude mcp add fontstay -- npx -y fontstay mcp';
+const mcpServers = `{
+  "mcpServers": {
+    "fontstay": { "command": "npx", "args": ["-y", "fontstay", "mcp"] }
+  }
+}`;
+const vscode = `{
+  "servers": {
+    "fontstay": { "type": "stdio", "command": "npx", "args": ["-y", "fontstay", "mcp"] }
+  }
+}`;
+const codex = `[mcp_servers.fontstay]
+command = "npx"
+args = ["-y", "fontstay", "mcp"]`;
+const call = `{
+  "name": "get_css",
+  "arguments": {
+    "paths": ["tests/fixtures/fonts/FiraSans-Regular.ttf"],
+    "systems": ["windows", "macos"],
+    "scripts": false
+  }
+}`;
+const result = `@font-face {
+  font-family: "Fira Sans Fallback";
+  src: local("Trebuchet MS"), local("TrebuchetMS");
+  size-adjust: 100.3942%;
+  ascent-override: 93.1328%;
+  descent-override: 26.3959%;
+  line-gap-override: 0%;
+}
+
+body {
+  font-family: "Fira Sans", "Fira Sans Fallback", sans-serif;
+  /* Safari has no vertical overrides: match the x-height and fix the line box */
+  font-size-adjust: 0.527;
+  line-height: 1.4;
+}
+
+.fonts-loading {
+  letter-spacing: -0.0019em;
+}`;
+const snippets = [
+  [t.mcp_setup_claude_code(), claudeCode],
+  [t.mcp_setup_json(), mcpServers],
+  [t.mcp_setup_vscode(), vscode],
+  [t.mcp_setup_codex(), codex],
+] as const;
+---
+
+<div class="ff-page ff-prose">
+  <h1 class="ff-heading ff-page__heading">{t.mcp_heading()}</h1>
+  <p class="ff-page__text">{t.mcp_intro()}</p>
+
+  <h2 class="ff-heading ff-page__heading ff-prose__heading">{t.mcp_what_heading()}</h2>
+  <p class="ff-page__text">{t.mcp_what_text()}</p>
+
+  <h2 class="ff-heading ff-page__heading ff-prose__heading">{t.mcp_tools_heading()}</h2>
+  <p class="ff-page__text">{t.mcp_tools_text()}</p>
+  <ul class="ff-page__list">
+    {tools.map(([name, description]) => <li class="ff-page__item"><code dir="ltr">{name}</code>: {description}</li>)}
+  </ul>
+  <p class="ff-page__text">{t.mcp_options_text()}</p>
+
+  <h2 class="ff-heading ff-page__heading ff-prose__heading">{t.mcp_setup_heading()}</h2>
+  <p class="ff-page__text">{t.mcp_setup_text()}</p>
+  {snippets.map(([label, code]) => (
+    <>
+      <h3 class="ff-heading ff-page__heading">{label}</h3>
+      <pre class="ff-prose__code" dir="ltr" tabindex="0"><code>{code}</code></pre>
+    </>
+  ))}
+  <p class="ff-page__text ff-muted">{t.mcp_setup_checkout()}</p>
+
+  <h2 class="ff-heading ff-page__heading ff-prose__heading">{t.mcp_prompts_heading()}</h2>
+  <p class="ff-page__text">{t.mcp_prompts_text()}</p>
+  <ul class="ff-page__list">
+    {prompts.map((prompt) => <li class="ff-page__item">{prompt}</li>)}
+  </ul>
+
+  <h2 class="ff-heading ff-page__heading ff-prose__heading">{t.mcp_sample_heading()}</h2>
+  <p class="ff-page__text">{t.mcp_sample_text()}</p>
+  <h3 class="ff-heading ff-page__heading">{t.mcp_sample_call()}</h3>
+  <!-- biome-ignore lint/a11y/noNoninteractiveTabindex: scrollable code needs a keyboard focus target -->
+  <pre class="ff-prose__code" dir="ltr" tabindex="0"><code>{call}</code></pre>
+  <h3 class="ff-heading ff-page__heading">{t.mcp_sample_result()}</h3>
+  <!-- biome-ignore lint/a11y/noNoninteractiveTabindex: scrollable code needs a keyboard focus target -->
+  <pre class="ff-prose__code" dir="ltr" tabindex="0"><code>{result}</code></pre>
+
+  <h2 class="ff-heading ff-page__heading ff-prose__heading">{t.mcp_limits_heading()}</h2>
+  <p class="ff-page__text">{t.mcp_limits_text()}</p>
+  <ul class="ff-page__list">
+    {limits.map((limit) => <li class="ff-page__item">{limit}</li>)}
+  </ul>
+  <p class="ff-page__text">{t.mcp_cli_text()}</p>
+</div>
