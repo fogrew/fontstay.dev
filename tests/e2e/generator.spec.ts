@@ -559,6 +559,7 @@ test('choosing a device sets the preview width and measures the layout shift at 
   const status = view.getByRole('status').filter({ hasText: score });
   await expect(status).toBeVisible({ timeout: 20_000 });
   await expect(status).not.toContainText('375px');
+  expect(await listed(view.getByLabel('Device'))).toContain('iPhone SE (375 × 667)');
 
   await choose(view.getByLabel('Device'), 'iphone-se');
   await expect(frame).toHaveAttribute('data-constrained', '');

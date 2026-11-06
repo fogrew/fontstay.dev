@@ -40,7 +40,7 @@ export function DevicePicker({
         .filter((device) => device.group === group)
         .map((device) => ({
           value: device.id,
-          label: `${device.name} (${device.width}px)`,
+          label: `${device.name} (${device.width} × ${device.height})`,
           group: groupLabels[group],
         })),
     ),
