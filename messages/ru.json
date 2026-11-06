@@ -484,7 +484,6 @@
   "audience_tags_label": "Запросы аудитории",
   "audience_tags_input": "Добавить запрос",
   "audience_tags_input_hint": "Введите запрос и нажмите Enter либо вставьте или перетащите файл .browserslist, чтобы заполнить список.",
-  "audience_tag_not": "не",
   "audience_tags_group_sets": "Наборы",
   "audience_file_loaded": "Загружено запросов: {count} из {name}.",
   "audience_file_empty": "В {name} нет запросов browserslist.",

@@ -484,7 +484,6 @@
   "audience_tags_label": "Audience queries",
   "audience_tags_input": "Add a query",
   "audience_tags_input_hint": "Type a query and press Enter, or paste or drop a .browserslist file to fill the list.",
-  "audience_tag_not": "not",
   "audience_tags_group_sets": "Sets",
   "audience_file_loaded": "Loaded {count} queries from {name}.",
   "audience_file_empty": "No browserslist queries found in {name}.",

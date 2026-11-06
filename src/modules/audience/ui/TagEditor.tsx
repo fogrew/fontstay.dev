@@ -175,12 +175,29 @@ export function TagEditor({
           <ul class="ff-tags__list">
             {group.items.map((item) => (
               <li key={item.key} class="ff-quick">
+                <button
+                  type="button"
+                  class="ff-control ff-tag"
+                  dir="auto"
+                  disabled={taken(item.query)}
+                  onClick={() => add(item.query)}
+                >
+                  {item.browser && <BrowserIcon id={item.browser} />}
+                  {item.os && <OsIcon os={item.os as 'linux'} />}
+                  {group.id === 'baseline' && (
+                    <Icon
+                      name={item.label.includes('newly') ? 'baseline-newly' : 'baseline-widely'}
+                    />
+                  )}
+                  {item.label}
+                </button>
                 {item.exclude && (
                   <button
                     type="button"
                     class="ff-control ff-quick__not"
                     disabled={taken(item.exclude)}
                     aria-label={t.audience_tag_not_action({ tag: item.label })}
+                    title={t.audience_tag_not_action({ tag: item.label })}
                     onClick={() => add(item.exclude ?? '')}
                   >
                     <svg
@@ -201,25 +218,8 @@ export function TagEditor({
                       />
                       <path d="M3.8 3.8l8.4 8.4" stroke="currentColor" stroke-width="2" />
                     </svg>
-                    {t.audience_tag_not()}
                   </button>
                 )}
-                <button
-                  type="button"
-                  class="ff-control ff-tag"
-                  dir="auto"
-                  disabled={taken(item.query)}
-                  onClick={() => add(item.query)}
-                >
-                  {item.browser && <BrowserIcon id={item.browser} />}
-                  {item.os && <OsIcon os={item.os as 'linux'} />}
-                  {group.id === 'baseline' && (
-                    <Icon
-                      name={item.label.includes('newly') ? 'baseline-newly' : 'baseline-widely'}
-                    />
-                  )}
-                  {item.label}
-                </button>
               </li>
             ))}
           </ul>

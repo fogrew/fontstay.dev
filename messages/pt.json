@@ -484,7 +484,6 @@
   "audience_tags_label": "Consultas de público",
   "audience_tags_input": "Adicionar uma consulta",
   "audience_tags_input_hint": "Digite uma consulta e pressione Enter, ou cole ou solte um arquivo .browserslist para preencher a lista.",
-  "audience_tag_not": "não",
   "audience_tags_group_sets": "Conjuntos",
   "audience_file_loaded": "{count} consultas carregadas de {name}.",
   "audience_file_empty": "Nenhuma consulta do browserslist encontrada em {name}.",

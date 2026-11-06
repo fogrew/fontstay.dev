@@ -484,7 +484,6 @@
   "audience_tags_label": "Consultas de audiencia",
   "audience_tags_input": "Añadir una consulta",
   "audience_tags_input_hint": "Escribe una consulta y pulsa Intro, o pega o suelta un archivo .browserslist para rellenar la lista.",
-  "audience_tag_not": "not",
   "audience_tags_group_sets": "Conjuntos",
   "audience_file_loaded": "Se cargaron {count} consultas desde {name}.",
   "audience_file_empty": "No se encontraron consultas de browserslist en {name}.",

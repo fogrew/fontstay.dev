@@ -484,7 +484,6 @@
   "audience_tags_label": "استعلامات الجمهور",
   "audience_tags_input": "إضافة استعلام",
   "audience_tags_input_hint": "اكتب استعلامًا واضغط Enter، أو الصق ملف .browserslist أو أسقطه لملء القائمة.",
-  "audience_tag_not": "استثناء",
   "audience_tags_group_sets": "مجموعات",
   "audience_file_loaded": "تم تحميل {count} من الاستعلامات من {name}.",
   "audience_file_empty": "لم يُعثر على استعلامات browserslist في {name}.",
