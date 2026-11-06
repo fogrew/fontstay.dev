@@ -62,6 +62,7 @@ export function FontInput({
 }) {
   const t = messagesFor(locale);
   const input = useRef<HTMLInputElement>(null);
+  const textInput = useRef<HTMLTextAreaElement>(null);
   const [text, setText] = useState('');
   const [site, setSite] = useState(false);
   const [importError, setImportError] = useState(false);
@@ -126,10 +127,13 @@ export function FontInput({
         <label for="ff-input-text">{t.input_label()}</label>
         <textarea
           id="ff-input-text"
+          ref={textInput}
           class="ff-input ff-drop__text"
           rows={2}
           spellcheck={false}
           autocomplete="off"
+          aria-autocomplete={kind === 'empty' || kind === 'name' ? 'list' : undefined}
+          aria-haspopup={kind === 'empty' || kind === 'name' ? 'listbox' : undefined}
           aria-describedby="ff-input-hint"
           placeholder={t.input_placeholder()}
           value={text}
@@ -139,9 +143,20 @@ export function FontInput({
           }}
         />
         <p id="ff-input-hint" class="ff-drop__paragraph ff-muted ff-drop__hint">
-          {t.input_hint()} {t.input_formats()}
+          {t.input_hint()} {t.source_keyboard_hint()} {t.input_formats()}
         </p>
       </div>
+      {(kind === 'empty' || kind === 'name') && (
+        <FamilySearch
+          locale={locale}
+          busy={busy}
+          query={text}
+          inputRef={textInput}
+          onAccepted={setText}
+          slots={slots}
+          onFiles={onFiles}
+        />
+      )}
       <p class="ff-drop__paragraph ff-drop__links">
         <button
           type="button"
@@ -174,9 +189,6 @@ export function FontInput({
       />
       {site && <SiteImportPanel locale={locale} />}
       {!compact && <p class="ff-drop__paragraph ff-muted">{t.upload_local()}</p>}
-      {kind === 'name' && (
-        <FamilySearch locale={locale} busy={busy} query={text} slots={slots} onFiles={onFiles} />
-      )}
       <div role="status">
         {importError && <p class="ff-drop__paragraph ff-error">{t.import_paste_error()}</p>}
         {css?.tooLarge && <p class="ff-drop__paragraph ff-error">{t.cssimport_too_large()}</p>}

@@ -364,6 +364,9 @@
 .ff-source__scroll {
   max-block-size: 14rem;
 }
+.ff-source__placeholder {
+  block-size: 14rem;
+}
 .ff-source__list {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(13rem, 1fr));
@@ -386,7 +389,7 @@
   text-align: start;
   cursor: pointer;
 }
-.ff-source__item[aria-pressed="true"] {
+.ff-source__item[aria-selected="true"] {
   background: var(--ff-state-full);
 }
 .ff-source__groups {

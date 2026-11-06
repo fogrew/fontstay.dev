@@ -3,7 +3,13 @@ import { type Locale, messagesFor } from '@/common/i18n';
 import { Button, ScrollShadow, ToggleGroup } from '@/common/ui';
 import { FontSourceError } from '../lib/download';
 import { downloadOrigin, type FontOrigin, SOURCES, type SourceId } from '../lib/origin';
-import { CJK_SUBSETS, type FontFamily, parseStyle, searchFamilies } from '../lib/types';
+import {
+  bestMatchIndex,
+  CJK_SUBSETS,
+  type FontFamily,
+  parseStyle,
+  searchFamilies,
+} from '../lib/types';
 
 type Catalog =
   | { state: 'loading' }
@@ -22,27 +28,33 @@ export function FamilySearch({
   locale,
   busy,
   query,
+  inputRef,
+  onAccepted,
   slots,
   onFiles,
 }: {
   locale: Locale;
   busy: boolean;
   query: string;
+  inputRef: { current: HTMLTextAreaElement | null };
+  onAccepted: (name: string) => void;
   slots: number;
   onFiles: (files: File[], origins: ReadonlyMap<File, FontOrigin>) => void;
 }) {
   const t = messagesFor(locale);
-  const [catalogs, setCatalogs] = useState<Partial<Record<SourceId, Catalog>>>({});
+  const [catalogs, setCatalogs] = useState<Record<SourceId, Catalog>>({
+    google: { state: 'loading' },
+    fontsource: { state: 'loading' },
+  });
   const [chosen, setChosen] = useState<Hit>();
   const [styles, setStyles] = useState<ReadonlySet<string>>(new Set(['400']));
   const [subsets, setSubsets] = useState<ReadonlySet<string>>(new Set(['latin']));
   const [message, setMessage] = useState('');
   const [downloading, setDownloading] = useState(false);
+  const [navigation, setNavigation] = useState<{ query: string; index: number }>();
 
   useEffect(() => {
     for (const id of Object.keys(SOURCES) as SourceId[]) {
-      if (catalogs[id]) continue;
-      setCatalogs((current) => ({ ...current, [id]: { state: 'loading' } }));
       SOURCES[id].loadCatalog().then(
         (families) =>
           setCatalogs((current) => ({ ...current, [id]: { state: 'ready', families } })),
@@ -62,6 +74,12 @@ export function FamilySearch({
     }
     return result.sort((a, b) => a.family.name.localeCompare(b.family.name));
   }, [catalogs, query]);
+  const bestIndex = bestMatchIndex(
+    hits.map((hit) => hit.family.name),
+    query,
+  );
+  const activeIndex =
+    navigation?.query === query && hits[navigation.index] ? navigation.index : bestIndex;
 
   const states = Object.values(catalogs).map((catalog) => catalog?.state);
   const loading = states.includes('loading');
@@ -81,6 +99,41 @@ export function FamilySearch({
     setSubsets(new Set([names.includes('latin') ? 'latin' : (names[0] ?? 'latin')]));
     setMessage('');
   };
+  useEffect(() => {
+    const field = inputRef.current;
+    if (!field) return;
+    if (hits.length > 0) field.setAttribute('aria-controls', 'ff-source-list');
+    else field.removeAttribute('aria-controls');
+    if (activeIndex >= 0) {
+      field.setAttribute('aria-activedescendant', `ff-source-option-${activeIndex}`);
+    } else {
+      field.removeAttribute('aria-activedescendant');
+    }
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+        if (hits.length === 0) return;
+        event.preventDefault();
+        const index =
+          event.key === 'ArrowDown'
+            ? Math.min(activeIndex + 1, hits.length - 1)
+            : Math.max(activeIndex < 0 ? 0 : activeIndex - 1, 0);
+        setNavigation({ query, index });
+        document.getElementById(`ff-source-option-${index}`)?.scrollIntoView({ block: 'nearest' });
+      } else if ((event.key === 'Tab' || event.key === 'Enter') && activeIndex >= 0) {
+        const hit = hits[activeIndex];
+        if (!hit) return;
+        if (event.key === 'Enter') event.preventDefault();
+        choose(hit);
+        onAccepted(hit.family.name);
+      }
+    };
+    field.addEventListener('keydown', handleKeyDown);
+    return () => {
+      field.removeEventListener('keydown', handleKeyDown);
+      field.removeAttribute('aria-controls');
+      field.removeAttribute('aria-activedescendant');
+    };
+  }, [hits, activeIndex, query, inputRef, onAccepted]);
   const count = styles.size * subsets.size;
 
   const add = async () => {
@@ -127,30 +180,60 @@ export function FamilySearch({
   return (
     <div class="ff-source">
       <div role="status">
-        {loading && <p class="ff-source__text ff-muted">{t.source_loading()}</p>}
+        <p class="ff-source__text ff-muted">
+          {loading ? t.source_loading() : t.source_list_label()}
+        </p>
         {failed && <p class="ff-source__text ff-error">{t.source_error_catalog()}</p>}
+        {hits.length > 0 && (
+          <p class="ff-sr-only">
+            {query.trim() && activeIndex >= 0
+              ? t.source_suggestion({
+                  name: hits[activeIndex]?.family.name ?? '',
+                  count: hits.length,
+                })
+              : t.source_available({ count: hits.length })}
+          </p>
+        )}
         {!loading && hits.length === 0 && !failed && (
           <p class="ff-source__text ff-muted">{t.source_none()}</p>
         )}
       </div>
-      {hits.length > 0 && (
+      {hits.length > 0 ? (
         <ScrollShadow class="ff-source__scroll">
-          <ul class="ff-generator__list ff-source__list" aria-label={t.source_list_label()}>
-            {hits.map((hit) => (
-              <li class="ff-generator__item" key={`${hit.source}-${hit.family.id}`}>
-                <button
-                  type="button"
-                  class="ff-control ff-source__item"
-                  aria-pressed={chosen?.source === hit.source && chosen.family.id === hit.family.id}
-                  onClick={() => choose(hit)}
-                >
-                  <span>{hit.family.name}</span>
-                  <span class="ff-muted">{sourceName(hit.source)}</span>
-                </button>
-              </li>
+          <div
+            id="ff-source-list"
+            role="listbox"
+            class="ff-generator__list ff-source__list"
+            aria-label={t.source_list_label()}
+          >
+            {hits.map((hit, index) => (
+              <div
+                id={`ff-source-option-${index}`}
+                role="option"
+                tabIndex={-1}
+                aria-selected={index === activeIndex}
+                class="ff-control ff-generator__item ff-source__item"
+                key={`${hit.source}-${hit.family.id}`}
+                onClick={() => {
+                  setNavigation({ query, index });
+                  choose(hit);
+                }}
+                onKeyDown={(event) => {
+                  if (event.key === 'Enter' || event.key === ' ') {
+                    event.preventDefault();
+                    setNavigation({ query, index });
+                    choose(hit);
+                  }
+                }}
+              >
+                <span>{hit.family.name}</span>
+                <span class="ff-muted">{sourceName(hit.source)}</span>
+              </div>
             ))}
-          </ul>
+          </div>
         </ScrollShadow>
+      ) : (
+        loading && <div class="ff-source__placeholder" aria-hidden="true" />
       )}
       {chosen && (
         <div class="ff-source__chosen">

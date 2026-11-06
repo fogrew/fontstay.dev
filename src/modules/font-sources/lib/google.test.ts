@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { FontSourceError } from './download';
 import { cssUrl, decodeCatalog, downloadFont, isFileUrl, parseGoogleCss } from './google';
-import { parseStyle, searchFamilies } from './types';
+import { bestMatchIndex, parseStyle, searchFamilies } from './types';
 
 const families = decodeCatalog({
   categories: ['Sans Serif', 'Serif', 'Monospace'],
@@ -39,6 +39,14 @@ describe('catalog search', () => {
     expect(searchFamilies(families, '', 'Serif').map((item) => item.name)).toEqual(['Lora']);
     expect(searchFamilies(families, '').length).toBe(3);
     expect(searchFamilies(families, '', '', 2)).toHaveLength(2);
+  });
+
+  it('prefers the beginning of a name for autocomplete', () => {
+    expect(bestMatchIndex(['Sans Open', 'Open Sans', 'Open Sauce'], 'Open S')).toBe(1);
+    expect(bestMatchIndex(['Open Sans', 'Open Sauce'], 'open s')).toBe(0);
+    expect(bestMatchIndex(['Open Sans'], 'Open Sans')).toBe(0);
+    expect(bestMatchIndex(['Open Sans'], '')).toBe(-1);
+    expect(bestMatchIndex(['Open Sans'], 'Lora')).toBe(-1);
   });
 });
 

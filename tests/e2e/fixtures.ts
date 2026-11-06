@@ -81,7 +81,9 @@ export async function choose(
   option: string | { label: string | RegExp } | { index: number },
 ) {
   const button = box.first();
-  const list = box.page().getByRole('listbox');
+  const listId = await button.getAttribute('aria-controls');
+  if (!listId) throw new Error('Select has no controlled listbox');
+  const list = box.page().locator(`[id="${listId}"]`);
   const item =
     typeof option === 'string'
       ? list.locator(`[role="option"][data-value="${option}"]`)
@@ -95,8 +97,10 @@ export async function choose(
 }
 
 export async function listed(box: Locator): Promise<string> {
+  const listId = await box.getAttribute('aria-controls');
+  if (!listId) throw new Error('Select has no controlled listbox');
   await box.click();
-  const texts = await box.page().getByRole('listbox').getByRole('option').allInnerTexts();
+  const texts = await box.page().locator(`[id="${listId}"]`).getByRole('option').allInnerTexts();
   await box.page().keyboard.press('Escape');
   return texts.join(' | ');
 }

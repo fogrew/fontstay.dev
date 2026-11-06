@@ -1322,8 +1322,8 @@ test('a Google Fonts family can be searched and downloaded through the two allow
   await openStep(page, 'inputs');
   await page.getByLabel('Font name, CSS or copied site data').fill('open sans');
   await page
-    .getByRole('list', { name: 'Matching families' })
-    .getByRole('button', { name: /^Open Sans.*Google Fonts/ })
+    .getByRole('listbox', { name: 'Matching families' })
+    .getByRole('option', { name: /^Open Sans.*Google Fonts/ })
     .click();
   await expect(page.getByRole('button', { name: 'latin', exact: true })).toHaveAttribute(
     'aria-pressed',
@@ -1356,8 +1356,8 @@ test('several styles of a catalog family are added with one click', async ({ pag
   await openStep(page, 'inputs');
   await page.getByLabel('Font name, CSS or copied site data').fill('open sans');
   await page
-    .getByRole('list', { name: 'Matching families' })
-    .getByRole('button', { name: /^Open Sans.*Google Fonts/ })
+    .getByRole('listbox', { name: 'Matching families' })
+    .getByRole('option', { name: /^Open Sans.*Google Fonts/ })
     .click();
   await page.getByRole('button', { name: '700', exact: true }).click();
   await page.getByRole('button', { name: '400 Italic', exact: true }).click();
@@ -1397,8 +1397,8 @@ test('a share link carries Google Fonts choices and downloads them again', async
   await openStep(page, 'inputs');
   await page.getByLabel('Font name, CSS or copied site data').fill('open sans');
   await page
-    .getByRole('list', { name: 'Matching families' })
-    .getByRole('button', { name: /^Open Sans.*Google Fonts/ })
+    .getByRole('listbox', { name: 'Matching families' })
+    .getByRole('option', { name: /^Open Sans.*Google Fonts/ })
     .click();
   await page.getByRole('button', { name: 'Add to the fonts' }).click();
   await expect(page.getByText('Downloaded Open Sans.')).toBeVisible();
@@ -1435,8 +1435,8 @@ test('a Fontsource family is downloaded from jsDelivr', async ({ page }) => {
   await openStep(page, 'inputs');
   await page.getByLabel('Font name, CSS or copied site data').fill('aileron');
   await page
-    .getByRole('list', { name: 'Matching families' })
-    .getByRole('button', { name: /^Aileron.*Fontsource/ })
+    .getByRole('listbox', { name: 'Matching families' })
+    .getByRole('option', { name: /^Aileron.*Fontsource/ })
     .click();
   await page.getByRole('button', { name: 'Add to the fonts' }).click();
   await expect(page.getByText('Downloaded Aileron.')).toBeVisible();
@@ -1451,8 +1451,8 @@ test('a failed Google Fonts download is explained', async ({ page }) => {
   await openStep(page, 'inputs');
   await page.getByLabel('Font name, CSS or copied site data').fill('lora');
   await page
-    .getByRole('list', { name: 'Matching families' })
-    .getByRole('button', { name: /^Lora.*Google Fonts/ })
+    .getByRole('listbox', { name: 'Matching families' })
+    .getByRole('option', { name: /^Lora.*Google Fonts/ })
     .click();
   await page.getByRole('button', { name: 'Add to the fonts' }).click();
   await expect(page.getByText(/Could not download the font/)).toBeVisible();
@@ -2312,13 +2312,46 @@ test.describe('the single input field', () => {
     return page.getByLabel('Font name, CSS or copied site data');
   };
 
+  test('catalog suggestions are available on open and Tab accepts the highlighted match', async ({
+    page,
+  }) => {
+    const field = await open(page);
+    const list = page.getByRole('listbox', { name: 'Matching families' });
+    await expect(list.getByRole('option').first()).toBeVisible();
+    await expect(
+      page.getByRole('status').filter({ hasText: 'catalog fonts available' }),
+    ).toContainText('catalog fonts available');
+    await expect(list.getByRole('option', { name: /Fontsource/ }).first()).toBeVisible();
+    await expect(list.getByRole('option', { name: /Google Fonts/ }).first()).toBeVisible();
+    await field.focus();
+    await field.pressSequentially('Open S');
+    await expect(list.getByRole('option', { name: /^Open Sans.*Google Fonts/ })).toHaveAttribute(
+      'aria-selected',
+      'true',
+    );
+    await expect(field).toHaveAttribute('aria-controls', 'ff-source-list');
+    await expect(
+      page.getByRole('status').filter({ hasText: 'Highlighted font: Open Sans.' }),
+    ).toContainText('Highlighted font: Open Sans.');
+    await field.press('Tab');
+    await expect(field).toHaveValue('Open Sans');
+    await expect(page.getByRole('button', { name: 'Add to the fonts' })).toBeVisible();
+    await expect(
+      page.getByRole('button', { name: 'Choose a font or CSS file…' }),
+    ).not.toBeFocused();
+    await expect(page.getByRole('button', { name: 'Import from a website…' })).not.toBeFocused();
+    await field.fill('Lora');
+    await field.press('Enter');
+    await expect(page.locator('.ff-source__chosen strong')).toHaveText('Lora');
+  });
+
   test('a font name lists families of both catalogs with their source', async ({ page }) => {
     const field = await open(page);
     await field.fill('roboto');
-    const list = page.getByRole('list', { name: 'Matching families' });
+    const list = page.getByRole('listbox', { name: 'Matching families' });
     await expect(list).toBeVisible();
     await expect(
-      list.getByRole('button', { name: /^Roboto\b.*Google Fonts/ }).first(),
+      list.getByRole('option', { name: /^Roboto\b.*Google Fonts/ }).first(),
     ).toBeVisible();
     await field.fill('a');
     await expect(list.getByText('Fontsource').first()).toBeVisible();
@@ -2339,7 +2372,7 @@ test.describe('the single input field', () => {
     const faces = page.getByRole('list', { name: 'Fonts found in the CSS' });
     await expect(faces).toContainText('Demo Sans');
     await expect(faces.getByRole('link', { name: 'Download the file' })).toBeVisible();
-    await expect(page.getByRole('list', { name: 'Matching families' })).toHaveCount(0);
+    await expect(page.getByRole('listbox', { name: 'Matching families' })).toHaveCount(0);
   });
 
   test('pasted CSS split into subsets lists one row per weight and style', async ({ page }) => {
@@ -2419,7 +2452,11 @@ test('the input field with suggestions and CSS results has no axe violations', a
   await openStep(page, 'inputs');
   const field = page.getByLabel('Font name, CSS or copied site data');
   await field.fill('roboto');
-  await page.getByRole('list', { name: 'Matching families' }).getByRole('button').first().click();
+  await page
+    .getByRole('listbox', { name: 'Matching families' })
+    .getByRole('option')
+    .first()
+    .click();
   await page.getByRole('button', { name: 'Import from a website…' }).click();
   const names = await new AxeBuilder({ page }).analyze();
   expect(names.violations).toEqual([]);
