@@ -313,11 +313,6 @@
   min-block-size: 1.5rem;
 }
 .ff-quick {
-  position: relative;
-  display: inline-flex;
-  align-items: center;
-}
-.ff-quick {
   display: inline-flex;
   align-items: stretch;
   overflow: hidden;
