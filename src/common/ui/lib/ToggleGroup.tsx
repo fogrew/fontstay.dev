@@ -32,10 +32,7 @@ export function ToggleGroup({ items, selected, label, onChange }: ToggleGroupPro
   };
 
   return (
-    <fieldset
-      class="ff-button-group ff-button-group--compact ff-button-group--scroll"
-      aria-label={label}
-    >
+    <fieldset class="ff-toggle-buttons" aria-label={label}>
       {items.map((item) => (
         <button
           key={item.key}

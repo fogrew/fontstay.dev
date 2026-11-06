@@ -283,13 +283,25 @@ export function useFamilySearch({
               </fieldset>
               <fieldset class="ff-toggle-set">
                 <legend class="ff-toggle-set__legend">{t.source_subset_label()}</legend>
-                <ToggleGroup
-                  key={chosen.family.id}
-                  label={t.source_subset_label()}
-                  items={scriptsOf(chosen.family).map((name) => ({ key: name, label: name }))}
-                  selected={subsets}
-                  onChange={setSubsets}
-                />
+                {[false, true].map((ext) => {
+                  const names = scriptsOf(chosen.family).filter(
+                    (name) => name.endsWith('-ext') === ext,
+                  );
+                  const label = ext ? t.source_subset_ext() : t.source_subset_base();
+                  return names.length === 0 ? null : (
+                    <div class="ff-toggle-group" key={String(ext)}>
+                      <span class="ff-muted ff-toggle-group__label">{label}</span>
+                      <ToggleGroup
+                        key={`${chosen.family.id}-${ext}`}
+                        label={label}
+                        items={names.map((name) => ({ key: name, label: name }))}
+                        selected={subsets}
+                        onChange={setSubsets}
+                      />
+                    </div>
+                  );
+                })}
+                <p class="ff-source__text ff-muted">{t.source_subset_ext_hint()}</p>
               </fieldset>
             </div>
             <div class="ff-source__add">
