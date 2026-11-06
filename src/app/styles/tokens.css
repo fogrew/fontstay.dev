@@ -327,7 +327,7 @@ body {
   .ff-header__more-list {
     position: absolute;
     inset-block-start: 100%;
-    inset-inline-start: 0;
+    inset-inline-end: 0;
     z-index: 40;
     min-inline-size: 100%;
     margin-block-start: 0.25rem;

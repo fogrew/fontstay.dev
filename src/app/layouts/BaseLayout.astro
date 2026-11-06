@@ -144,18 +144,18 @@ const indexable = !process.env.WORKERS_CI_BRANCH || process.env.WORKERS_CI_BRANC
         };
         const locale = document.querySelector<HTMLDetailsElement>('[data-locale-menu]');
         const more = nav.querySelector<HTMLDetailsElement>('[data-more-menu]');
-        const closeMore = () => {
+        const syncMore = () => {
           if (more && !wide.matches) more.open = true;
           else if (more) more.open = false;
         };
         toggle.hidden = false;
         setOpen(false);
-        closeMore();
+        syncMore();
         toggle.addEventListener('click', (event) => {
           const open = toggle.getAttribute('aria-expanded') !== 'true';
           if (open && locale) locale.open = false;
           setOpen(open);
-          closeMore();
+          syncMore();
           if (open && event.detail === 0) nav.querySelector<HTMLElement>('a')?.focus();
         });
         document.addEventListener('click', (event) => {
@@ -190,7 +190,7 @@ const indexable = !process.env.WORKERS_CI_BRANCH || process.env.WORKERS_CI_BRANC
         });
         wide.addEventListener('change', () => {
           setOpen(false);
-          closeMore();
+          syncMore();
         });
       }
     </script>

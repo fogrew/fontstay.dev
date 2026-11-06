@@ -110,4 +110,16 @@ test.describe('desktop header menu', () => {
     await page.keyboard.press('Escape');
     await expect(more).toHaveJSProperty('open', false);
   });
+
+  for (const locale of LOCALES) {
+    test(`${locale}: the open More list does not overflow at 768px`, async ({ page }) => {
+      await page.setViewportSize({ width: 768, height: 700 });
+      await page.goto(`/${locale}/credits/`);
+      await page.locator('[data-more-menu] > summary').click();
+      const overflow = await page.evaluate(
+        () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
+      );
+      expect(overflow).toBeLessThanOrEqual(0);
+    });
+  }
 });
