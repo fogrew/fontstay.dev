@@ -1233,8 +1233,13 @@
 .ff-shift__label {
   font-weight: 700;
 }
-.ff-shift__arrow {
-  color: var(--ff-muted);
+.ff-shift .ff-shift__compare {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--ff-space-1);
+  align-items: center;
+  margin: 0 0 var(--ff-space-2);
+  font-size: 0.75rem;
 }
 .ff-article-view__frame {
   position: relative;
@@ -1289,9 +1294,6 @@
   color: var(--ff-muted);
   font-size: 0.75rem;
   white-space: nowrap;
-}
-.ff-shift__arrow:dir(rtl) {
-  transform: scaleX(-1);
 }
 .ff-shift__at {
   font-size: 0.75rem;
