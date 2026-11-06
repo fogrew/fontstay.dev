@@ -1942,6 +1942,31 @@ test('fonts and CSS files can be dropped anywhere on the page', async ({ page })
   await expect(page.getByRole('alert')).toContainText('Only font files');
 });
 
+test('an unsupported file dropped while a font is parsing keeps its warning', async ({ page }) => {
+  await page.goto('/en/');
+  await waitForGenerator(page);
+  await closePanels(page);
+  const bytes = [...readFileSync(sourceSans)];
+  await page.evaluate((data) => {
+    const dropFile = (file: File) => {
+      const transfer = new DataTransfer();
+      transfer.items.add(file);
+      for (const kind of ['dragenter', 'dragover', 'drop']) {
+        window.dispatchEvent(
+          new DragEvent(kind, { dataTransfer: transfer, bubbles: true, cancelable: true }),
+        );
+      }
+    };
+    dropFile(
+      new File([new Uint8Array(data)], 'SourceSansPro-Regular.woff2', { type: 'font/woff2' }),
+    );
+    dropFile(new File(['hello'], 'notes.txt', { type: 'text/plain' }));
+  }, bytes);
+  await expect(page.locator('.ff-article-view__slider')).toBeVisible({ timeout: 15_000 });
+  await expect(page.getByRole('status').filter({ hasText: 'Font added: 1' })).toBeVisible();
+  await expect(page.getByRole('alert')).toContainText('Only font files');
+});
+
 test.describe('the generator page itself does not shift while it loads', () => {
   for (const [name, width, budget] of [
     ['desktop', 1500, 0.003],

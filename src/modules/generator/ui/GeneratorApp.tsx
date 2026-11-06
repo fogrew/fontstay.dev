@@ -339,7 +339,8 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
     } finally {
       setBusy(false);
     }
-    setError(failures.join(' '));
+    if (failures.length > 0)
+      setError((message) => [message, ...failures].filter(Boolean).join(' '));
     if (added.length > 0) {
       if (persist) {
         for (const item of added)
