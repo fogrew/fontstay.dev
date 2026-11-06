@@ -76,6 +76,7 @@ export function useFamilySearch({
   }, []);
 
   const hits = useMemo(() => {
+    if (Object.values(catalogs).some((catalog) => catalog.state === 'loading')) return [];
     const result: Hit[] = [];
     for (const id of Object.keys(SOURCES) as SourceId[]) {
       const catalog = catalogs[id];
