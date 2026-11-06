@@ -21,7 +21,7 @@ const genericFamilies = new Set([
   'fangsong',
 ]);
 
-function quoteName(name: string): string {
+export function quoteName(name: string): string {
   if (
     typeof name !== 'string' ||
     !name.trim() ||
