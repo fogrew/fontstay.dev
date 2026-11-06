@@ -2484,6 +2484,25 @@ test.describe('the single input field', () => {
     );
   });
 
+  test('the source label is vertically centred against the family name', async ({ page }) => {
+    for (const width of [320, 1280]) {
+      await page.setViewportSize({ width, height: 800 });
+      await open(page);
+      const rows = page.getByRole('listbox', { name: 'Matching families' }).getByRole('option');
+      await expect(rows.first()).toBeVisible();
+      const offsets = await rows.evaluateAll((items) =>
+        items.slice(0, 20).map((item) => {
+          const [name, source] = [...item.children].map((child) => {
+            const box = child.getBoundingClientRect();
+            return box.top + box.height / 2;
+          });
+          return Math.abs((name ?? 0) - (source ?? 0));
+        }),
+      );
+      expect(Math.max(...offsets)).toBeLessThanOrEqual(1);
+    }
+  });
+
   test('arrows move the highlighted suggestion and Enter accepts it', async ({ page }) => {
     const field = await open(page);
     const list = page.getByRole('listbox', { name: 'Matching families' });
