@@ -31,11 +31,13 @@ const server = await createViteServer({
   appType: 'custom',
   logLevel: 'error',
   server: { middlewareMode: true, hmr: false, watch: null },
+  resolve: { tsconfigPaths: true },
   optimizeDeps: { noDiscovery: true },
 });
 
 try {
   const { parseFontBuffer } = await server.ssrLoadModule('/src/modules/font-metrics/lib/parse.ts');
+  const { shapedRatio } = await server.ssrLoadModule('/src/modules/generator/lib/calibration.ts');
   const { METRICS_SOURCES, SCRIPT_RANGES } = await server.ssrLoadModule(
     '/scripts/os-fonts/metrics-sources.ts',
   );
@@ -97,7 +99,7 @@ try {
     return result;
   };
 
-  const measure = (found, source, variation, localNamesOverride) => {
+  const measure = async (found, source, variation, localNamesOverride) => {
     const bytes = isCollection(found.bytes) ? collectionMember(found.bytes, 0) : found.bytes;
     const buffer = bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength);
     const font = parseFontBuffer(buffer, variation ? { variation } : {});
@@ -117,6 +119,11 @@ try {
     const localNames = localNamesOverride ?? [
       ...new Set([font.names.fullName, font.names.postscript].filter((name) => Boolean(name))),
     ];
+    const ratios = {};
+    for (const language of ['en', 'ru']) {
+      const ratio = await shapedRatio(bytes, font, language, { variation });
+      ratios[language] = Math.round(ratio * 1e6) / 1e6;
+    }
     return {
       count: wanted.length,
       isVariable: font.isVariable,
@@ -129,6 +136,7 @@ try {
         win: font.win,
         codePoints: runs(wanted),
         advances,
+        ratios,
       },
     };
   };
@@ -151,7 +159,7 @@ try {
       );
       continue;
     }
-    const base = measure(found, source, undefined, undefined);
+    const base = await measure(found, source, undefined, undefined);
     const variants = {};
     for (const style of STYLE_IDS) {
       const variant = VARIANT_SOURCES[spec.id]?.[style];
@@ -171,7 +179,12 @@ try {
         console.log(`skipped ${spec.id} ${style}: font file not found`);
         continue;
       }
-      const measured = measure(variantFound, variantSource, variant.variation, variant.localNames);
+      const measured = await measure(
+        variantFound,
+        variantSource,
+        variant.variation,
+        variant.localNames,
+      );
       variants[style] = measured.entry;
     }
     const previous = byId.get(spec.id)?.variants ?? {};

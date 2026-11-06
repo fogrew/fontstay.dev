@@ -22,7 +22,7 @@ export async function buildCli(out = fileURLToPath(new URL('packages/fontstay/di
       bin: 'packages/fontstay/src/bin.ts',
     },
     platform: 'node',
-    external: ['browserslist'],
+    external: ['browserslist', 'harfbuzzjs'],
     tsconfig: 'tsconfig.json',
     plugins: [rawText],
     treeshake: { moduleSideEffects: false },

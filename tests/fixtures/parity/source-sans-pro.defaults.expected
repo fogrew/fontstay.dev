@@ -20,58 +20,58 @@
 @font-face {
   font-family: "Source Sans Pro Fallback Arial";
   src: local("Arial"), local("ArialMT");
-  size-adjust: 93.697%;
-  ascent-override: 105.0194%;
+  size-adjust: 94.072%;
+  ascent-override: 104.0194%;
   descent-override: 29.1365%;
-  line-gap-override: 0%;
+  line-gap-override: 1.75%;
 }
 
 @font-face {
   font-family: "Source Sans Pro Fallback Arial";
   src: local("Arial"), local("ArialMT");
-  size-adjust: 96.0014%;
-  ascent-override: 102.4985%;
+  size-adjust: 96.3857%;
+  ascent-override: 101.5225%;
   descent-override: 28.4371%;
-  line-gap-override: 0%;
+  line-gap-override: 1.708%;
   unicode-range: U+400-52F, U+1C80-1C8F, U+2DE0-2DFF, U+A640-A69F;
 }
 
 @font-face {
   font-family: "Source Sans Pro Fallback Arial";
   src: local("Arial"), local("ArialMT");
-  size-adjust: 97.1768%;
-  ascent-override: 101.2587%;
+  size-adjust: 97.5658%;
+  ascent-override: 100.2945%;
   descent-override: 28.0931%;
-  line-gap-override: 0%;
+  line-gap-override: 1.6873%;
   unicode-range: U+370-3FF, U+1F00-1FFF;
 }
 
 @font-face {
   font-family: "Source Sans Pro Fallback Liberation Sans";
   src: local("Liberation Sans"), local("LiberationSans");
-  size-adjust: 93.697%;
-  ascent-override: 105.0194%;
+  size-adjust: 94.072%;
+  ascent-override: 104.0194%;
   descent-override: 29.1365%;
-  line-gap-override: 0%;
+  line-gap-override: 1.75%;
 }
 
 @font-face {
   font-family: "Source Sans Pro Fallback Liberation Sans";
   src: local("Liberation Sans"), local("LiberationSans");
-  size-adjust: 96.0014%;
-  ascent-override: 102.4985%;
+  size-adjust: 96.3857%;
+  ascent-override: 101.5225%;
   descent-override: 28.4371%;
-  line-gap-override: 0%;
+  line-gap-override: 1.708%;
   unicode-range: U+400-52F, U+1C80-1C8F, U+2DE0-2DFF, U+A640-A69F;
 }
 
 @font-face {
   font-family: "Source Sans Pro Fallback Liberation Sans";
   src: local("Liberation Sans"), local("LiberationSans");
-  size-adjust: 97.1768%;
-  ascent-override: 101.2587%;
+  size-adjust: 97.5658%;
+  ascent-override: 100.2945%;
   descent-override: 28.0931%;
-  line-gap-override: 0%;
+  line-gap-override: 1.6873%;
   unicode-range: U+370-3FF, U+1F00-1FFF;
 }
 
@@ -80,4 +80,8 @@ body {
   /* Safari has no vertical overrides: match the x-height and fix the line box */
   font-size-adjust: 0.48;
   line-height: 1.4;
+}
+
+.fonts-loading {
+  letter-spacing: -0.0024em;
 }

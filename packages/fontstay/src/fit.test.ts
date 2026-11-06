@@ -28,6 +28,22 @@ describe('fit', () => {
     expect(result.systems.sort()).toEqual(['macos', 'windows']);
   });
 
+  it('is deterministic: repeated runs and the woff and woff2 builds of a font agree', async () => {
+    const first = await fit({ fonts: [sourceSans()], audience: 'defaults' });
+    const second = await fit({ fonts: [sourceSans()], audience: 'defaults' });
+    const woff = await fit({
+      fonts: [
+        {
+          fileName: 'SourceSansPro-Regular.woff',
+          data: fixture('fonts/SourceSansPro-Regular.woff'),
+        },
+      ],
+      audience: 'defaults',
+    });
+    expect(second.css).toBe(first.css);
+    expect(woff.css).toBe(first.css);
+  });
+
   it('treats the systems option like os parts of the audience query', async () => {
     const byOption = await fit({
       fonts: [fira()],

@@ -26,7 +26,7 @@ fontstay fit regular.woff2 bold.woff2 --format tailwind
 
 Several font files are merged into one stylesheet, as in the app. Warnings (low glyph overlap, systems without fallback fonts) go to stderr. Exit codes: `0` success, `1` failure (unreadable or invalid font, invalid audience), `2` usage error.
 
-The output is the engine's fit: the same fallbacks, order, scripts and `unicode-range` as the app's CSS export for the same font and audience. The app then runs an optimizer that measures text in the browser and nudges the values (and may add a `.fonts-loading` letter-spacing rule); that step needs a browser and a wall-clock budget, so the CLI does not run it and its numbers can differ from the app's by a fraction of a percent. `tests/e2e/cli-parity.spec.ts` compares the test fonts with the app: identical structure and values within 2 points. Making the optimizer shared and deterministic is tracked in #384.
+The output is byte-identical to the app's CSS export for the same font and audience: the same fallbacks, order, scripts and `unicode-range`, and the same optimizer (it nudges the sizes and may add a `.fonts-loading` letter-spacing rule). The optimizer is deterministic: it runs a fixed number of evaluations with no time limit and takes its width ratios from HarfBuzz (`harfbuzzjs`, WebAssembly) for the font you pass and from precomputed values for the system fonts, so it does not depend on a browser or on the fonts installed on the machine. `tests/e2e/cli-parity.spec.ts` compares the test fonts with the app and requires identical output.
 
 ## MCP server
 

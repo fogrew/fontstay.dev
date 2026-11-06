@@ -13,8 +13,9 @@ import { compactRanges, formatUnicodeRange, StackResolveError } from '@/modules/
 import type { FontMetrics } from '@/modules/font-metrics';
 import { type Category, loadVariantMetrics, type OsId } from '@/modules/os-fonts';
 import { fitLanguage, isNoCoverage } from './compute';
-import { adjustmentOf, buildCss, fallbackFamilyName } from './css';
+import { adjustmentOf, buildCss, fallbackFamilyName, type Overrides } from './css';
 import { loadingCss, loadingScript } from './loading';
+import { newOptimizerState, type OptimizerState, optimizeFaces } from './optimize-fit';
 import { type FontOutput, groupFonts, mergeOutputs } from './overview';
 import {
   type Candidate,
@@ -49,6 +50,7 @@ export class FitRunError extends Error {
 export interface FitFontInput {
   fileName: string;
   metrics: FontMetrics;
+  bytes?: ArrayBuffer | Uint8Array | undefined;
   kind?: Category | undefined;
 }
 
@@ -59,6 +61,7 @@ export interface FitOptions {
   locale?: Language | undefined;
   unicodeRange?: boolean | undefined;
   scripts?: boolean | undefined;
+  optimize?: boolean | undefined;
 }
 
 export interface FitFontReport {
@@ -91,19 +94,21 @@ function shortFamily(metrics: FontMetrics): string {
   return metrics.names.family?.trim().slice(0, 200) || 'Custom font';
 }
 
-function fitFont(
+async function fitFont(
   font: FitFontInput,
   systems: readonly OsId[],
   shares: OsShares,
   options: FitOptions,
   strategy: boolean,
-): { output: FontOutput; report: FitFontReport } | undefined {
+  optimizer: OptimizerState | undefined,
+): Promise<{ output: FontOutput; report: FitFontReport } | undefined> {
   const { metrics } = font;
   const language = fitLanguage(metrics, options.locale ?? 'en');
   const style: FontStyleKey = styleKeyOf(metrics.style);
   const kind: Category = font.kind ?? metrics.style.category ?? 'sans-serif';
 
   let coverage = 1;
+  let anyRanking: Ranking | undefined;
   const lists: Partial<Record<OsId, Candidate[]>> = {};
   for (const os of systems) {
     let ranking: Ranking;
@@ -113,6 +118,7 @@ function fitFont(
       if (!isNoCoverage(thrown)) throw thrown;
       continue;
     }
+    anyRanking ??= ranking;
     coverage = Math.min(coverage, ranking.coverage);
     lists[os] = ranking.candidates.filter((item) => item.category === kind);
   }
@@ -135,13 +141,31 @@ function fitFont(
     throw failure;
   }
 
+  const optimized =
+    optimizer && anyRanking && chosen[0]
+      ? await optimizeFaces(
+          {
+            metrics,
+            bytes: font.bytes,
+            language,
+            ranking: anyRanking,
+            faces: [
+              ...new Map(
+                [chosen[0], ...chosen].map(({ candidate }) => [candidate.id, candidate]),
+              ).values(),
+            ],
+          },
+          optimizer,
+        )
+      : new Map<string, Overrides>();
+
   const ranges = compactRanges(metrics.codePoints);
   const range = options.unicodeRange && ranges.length > 0 ? formatUnicodeRange(ranges) : undefined;
   const perScript = options.scripts ?? true;
   const faces = plan.order.flatMap((id) => {
     const candidate = chosen.find((item) => item.faceId === id)?.candidate;
     if (!candidate) return [];
-    const adjustment = adjustmentOf(candidate.adjustment, {});
+    const adjustment = optimized.get(candidate.id) ?? adjustmentOf(candidate.adjustment, {});
     const faceStyle = candidate.style;
     return [
       {
@@ -240,8 +264,9 @@ export async function fitFonts(options: FitOptions): Promise<FitResult> {
   const strategy = lacksVerticalOverrides(descriptorSupport(resolution.entries)) > 0.05;
   const outputs: FontOutput[] = [];
   const reports: FitFontReport[] = [];
+  const optimizer = options.optimize === false ? undefined : newOptimizerState();
   for (const font of options.fonts) {
-    const fitted = fitFont(font, systems, shares, options, strategy);
+    const fitted = await fitFont(font, systems, shares, options, strategy, optimizer);
     if (!fitted) {
       throw new FitRunError('no-fit', `No fallback could be fitted for ${font.fileName}.`);
     }
@@ -255,7 +280,7 @@ export async function fitFonts(options: FitOptions): Promise<FitResult> {
       ...new Set(outputs.flatMap((entry) => entry.fontFaces.split('\n\n')).filter(Boolean)),
     ].join('\n\n'),
     strategy: outputs[0]?.strategy ?? '',
-    css: mergeOutputs(outputs, loadingCss({ letter: 0, word: 0 })),
+    css: mergeOutputs(outputs, loadingCss(optimizer?.spacing ?? { letter: 0, word: 0 })),
     loadingScript: loadingScript(families.map((family) => family.targetFamily)),
   };
   const uncovered = ALL_SYSTEMS.filter(

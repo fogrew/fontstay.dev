@@ -13,6 +13,7 @@ export default defineConfig({
   integrations: [preact()],
   security: {
     csp: {
+      scriptDirective: { resources: ["'self'", "'wasm-unsafe-eval'"] },
       directives: [
         "default-src 'self'",
         "worker-src 'self'",
