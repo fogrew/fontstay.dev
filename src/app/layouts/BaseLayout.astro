@@ -46,6 +46,13 @@ const structured = JSON.stringify({
   inLanguage: locale,
   offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
 });
+const moreItems = [
+  { page: 'cli', href: '/cli/', label: t.nav_cli() },
+  { page: 'mcp', href: '/mcp/', label: t.nav_mcp() },
+  { page: 'extensions', href: '/extensions/', label: t.nav_extensions() },
+  { page: 'credits', href: '/credits/', label: t.nav_credits() },
+  { page: 'changelog', href: '/changelog/', label: t.nav_changelog() },
+];
 const indexable = !process.env.WORKERS_CI_BRANCH || process.env.WORKERS_CI_BRANCH === 'main';
 ---
 
@@ -102,8 +109,17 @@ const indexable = !process.env.WORKERS_CI_BRANCH || process.env.WORKERS_CI_BRANC
           <li>
             <a class="ff-link ff-link--tap ff-header__nav-link" href={localizeHref('/guide/', { locale })} aria-current={page === 'guide' ? 'page' : undefined}>{t.nav_guide()}</a>
           </li>
-          <li>
-            <a class="ff-link ff-link--tap ff-header__nav-link" href={localizeHref('/cli/', { locale })} aria-current={page === 'cli' ? 'page' : undefined}>{t.nav_cli()}</a>
+          <li class="ff-header__more">
+            <details class="ff-header__more-menu" data-more-menu>
+              <summary class:list={['ff-header__nav-link', 'ff-header__more-summary', { 'ff-header__more-summary--active': moreItems.some((item) => item.page === page) }]}>{t.nav_more()}</summary>
+              <ul class="ff-header__more-list">
+                {moreItems.map((item) => (
+                  <li>
+                    <a class="ff-link ff-link--tap ff-header__nav-link" href={localizeHref(item.href, { locale })} aria-current={page === item.page ? 'page' : undefined}>{item.label}</a>
+                  </li>
+                ))}
+              </ul>
+            </details>
           </li>
         </ul>
       </nav>
@@ -127,30 +143,55 @@ const indexable = !process.env.WORKERS_CI_BRANCH || process.env.WORKERS_CI_BRANC
           header.dataset.menu = open ? 'open' : 'closed';
         };
         const locale = document.querySelector<HTMLDetailsElement>('[data-locale-menu]');
+        const more = nav.querySelector<HTMLDetailsElement>('[data-more-menu]');
+        const syncMore = () => {
+          if (more && !wide.matches) more.open = true;
+          else if (more) more.open = false;
+        };
         toggle.hidden = false;
         setOpen(false);
+        syncMore();
         toggle.addEventListener('click', (event) => {
           const open = toggle.getAttribute('aria-expanded') !== 'true';
           if (open && locale) locale.open = false;
           setOpen(open);
+          syncMore();
           if (open && event.detail === 0) nav.querySelector<HTMLElement>('a')?.focus();
         });
         document.addEventListener('click', (event) => {
           if (!header.contains(event.target as Node)) setOpen(false);
         });
         locale?.addEventListener('toggle', () => {
-          if (locale.open) setOpen(false);
+          if (!locale.open) return;
+          setOpen(false);
+          if (more && wide.matches) more.open = false;
+        });
+        more?.addEventListener('toggle', () => {
+          if (more.open && wide.matches && locale) locale.open = false;
+        });
+        document.addEventListener('click', (event) => {
+          if (more && wide.matches && more.open && !more.contains(event.target as Node)) more.open = false;
         });
         header.addEventListener('keydown', (event) => {
-          if (event.key !== 'Escape' || toggle.getAttribute('aria-expanded') !== 'true') return;
+          if (event.key !== 'Escape') return;
+          if (more?.open && wide.matches) {
+            more.open = false;
+            more.querySelector('summary')?.focus();
+            return;
+          }
+          if (toggle.getAttribute('aria-expanded') !== 'true') return;
           setOpen(false);
           toggle.focus();
         });
         header.addEventListener('focusout', (event) => {
           const next = event.relatedTarget as Node | null;
           if (next && !header.contains(next)) setOpen(false);
+          if (next && more && wide.matches && !more.contains(next)) more.open = false;
         });
-        wide.addEventListener('change', () => setOpen(false));
+        wide.addEventListener('change', () => {
+          setOpen(false);
+          syncMore();
+        });
       }
     </script>
     <PwaManager locale={locale} client:idle />

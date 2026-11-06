@@ -16,7 +16,7 @@ test.describe('mobile header menu', () => {
 
     await toggle.click();
     await expect(toggle).toHaveAttribute('aria-expanded', 'true');
-    await expect(nav.getByRole('link')).toHaveCount(5);
+    await expect(nav.getByRole('link')).toHaveCount(9);
     await expect(nav.locator('a[aria-current="page"]')).toHaveText('System fonts');
 
     await nav.getByRole('link').first().focus();
@@ -30,6 +30,16 @@ test.describe('mobile header menu', () => {
     await expect(toggle).toBeHidden();
     await page.setViewportSize({ width: 375, height: 700 });
     await expect(nav).toBeHidden();
+  });
+
+  test('lists the secondary pages flat in the mobile menu', async ({ page }) => {
+    await page.goto('/en/credits/');
+    await page.getByRole('button', { name: 'Menu' }).click();
+    const nav = page.getByRole('navigation', { name: 'Main' });
+    for (const name of ['CLI', 'MCP server', 'Extensions', 'Credits', 'Changelog']) {
+      await expect(nav.getByRole('link', { name })).toBeVisible();
+    }
+    await expect(nav.locator('a[aria-current="page"]')).toHaveText('Credits');
   });
 
   test('keeps a single dropdown open at a time', async ({ page }) => {
@@ -64,8 +74,48 @@ test.describe('mobile header menu', () => {
 
   for (const locale of LOCALES) {
     test(`${locale}: the open header does not overflow horizontally`, async ({ page }) => {
+      await page.setViewportSize({ width: 320, height: 700 });
       await page.goto(`/${locale}/`);
       await page.locator('[data-nav-toggle]').click();
+      const overflow = await page.evaluate(
+        () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
+      );
+      expect(overflow).toBeLessThanOrEqual(0);
+    });
+  }
+});
+
+test.describe('desktop header menu', () => {
+  test.use({ viewport: { width: 1024, height: 700 } });
+
+  test('groups the secondary pages under More and keeps one dropdown open', async ({ page }) => {
+    await page.goto('/en/changelog/');
+    const nav = page.getByRole('navigation', { name: 'Main' });
+    const more = page.locator('[data-more-menu]');
+    const language = page.locator('[data-locale-menu]');
+    await expect(nav.getByRole('link', { name: 'Changelog' })).toBeHidden();
+    await more.locator('summary').click();
+    await expect(more).toHaveJSProperty('open', true);
+    await expect(nav.getByRole('link', { name: 'Changelog' })).toHaveAttribute(
+      'aria-current',
+      'page',
+    );
+    for (const name of ['CLI', 'MCP server', 'Extensions', 'Credits']) {
+      await expect(nav.getByRole('link', { name })).toBeVisible();
+    }
+    await language.locator('summary').click();
+    await expect(more).toHaveJSProperty('open', false);
+    await more.locator('summary').click();
+    await expect(language).toHaveJSProperty('open', false);
+    await page.keyboard.press('Escape');
+    await expect(more).toHaveJSProperty('open', false);
+  });
+
+  for (const locale of LOCALES) {
+    test(`${locale}: the open More list does not overflow at 768px`, async ({ page }) => {
+      await page.setViewportSize({ width: 768, height: 700 });
+      await page.goto(`/${locale}/credits/`);
+      await page.locator('[data-more-menu] > summary').click();
       const overflow = await page.evaluate(
         () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
       );
