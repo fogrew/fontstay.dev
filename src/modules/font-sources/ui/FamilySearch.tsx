@@ -63,7 +63,6 @@ export function useFamilySearch({
   const [message, setMessage] = useState('');
   const [downloading, setDownloading] = useState(false);
   const [navigation, setNavigation] = useState<{ query: string; index: number }>();
-  const [listboxFocused, setListboxFocused] = useState(false);
 
   useEffect(() => {
     for (const id of Object.keys(SOURCES) as SourceId[]) {
@@ -91,9 +90,7 @@ export function useFamilySearch({
         result.push({ source: id, family });
       }
     }
-    return query.trim()
-      ? result.sort((a, b) => a.family.name.localeCompare(b.family.name))
-      : result;
+    return result;
   }, [catalogs, query]);
   const bestIndex = bestMatchIndex(
     hits.map((hit) => hit.family.name),
@@ -136,7 +133,10 @@ export function useFamilySearch({
     } else if ((event.key === 'Tab' || event.key === 'Enter') && activeIndex >= 0) {
       const hit = hits[activeIndex];
       if (!hit) return;
-      if (event.key === 'Tab') {
+      if (event.key === 'Enter') {
+        if (query.includes('\n')) return;
+        if (chosen?.source === hit.source && chosen.family.id === hit.family.id) return;
+      } else {
         if (!(event.currentTarget instanceof HTMLTextAreaElement)) return;
         if (!query.trim() || !hit.family.name.toLowerCase().startsWith(query.trim().toLowerCase()))
           return;
@@ -192,7 +192,6 @@ export function useFamilySearch({
   };
 
   return {
-    listId: enabled && hits.length > 0 ? listId : undefined,
     onKeyDown: handleKeyDown,
     content: enabled ? (
       <div class="ff-source">
@@ -201,7 +200,7 @@ export function useFamilySearch({
             {loading ? t.source_loading() : t.source_list_label()}
           </p>
           {failed && <p class="ff-source__text ff-error">{t.source_error_catalog()}</p>}
-          {hits.length > 0 && !listboxFocused && (
+          {hits.length > 0 && (
             <p class="ff-sr-only" role="status">
               {query.trim() && activeIndex >= 0
                 ? t.source_suggestion({
@@ -218,27 +217,22 @@ export function useFamilySearch({
           )}
         </div>
         {hits.length > 0 ? (
-          <ScrollShadow class="ff-source__scroll">
+          <ScrollShadow class="ff-source__scroll" tabIndex={0} label={t.source_list_label()}>
             <div
               id={listId}
               role="listbox"
-              tabIndex={0}
-              aria-activedescendant={
-                activeIndex >= 0 ? `${listId}-option-${activeIndex}` : undefined
-              }
               class="ff-generator__list ff-source__list"
               aria-label={t.source_list_label()}
-              onKeyDown={handleKeyDown}
-              onFocus={() => setListboxFocused(true)}
-              onBlur={() => setListboxFocused(false)}
             >
               {hits.map((hit, index) => (
-                // biome-ignore lint/a11y/useFocusableInteractive lint/a11y/useKeyWithClickEvents: focus stays on the listbox through aria-activedescendant
+                // biome-ignore lint/a11y/useFocusableInteractive lint/a11y/useKeyWithClickEvents: keyboard selection stays on the textarea
                 <div
                   id={`${listId}-option-${index}`}
                   role="option"
-                  aria-selected={index === activeIndex}
-                  class={`ff-control ff-generator__item ff-source__item${chosen?.source === hit.source && chosen.family.id === hit.family.id ? ' ff-source__item--chosen' : ''}`}
+                  aria-selected={
+                    chosen?.source === hit.source && chosen.family.id === hit.family.id
+                  }
+                  class={`ff-control ff-generator__item ff-source__item${index === activeIndex ? ' ff-source__item--active' : ''}${chosen?.source === hit.source && chosen.family.id === hit.family.id ? ' ff-source__item--chosen' : ''}`}
                   key={`${hit.source}-${hit.family.id}`}
                   onClick={() => {
                     setNavigation({ query, index });

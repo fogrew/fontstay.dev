@@ -389,7 +389,7 @@
   text-align: start;
   cursor: pointer;
 }
-.ff-source__item[aria-selected="true"] {
+.ff-source__item--active {
   background: var(--ff-state-full);
 }
 .ff-source__item--chosen {

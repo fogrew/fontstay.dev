@@ -140,8 +140,6 @@ export function FontInput({
           rows={2}
           spellcheck={false}
           autocomplete="off"
-          aria-autocomplete={searching ? 'list' : undefined}
-          aria-controls={familySearch.listId}
           aria-describedby="ff-input-hint"
           placeholder={t.input_placeholder()}
           value={text}
