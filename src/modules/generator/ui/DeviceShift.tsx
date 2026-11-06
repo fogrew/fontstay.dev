@@ -61,8 +61,16 @@ export function DeviceShift({
                 {t.article_shift_after()}, {label(rating)}
               </span>
             </strong>
-            {before !== undefined && delta.format(worst - before) !== delta.format(0) && (
-              <span class="ff-shift__baseline">({delta.format(worst - before)})</span>
+            {before !== undefined && Math.round((worst - before) * 1000) !== 0 && (
+              <span
+                class="ff-shift__baseline"
+                title={`${t.article_shift_before()}: ${format.format(before)}`}
+              >
+                <span class="ff-sr-only">
+                  {t.article_shift_before()}: {format.format(before)}{' '}
+                </span>
+                ({delta.format(worst - before)})
+              </span>
             )}
           </span>
           <Popover label={t.article_shift_details()} align="end">
