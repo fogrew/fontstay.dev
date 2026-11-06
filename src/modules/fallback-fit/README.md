@@ -83,3 +83,15 @@ formats and parses CSS `unicode-range` values (`U+20-7E, U+A0`), counts and
 intersects ranges, and reports coverage of named subsets (`SUBSETS`: latin,
 latin-ext, vietnamese, cyrillic, cyrillic-ext, greek, greek-ext). The subset
 definitions follow the `unicode-range` values served by the Google Fonts CSS API.
+
+## Why Trebuchet MS often wins on Windows
+
+Study for #412, input to #411. Fifteen Google Fonts families (Open Sans, Roboto, Inter, Lora, Merriweather, Montserrat, Poppins, Lato, Nunito, Playfair Display, Source Sans 3, Noto Sans, Work Sans, PT Serif, Raleway; default instance, English profile) were parsed with the app's parser and ranked by `rankFor` for Windows over its 18 candidates.
+
+- **Frequency.** Trebuchet MS is first for 3 of 15 (Open Sans, Lora, Work Sans), second for Playfair Display and fifth to fourteenth for the rest. It wins for wide-ish faces whose fit needs about +3% (Open Sans 1.028, Lora 1.027), not for most fonts. Tahoma, Palatino Linotype, Segoe UI and Arial take the other first places.
+- **Why it wins.** Predicted shift is a step function: 2 to 18 of the 18 candidates (median 11) score exactly 0 at every viewport, so the order within them is set by the small terms: `0.05 * |ln(sizeAdjust)|` plus `0.05 * widthMismatch`. Trebuchet MS is the Windows font whose natural width (1.022 of Arial) is nearest to those web fonts. For Open Sans: Trebuchet MS cost 0.0016 (size-adjust 1.0283), Palatino Linotype 0.0023, Tahoma 0.0025, Segoe UI 0.0030. The gap between first and second is at most 0.0009 for every font tested (median 0.0003), so the choice among the zero-shift group is nearly arbitrary.
+- **Not a data artifact.** Trebuchet MS is measured from glyph advances (not latin-only, coverage 100%). Its Latin-weighted width relative to Arial is 1.0223 measured against 1.0230 from Capsize; Tahoma, Segoe UI, Verdana, Georgia and Times New Roman agree within 0.1% too. The hhea metrics (1923/-455/0 per 2048) match the Capsize table. No weight or data change is made.
+- **Real effect of the weights.** Where predicted shift is non-zero it dominates (Open Sans: Arial and Georgia score 0.0183 from a line-wrap flip and fall to ninth and tenth). Closeness to 100% matters only as a tie-break.
+
+Consequence for the UI (#411): the list order is by predicted layout shift first and then by closeness of size-adjust to 100% and width, so the number shown next to a font is not the sort key and values above 100% are normal.
+
