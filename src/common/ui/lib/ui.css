@@ -396,6 +396,10 @@
   white-space: nowrap;
   cursor: pointer;
 }
+.ff-select__detail {
+  margin-inline-start: auto;
+  padding-inline-start: var(--ff-space-2);
+}
 .ff-select__group {
   padding: var(--ff-space-2) var(--ff-space-2) var(--ff-space-1);
   color: var(--ff-muted);

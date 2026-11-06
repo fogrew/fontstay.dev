@@ -2,7 +2,7 @@ import { type ComponentChildren, Fragment } from 'preact';
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'preact/hooks';
 import { type Locale, messagesFor } from '@/common/i18n';
 import { Icon, Popover, ScrollShadow, Select } from '@/common/ui';
-import { type Device, DevicePicker } from '@/modules/devices';
+import { type Device, DevicePicker, loadDevices } from '@/modules/devices';
 import { isProbeWidth, measureShift, shiftWidths, type WidthShift } from '../lib/article-shift';
 import {
   ARTICLE_IDS,
@@ -53,7 +53,7 @@ import {
   WRAPS,
   type Wrap,
 } from '../lib/view-state';
-import { DeviceShift } from './DeviceShift';
+import { DeviceShift, ShiftBadge } from './DeviceShift';
 import { IntroGuide } from './IntroGuide';
 import { ToolIcon } from './ToolIcons';
 
@@ -343,6 +343,7 @@ export function ArticleView({
     adjusted: WidthShift[];
     plain: WidthShift[];
   }>();
+  const [deviceShifts, setDeviceShifts] = useState<ReadonlyMap<number, number>>();
   const probe = useRef<HTMLDivElement>(null);
   const [notInstalled, setNotInstalled] = useState<string[]>([]);
   const localeArticle: ArticleId = (ARTICLE_IDS as readonly string[]).includes(locale)
@@ -515,6 +516,7 @@ export function ArticleView({
     if (!fontsReady) return;
     let cancelled = false;
     setShiftResults(undefined);
+    setDeviceShifts(undefined);
     const timer = setTimeout(() => {
       void document.fonts.ready.then(() => {
         const wrapper = probe.current;
@@ -530,6 +532,14 @@ export function ArticleView({
           adjusted: report.adjusted.filter((item) => isProbeWidth(item.width)),
           plain: report.plain.filter((item) => isProbeWidth(item.width)),
         });
+        loadDevices()
+          .then((list) => {
+            if (cancelled) return;
+            const widths = [...new Set(list.map((entry) => entry.width))];
+            const scores = measureShift(wrapper, web, fallback, widths);
+            setDeviceShifts(new Map(scores.map((item) => [item.width, item.score])));
+          })
+          .catch(() => undefined);
       });
     }, 300);
     return () => {
@@ -1090,6 +1100,10 @@ export function ArticleView({
         <DevicePicker
           locale={locale}
           value={device}
+          detail={(entry) => {
+            const score = deviceShifts?.get(entry.width);
+            return score === undefined ? undefined : <ShiftBadge locale={locale} score={score} />;
+          }}
           onChange={(next) => {
             setDevice(next);
             sizeFrame(next?.width);
@@ -1103,7 +1117,6 @@ export function ArticleView({
           locale={locale}
           results={shiftResults?.adjusted}
           focusWidth={focusWidth}
-          currentWidth={previewWidth}
           baseline={shiftResults?.plain}
           fitting={fitting}
         />

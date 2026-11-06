@@ -8,6 +8,7 @@ export interface SelectOption {
   disabled?: boolean;
   icon?: ComponentChildren;
   group?: string;
+  detail?: ComponentChildren;
 }
 
 export interface SelectProps {
@@ -186,6 +187,7 @@ export function Select({
       >
         {option.icon}
         {option.label}
+        {option.detail && <span class="ff-select__detail">{option.detail}</span>}
       </div>
     );
   };
