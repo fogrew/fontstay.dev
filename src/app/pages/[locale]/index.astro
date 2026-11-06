@@ -8,6 +8,8 @@ export function getStaticPaths() {
 }
 
 const locale = assertIsLocale(Astro.params.locale);
+Astro.csp?.insertScriptResource("'self'");
+Astro.csp?.insertScriptResource("'wasm-unsafe-eval'");
 ---
 
 <BaseLayout {locale} path="/">

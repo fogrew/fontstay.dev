@@ -12,7 +12,8 @@ The app reads font files that users choose and builds CSS and previews from them
 | Directive or header | Value | Why |
 |---|---|---|
 | `default-src` | `'self'` | Nothing is loaded from other origins. |
-| `script-src`, `style-src` | `'self'` plus Astro's hashes; `script-src` also `'wasm-unsafe-eval'` | No `'unsafe-inline'` and no `'unsafe-eval'`. `'wasm-unsafe-eval'` only lets the bundled, same-origin HarfBuzz module (`harfbuzzjs`, shapes the width ratios of the optimizer) compile; it does not allow `eval` or `new Function`. |
+| `script-src`, `style-src` | `'self'` plus Astro's hashes | No `'unsafe-inline'` and no `'unsafe-eval'`. |
+| `script-src` on the generator page (`/:locale/`) | also `'wasm-unsafe-eval'` | Added per page with `Astro.csp.insertScriptResource` in `src/app/pages/[locale]/index.astro`, only where the optimizer runs. It lets the bundled, same-origin HarfBuzz module (`harfbuzzjs`, shapes the width ratios) compile; it does not allow `eval` or `new Function`. It lives in the meta policy because a header cannot widen it (both policies are enforced), so every other page keeps the strict policy. |
 | `worker-src` | `'self'` | The font parser worker is a same-origin bundled module; no blob workers. |
 | `frame-src` | `'self'` | Same-origin frames only (planned CLS simulator). |
 | `font-src` | `'self' blob: data:` | Uploaded fonts are loaded from bytes in memory. |
