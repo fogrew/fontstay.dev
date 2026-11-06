@@ -472,6 +472,7 @@
   --ff-guide-baseline: var(--ff-error);
   --ff-guide-descender: var(--ff-muted);
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: var(--ff-space-3);
 }
 .ff-article-view__controls .ff-field {

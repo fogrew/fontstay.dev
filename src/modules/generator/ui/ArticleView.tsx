@@ -43,6 +43,7 @@ import {
   type LayerKind,
   type LayerStyle,
   type LensShows,
+  lensDefault,
   type PreviewView,
   RENDERS,
   type Render,
@@ -77,7 +78,8 @@ const INITIAL_LAYERS: Record<LayerId, LayerStyle> = {
   plain: { render: 'outline', color: 'amber', width: 1, opacity: 100 },
 };
 
-const PRESET_ORDER: readonly Preset[] = ['overlay', 'side', 'slider', 'web', 'fallback', 'plain'];
+const COMPARE_ORDER: readonly Preset[] = ['slider', 'overlay', 'side'];
+const VIEW_ORDER: readonly Preset[] = ['web', 'fallback', 'plain'];
 const LENS_STEP = 24;
 const MIN_FRAME = 320;
 const FRAME_STEP = 16;
@@ -285,8 +287,8 @@ export function ArticleView({
   const [articleId, setArticleId] = useState<ArticleId>(
     (ARTICLE_IDS as readonly string[]).includes(locale) ? (locale as ArticleId) : 'en',
   );
-  const [positions, setPositions] = useState(PRESETS.overlay);
-  const [xray, setXray] = useState(false);
+  const [positions, setPositions] = useState(PRESETS.slider);
+  const [xray, setXray] = useState(true);
   const [frameWidth, setFrameWidth] = useState<number>();
   const [device, setDevice] = useState<Device>();
   const [pageWidth, setPageWidth] = useState(0);
@@ -299,7 +301,7 @@ export function ArticleView({
   const [bodyPick, setBodyPick] = useState<string>();
   const [layers, setLayers] = useState(INITIAL_LAYERS);
   const [stacked, setStacked] = useState(false);
-  const [lensShows, setLensShows] = useState<LensShows>('overlay');
+  const [lensShows, setLensShows] = useState<LensShows>();
   const [lensSize, setLensSize] = useState(200);
   const [split, setSplit] = useState(50);
   const slider = useRef<HTMLDivElement>(null);
@@ -309,6 +311,7 @@ export function ArticleView({
   const inspectable = visibleLayers(positions).some((id) => id !== 'plain');
   const overlaid = hasPosition(positions, 'ghost');
   const preset = presetOf(positions);
+  const lensContent = lensShows ?? lensDefault(preset ?? 'slider');
   const [guideOn, setGuideOn] = useState<Record<GuideId, boolean>>({
     ascender: false,
     cap: false,
@@ -618,7 +621,7 @@ export function ArticleView({
     boxes,
     positions,
     xray,
-    lensShows,
+    lensContent,
     stacked,
     layers,
     fontsReady,
@@ -778,14 +781,29 @@ export function ArticleView({
     ...families.map((family) => ({ value: family, label: family })),
     { value: SYSTEM, label: t.article_font_system() },
   ];
+  const presetButton = (value: Preset) => (
+    <button
+      key={value}
+      type="button"
+      class="ff-control ff-button ff-button--secondary ff-tool-button"
+      aria-pressed={preset === value}
+      aria-label={presetLabel(value)}
+      title={presetLabel(value)}
+      disabled={empty}
+      onClick={() => setPositions(PRESETS[value])}
+    >
+      <ToolIcon name={value} />
+    </button>
+  );
   const xrayContent = (
     <>
       <Select
         compact
         label={t.loupe_shows()}
-        value={lensShows}
+        value={lensContent}
         options={[
           { value: 'overlay', label: t.mode_overlay() },
+          { value: 'web', label: t.preview_web_label() },
           { value: 'fallback', label: t.preview_fallback_label() },
           { value: 'plain', label: t.article_view_plain() },
         ]}
@@ -1000,21 +1018,12 @@ export function ArticleView({
       </div>
       <div class="ff-article-view__controls ff-toolbar">
         <fieldset class="ff-preview__modes ff-toolbar__modes ff-button-group">
+          <legend class="ff-button-group__legend ff-sr-only">{t.preview_compare_label()}</legend>
+          {COMPARE_ORDER.map(presetButton)}
+        </fieldset>
+        <fieldset class="ff-preview__modes ff-toolbar__modes ff-button-group">
           <legend class="ff-button-group__legend ff-sr-only">{t.preview_mode_label()}</legend>
-          {PRESET_ORDER.map((value) => (
-            <button
-              key={value}
-              type="button"
-              class="ff-control ff-button ff-button--secondary ff-tool-button"
-              aria-pressed={preset === value}
-              aria-label={presetLabel(value)}
-              title={presetLabel(value)}
-              disabled={empty}
-              onClick={() => setPositions(PRESETS[value])}
-            >
-              <ToolIcon name={value} />
-            </button>
-          ))}
+          {VIEW_ORDER.map(presetButton)}
         </fieldset>
         <span
           class="ff-preview__arrange ff-button-group"
@@ -1183,7 +1192,7 @@ export function ArticleView({
               ref={slider}
               data-pane=""
               data-stacked={clipped && stacked ? '' : undefined}
-              style={clipped ? { '--ff-split': `${split}%` } : undefined}
+              style={clipped && hydrated ? { '--ff-split': `${split}%` } : undefined}
             >
               {LAYER_IDS.filter((id) => positions[id] !== 'hidden').map((id) =>
                 positions[id] === 'clip' ? (
@@ -1244,13 +1253,13 @@ export function ArticleView({
             <>
               <div class="ff-article-view__lens" aria-hidden="true" {...{ inert: true }}>
                 <div class="ff-article-view__lens-pane">
-                  {lensShows === 'overlay' ? (
+                  {lensContent === 'overlay' ? (
                     <div class="ff-article-view__overlay">
                       {page('web', { copy: true, styled: true })}
                       {page('fallback', { ghost: true, styled: true })}
                     </div>
                   ) : (
-                    page(lensShows, { copy: true })
+                    page(lensContent, { copy: true })
                   )}
                 </div>
               </div>

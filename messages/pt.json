@@ -47,6 +47,7 @@
   "type_mono": "Monoespaçada",
   "type_cursive": "Cursiva",
   "preview_mode_label": "Visualização",
+  "preview_compare_label": "Comparar",
   "mode_side": "Lado a lado",
   "mode_overlay": "Sobreposição",
   "preview_size_label": "Tamanho do texto",
