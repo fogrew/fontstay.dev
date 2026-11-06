@@ -65,6 +65,7 @@
 - [WCAG 2.2 non-text contrast](https://www.w3.org/WAI/WCAG22/Understanding/non-text-contrast.html) and [relative luminance](https://www.w3.org/TR/WCAG22/#dfn-relative-luminance) — independent control-boundary contrast checks alongside axe.
 - [Biome suppressions](https://biomejs.dev/analyzer/suppressions/) — narrowly scoped exceptions for keyboard focus on tab panels and scrollable code.
 - [WAI-ARIA Tabs Pattern](https://www.w3.org/WAI/ARIA/apg/patterns/tabs/) — tab semantics and roving keyboard focus.
+- [WAI-ARIA 1.2](https://www.w3.org/TR/wai-aria-1.2/#aria-activedescendant) — listbox active suggestion semantics.
 - [Preact hooks](https://preactjs.com/guide/v10/hooks/#useid) — stable server/client IDs and local component state.
 - [MDN light-dark](https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/Values/color_value/light-dark) and [forced colors](https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/At-rules/@media/forced-colors) — theme and system-color handling.
 - [MDN Clipboard.writeText](https://developer.mozilla.org/en-US/docs/Web/API/Clipboard/writeText) — explicit copy actions with accessible failure feedback.

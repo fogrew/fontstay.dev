@@ -1,9 +1,15 @@
-import { useEffect, useMemo, useState } from 'preact/hooks';
+import { useEffect, useId, useMemo, useState } from 'preact/hooks';
 import { type Locale, messagesFor } from '@/common/i18n';
 import { Button, ScrollShadow, ToggleGroup } from '@/common/ui';
 import { FontSourceError } from '../lib/download';
 import { downloadOrigin, type FontOrigin, SOURCES, type SourceId } from '../lib/origin';
-import { CJK_SUBSETS, type FontFamily, parseStyle, searchFamilies } from '../lib/types';
+import {
+  bestMatchIndex,
+  CJK_SUBSETS,
+  type FontFamily,
+  parseStyle,
+  searchFamilies,
+} from '../lib/types';
 
 type Catalog =
   | { state: 'loading' }
@@ -16,33 +22,50 @@ interface Hit {
 }
 
 const HITS_PER_SOURCE = 8;
+const FONTSOURCE_EXAMPLES = [
+  'Geist Sans',
+  'Open Sauce Sans',
+  'DejaVu Sans',
+  'DejaVu Serif',
+  'Adwaita Sans',
+  'Commit Mono',
+  'Aileron',
+  'Clear Sans',
+];
 const scriptsOf = (family: FontFamily) => family.subsets.filter((name) => !CJK_SUBSETS.has(name));
 
-export function FamilySearch({
+export function useFamilySearch({
   locale,
   busy,
   query,
+  enabled,
+  onAccepted,
   slots,
   onFiles,
 }: {
   locale: Locale;
   busy: boolean;
   query: string;
+  enabled: boolean;
+  onAccepted: (name: string) => void;
   slots: number;
   onFiles: (files: File[], origins: ReadonlyMap<File, FontOrigin>) => void;
 }) {
   const t = messagesFor(locale);
-  const [catalogs, setCatalogs] = useState<Partial<Record<SourceId, Catalog>>>({});
+  const listId = useId();
+  const [catalogs, setCatalogs] = useState<Record<SourceId, Catalog>>({
+    google: { state: 'loading' },
+    fontsource: { state: 'loading' },
+  });
   const [chosen, setChosen] = useState<Hit>();
   const [styles, setStyles] = useState<ReadonlySet<string>>(new Set(['400']));
   const [subsets, setSubsets] = useState<ReadonlySet<string>>(new Set(['latin']));
   const [message, setMessage] = useState('');
   const [downloading, setDownloading] = useState(false);
+  const [navigation, setNavigation] = useState<{ query: string; index: number }>();
 
   useEffect(() => {
     for (const id of Object.keys(SOURCES) as SourceId[]) {
-      if (catalogs[id]) continue;
-      setCatalogs((current) => ({ ...current, [id]: { state: 'loading' } }));
       SOURCES[id].loadCatalog().then(
         (families) =>
           setCatalogs((current) => ({ ...current, [id]: { state: 'ready', families } })),
@@ -52,16 +75,29 @@ export function FamilySearch({
   }, []);
 
   const hits = useMemo(() => {
+    if (Object.values(catalogs).some((catalog) => catalog.state === 'loading')) return [];
     const result: Hit[] = [];
     for (const id of Object.keys(SOURCES) as SourceId[]) {
       const catalog = catalogs[id];
       if (catalog?.state !== 'ready') continue;
-      for (const family of searchFamilies(catalog.families, query, '', HITS_PER_SOURCE)) {
+      const families =
+        !query.trim() && id === 'fontsource'
+          ? FONTSOURCE_EXAMPLES.flatMap((name) =>
+              catalog.families.filter((family) => family.name === name),
+            )
+          : searchFamilies(catalog.families, query, '', HITS_PER_SOURCE);
+      for (const family of families) {
         result.push({ source: id, family });
       }
     }
-    return result.sort((a, b) => a.family.name.localeCompare(b.family.name));
+    return result;
   }, [catalogs, query]);
+  const bestIndex = bestMatchIndex(
+    hits.map((hit) => hit.family.name),
+    query,
+  );
+  const activeIndex =
+    navigation?.query === query && hits[navigation.index] ? navigation.index : bestIndex;
 
   const states = Object.values(catalogs).map((catalog) => catalog?.state);
   const loading = states.includes('loading');
@@ -74,12 +110,43 @@ export function FamilySearch({
   };
 
   const choose = (hit: Hit) => {
+    if (chosen?.source === hit.source && chosen.family.id === hit.family.id) return;
     setChosen(hit);
     const { family } = hit;
     setStyles(new Set([family.styles.includes('400') ? '400' : (family.styles[0] ?? '400')]));
     const names = scriptsOf(family);
     setSubsets(new Set([names.includes('latin') ? 'latin' : (names[0] ?? 'latin')]));
     setMessage('');
+  };
+  const handleKeyDown = (event: KeyboardEvent) => {
+    if (event.isComposing || event.shiftKey || event.altKey || event.ctrlKey || event.metaKey)
+      return;
+    if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+      if (hits.length === 0) return;
+      event.preventDefault();
+      const index =
+        event.key === 'ArrowDown'
+          ? Math.min(activeIndex + 1, hits.length - 1)
+          : Math.max(activeIndex < 0 ? 0 : activeIndex - 1, 0);
+      setNavigation({ query, index });
+      document.getElementById(`${listId}-option-${index}`)?.scrollIntoView({ block: 'nearest' });
+    } else if ((event.key === 'Tab' || event.key === 'Enter') && activeIndex >= 0) {
+      const hit = hits[activeIndex];
+      if (!hit) return;
+      if (event.key === 'Enter') {
+        if (query.includes('\n')) return;
+        if (chosen?.source === hit.source && chosen.family.id === hit.family.id) return;
+      } else {
+        if (!(event.currentTarget instanceof HTMLTextAreaElement)) return;
+        if (!query.trim() || !hit.family.name.toLowerCase().startsWith(query.trim().toLowerCase()))
+          return;
+        if (hit.family.name.toLowerCase() === query.trim().toLowerCase()) return;
+        if (chosen?.source === hit.source && chosen.family.id === hit.family.id) return;
+      }
+      if (event.key === 'Enter') event.preventDefault();
+      choose(hit);
+      onAccepted(hit.family.name);
+    }
   };
   const count = styles.size * subsets.size;
 
@@ -124,114 +191,144 @@ export function FamilySearch({
     setDownloading(false);
   };
 
-  return (
-    <div class="ff-source">
-      <div role="status">
-        {loading && <p class="ff-source__text ff-muted">{t.source_loading()}</p>}
-        {failed && <p class="ff-source__text ff-error">{t.source_error_catalog()}</p>}
-        {!loading && hits.length === 0 && !failed && (
-          <p class="ff-source__text ff-muted">{t.source_none()}</p>
-        )}
-      </div>
-      {hits.length > 0 && (
-        <ScrollShadow class="ff-source__scroll">
-          <ul class="ff-generator__list ff-source__list" aria-label={t.source_list_label()}>
-            {hits.map((hit) => (
-              <li class="ff-generator__item" key={`${hit.source}-${hit.family.id}`}>
-                <button
-                  type="button"
-                  class="ff-control ff-source__item"
-                  aria-pressed={chosen?.source === hit.source && chosen.family.id === hit.family.id}
-                  onClick={() => choose(hit)}
+  return {
+    onKeyDown: handleKeyDown,
+    content: enabled ? (
+      <div class="ff-source">
+        <div>
+          <p class="ff-source__text ff-muted">
+            {loading ? t.source_loading() : t.source_list_label()}
+          </p>
+          {failed && <p class="ff-source__text ff-error">{t.source_error_catalog()}</p>}
+          {hits.length > 0 && (
+            <p class="ff-sr-only" role="status">
+              {query.trim() && activeIndex >= 0
+                ? t.source_suggestion({
+                    name: hits[activeIndex]?.family.name ?? '',
+                    count: hits.length,
+                  })
+                : t.source_available({ count: hits.length })}
+            </p>
+          )}
+          {!loading && hits.length === 0 && !failed && (
+            <p class="ff-source__text ff-muted" role="status">
+              {t.source_none()}
+            </p>
+          )}
+        </div>
+        {hits.length > 0 ? (
+          <ScrollShadow class="ff-source__scroll" tabIndex={0} label={t.source_list_label()}>
+            <div
+              id={listId}
+              role="listbox"
+              class="ff-generator__list ff-source__list"
+              aria-label={t.source_list_label()}
+            >
+              {hits.map((hit, index) => (
+                // biome-ignore lint/a11y/useFocusableInteractive lint/a11y/useKeyWithClickEvents: keyboard selection stays on the textarea
+                <div
+                  id={`${listId}-option-${index}`}
+                  role="option"
+                  aria-selected={
+                    chosen?.source === hit.source && chosen.family.id === hit.family.id
+                  }
+                  class={`ff-control ff-generator__item ff-source__item${index === activeIndex ? ' ff-source__item--active' : ''}${chosen?.source === hit.source && chosen.family.id === hit.family.id ? ' ff-source__item--chosen' : ''}`}
+                  key={`${hit.source}-${hit.family.id}`}
+                  onClick={() => {
+                    setNavigation({ query, index });
+                    choose(hit);
+                  }}
                 >
                   <span>{hit.family.name}</span>
                   <span class="ff-muted">{sourceName(hit.source)}</span>
-                </button>
-              </li>
-            ))}
-          </ul>
-        </ScrollShadow>
-      )}
-      {chosen && (
-        <div class="ff-source__chosen">
-          <p class="ff-source__text">
-            <strong>{chosen.family.name}</strong>{' '}
-            <span class="ff-muted">{sourceName(chosen.source)}</span>
-          </p>
-          <div class="ff-source__groups">
-            <fieldset class="ff-toggle-set">
-              <legend class="ff-toggle-set__legend">{t.source_style_label()}</legend>
-              {[false, true].map((italic) => {
-                const keys = chosen.family.styles.filter(
-                  (key) => parseStyle(key).italic === italic,
-                );
-                return keys.length === 0 ? null : (
-                  <div class="ff-toggle-group" key={String(italic)}>
-                    <span class="ff-muted ff-toggle-group__label">
-                      {italic ? t.style_italic() : t.source_upright()}
-                    </span>
-                    <ToggleGroup
-                      key={`${chosen.family.id}-${italic}`}
-                      label={italic ? t.style_italic() : t.source_upright()}
-                      items={keys.map((key) => ({
-                        key,
-                        label: String(parseStyle(key).weight),
-                        ariaLabel: styleLabel(key),
-                      }))}
-                      selected={styles}
-                      onChange={setStyles}
-                    />
-                  </div>
-                );
-              })}
-            </fieldset>
-            <fieldset class="ff-toggle-set">
-              <legend class="ff-toggle-set__legend">{t.source_subset_label()}</legend>
-              <ToggleGroup
-                key={chosen.family.id}
-                label={t.source_subset_label()}
-                items={scriptsOf(chosen.family).map((name) => ({ key: name, label: name }))}
-                selected={subsets}
-                onChange={setSubsets}
-              />
-            </fieldset>
+                </div>
+              ))}
+            </div>
+          </ScrollShadow>
+        ) : (
+          loading && <div class="ff-source__placeholder" aria-hidden="true" />
+        )}
+        {chosen && (
+          <div class="ff-source__chosen">
+            <p class="ff-source__text">
+              <strong>{chosen.family.name}</strong>{' '}
+              <span class="ff-muted">{sourceName(chosen.source)}</span>
+            </p>
+            <div class="ff-source__groups">
+              <fieldset class="ff-toggle-set">
+                <legend class="ff-toggle-set__legend">{t.source_style_label()}</legend>
+                {[false, true].map((italic) => {
+                  const keys = chosen.family.styles.filter(
+                    (key) => parseStyle(key).italic === italic,
+                  );
+                  return keys.length === 0 ? null : (
+                    <div class="ff-toggle-group" key={String(italic)}>
+                      <span class="ff-muted ff-toggle-group__label">
+                        {italic ? t.style_italic() : t.source_upright()}
+                      </span>
+                      <ToggleGroup
+                        key={`${chosen.family.id}-${italic}`}
+                        label={italic ? t.style_italic() : t.source_upright()}
+                        items={keys.map((key) => ({
+                          key,
+                          label: String(parseStyle(key).weight),
+                          ariaLabel: styleLabel(key),
+                        }))}
+                        selected={styles}
+                        onChange={setStyles}
+                      />
+                    </div>
+                  );
+                })}
+              </fieldset>
+              <fieldset class="ff-toggle-set">
+                <legend class="ff-toggle-set__legend">{t.source_subset_label()}</legend>
+                <ToggleGroup
+                  key={chosen.family.id}
+                  label={t.source_subset_label()}
+                  items={scriptsOf(chosen.family).map((name) => ({ key: name, label: name }))}
+                  selected={subsets}
+                  onChange={setSubsets}
+                />
+              </fieldset>
+            </div>
+            <div class="ff-source__add">
+              <Button
+                variant="primary"
+                disabled={busy || downloading || count === 0 || count > slots}
+                onClick={() => void add()}
+              >
+                {count > 1 ? `${t.source_add()} (${count})` : t.source_add()}
+              </Button>
+              {count > slots && <span class="ff-error">{t.source_too_many({ max: slots })}</span>}
+            </div>
           </div>
-          <div class="ff-source__add">
-            <Button
-              variant="primary"
-              disabled={busy || downloading || count === 0 || count > slots}
-              onClick={() => void add()}
-            >
-              {count > 1 ? `${t.source_add()} (${count})` : t.source_add()}
-            </Button>
-            {count > slots && <span class="ff-error">{t.source_too_many({ max: slots })}</span>}
-          </div>
-        </div>
-      )}
-      <p role="status" class="ff-source__text ff-muted">
-        {message}
-      </p>
-      <p class="ff-source__text ff-muted">
-        {t.source_browse()}{' '}
-        <a
-          class="ff-link"
-          href="https://fonts.google.com/"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          {t.source_name_google()}
-        </a>
-        {', '}
-        <a
-          class="ff-link"
-          href="https://fontsource.org/fonts"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          {t.source_name_fontsource()}
-        </a>
-      </p>
-      <p class="ff-source__text ff-muted">{t.source_note()}</p>
-    </div>
-  );
+        )}
+        <p role="status" class="ff-source__text ff-muted">
+          {message}
+        </p>
+        <p class="ff-source__text ff-muted">
+          {t.source_browse()}{' '}
+          <a
+            class="ff-link"
+            href="https://fonts.google.com/"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            {t.source_name_google()}
+          </a>
+          {', '}
+          <a
+            class="ff-link"
+            href="https://fontsource.org/fonts"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            {t.source_name_fontsource()}
+          </a>
+        </p>
+        <p class="ff-source__text ff-muted">{t.source_note()}</p>
+      </div>
+    ) : null,
+  };
 }

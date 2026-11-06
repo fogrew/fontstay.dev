@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'preact/hooks';
 import { type Locale, messagesFor } from '@/common/i18n';
 import { Button } from '@/common/ui';
-import { FamilySearch, type FontOrigin } from '@/modules/font-sources';
+import { type FontOrigin, useFamilySearch } from '@/modules/font-sources';
 import type { SiteImport } from '@/modules/import-receiver';
 import { readClipboardImport, SiteImportPanel } from '@/modules/site-import';
 import { classifyInput } from '../lib/classify-input';
@@ -67,6 +67,16 @@ export function FontInput({
   const [importError, setImportError] = useState(false);
   const [oversized, setOversized] = useState(false);
   const kind = classifyInput(text);
+  const searching = kind === 'empty' || kind === 'name';
+  const familySearch = useFamilySearch({
+    locale,
+    busy,
+    query: text,
+    enabled: searching,
+    onAccepted: setText,
+    slots,
+    onFiles,
+  });
 
   const css = useMemo(() => {
     if (kind !== 'css') return undefined;
@@ -137,11 +147,13 @@ export function FontInput({
             setOversized(false);
             setText(event.currentTarget.value);
           }}
+          onKeyDown={searching ? familySearch.onKeyDown : undefined}
         />
         <p id="ff-input-hint" class="ff-drop__paragraph ff-muted ff-drop__hint">
-          {t.input_hint()} {t.input_formats()}
+          {t.input_hint()} {t.source_keyboard_hint()} {t.input_formats()}
         </p>
       </div>
+      {familySearch.content}
       <p class="ff-drop__paragraph ff-drop__links">
         <button
           type="button"
@@ -174,9 +186,6 @@ export function FontInput({
       />
       {site && <SiteImportPanel locale={locale} />}
       {!compact && <p class="ff-drop__paragraph ff-muted">{t.upload_local()}</p>}
-      {kind === 'name' && (
-        <FamilySearch locale={locale} busy={busy} query={text} slots={slots} onFiles={onFiles} />
-      )}
       <div role="status">
         {importError && <p class="ff-drop__paragraph ff-error">{t.import_paste_error()}</p>}
         {css?.tooLarge && <p class="ff-drop__paragraph ff-error">{t.cssimport_too_large()}</p>}

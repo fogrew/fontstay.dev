@@ -37,3 +37,19 @@ export function searchFamilies(
   }
   return result;
 }
+
+export function bestMatchIndex(names: readonly string[], query: string): number {
+  const needle = query.trim().toLowerCase();
+  if (!needle) return -1;
+  let best = -1;
+  let bestRank = 2;
+  names.forEach((name, index) => {
+    const value = name.toLowerCase();
+    const rank = value === needle ? 0 : value.startsWith(needle) ? 1 : 2;
+    if (rank < bestRank) {
+      best = index;
+      bestRank = rank;
+    }
+  });
+  return best;
+}
