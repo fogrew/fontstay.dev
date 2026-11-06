@@ -1,0 +1,22 @@
+---
+import { assertIsLocale, locales, messagesFor } from '@/common/i18n';
+import { CliPage } from '@/pages/cli';
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+
+export function getStaticPaths() {
+  return locales.map((locale) => ({ params: { locale } }));
+}
+
+const locale = assertIsLocale(Astro.params.locale);
+const t = messagesFor(locale);
+---
+
+<BaseLayout
+  {locale}
+  path="/cli/"
+  page="cli"
+  title={t.cli_title()}
+  description={t.cli_description()}
+>
+  <CliPage {locale} />
+</BaseLayout>

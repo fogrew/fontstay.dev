@@ -1,4 +1,4 @@
-import { type Locale, messagesFor } from '@/common/i18n';
+import { type Locale, localizeHref, messagesFor } from '@/common/i18n';
 import { CodeBlock, type CodeLanguage, Icon, type IconName, Select } from '@/common/ui';
 import { buildExport, EXPORT_FORMATS, type ExportFormat, type ExportInput } from '@/modules/export';
 
@@ -92,6 +92,13 @@ export function ExportPanel({
         language={file.language}
         controls={false}
       />
+      {format !== 'report' && (
+        <p class="ff-muted">
+          <a class="ff-link" href={localizeHref('/cli/', { locale })}>
+            {t.export_cli_link()}
+          </a>
+        </p>
+      )}
     </div>
   );
 }

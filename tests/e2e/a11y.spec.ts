@@ -15,7 +15,16 @@ const fontFile = new URL(
   import.meta.url,
 ).pathname.replace(/^\/([A-Za-z]:)/, '$1');
 const tags = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'];
-const pages = ['/', '/fonts/', '/fonts/arial/', '/presets/', '/guide/', '/mcp/', '/credits/'];
+const pages = [
+  '/',
+  '/fonts/',
+  '/fonts/arial/',
+  '/presets/',
+  '/guide/',
+  '/mcp/',
+  '/cli/',
+  '/credits/',
+];
 
 for (const scheme of ['light', 'dark'] as const) {
   test(`${scheme} scheme: every page has no axe violations`, async ({ page }) => {

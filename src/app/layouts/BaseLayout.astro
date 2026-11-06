@@ -8,7 +8,7 @@ import '../styles/tokens.css';
 interface Props {
   locale: Locale;
   path: string;
-  page?: 'generator' | 'fonts' | 'presets' | 'guide' | 'mcp' | 'credits' | 'changelog';
+  page?: 'generator' | 'fonts' | 'presets' | 'guide' | 'cli' | 'mcp' | 'credits' | 'changelog';
   title?: string;
   description?: string;
 }
@@ -93,6 +93,9 @@ const indexable = !process.env.WORKERS_CI_BRANCH || process.env.WORKERS_CI_BRANC
           <li>
             <a class="ff-link ff-link--tap ff-header__nav-link" href={localizeHref('/guide/', { locale })} aria-current={page === 'guide' ? 'page' : undefined}>{t.nav_guide()}</a>
           </li>
+          <li>
+            <a class="ff-link ff-link--tap ff-header__nav-link" href={localizeHref('/cli/', { locale })} aria-current={page === 'cli' ? 'page' : undefined}>{t.nav_cli()}</a>
+          </li>
         </ul>
       </nav>
       <div class="ff-header__end">
@@ -146,6 +149,7 @@ const indexable = !process.env.WORKERS_CI_BRANCH || process.env.WORKERS_CI_BRANC
       <footer class="ff-footer">
         <a class="ff-link ff-link--tap" href={localizeHref('/guide/', { locale })} aria-current={page === 'guide' ? 'page' : undefined}>{t.nav_guide()}</a>
         <a class="ff-link ff-link--tap" href={localizeHref('/mcp/', { locale })} aria-current={page === 'mcp' ? 'page' : undefined}>{t.nav_mcp()}</a>
+        <a class="ff-link ff-link--tap" href={localizeHref('/cli/', { locale })} aria-current={page === 'cli' ? 'page' : undefined}>{t.nav_cli()}</a>
         <a class="ff-link ff-link--tap" href={localizeHref('/credits/', { locale })} aria-current={page === 'credits' ? 'page' : undefined}>{t.nav_credits()}</a>
         <a class="ff-link ff-link--tap" href={localizeHref('/changelog/', { locale })} aria-current={page === 'changelog' ? 'page' : undefined}>{t.nav_changelog()}</a>
         <a class="ff-link ff-link--tap" href="https://github.com/fogrew/fontstay.dev"><Icon name="github" />{t.header_github()}</a>
