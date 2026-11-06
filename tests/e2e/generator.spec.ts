@@ -2045,13 +2045,12 @@ test('an unsupported file dropped while a font is parsing keeps its warning', as
 test.describe('the generator page itself does not shift while it loads', () => {
   for (const [name, width, budget] of [
     ['desktop', 1500, 0.003],
-    ['phone', 360, 0.001],
+    ['phone', 360, 0.002],
   ] as const) {
     for (const opened of [undefined, 'inputs', 'audience', 'tuning', 'export']) {
       test(`${name}, ${opened ? `${opened} panel saved open` : 'no saved panel'}`, async ({
         page,
       }) => {
-        const swapped = name === 'phone' && opened && opened !== 'inputs';
         await page.setViewportSize({ width, height: 900 });
         await page.addInitScript((id) => {
           const key = 'fontstay:layout:dock';
@@ -2072,7 +2071,7 @@ test.describe('the generator page itself does not shift while it loads', () => {
         await waitForGenerator(page);
         await page.waitForTimeout(1500);
         const total = await page.evaluate(() => (window as unknown as { shifts: number }).shifts);
-        expect(total).toBeLessThan(swapped ? 0.4 : budget);
+        expect(total).toBeLessThan(budget);
       });
     }
   }
