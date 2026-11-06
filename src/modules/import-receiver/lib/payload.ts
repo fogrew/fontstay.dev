@@ -4,6 +4,8 @@ export const MAX_FILE_BYTES = 10 * 1024 * 1024;
 export const MAX_TOTAL_BYTES = 30 * 1024 * 1024;
 export const MAX_FACES = 64;
 export const MAX_USED = 16;
+export const MAX_RULES = 256;
+export const MAX_RANGE = 1500;
 export const MAX_URL = 2000;
 export const MAX_METADATA_BYTES = 200_000;
 
@@ -15,6 +17,13 @@ export interface ImportedFace {
   weight: number;
   style: 'normal' | 'italic';
   url?: string;
+}
+
+export interface ImportedRule {
+  family: string;
+  weight: string;
+  style: 'normal' | 'italic';
+  unicodeRange?: string;
 }
 
 export interface ImportedUse {
@@ -36,6 +45,7 @@ export interface SiteImport {
   verified: boolean;
   title: string;
   faces: ImportedFace[];
+  rules: ImportedRule[];
   used: ImportedUse[];
   files: ImportedFile[];
 }
@@ -109,6 +119,28 @@ function faces(raw: unknown): ImportedFace[] {
   return result;
 }
 
+const RANGE = /^[Uu+0-9a-fA-F?,\s-]+$/;
+
+function rules(raw: unknown): ImportedRule[] {
+  if (!Array.isArray(raw)) return [];
+  const result: ImportedRule[] = [];
+  for (const item of raw.slice(0, MAX_RULES)) {
+    if (!isRecord(item)) continue;
+    const family = cleanText(item.family, 200);
+    if (!family) continue;
+    const range = typeof item.unicodeRange === 'string' ? item.unicodeRange.trim() : '';
+    result.push({
+      family,
+      weight: String(number(item.weight, 1, 1000) ?? 400),
+      style: item.style === 'italic' ? 'italic' : 'normal',
+      ...(range.length > 0 && range.length <= MAX_RANGE && RANGE.test(range)
+        ? { unicodeRange: range }
+        : {}),
+    });
+  }
+  return result;
+}
+
 function used(raw: unknown): ImportedUse[] {
   if (!Array.isArray(raw)) return [];
   const result: ImportedUse[] = [];
@@ -153,6 +185,7 @@ export function sanitizeImport(raw: unknown, origin: string, verified: boolean):
     verified,
     title: cleanText(raw.title, 200),
     faces: faces(raw.faces),
+    rules: rules(raw.rules),
     used: used(raw.used),
     files: files(raw.files),
   };

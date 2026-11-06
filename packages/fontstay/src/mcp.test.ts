@@ -72,7 +72,13 @@ describe('protocol', () => {
     expect(replies.map((reply) => reply.id)).toEqual([1, 2]);
     const tools = replies[1]?.result.tools ?? [];
     const names = tools.map((tool) => tool.name);
-    expect(names).toEqual(['analyze_font', 'suggest_fallbacks', 'get_css', 'get_export']);
+    expect(names).toEqual([
+      'analyze_font',
+      'suggest_fallbacks',
+      'audit_font_faces',
+      'get_css',
+      'get_export',
+    ]);
     for (const tool of tools) {
       expect(tool.inputSchema.type).toBe('object');
       expect(tool.annotations.readOnlyHint).toBe(true);
@@ -286,4 +292,30 @@ describe('stdio server', () => {
     expect(replies[1]?.result.content?.[0]?.text).toContain('@font-face');
     expect(stderr).toBe('');
   }, 30_000);
+});
+
+describe('audit_font_faces', () => {
+  const css =
+    '@font-face{font-family:A;src:url(a.woff2);unicode-range:U+80-FF}@font-face{font-family:A;src:url(b.woff2);unicode-range:U+80-17F}';
+
+  it('reports overlapping rules of a CSS file', async () => {
+    const file = join(scratch, 'split.css');
+    writeFileSync(file, css);
+    const reply = await call('audit_font_faces', { paths: [file] });
+    expect(reply.result.isError).toBeUndefined();
+    expect(reply.result.content?.[0]?.text).toContain(
+      'A 400 normal: rules 1, 2 overlap on 128 characters',
+    );
+  });
+
+  it('says so when nothing is wrong and rejects missing files and bad input', async () => {
+    const clean = join(scratch, 'clean.css');
+    writeFileSync(clean, '@font-face{font-family:A;src:url(a.woff2)}');
+    expect((await call('audit_font_faces', { paths: [clean] })).result.content?.[0]?.text).toBe(
+      'No split-font problems found.',
+    );
+    const missing = await call('audit_font_faces', { paths: [join(scratch, 'none.css')] });
+    expect(missing.result.isError).toBe(true);
+    expect((await call('audit_font_faces', { paths: [] })).result.isError).toBe(true);
+  });
 });

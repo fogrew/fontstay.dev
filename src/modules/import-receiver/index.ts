@@ -2,6 +2,7 @@ export { clearPendingStore, discardPending, takePending } from './lib/handoff';
 export type {
   ImportedFace,
   ImportedFile,
+  ImportedRule,
   ImportedUse,
   SiteImport,
 } from './lib/payload';

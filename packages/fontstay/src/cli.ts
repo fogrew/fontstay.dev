@@ -1,8 +1,10 @@
 import { readFile, writeFile } from 'node:fs/promises';
 import { parseArgs } from 'node:util';
 import {
+  auditCssFiles,
   CATEGORIES,
   type Category,
+  describeIssue,
   EXPORT_FORMATS,
   type ExportFormat,
   type FitOutput,
@@ -14,12 +16,18 @@ import {
 } from './index';
 
 export const USAGE = `Usage: fontstay fit <font-file...> [options]
+       fontstay audit <css-file...> [--json]
        fontstay mcp
 
 Generate metric-adjusted fallback @font-face rules for web fonts.
 
+fontstay audit reads the @font-face rules of CSS files and warns about web fonts split in a way
+that slows text layout: basic Latin across several files, overlapping unicode-range values, and
+the face with the most glyphs declared before faces that overlap it. The warnings are
+informational; the exit code stays 0.
+
 fontstay mcp starts an MCP server on stdio (tools: analyze_font, suggest_fallbacks, get_css,
-get_export) for coding agents.
+get_export, audit_font_faces) for coding agents.
 
 Options:
   -s, --systems <list>     Comma-separated systems to fit: ${OS_IDS.join(', ')}
@@ -101,6 +109,21 @@ export async function run(argv: readonly string[], io: Io): Promise<number> {
       return 0;
     }
     const [command, ...files] = positionals;
+    if (command === 'audit') {
+      if (files.length === 0) throw new UsageError('Give at least one CSS file.');
+      const audits = await auditCssFiles(files);
+      if (values.json) io.stdout(`${JSON.stringify(audits, null, 2)}\n`);
+      else {
+        for (const audit of audits) {
+          for (const issue of audit.issues) {
+            io.stdout(`warning: ${audit.file}: ${describeIssue(issue)}\n`);
+          }
+        }
+        const total = audits.reduce((sum, audit) => sum + audit.issues.length, 0);
+        if (total === 0) io.stdout('No split-font problems found.\n');
+      }
+      return 0;
+    }
     if (command !== 'fit') {
       throw new UsageError(command ? `Unknown command "${command}".` : 'Missing command.');
     }

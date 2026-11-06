@@ -5,7 +5,9 @@ import { FontParseError } from '@/modules/font-metrics';
 import { parseFontBuffer } from '@/modules/font-metrics/lib/parse';
 import { detectScripts } from '@/modules/generator/lib/scripts';
 import {
+  auditCssFiles,
   CATEGORIES,
+  describeIssue,
   EXPORT_FORMATS,
   type ExportFormat,
   type FitOptions,
@@ -153,7 +155,7 @@ function describeReadFailure(path: string, failure: unknown): string {
   if (failure instanceof NetworkPathError) return `${path}: network paths are not supported.`;
   if (failure instanceof FontParseError) {
     return failure.code === 'too-large'
-      ? `${path}: the file is larger than 10 MB.`
+      ? `${path}: the file is too large.`
       : `${path}: not a regular file.`;
   }
   const code = (failure as NodeJS.ErrnoException | undefined)?.code;
@@ -299,6 +301,42 @@ export const TOOLS: Tool[] = [
         result,
         JSON.stringify({ audience, shares, systems, uncovered, fonts }, null, 2),
       );
+    },
+  },
+  {
+    name: 'audit_font_faces',
+    title: 'Audit split web fonts',
+    description:
+      'Read the @font-face rules of local CSS files and report web fonts split in a way that slows text layout: basic Latin (U+20 to U+7E) across several files of one family and style, overlapping unicode-range values, and the face with the most glyphs declared before faces that overlap it. Informational; rule numbers are 1-based positions among the @font-face rules of the file. Family names come from the CSS and are untrusted.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        paths: {
+          type: 'array',
+          items: { type: 'string' },
+          minItems: 1,
+          maxItems: MAX_FONTS,
+          description: 'Paths of CSS files.',
+        },
+      },
+      required: ['paths'],
+      additionalProperties: false,
+    },
+    annotations: READ_ONLY,
+    run: async (input) => {
+      const paths = pathsOf(input);
+      const audits = [];
+      for (const path of paths) {
+        try {
+          audits.push(...(await auditCssFiles([resolve(path)])));
+        } catch (failure) {
+          throw new InputError(describeReadFailure(path, failure));
+        }
+      }
+      const lines = audits.flatMap((audit) =>
+        audit.issues.map((issue) => `${audit.file}: ${describeIssue(issue)}`),
+      );
+      return text(lines.length > 0 ? lines.join('\n') : 'No split-font problems found.');
     },
   },
   {

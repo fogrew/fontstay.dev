@@ -28,6 +28,14 @@ Several font files are merged into one stylesheet, as in the app. Warnings (low 
 
 The output is byte-identical to the app's CSS export for the same font and audience: the same fallbacks, order, scripts and `unicode-range`, and the same optimizer (it nudges the sizes and may add a `.fonts-loading` letter-spacing rule). The optimizer is deterministic: it runs a fixed number of evaluations with no time limit and takes its width ratios from HarfBuzz (`harfbuzzjs`, WebAssembly) for the font you pass and from precomputed values for the system fonts, so it does not depend on a browser or on the fonts installed on the machine. `tests/e2e/cli-parity.spec.ts` compares the test fonts with the app and requires identical output.
 
+### Audit split web fonts
+
+```sh
+fontstay audit site.css [--json]
+```
+
+Reads the `@font-face` rules of CSS files and warns, per family, weight and style, about a web font split in a way that slows text layout: basic Latin (U+20 to U+7E) spread over several files, overlapping `unicode-range` values, and the face with the most glyphs declared before faces that overlap it. Warnings are informational, so the exit code stays `0` (`1` for an unreadable file). Rule numbers are 1-based positions among the `@font-face` rules of the file. `--json` prints `[{ file, rules, issues }]`.
+
 ## MCP server
 
 `fontstay mcp` runs a [Model Context Protocol](https://modelcontextprotocol.io) server on stdio, so an agent in an editor can analyze local font files and write the fallback CSS for them. It reads only the font files the agent names, writes nothing and makes no network requests. Protocol versions 2025-11-25, 2025-06-18, 2025-03-26 and 2024-11-05; tools only.
@@ -48,6 +56,7 @@ Claude Code: `claude mcp add fontstay -- npx -y fontstay mcp`. Before that, or f
 |---|---|---|
 | `analyze_font` | `path` | Names, weight and style, detected type, vertical metrics, scripts, glyph count, variable axes, OpenType feature tags, license. |
 | `suggest_fallbacks` | `paths`, fit options | JSON: the fallback family chosen per system, the audience share of each system, glyph-weight coverage per font, systems without fallbacks. |
+| `audit_font_faces` | `paths` (CSS files) | The split-font warnings of `fontstay audit`, one line each, or a note that there are none. |
 | `get_css` | `paths`, fit options | The `@font-face` and `font-family` CSS, as in `fontstay fit`. |
 | `get_export` | `paths`, `format`, fit options | The same fit as `css`, `variables`, `tailwind`, `next`, `nuxt`, `astro`, `wordpress`, `fontaine`, `preload` or `loading`, then the suggested file name. |
 
@@ -69,6 +78,8 @@ const { css, fonts, shares } = await fit({
 
 const tailwind = (await fitFiles(['inter.woff2'], { format: 'tailwind' })).file.text;
 ```
+
+`auditFontFaces(css)` and `auditCssFiles(paths)` return `{ file, rules, issues }` for CSS text or files, and `describeIssue(issue)` writes an issue as one line.
 
 `fit(options)` takes font bytes, `fitFiles(paths, options)` reads files. Both return `{ css, file, fonts, shares, systems, uncovered, audience }`; `fonts` lists the fallback family picked for each system. Failures throw `FitRunError` (`invalid-audience`, `no-systems`, `no-fit`) or `FontParseError`. Types are in [`index.d.ts`](index.d.ts).
 

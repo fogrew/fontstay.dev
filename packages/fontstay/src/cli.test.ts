@@ -108,3 +108,29 @@ describe('fontstay fit', () => {
     expect(result.stderr).toContain('Invalid audience "not a query"');
   });
 });
+
+describe('fontstay audit', () => {
+  const file = join(scratch, 'faces.css');
+  writeFileSync(
+    file,
+    '@font-face{font-family:A;src:url(a.woff2);unicode-range:U+20-2F,U+3A-40}@font-face{font-family:A;src:url(b.woff2);unicode-range:U+30-39,U+41-7E}',
+  );
+
+  it('prints a warning per issue and exits with 0', async () => {
+    const result = await cli('audit', file);
+    expect(result.code).toBe(0);
+    expect(result.stdout).toContain('warning: faces.css: A 400 normal: basic Latin (U+20-7E)');
+  });
+
+  it('prints a JSON report', async () => {
+    const result = await cli('audit', file, '--json');
+    expect(JSON.parse(result.stdout)).toMatchObject([
+      { file: 'faces.css', rules: 2, issues: [{ kind: 'latin-split', rules: [0, 1] }] },
+    ]);
+  });
+
+  it('needs a file and reports an unreadable one', async () => {
+    expect((await cli('audit')).code).toBe(2);
+    expect((await cli('audit', join(scratch, 'missing.css'))).code).toBe(1);
+  });
+});

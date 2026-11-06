@@ -97,3 +97,31 @@ export declare function fitFiles(
   paths: readonly string[],
   options?: Omit<FitOptions, 'fonts'>,
 ): Promise<FitOutput>;
+
+export interface SplitIssue {
+  /** `latin-split`: basic Latin spread over several files; `overlap`: overlapping `unicode-range` values; `late-real-face`: the face with the most glyphs is declared before faces that overlap it. */
+  kind: 'latin-split' | 'overlap' | 'late-real-face';
+  family: string;
+  weight: string;
+  style: string;
+  /** Zero-based positions of the involved `@font-face` rules. */
+  rules: number[];
+  /** Affected characters as a `unicode-range` value. */
+  characters: string;
+  /** Number of affected code points. */
+  count: number;
+}
+
+export interface FaceAudit {
+  file: string;
+  /** Number of `@font-face` rules read. */
+  rules: number;
+  issues: SplitIssue[];
+}
+
+/** Audit the `@font-face` rules of CSS text for badly split web fonts. */
+export declare function auditFontFaces(css: string, file?: string): FaceAudit;
+/** Audit CSS files; reads at most 14 MB per file. */
+export declare function auditCssFiles(paths: readonly string[]): Promise<FaceAudit[]>;
+/** One-line English description of an issue. Rule numbers are 1-based. */
+export declare function describeIssue(issue: SplitIssue): string;

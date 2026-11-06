@@ -121,6 +121,45 @@ function coversLatin(range: string | undefined): boolean {
   });
 }
 
+export interface FaceRuleText {
+  family: string;
+  weight: string;
+  style: string;
+  unicodeRange?: string;
+}
+
+export function parseFaceRules(css: string): FaceRuleText[] {
+  if (css.length > MAX_CSS_CHARS) return [];
+  const clean = stripComments(css);
+  const lower = clean.toLowerCase();
+  const rules: FaceRuleText[] = [];
+  let position = 0;
+  while (rules.length < MAX_RULES) {
+    const keyword = lower.indexOf('@font-face', position);
+    if (keyword < 0) break;
+    let cursor = keyword + 10;
+    while (cursor < clean.length && /\s/.test(clean[cursor] ?? '')) cursor++;
+    if (clean[cursor] !== '{') {
+      position = keyword + 10;
+      continue;
+    }
+    const end = clean.indexOf('}', cursor + 1);
+    if (end < 0) break;
+    position = end + 1;
+    const values = declarations(clean.slice(cursor + 1, end));
+    const family = unquote(values.get('font-family')).slice(0, 200);
+    if (!family) continue;
+    const range = values.get('unicode-range')?.slice(0, 4096);
+    rules.push({
+      family,
+      weight: (values.get('font-weight') ?? 'normal').slice(0, 20),
+      style: (values.get('font-style') ?? 'normal').slice(0, 20),
+      ...(range ? { unicodeRange: range } : {}),
+    });
+  }
+  return rules;
+}
+
 export function parseFontFaces(css: string): ImportedFace[] {
   if (css.length > MAX_CSS_CHARS) return [];
   const clean = stripComments(css);

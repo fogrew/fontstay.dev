@@ -1345,6 +1345,41 @@ test('CSS files can be chosen and their font declarations are found automaticall
   );
 });
 
+test('pasted CSS with a badly split web font shows informational warnings, Google Fonts layout does not', async ({
+  page,
+}) => {
+  await page.goto('/en/');
+  await waitForGenerator(page);
+  await openStep(page, 'inputs');
+  const upload = page.locator('input[type="file"][accept*="woff2"]');
+  const split = [
+    '@font-face { font-family: "Chunky"; src: url(https://example.com/a.woff2); unicode-range: U+20-2F, U+3A-40; }',
+    '@font-face { font-family: "Chunky"; src: url(https://example.com/b.woff2); unicode-range: U+30-39, U+41-7E; }',
+  ].join('\n');
+  await upload.setInputFiles({
+    name: 'split.css',
+    mimeType: 'text/css',
+    buffer: Buffer.from(split),
+  });
+  const warnings = page.getByRole('region', {
+    name: 'This web font may be split in a way that slows text layout',
+  });
+  await expect(warnings).toContainText(
+    'Chunky 400 normal: basic Latin (U+20-7E) is spread over rules 1, 2.',
+  );
+  const google = [
+    '@font-face { font-family: "Inter"; src: url(https://fonts.gstatic.com/a.woff2); unicode-range: U+0100-02BA, U+02BD-02C5, U+1E00-1E9F; }',
+    '@font-face { font-family: "Inter"; src: url(https://fonts.gstatic.com/b.woff2); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+2000-206F; }',
+  ].join('\n');
+  await upload.setInputFiles({
+    name: 'google.css',
+    mimeType: 'text/css',
+    buffer: Buffer.from(google),
+  });
+  await expect(page.getByRole('list', { name: 'Fonts found in the CSS' })).toBeVisible();
+  await expect(warnings).toHaveCount(0);
+});
+
 test('a Google Fonts family can be searched and downloaded through the two allowed origins', async ({
   page,
 }) => {

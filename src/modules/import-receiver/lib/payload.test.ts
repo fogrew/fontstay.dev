@@ -182,3 +182,36 @@ describe('parseClipboardImport', () => {
     expect(parseClipboardImport(JSON.stringify({ v: 1, faces: [{ family: 'A' }] }))).toBeNull();
   });
 });
+
+describe('sanitizeImport rules', () => {
+  const base = { v: 1, faces: [{ family: 'A' }] };
+
+  it('keeps well-formed rules and drops malformed ranges', () => {
+    const result = sanitizeImport(
+      {
+        ...base,
+        rules: [
+          { family: 'A', weight: 700, style: 'italic', unicodeRange: 'U+0-FF, U+4??' },
+          { family: 'A', weight: 'bold', unicodeRange: '<script>' },
+          { family: 'A', unicodeRange: `U+0,${' U+1,'.repeat(1000)}` },
+          { family: '' },
+          'x',
+        ],
+      },
+      ORIGIN,
+      true,
+    );
+    expect(result?.rules).toEqual([
+      { family: 'A', weight: '700', style: 'italic', unicodeRange: 'U+0-FF, U+4??' },
+      { family: 'A', weight: '400', style: 'normal' },
+      { family: 'A', weight: '400', style: 'normal' },
+    ]);
+  });
+
+  it('caps the number of rules and tolerates a missing or invalid list', () => {
+    const many = Array.from({ length: 400 }, () => ({ family: 'A' }));
+    expect(sanitizeImport({ ...base, rules: many }, ORIGIN, true)?.rules).toHaveLength(256);
+    expect(sanitizeImport(base, ORIGIN, true)?.rules).toEqual([]);
+    expect(sanitizeImport({ ...base, rules: 'x' }, ORIGIN, true)?.rules).toEqual([]);
+  });
+});
