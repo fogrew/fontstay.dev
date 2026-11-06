@@ -2245,6 +2245,8 @@ test.describe('loading a font keeps the surrounding UI stable', () => {
         .locator('.ff-article-view__slider .ff-article:not([data-probe]) .ff-article__title')
         .first();
       await expect(article).toBeVisible();
+      await page.evaluate(() => document.fonts.ready);
+      await page.waitForTimeout(500);
       const settled = await article.boundingBox();
       await page.waitForTimeout(1000);
       expect(await layout()).toEqual(before);
