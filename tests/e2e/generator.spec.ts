@@ -2153,13 +2153,15 @@ test('the preview toolbar stays above the article while scrolling and its popove
   expect((box?.y ?? 0) + (box?.height ?? 0)).toBeLessThanOrEqual(800);
 });
 
-test('the preview toolbar scrolls away on a phone', async ({ page }) => {
+test('the preview toolbar scrolls away on a phone or a short window', async ({ page }) => {
   await page.setViewportSize({ width: 375, height: 700 });
   await page.goto('/en/');
   await waitForGenerator(page);
   await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(sourceSans);
   await closePanels(page);
   const toolbar = page.locator('.ff-article-view__controls');
+  await expect(toolbar).toHaveCSS('position', 'static');
+  await page.setViewportSize({ width: 1000, height: 500 });
   await expect(toolbar).toHaveCSS('position', 'static');
 });
 
