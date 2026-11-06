@@ -38,6 +38,7 @@ import {
   type ExportFormat,
   type ExportInput,
   loadSelfHostArchive,
+  prependSelfHost,
   type SelfHostFont,
   selfHostFontFaces,
 } from '@/modules/export';
@@ -932,14 +933,15 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
     ];
   });
   let selfHostCss = '';
+  let selfHostCssFailed = false;
   if (selfHost && selfHostFonts.length > 0) {
     try {
       selfHostCss = selfHostFontFaces(selfHostFonts);
     } catch {
-      selfHostCss = '';
+      selfHostCssFailed = true;
     }
   }
-  const withSelfHost = (css: string) => (selfHostCss ? `${selfHostCss}\n\n${css}` : css);
+  const withSelfHost = (css: string) => prependSelfHost(selfHostCss, css);
   const downloadSelfHost = async () => {
     setSelfHostFailed(false);
     try {
@@ -957,8 +959,10 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
       const link = document.createElement('a');
       link.href = url;
       link.download = 'self-hosted-fonts.zip';
+      document.body.append(link);
       link.click();
-      URL.revokeObjectURL(url);
+      link.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
     } catch {
       setSelfHostFailed(true);
     }
@@ -2011,7 +2015,7 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
                         checked: selfHost,
                         onChange: setSelfHost,
                         onDownload: () => void downloadSelfHost(),
-                        failed: selfHostFailed,
+                        failed: selfHostFailed || selfHostCssFailed,
                       }
                     : undefined
                 }

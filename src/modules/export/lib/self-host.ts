@@ -22,6 +22,8 @@ const isControl = (char: string) => {
 
 export const SELF_HOST_BASE = '/fonts/';
 
+export const prependSelfHost = (faces: string, css: string) => (faces ? `${faces}\n\n${css}` : css);
+
 export function selfHostFontFaces(
   fonts: readonly SelfHostFont[],
   basePath: string = SELF_HOST_BASE,

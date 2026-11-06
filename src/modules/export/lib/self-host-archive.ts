@@ -63,9 +63,12 @@ export function licenseFile(family: string, fonts: readonly SelfHostArchiveFont[
 
 export function buildSelfHostArchive(fonts: readonly SelfHostArchiveFont[]): Uint8Array {
   const entries: ZipEntry[] = [];
+  const files = new Set<string>();
   const byFamily = new Map<string, SelfHostArchiveFont[]>();
   for (const font of fonts) {
-    entries.push({ name: `fonts/${font.fileName}`, data: font.bytes });
+    if (!files.has(font.fileName))
+      entries.push({ name: `fonts/${font.fileName}`, data: font.bytes });
+    files.add(font.fileName);
     byFamily.set(font.family, [...(byFamily.get(font.family) ?? []), font]);
   }
   const used = new Set<string>();

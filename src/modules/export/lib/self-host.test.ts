@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { CssExportError } from './model';
-import { selfHostFontFaces } from './self-host';
+import { prependSelfHost, selfHostFontFaces } from './self-host';
 import { buildSelfHostArchive, licenseFile, licenseKind } from './self-host-archive';
 
 const roboto = {
@@ -58,6 +58,15 @@ describe('selfHostFontFaces', () => {
       CssExportError,
     );
     expect(() => selfHostFontFaces([roboto], '/x");}body{')).toThrow(CssExportError);
+  });
+});
+
+describe('prependSelfHost', () => {
+  it('puts the self-hosted rules before the fallback css, or leaves it unchanged', () => {
+    const faces = selfHostFontFaces([roboto]);
+    const css = '@font-face { font-family: "Roboto fallback"; }';
+    expect(prependSelfHost(faces, css)).toBe(`${faces}\n\n${css}`);
+    expect(prependSelfHost('', css)).toBe(css);
   });
 });
 
@@ -135,5 +144,18 @@ describe('buildSelfHostArchive', () => {
       'README.txt',
     ])
       expect(text).toContain(name);
+  });
+});
+
+describe('buildSelfHostArchive duplicates', () => {
+  it('stores a file used by two faces once', () => {
+    const font = {
+      ...roboto,
+      bytes: new Uint8Array([1]),
+      copyright: null,
+      license: null,
+      licenseUrl: null,
+    };
+    expect(() => buildSelfHostArchive([font, { ...font, weight: 500 }])).not.toThrow();
   });
 });

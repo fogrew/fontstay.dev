@@ -103,12 +103,15 @@ export function ExportPanel({
             <input
               class="ff-control"
               type="checkbox"
+              aria-describedby="ff-self-host-note"
               checked={selfHost.checked}
               onChange={(event) => selfHost.onChange(event.currentTarget.checked)}
             />{' '}
             {t.self_host_label()}
           </label>
-          <p class="ff-muted">{t.self_host_note()}</p>
+          <p class="ff-muted" id="ff-self-host-note">
+            {t.self_host_note()}
+          </p>
           {selfHost.checked && (
             <Button class="ff-export__download" onClick={selfHost.onDownload}>
               <Icon name="download" />
