@@ -970,7 +970,7 @@ export function ArticleView({
         compact
         label={t.article_sample_label()}
         value={articleId}
-        options={[...ARTICLE_LANGUAGES.map(([id, label]) => ({ value: id, label }))]}
+        options={ARTICLE_LANGUAGES.map(([id, label]) => ({ value: id, label }))}
         onChange={(value) => setArticleId(value as ArticleId)}
       />
     </fieldset>
