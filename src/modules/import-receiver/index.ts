@@ -1,4 +1,4 @@
-export { discardPending, takePending } from './lib/handoff';
+export { clearPendingStore, discardPending, takePending } from './lib/handoff';
 export type {
   ImportedFace,
   ImportedFile,

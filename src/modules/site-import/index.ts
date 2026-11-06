@@ -12,6 +12,10 @@ export async function discardPending() {
   return (await import('./lib/pending')).discardPending();
 }
 
+export async function clearPendingStore() {
+  return (await import('./lib/pending')).clearPendingStore();
+}
+
 export async function readClipboardImport(text: string) {
   return (await import('./lib/pending')).parseClipboardImport(text);
 }

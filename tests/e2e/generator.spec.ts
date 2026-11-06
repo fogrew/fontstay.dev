@@ -1686,6 +1686,35 @@ test.describe('the first visit', () => {
     await expect(expanded(page, 'tuning')).toHaveAttribute('aria-expanded', 'false');
     await context.close();
   });
+
+  test('Forget deletes the imported-site handoff database', async ({ browser, baseURL }) => {
+    const { context, page } = await visit(browser, baseURL);
+    await page.evaluate(
+      () =>
+        new Promise<void>((resolve, reject) => {
+          const request = indexedDB.open('fontstay-import', 1);
+          request.onupgradeneeded = () => request.result.createObjectStore('pending');
+          request.onsuccess = () => {
+            const db = request.result;
+            const tx = db.transaction('pending', 'readwrite');
+            tx.objectStore('pending').put({ receivedAt: Date.now(), value: {} }, 'latest');
+            tx.oncomplete = () => {
+              db.close();
+              resolve();
+            };
+            tx.onerror = () => reject(tx.error);
+          };
+          request.onerror = () => reject(request.error);
+        }),
+    );
+    const names = () =>
+      page.evaluate(async () => (await indexedDB.databases()).map((db) => db.name));
+    expect(await names()).toContain('fontstay-import');
+    await page.getByRole('button', { name: 'Forget', exact: true }).click();
+    await waitForGenerator(page);
+    expect(await names()).not.toContain('fontstay-import');
+    await context.close();
+  });
 });
 
 test('a corrupt share link is ignored', async ({ page }) => {

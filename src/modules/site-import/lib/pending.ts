@@ -1,1 +1,6 @@
-export { discardPending, parseClipboardImport, takePending } from '@/modules/import-receiver';
+export {
+  clearPendingStore,
+  discardPending,
+  parseClipboardImport,
+  takePending,
+} from '@/modules/import-receiver';
