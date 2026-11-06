@@ -48,7 +48,9 @@ export function licenseKind(license: string | null, licenseUrl: string | null): 
 }
 
 const RESERVED = /reserved font names?/gi;
-const QUOTED = /["“”‘'«]([^"“”‘'»]{1,80})["“”’'»]/g;
+const NEGATED = /\b(?:no|not|without)\s+$/i;
+const DEFINITION = /^["“”']?\s*(?:refers|means|is|are)\b/i;
+const QUOTED = /"([^"]{1,80})"|“([^”]{1,80})”|'([^']{1,80})'|‘([^’]{1,80})’/g;
 
 export function reservedFontNames(texts: readonly (string | null)[]): {
   present: boolean;
@@ -59,11 +61,14 @@ export function reservedFontNames(texts: readonly (string | null)[]): {
   for (const text of texts) {
     if (!text) continue;
     for (const match of text.matchAll(RESERVED)) {
+      const start = match.index;
+      const end = start + match[0].length;
+      if (NEGATED.test(text.slice(Math.max(0, start - 12), start))) continue;
+      if (DEFINITION.test(text.slice(end, end + 24))) continue;
       present = true;
-      const tail = text.slice(match.index + match[0].length, match.index + match[0].length + 160);
-      const sentence = tail.split(/[.;\n]/)[0] ?? '';
+      const sentence = text.slice(end, end + 160).split(/[;\n]|\.(?=\s|$)/)[0] ?? '';
       for (const quoted of sentence.matchAll(QUOTED)) {
-        const name = quoted[1]?.trim();
+        const name = (quoted[1] ?? quoted[2] ?? quoted[3] ?? quoted[4])?.trim();
         if (name) names.add(name);
       }
     }

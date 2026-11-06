@@ -8,3 +8,5 @@ Pure license analysis of a loaded font from its name table (copyright, trademark
 - unrecognised or missing license: a non-blocking notice, the user stays responsible.
 
 Everything runs in the browser from data already parsed by `font-metrics`.
+
+The preview-and-print and editable embedding levels are shown but block nothing; only restricted embedding, the no-subsetting bit and the bitmap-only bit do.

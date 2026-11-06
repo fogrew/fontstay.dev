@@ -48,6 +48,16 @@ describe('reservedFontNames', () => {
     });
     expect(reservedFontNames(['Reserved Font Name applies'])).toEqual({ present: true, names: [] });
     expect(reservedFontNames([null, 'plain copyright'])).toEqual({ present: false, names: [] });
+    expect(reservedFontNames(['Copyright 2020 Acme with no Reserved Font Name.']).present).toBe(
+      false,
+    );
+    expect(
+      reservedFontNames(['"Reserved Font Name" refers to any names specified as such.']).present,
+    ).toBe(false);
+    expect(reservedFontNames(["with Reserved Font Name 'Source Sans 3.0'. More text."])).toEqual({
+      present: true,
+      names: ['Source Sans 3.0'],
+    });
   });
 });
 
