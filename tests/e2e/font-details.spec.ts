@@ -1,6 +1,6 @@
 import AxeBuilder from '@axe-core/playwright';
 import type { Page } from '@playwright/test';
-import { closePanels, expect, test, waitForGenerator } from './fixtures';
+import { expect, openStep, test, waitForGenerator } from './fixtures';
 
 const fonts = new URL('../fixtures/fonts/', import.meta.url).pathname.replace(
   /^\/([A-Za-z]:)/,
@@ -14,8 +14,12 @@ async function openDetails(page: Page, file: string, locale = 'en', heading = 'F
   await page.goto(`/${locale}/`);
   await waitForGenerator(page);
   await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(file);
-  await closePanels(page);
-  await page.getByRole('button', { name: heading, exact: true }).click();
+  await openStep(page, 'inputs');
+  await expect(page.getByRole('heading', { name: heading, exact: true })).toBeVisible();
+  await page
+    .locator('[aria-labelledby="ff-details-heading"] .ff-collapsible__toggle')
+    .first()
+    .click();
 }
 
 test('the details panel lists the features, name table and languages of a font', async ({
@@ -134,4 +138,19 @@ test('a static TrueType font lists its stylistic sets and writes ligature and ca
   const css = page.getByRole('tabpanel', { name: 'CSS' });
   await expect(css).toContainText('font-variant-ligatures: no-contextual discretionary-ligatures;');
   await expect(css).toContainText('font-variant-caps: all-small-caps;');
+});
+
+test('font details live in Inputs, one group per font, and not under the article', async ({
+  page,
+}) => {
+  await page.goto('/en/');
+  await waitForGenerator(page);
+  await page.locator('input[type="file"][accept*="woff2"]').setInputFiles([sourceSans, fira]);
+  await openStep(page, 'inputs');
+  const groups = page.locator('[aria-labelledby="ff-details-heading"] .ff-collapsible__toggle');
+  await expect(groups).toHaveCount(2);
+  await groups.first().click();
+  await expect(groups.first()).toHaveAttribute('aria-expanded', 'true');
+  await expect(groups.last()).toHaveAttribute('aria-expanded', 'false');
+  await expect(page.getByRole('button', { name: 'Font details', exact: true })).toHaveCount(0);
 });

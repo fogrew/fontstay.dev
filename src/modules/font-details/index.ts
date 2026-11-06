@@ -1,2 +1,2 @@
-export type { FontDetailsPanelProps } from './ui/FontDetailsPanel';
+export type { FontDetailsEntry, FontDetailsGroupsProps } from './ui/FontDetailsGroups';
 export { LazyFontDetails } from './ui/LazyFontDetails';
