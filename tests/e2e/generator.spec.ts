@@ -2133,6 +2133,36 @@ test('the layout shift badge is compact and keeps the before value in its detail
   await expect(page.locator('.ff-shift__compare')).toContainText('Without FontStay');
 });
 
+test('the preview toolbar stays above the article while scrolling and its popovers still open', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await page.goto('/en/');
+  await waitForGenerator(page);
+  await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(sourceSans);
+  await closePanels(page);
+  const view = page.getByRole('region', { name: 'Article' });
+  const toolbar = view.locator('.ff-article-view__controls');
+  await page.evaluate(() => window.scrollTo(0, 900));
+  await expect.poll(async () => (await toolbar.boundingBox())?.y ?? -1).toBeLessThan(2);
+  await expect(toolbar).toBeInViewport();
+  await openPopover(view, 'Content');
+  const panel = view.locator('.ff-popover__panel:visible').first();
+  const box = await panel.boundingBox();
+  expect(box?.y).toBeGreaterThanOrEqual(0);
+  expect((box?.y ?? 0) + (box?.height ?? 0)).toBeLessThanOrEqual(800);
+});
+
+test('the preview toolbar scrolls away on a phone', async ({ page }) => {
+  await page.setViewportSize({ width: 375, height: 700 });
+  await page.goto('/en/');
+  await waitForGenerator(page);
+  await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(sourceSans);
+  await closePanels(page);
+  const toolbar = page.locator('.ff-article-view__controls');
+  await expect(toolbar).toHaveCSS('position', 'static');
+});
+
 test('the last step puts download and copy in the dock footer without share, and spacing is on by default', async ({
   page,
 }) => {

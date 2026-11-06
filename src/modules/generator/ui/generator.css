@@ -1043,6 +1043,15 @@
   gap: var(--ff-space-2);
   align-items: center;
 }
+@media (min-width: 40rem) {
+  .ff-article-view__controls.ff-toolbar {
+    position: sticky;
+    inset-block-start: 0;
+    z-index: 10;
+    padding-block: var(--ff-space-2);
+    background: var(--ff-bg);
+  }
+}
 .ff-toolbar .ff-shift {
   display: flex;
   justify-content: flex-end;
