@@ -11,16 +11,24 @@ const ratingText = (t: Messages, rating: ReturnType<typeof ratingOf>) => {
   return rating === 'needs-improvement' ? t.cls_rating_needs() : t.cls_rating_poor();
 };
 
+const formats = new Map<Locale, Intl.NumberFormat>();
+
+const scoreFormat = (locale: Locale) => {
+  let format = formats.get(locale);
+  if (!format) {
+    format = new Intl.NumberFormat(locale, { minimumFractionDigits: 3, maximumFractionDigits: 3 });
+    formats.set(locale, format);
+  }
+  return format;
+};
+
 export function ShiftBadge({ locale, score }: { locale: Locale; score: number }) {
   const rating = ratingOf(score);
-  const format = new Intl.NumberFormat(locale, {
-    minimumFractionDigits: 3,
-    maximumFractionDigits: 3,
-  });
+  const t = messagesFor(locale);
   return (
     <strong class="ff-shift__score" data-rating={rating}>
-      <span aria-hidden="true">{SYMBOLS[rating]}</span> {format.format(score)}
-      <span class="ff-sr-only"> {ratingText(messagesFor(locale), rating)}</span>
+      <span aria-hidden="true">{SYMBOLS[rating]}</span> {scoreFormat(locale).format(score)}
+      <span class="ff-sr-only"> CLS, {ratingText(t, rating)}</span>
     </strong>
   );
 }

@@ -516,7 +516,6 @@ export function ArticleView({
     if (!fontsReady) return;
     let cancelled = false;
     setShiftResults(undefined);
-    setDeviceShifts(undefined);
     const timer = setTimeout(() => {
       void document.fonts.ready.then(() => {
         const wrapper = probe.current;
@@ -532,14 +531,15 @@ export function ArticleView({
           adjusted: report.adjusted.filter((item) => isProbeWidth(item.width)),
           plain: report.plain.filter((item) => isProbeWidth(item.width)),
         });
-        loadDevices()
-          .then((list) => {
+        loadDevices().then(
+          (list) => {
             if (cancelled) return;
             const widths = [...new Set(list.map((entry) => entry.width))];
             const scores = measureShift(wrapper, web, fallback, widths);
             setDeviceShifts(new Map(scores.map((item) => [item.width, item.score])));
-          })
-          .catch(() => undefined);
+          },
+          () => undefined,
+        );
       });
     }, 300);
     return () => {
