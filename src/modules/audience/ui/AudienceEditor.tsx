@@ -45,13 +45,13 @@ export function AudienceEditor({
   onQueryChange,
   initialQuery,
   active = false,
-  defaultOpen = false,
+  bare = false,
 }: {
   locale: Locale;
   initialQuery?: string | undefined;
   onQueryChange?: ((query: string) => void) | undefined;
   active?: boolean;
-  defaultOpen?: boolean;
+  bare?: boolean;
   onEntries?: ((data: AudienceData | undefined) => void) | undefined;
   onShares?: ((shares: OsShares) => void) | undefined;
 }) {
@@ -61,7 +61,7 @@ export function AudienceEditor({
   const fileInput = useRef<HTMLInputElement>(null);
   const listInput = useRef<HTMLInputElement>(null);
   const actions = useRef<HTMLDivElement>(null);
-  const [opened, setOpened] = useState(defaultOpen);
+  const [opened, setOpened] = useState(bare);
   const [query, setQuery] = useState<string>(initialQuery ?? DEFAULT_QUERY);
   const [state, setState] = useState<State>({ loading: true });
   useEffect(() => {
@@ -177,177 +177,177 @@ export function AudienceEditor({
     'no-match': t.audience_error_no_match(),
   };
 
+  const content = (
+    <div class="ff-audience">
+      <div class="ff-audience__filters">
+        <TagEditor
+          locale={locale}
+          query={query}
+          onChange={setQuery}
+          stats={Boolean(stats)}
+          invalid={invalid}
+          describedBy={messageId}
+        />
+        <div id={messageId} role="status" class="ff-audience__result">
+          {'loading' in state && opened && t.audience_loading()}
+          {'failed' in state && t.audience_load_failed()}
+          {'ok' in state && !state.ok && (
+            <span class="ff-error">
+              {errors[state.code]} {state.detail}
+            </span>
+          )}
+        </div>
+        <div class="ff-audience__stats">
+          <div class="ff-audience__actions" ref={actions}>
+            <Button onClick={() => fileInput.current?.click()}>{t.audience_stats_import()}</Button>
+            <Button onClick={() => listInput.current?.click()}>{t.audience_file_import()}</Button>
+            {stats && (
+              <Button
+                onClick={() => {
+                  setStats(undefined);
+                  if (/my stats/i.test(query)) {
+                    setQuery(
+                      joinQuery(splitQuery(query).filter((part) => !/my stats/i.test(part))) ||
+                        DEFAULT_QUERY,
+                    );
+                  }
+                  actions.current?.querySelector('button')?.focus();
+                }}
+              >
+                {t.audience_stats_remove()}
+              </Button>
+            )}
+          </div>
+          <input
+            class="ff-control"
+            ref={fileInput}
+            hidden
+            type="file"
+            accept=".json,application/json"
+            onChange={(event) => {
+              void loadStats(event.currentTarget.files?.[0]);
+              event.currentTarget.value = '';
+            }}
+          />
+          <input
+            class="ff-control"
+            ref={listInput}
+            hidden
+            type="file"
+            multiple
+            onChange={(event) => {
+              void loadLists([...(event.currentTarget.files ?? [])]);
+              event.currentTarget.value = '';
+            }}
+          />
+          <div role="status">
+            {fileNote && <p class="ff-audience__text ff-muted">{fileNote}</p>}
+          </div>
+          <p class="ff-audience__text ff-muted">{t.audience_stats_local()}</p>
+          <p class="ff-audience__text ff-muted">
+            {t.audience_stats_help()}{' '}
+            {GENERATORS.map(([name, href], index) => (
+              <span key={name}>
+                {index > 0 && ', '}
+                <a class="ff-link" href={href} target="_blank" rel="noreferrer noopener">
+                  {name}
+                </a>
+              </span>
+            ))}{' '}
+            (
+            <a class="ff-link" href={STATS_FORMAT} target="_blank" rel="noreferrer noopener">
+              JSON
+            </a>
+            )
+          </p>
+          <div role="status">
+            {statsError && (
+              <p class="ff-audience__text ff-error" role="alert">
+                {statsError}
+              </p>
+            )}
+            {stats && (
+              <>
+                <p class="ff-audience__text">{t.audience_stats_loaded({ count: stats.entries })}</p>
+                {stats.unknownBrowsers.length > 0 && (
+                  <p class="ff-audience__text ff-muted">
+                    {t.audience_stats_unknown_browsers({
+                      list: stats.unknownBrowsers.slice(0, 5).join(', '),
+                    })}
+                  </p>
+                )}
+                {stats.unknownVersions.length > 0 && (
+                  <p class="ff-audience__text ff-muted">
+                    {t.audience_stats_unknown_versions({
+                      count: stats.unknownVersions.length,
+                      list: stats.unknownVersions.slice(0, 5).join(', '),
+                    })}
+                  </p>
+                )}
+              </>
+            )}
+          </div>
+        </div>
+      </div>
+      <div class="ff-audience__results">
+        {'ok' in state && state.ok && (
+          <div class="ff-audience__columns">
+            <section class="ff-audience__browsers" aria-labelledby={browsersId}>
+              <h3 class="ff-audience__heading ff-heading" id={browsersId}>
+                {t.audience_browsers_heading({ count: state.count })}
+              </h3>
+              {state.coverage !== undefined && (
+                <p>
+                  {t.audience_coverage({
+                    percent: new Intl.NumberFormat(locale, {
+                      minimumFractionDigits: 1,
+                      maximumFractionDigits: 1,
+                    }).format(state.coverage),
+                  })}
+                </p>
+              )}
+              <ul class="ff-audience__list" aria-label={t.audience_list_label()}>
+                {state.groups.map((group) => (
+                  <li class="ff-audience__item" key={group.id}>
+                    <span>
+                      <BrowserIcon id={group.id} />
+                      {group.name}
+                    </span>
+                    <span class="ff-muted" dir="auto">
+                      {group.ranges.join(', ')}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+              <p class="ff-muted">
+                {t.audience_data_date({
+                  date: new Intl.DateTimeFormat(locale, {
+                    dateStyle: 'medium',
+                    timeZone: 'UTC',
+                  }).format(new Date(`${state.dataDate}T00:00:00Z`)),
+                })}
+              </p>
+            </section>
+            <OsPanel
+              locale={locale}
+              entries={state.entries}
+              allowed={allowed}
+              onChange={onShares}
+            />
+          </div>
+        )}
+      </div>
+    </div>
+  );
+
+  if (bare) return content;
   return (
     <Disclosure
       icon={<Icon name="browserslist" />}
       summary={t.audience_heading()}
-      open={defaultOpen}
       onToggle={(open) => open && setOpened(true)}
     >
-      <div class="ff-audience">
-        <div class="ff-audience__filters">
-          <TagEditor
-            locale={locale}
-            query={query}
-            onChange={setQuery}
-            stats={Boolean(stats)}
-            invalid={invalid}
-            describedBy={messageId}
-          />
-          <div id={messageId} role="status" class="ff-audience__result">
-            {'loading' in state && opened && t.audience_loading()}
-            {'failed' in state && t.audience_load_failed()}
-            {'ok' in state && !state.ok && (
-              <span class="ff-error">
-                {errors[state.code]} {state.detail}
-              </span>
-            )}
-          </div>
-          <div class="ff-audience__stats">
-            <div class="ff-audience__actions" ref={actions}>
-              <Button onClick={() => fileInput.current?.click()}>
-                {t.audience_stats_import()}
-              </Button>
-              <Button onClick={() => listInput.current?.click()}>{t.audience_file_import()}</Button>
-              {stats && (
-                <Button
-                  onClick={() => {
-                    setStats(undefined);
-                    if (/my stats/i.test(query)) {
-                      setQuery(
-                        joinQuery(splitQuery(query).filter((part) => !/my stats/i.test(part))) ||
-                          DEFAULT_QUERY,
-                      );
-                    }
-                    actions.current?.querySelector('button')?.focus();
-                  }}
-                >
-                  {t.audience_stats_remove()}
-                </Button>
-              )}
-            </div>
-            <input
-              class="ff-control"
-              ref={fileInput}
-              hidden
-              type="file"
-              accept=".json,application/json"
-              onChange={(event) => {
-                void loadStats(event.currentTarget.files?.[0]);
-                event.currentTarget.value = '';
-              }}
-            />
-            <input
-              class="ff-control"
-              ref={listInput}
-              hidden
-              type="file"
-              multiple
-              onChange={(event) => {
-                void loadLists([...(event.currentTarget.files ?? [])]);
-                event.currentTarget.value = '';
-              }}
-            />
-            <div role="status">
-              {fileNote && <p class="ff-audience__text ff-muted">{fileNote}</p>}
-            </div>
-            <p class="ff-audience__text ff-muted">{t.audience_stats_local()}</p>
-            <p class="ff-audience__text ff-muted">
-              {t.audience_stats_help()}{' '}
-              {GENERATORS.map(([name, href], index) => (
-                <span key={name}>
-                  {index > 0 && ', '}
-                  <a class="ff-link" href={href} target="_blank" rel="noreferrer noopener">
-                    {name}
-                  </a>
-                </span>
-              ))}{' '}
-              (
-              <a class="ff-link" href={STATS_FORMAT} target="_blank" rel="noreferrer noopener">
-                JSON
-              </a>
-              )
-            </p>
-            <div role="status">
-              {statsError && (
-                <p class="ff-audience__text ff-error" role="alert">
-                  {statsError}
-                </p>
-              )}
-              {stats && (
-                <>
-                  <p class="ff-audience__text">
-                    {t.audience_stats_loaded({ count: stats.entries })}
-                  </p>
-                  {stats.unknownBrowsers.length > 0 && (
-                    <p class="ff-audience__text ff-muted">
-                      {t.audience_stats_unknown_browsers({
-                        list: stats.unknownBrowsers.slice(0, 5).join(', '),
-                      })}
-                    </p>
-                  )}
-                  {stats.unknownVersions.length > 0 && (
-                    <p class="ff-audience__text ff-muted">
-                      {t.audience_stats_unknown_versions({
-                        count: stats.unknownVersions.length,
-                        list: stats.unknownVersions.slice(0, 5).join(', '),
-                      })}
-                    </p>
-                  )}
-                </>
-              )}
-            </div>
-          </div>
-        </div>
-        <div class="ff-audience__results">
-          {'ok' in state && state.ok && (
-            <div class="ff-audience__columns">
-              <section class="ff-audience__browsers" aria-labelledby={browsersId}>
-                <h3 class="ff-audience__heading ff-heading" id={browsersId}>
-                  {t.audience_browsers_heading({ count: state.count })}
-                </h3>
-                {state.coverage !== undefined && (
-                  <p>
-                    {t.audience_coverage({
-                      percent: new Intl.NumberFormat(locale, {
-                        minimumFractionDigits: 1,
-                        maximumFractionDigits: 1,
-                      }).format(state.coverage),
-                    })}
-                  </p>
-                )}
-                <ul class="ff-audience__list" aria-label={t.audience_list_label()}>
-                  {state.groups.map((group) => (
-                    <li class="ff-audience__item" key={group.id}>
-                      <span>
-                        <BrowserIcon id={group.id} />
-                        {group.name}
-                      </span>
-                      <span class="ff-muted" dir="auto">
-                        {group.ranges.join(', ')}
-                      </span>
-                    </li>
-                  ))}
-                </ul>
-                <p class="ff-muted">
-                  {t.audience_data_date({
-                    date: new Intl.DateTimeFormat(locale, {
-                      dateStyle: 'medium',
-                      timeZone: 'UTC',
-                    }).format(new Date(`${state.dataDate}T00:00:00Z`)),
-                  })}
-                </p>
-              </section>
-              <OsPanel
-                locale={locale}
-                entries={state.entries}
-                allowed={allowed}
-                onChange={onShares}
-              />
-            </div>
-          )}
-        </div>
-      </div>
+      {content}
     </Disclosure>
   );
 }

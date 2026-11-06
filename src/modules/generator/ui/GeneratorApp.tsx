@@ -1849,7 +1849,7 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
               <div class="ff-generator__settings">
                 {restored && (
                   <AudienceEditor
-                    defaultOpen
+                    bare
                     initialQuery={initialQuery}
                     onQueryChange={setQuery}
                     locale={locale}

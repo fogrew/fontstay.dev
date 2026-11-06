@@ -728,6 +728,7 @@ test('the audience editor resolves presets and reports invalid queries', async (
   await openStep(page, 'audience');
   const list = page.getByRole('list', { name: 'Resolved browsers' });
   await expect(list).toContainText('Chrome');
+  await expect(page.getByText('Audience (browsers)')).toHaveCount(0);
   await expect(page.getByRole('heading', { name: /^Browsers \(\d+\)$/ })).toBeVisible();
   await expect(page.getByText(/Browser data up to/)).toBeVisible();
 
