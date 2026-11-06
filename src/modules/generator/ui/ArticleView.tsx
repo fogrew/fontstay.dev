@@ -352,7 +352,7 @@ export function ArticleView({
   const viewDiff = diffView(
     {
       article: articleId,
-      mode: preset ?? 'overlay',
+      mode: preset ?? 'slider',
       stacked,
       xray,
       lensShows,
