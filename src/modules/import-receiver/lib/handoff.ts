@@ -58,6 +58,19 @@ export async function takePending(now = Date.now()): Promise<SiteImport | null> 
   }
 }
 
+export function clearPendingStore(): Promise<void> {
+  return new Promise((resolve) => {
+    try {
+      const request = indexedDB.deleteDatabase(DB_NAME);
+      request.onsuccess = () => resolve();
+      request.onerror = () => resolve();
+      request.onblocked = () => resolve();
+    } catch {
+      resolve();
+    }
+  });
+}
+
 export async function discardPending(): Promise<void> {
   try {
     await run('readwrite', (store) => store.delete(KEY));

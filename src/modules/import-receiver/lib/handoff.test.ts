@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { discardPending, storePending, takePending } from './handoff';
+import { clearPendingStore, discardPending, storePending, takePending } from './handoff';
 import { sanitizeImport } from './payload';
 
 interface FakeRequest {
@@ -31,6 +31,14 @@ function fakeIndexedDB(options: { failOpen?: boolean } = {}) {
   };
   return {
     data,
+    deleted: [] as string[],
+    deleteDatabase(name: string) {
+      this.deleted.push(name);
+      data.clear();
+      const request: FakeRequest & { onblocked?: () => void } = {};
+      queueMicrotask(() => request.onsuccess?.());
+      return request;
+    },
     open: () => {
       const request: FakeRequest = options.failOpen
         ? { error: new Error('blocked') }
@@ -86,5 +94,23 @@ describe('the import handoff', () => {
     await storePending(value());
     await discardPending();
     expect(fake.data.size).toBe(0);
+  });
+
+  it('deletes the whole database on request', async () => {
+    const fake = fakeIndexedDB();
+    vi.stubGlobal('indexedDB', fake);
+    await storePending(value());
+    await clearPendingStore();
+    expect(fake.deleted).toEqual(['fontstay-import']);
+    expect(fake.data.size).toBe(0);
+  });
+
+  it('resolves when the store cannot be deleted', async () => {
+    vi.stubGlobal('indexedDB', {
+      deleteDatabase: () => {
+        throw new Error('denied');
+      },
+    });
+    await expect(clearPendingStore()).resolves.toBeUndefined();
   });
 });

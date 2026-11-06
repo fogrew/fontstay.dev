@@ -66,7 +66,13 @@ import {
   osFontsDataset,
 } from '@/modules/os-fonts';
 import { cssStack, PRESETS, type PresetId, presetName, presetPicks } from '@/modules/presets';
-import { discardPending, ImportConfirm, PENDING_HASH, takePending } from '@/modules/site-import';
+import {
+  clearPendingStore,
+  discardPending,
+  ImportConfirm,
+  PENDING_HASH,
+  takePending,
+} from '@/modules/site-import';
 import type { ShiftReport, ToolHost } from '@/modules/webmcp';
 import { autoFit } from '../lib/auto-fit';
 import { fallbackRatio, webRatio } from '../lib/calibration';
@@ -1197,6 +1203,7 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
   const forget = async () => {
     setForgotten(stateKey);
     await clearStorage();
+    await clearPendingStore();
     clearLayouts();
     location.assign(location.pathname + location.search);
   };
