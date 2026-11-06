@@ -2,9 +2,7 @@ export { discardPending, takePending } from './lib/handoff';
 export type {
   ImportedFace,
   ImportedFile,
-  ImportedSample,
   ImportedUse,
-  SampleRole,
   SiteImport,
 } from './lib/payload';
 export { parseClipboardImport } from './lib/payload';

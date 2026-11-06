@@ -68,7 +68,6 @@ import {
 import { cssStack, PRESETS, type PresetId, presetName, presetPicks } from '@/modules/presets';
 import { discardPending, ImportConfirm, PENDING_HASH, takePending } from '@/modules/site-import';
 import type { ShiftReport, ToolHost } from '@/modules/webmcp';
-import { siteIsMeaningful } from '../lib/articles';
 import { autoFit } from '../lib/auto-fit';
 import { fallbackRatio, webRatio } from '../lib/calibration';
 import { displayName, fitLanguage, isNoCoverage, LOW_COVERAGE } from '../lib/compute';
@@ -93,7 +92,7 @@ import {
   variantPredictFont,
   webPredictFont,
 } from '../lib/predict-input';
-import type { PreviewItem, SiteData } from '../lib/preview-item';
+import type { PreviewItem } from '../lib/preview-item';
 import { buildReport } from '../lib/report';
 import { aspectOf, safariStrategyCss } from '../lib/safari';
 import { detectScripts, type ScriptId, scriptFaces } from '../lib/scripts';
@@ -225,7 +224,6 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const [incoming, setIncoming] = useState<SiteImport | null>(null);
-  const [site, setSite] = useState<SiteData>();
   useEffect(() => {
     if (location.hash !== PENDING_HASH) return;
     history.replaceState(null, '', location.pathname + location.search);
@@ -248,17 +246,6 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
     }
     const value = incoming;
     setIncoming(null);
-    const body = value.used.find((item) => item.role === 'body');
-    const heading = value.used.find((item) => ['h1', 'h2', 'h3'].includes(item.role));
-    setSite({
-      origin: value.origin,
-      blocks: value.samples,
-      meaningful: siteIsMeaningful(value.samples),
-      size: body?.size,
-      lineHeight: body?.lineHeight,
-      headingStack: heading?.family,
-      bodyStack: body?.family,
-    });
     if (value.files.length > 0) {
       void addFiles(value.files.map((file) => new File([file.bytes], file.name)));
       setAnnouncement(t.import_done({ count: value.files.length, origin: value.origin }));
@@ -1938,7 +1925,6 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
           locale={locale}
           items={previewItems}
           fitting={fitting}
-          site={site}
           restore={viewRestore}
           onView={(diff) => {
             viewDiff.current = diff;

@@ -31,7 +31,6 @@ export function ImportConfirm({
         {t.import_confirm_summary({
           files: value.files.length,
           faces: value.faces.length,
-          samples: value.samples.length,
         })}
       </p>
       <p class={`ff-site-import__line ${value.verified ? 'ff-muted' : 'ff-error'}`}>

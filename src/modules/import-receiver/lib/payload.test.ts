@@ -6,7 +6,6 @@ import {
   cleanUrl,
   MAX_FILE_BYTES,
   MAX_FILES,
-  MAX_TEXT,
   parseClipboardImport,
   sanitizeImport,
 } from './payload';
@@ -73,9 +72,9 @@ describe('sanitizeImport', () => {
       title: 'My <b>site</b>',
       faces: [{ family: 'Inter', weight: 700, style: 'italic' }],
       used: [{ role: 'body', size: 16, lineHeight: 1.5 }],
-      samples: [{ role: 'heading', text: 'Hello' }],
     });
     expect(result?.files).toHaveLength(1);
+    expect(result).not.toHaveProperty('samples');
   });
 
   it('rejects other versions, other shapes and unknown origins', () => {
@@ -97,10 +96,6 @@ describe('sanitizeImport', () => {
           { role: 'h1', family: 'x', size: -3 },
           { role: 'h1', family: 'X', size: 32 },
         ],
-        samples: [
-          { role: 'other', text: 'x' },
-          { role: 'body', text: '\u0000' },
-        ],
         files: [
           { name: 'a', bytes: 'not a buffer' },
           { name: 'b', bytes: bytes(0) },
@@ -113,11 +108,10 @@ describe('sanitizeImport', () => {
     );
     expect(result?.faces).toEqual([{ family: 'A', weight: 400, style: 'normal' }]);
     expect(result?.used).toEqual([{ role: 'h1', family: 'X', size: 32, weight: 400 }]);
-    expect(result?.samples).toEqual([]);
     expect(result?.files.map((file) => file.name)).toEqual(['d']);
   });
 
-  it('limits the number and the total size of files and the length of text', () => {
+  it('limits the number and the total size of files', () => {
     const many = Array.from({ length: MAX_FILES + 5 }, (_, index) => ({
       name: `f${index}`,
       bytes: bytes(1),
@@ -128,12 +122,6 @@ describe('sanitizeImport', () => {
       bytes: bytes(MAX_FILE_BYTES),
     }));
     expect(sanitizeImport({ v: 1, files: big }, ORIGIN, true)?.files).toHaveLength(3);
-    const long = sanitizeImport(
-      { v: 1, samples: [{ role: 'body', text: 'x'.repeat(100_000) }] },
-      ORIGIN,
-      true,
-    );
-    expect([...(long?.samples[0]?.text ?? '')]).toHaveLength(MAX_TEXT);
   });
 
   it('does not copy unknown keys or prototype pollution', () => {
@@ -150,11 +138,28 @@ describe('sanitizeImport', () => {
       fc.property(fc.anything(), (raw) => {
         const result = sanitizeImport(raw, ORIGIN, true);
         if (!result) return true;
-        const text = [result.title, ...result.samples.map((item) => item.text)].join('');
-        return !/\p{Cc}/u.test(text);
+        return !/\p{Cc}/u.test(result.title);
       }),
       { numRuns: 300 },
     );
+  });
+});
+
+describe('text samples', () => {
+  it('ignores the text of the site', () => {
+    const result = sanitizeImport(
+      { v: 1, faces: [{ family: 'A' }], samples: [{ role: 'body', text: 'Some article text' }] },
+      ORIGIN,
+      false,
+    );
+    expect(result).not.toHaveProperty('samples');
+    expect(JSON.stringify(result)).not.toContain('article text');
+  });
+
+  it('rejects a payload that only carries text', () => {
+    expect(
+      sanitizeImport({ v: 1, samples: [{ role: 'body', text: 'text' }] }, ORIGIN, false),
+    ).toBeNull();
   });
 });
 
@@ -175,27 +180,5 @@ describe('parseClipboardImport', () => {
     expect(parseClipboardImport('not json')).toBeNull();
     expect(parseClipboardImport(' '.repeat(300_000))).toBeNull();
     expect(parseClipboardImport(JSON.stringify({ v: 1, faces: [{ family: 'A' }] }))).toBeNull();
-  });
-});
-
-describe('sample blocks', () => {
-  it('keeps structural roles and bounds the total text', () => {
-    const roles = ['heading', 'subheading', 'body', 'quote', 'item'];
-    const result = sanitizeImport(
-      { v: 1, samples: roles.map((role) => ({ role, text: 'word' })) },
-      'https://example.com',
-      false,
-    );
-    expect(result?.samples.map((item) => item.role)).toEqual(roles);
-    const many = sanitizeImport(
-      {
-        v: 1,
-        samples: Array.from({ length: 40 }, () => ({ role: 'body', text: 'y'.repeat(1200) })),
-      },
-      'https://example.com',
-      false,
-    );
-    const total = many?.samples.reduce((sum, item) => sum + item.text.length, 0) ?? 0;
-    expect(total).toBeLessThanOrEqual(12_000);
   });
 });

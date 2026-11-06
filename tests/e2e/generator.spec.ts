@@ -1777,7 +1777,7 @@ h1 { font-family: "Demo Sans", sans-serif; font-size: 34px; }
 <ul><li>First item of the list</li><li>Second item of the list</li></ul>
 </main>`;
 
-test('the bookmarklet hands the fonts and text of a page to the generator after a confirmation', async ({
+test('the bookmarklet hands only the fonts of a page to the generator after a confirmation', async ({
   page,
   context,
 }) => {
@@ -1811,12 +1811,10 @@ test('the bookmarklet hands the fonts and text of a page to the generator after 
   await confirm.getByRole('button', { name: 'Import' }).click();
   await openStep(generator, 'tuning');
   await expect(generator.getByRole('button', { name: /^Remove: font\.woff2/ })).toBeVisible();
-  await expect(
-    generator
-      .locator('.ff-article:not([data-probe])')
-      .getByText('Hello from the demo site')
-      .first(),
-  ).toBeVisible();
+  const article = generator.locator('.ff-article:not([data-probe])');
+  await expect(article.first()).toBeVisible();
+  await expect(article.getByText('Hello from the demo site')).toHaveCount(0);
+  await expect(generator.getByText('Your site')).toHaveCount(0);
   expect(generator.url()).not.toContain('#');
 });
 
@@ -2426,40 +2424,6 @@ test('a dropped .browserslistrc opens the audience step and sets the query', asy
     'true',
   );
   await expect(queryField(page)).toHaveAttribute('data-query', 'last 2 chrome versions, not dead');
-});
-
-test('a page with too little text keeps the built-in article and says so', async ({
-  page,
-  context,
-}) => {
-  await context.route('https://thin.test/**', (route) => {
-    const font = new URL(route.request().url()).pathname === '/font.woff2';
-    return route.fulfill({
-      status: 200,
-      headers: { 'content-type': font ? 'font/woff2' : 'text/html' },
-      body: font
-        ? readFileSync(sourceSans)
-        : `<!doctype html><style>@font-face { font-family: "Thin Sans"; src: url(/font.woff2) format("woff2"); } body { font-family: "Thin Sans", sans-serif; }</style><h1>Hi</h1><p>Short.</p>`,
-    });
-  });
-  await page.goto('/en/');
-  await waitForGenerator(page);
-  await openStep(page, 'inputs');
-  await page.getByRole('button', { name: 'Import from a website…' }).click();
-  const href =
-    (await page.getByRole('link', { name: 'Send to fontstay' }).getAttribute('href')) ?? '';
-
-  const site = await context.newPage();
-  await site.goto('https://thin.test/');
-  const popup = site.waitForEvent('popup');
-  await site.evaluate(decodeURIComponent(href.slice('javascript:'.length)));
-  const generator = await popup;
-  await generator.waitForURL(/\/en\/(#.*)?$/);
-  await generator
-    .getByRole('region', { name: 'Import from https://thin.test?' })
-    .getByRole('button', { name: 'Import' })
-    .click();
-  await expect(generator.getByRole('status').filter({ hasText: 'too little text' })).toBeVisible();
 });
 
 test('Baseline tags and chips carry their widely and newly available icons', async ({ page }) => {

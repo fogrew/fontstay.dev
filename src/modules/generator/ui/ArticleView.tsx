@@ -9,12 +9,10 @@ import {
   ARTICLE_LANGUAGES,
   type Article,
   type ArticleId,
-  type ArticleKey,
   BUILT_IN,
   isBuiltIn,
   loadArticle,
   type Run,
-  siteArticle,
 } from '../lib/articles';
 import { buildCss } from '../lib/css';
 import { drawGlyphBoxes } from '../lib/glyph-boxes';
@@ -33,7 +31,7 @@ import {
 } from '../lib/layers';
 import { codePointLabel, textRuns } from '../lib/missing';
 import { slugOf } from '../lib/overview';
-import type { PreviewItem, SiteData } from '../lib/preview-item';
+import type { PreviewItem } from '../lib/preview-item';
 import {
   applyView,
   COLORS,
@@ -177,42 +175,6 @@ function ArticleBody({
   const heading = (value: string) => (
     <Marked text={value} points={coverage.heading} coverage={coverage} />
   );
-  if (article.id === 'site') {
-    return (
-      <header class="ff-article__hero">
-        {article.title && (
-          <h3 class="ff-article__head ff-heading ff-article__title">{heading(article.title)}</h3>
-        )}
-        {article.lead && <p class="ff-article__text ff-article__lead">{body(article.lead)}</p>}
-        {article.columnsHeading && (
-          <h4 class="ff-article__head ff-article__heading">{heading(article.columnsHeading)}</h4>
-        )}
-        {article.columns.length > 0 && (
-          <div class="ff-article__columns">
-            {article.columns.map((paragraph, index) => (
-              <p class="ff-article__text" key={index}>
-                <Runs runs={paragraph} coverage={coverage} />
-              </p>
-            ))}
-          </div>
-        )}
-        {article.quote.text && (
-          <figure class="ff-article__figure ff-article__quote">
-            <blockquote class="ff-article__blockquote">{body(article.quote.text)}</blockquote>
-          </figure>
-        )}
-        {article.list.length > 0 && (
-          <ul class="ff-generator__list">
-            {article.list.map((item, index) => (
-              <li class="ff-article__item ff-generator__item" key={index}>
-                <Runs runs={item} coverage={coverage} />
-              </li>
-            ))}
-          </ul>
-        )}
-      </header>
-    );
-  }
   return (
     <>
       <header class="ff-article__hero">
@@ -304,7 +266,6 @@ export function ArticleView({
   locale,
   items,
   fitting = false,
-  site,
   actions,
   onShift,
   restore,
@@ -313,7 +274,6 @@ export function ArticleView({
   locale: Locale;
   items: readonly PreviewItem[];
   fitting?: boolean;
-  site?: SiteData | undefined;
   actions?: ComponentChildren;
   onShift?:
     | ((report: { adjusted: WidthShift[]; plain: WidthShift[] } | undefined) => void)
@@ -322,7 +282,7 @@ export function ArticleView({
   onView?: ((diff: ViewDiff) => void) | undefined;
 }) {
   const t = messagesFor(locale);
-  const [articleId, setArticleId] = useState<ArticleKey>(
+  const [articleId, setArticleId] = useState<ArticleId>(
     (ARTICLE_IDS as readonly string[]).includes(locale) ? (locale as ArticleId) : 'en',
   );
   const [positions, setPositions] = useState(PRESETS.overlay);
@@ -388,7 +348,7 @@ export function ArticleView({
   const baseView = defaultView(localeArticle);
   const viewDiff = diffView(
     {
-      article: articleId === 'site' ? localeArticle : articleId,
+      article: articleId,
       mode: preset ?? 'overlay',
       stacked,
       xray,
@@ -439,16 +399,9 @@ export function ArticleView({
     setSplit(next.split);
     setFrameWidth(next.frame);
   }, [restore]);
-  useEffect(() => {
-    if (!site) return;
-    if (site.meaningful) setArticleId('site');
-    if (site.size) setSize(Math.min(32, Math.max(12, Math.round(site.size))));
-    if (site.lineHeight)
-      setLineHeight(Math.min(2.4, Math.max(1, Math.round(site.lineHeight * 20) / 20)));
-  }, [site]);
   const [loaded, setLoaded] = useState<Partial<Record<ArticleId, Article>>>({});
   useEffect(() => {
-    if (articleId === 'site' || isBuiltIn(articleId) || loaded[articleId]) return;
+    if (isBuiltIn(articleId) || loaded[articleId]) return;
     let cancelled = false;
     void loadArticle(articleId).then((value) => {
       if (value && !cancelled) setLoaded((all) => ({ ...all, [articleId]: value }));
@@ -457,34 +410,15 @@ export function ArticleView({
       cancelled = true;
     };
   }, [articleId, loaded]);
-  const shown =
-    articleId === 'site'
-      ? undefined
-      : isBuiltIn(articleId)
-        ? BUILT_IN[articleId]
-        : (loaded[articleId] ?? BUILT_IN.en);
-  const article =
-    articleId === 'site' && site?.meaningful
-      ? siteArticle(site.blocks, t.article_site())
-      : (shown ?? BUILT_IN.en);
+  const article = isBuiltIn(articleId) ? BUILT_IN[articleId] : (loaded[articleId] ?? BUILT_IN.en);
 
   const families = useMemo(() => [...new Set(items.map((item) => item.family))], [items]);
-  const siteFamily = (stack: string | undefined) =>
-    families.find((family) =>
-      (stack ?? '').split(',').some(
-        (name) =>
-          name
-            .trim()
-            .replace(/^["']|["']$/g, '')
-            .toLowerCase() === family.toLowerCase(),
-      ),
-    );
   const headingFamily = [...families, SYSTEM].includes(headingPick ?? '')
     ? headingPick
-    : (siteFamily(site?.headingStack) ?? families[0]);
+    : families[0];
   const bodyFamily = [...families, SYSTEM].includes(bodyPick ?? '')
     ? bodyPick
-    : (siteFamily(site?.bodyStack) ?? families[1] ?? families[0]);
+    : (families[1] ?? families[0]);
   const categoryOf = (family: string | undefined) =>
     items.find((item) => item.family === family)?.fallback.category ?? 'sans-serif';
 
@@ -1036,24 +970,14 @@ export function ArticleView({
         compact
         label={t.article_sample_label()}
         value={articleId}
-        options={[
-          ...(site?.meaningful ? [{ value: 'site', label: t.article_site() }] : []),
-          ...ARTICLE_LANGUAGES.map(([id, label]) => ({ value: id, label })),
-        ]}
-        onChange={(value) => setArticleId(value as ArticleKey)}
+        options={ARTICLE_LANGUAGES.map(([id, label]) => ({ value: id, label }))}
+        onChange={(value) => setArticleId(value as ArticleId)}
       />
     </fieldset>
   );
 
-  const fewText = site && !site.meaningful && (
-    <p class="ff-muted" role="status">
-      {t.import_few_text({ origin: site.origin })}
-    </p>
-  );
-
   return (
     <section class="ff-article-view" aria-label={t.article_heading()} ref={view}>
-      {fewText}
       <div class="ff-article-probe" ref={probe} aria-hidden="true" {...{ inert: true }}>
         {(['web', 'fallback', 'plain'] as const).map((kind) => (
           <article
