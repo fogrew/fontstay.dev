@@ -96,11 +96,6 @@ async function fontstayCollect(win, doc, options = {}) {
     });
   };
 
-  const rangeText = (text) => {
-    if (text.length <= MAX_RANGE) return text;
-    const cut = text.lastIndexOf(',', MAX_RANGE);
-    return cut > 0 ? text.slice(0, cut) : '';
-  };
   const faces = [];
   const faceRules = [];
   const slots = new Map();
@@ -134,14 +129,15 @@ async function fontstayCollect(win, doc, options = {}) {
         const family = unquote(rule.style.getPropertyValue('font-family'));
         if (!family) continue;
         const url = bestUrl(rule.style.getPropertyValue('src'), base);
-        if (faceRules.length < MAX_RULES) {
+        const range = rule.style.getPropertyValue('unicode-range');
+        if (faceRules.length < MAX_RULES && range.length <= MAX_RANGE) {
           faceRules.push({
             family,
             weight: rule.style.getPropertyValue('font-weight').slice(0, 20),
             style: /italic|oblique/i.test(rule.style.getPropertyValue('font-style'))
               ? 'italic'
               : 'normal',
-            unicodeRange: rangeText(rule.style.getPropertyValue('unicode-range')),
+            unicodeRange: range,
           });
         }
         addFace(

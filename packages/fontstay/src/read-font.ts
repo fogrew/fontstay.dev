@@ -39,7 +39,15 @@ export async function readText(path: string, limit: number): Promise<string> {
     const info = await handle.stat();
     if (!info.isFile()) throw new FontParseError('invalid-font');
     if (info.size > limit) throw new FontParseError('too-large');
-    return (await handle.readFile()).subarray(0, limit + 1).toString('utf8');
+    const buffer = Buffer.alloc(Math.min(info.size, limit) + 1);
+    let length = 0;
+    while (length < buffer.length) {
+      const { bytesRead } = await handle.read(buffer, length, buffer.length - length, length);
+      if (bytesRead === 0) break;
+      length += bytesRead;
+    }
+    if (length > limit) throw new FontParseError('too-large');
+    return buffer.subarray(0, length).toString('utf8');
   } finally {
     await handle.close();
   }
