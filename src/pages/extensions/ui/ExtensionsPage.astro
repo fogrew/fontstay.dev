@@ -1,0 +1,66 @@
+---
+import { type Locale, localizeHref, messagesFor } from '@/common/i18n';
+import { BookmarkletTool } from '@/modules/site-import';
+
+interface Props {
+  locale: Locale;
+}
+
+const { locale } = Astro.props;
+const t = messagesFor(locale);
+const sourceUrl = 'https://github.com/fogrew/fontstay.dev/tree/develop/extension';
+---
+
+<div class="ff-page ff-prose">
+  <h1 class="ff-heading ff-page__heading">{t.ext_heading()}</h1>
+  <p class="ff-page__text">{t.ext_intro()}</p>
+  <p class="ff-page__text"><a class="ff-link ff-link--tap" href={localizeHref('/', { locale })}>{t.ext_open_generator()}</a></p>
+
+  <h2 class="ff-heading ff-page__heading ff-prose__heading">{t.ext_choose_heading()}</h2>
+  <ul class="ff-page__list">
+    <li class="ff-page__item">{t.ext_choose_bookmarklet()}</li>
+    <li class="ff-page__item">{t.ext_choose_extension()}</li>
+  </ul>
+
+  <h2 class="ff-heading ff-page__heading ff-prose__heading">{t.ext_data_heading()}</h2>
+  <p class="ff-page__text">{t.ext_data_reads()}</p>
+  <ul class="ff-page__list">
+    <li class="ff-page__item">{t.ext_data_item_page()}</li>
+    <li class="ff-page__item">{t.ext_data_item_fonts()}</li>
+    <li class="ff-page__item">{t.ext_data_item_files()}</li>
+    <li class="ff-page__item">{t.ext_data_item_styles()}</li>
+  </ul>
+  <p class="ff-page__text">{t.ext_data_not_read()}</p>
+  <p class="ff-page__text">{t.ext_data_no_upload()}</p>
+  <p class="ff-page__text">{t.ext_data_confirm()}</p>
+
+  <h2 class="ff-heading ff-page__heading ff-prose__heading">{t.ext_bookmarklet_heading()}</h2>
+  <p class="ff-page__text">{t.ext_bookmarklet_text()}</p>
+  <ol class="ff-page__list">
+    <li class="ff-page__item">{t.ext_bookmarklet_step_drag()}</li>
+    <li class="ff-page__item">{t.ext_bookmarklet_step_open()}</li>
+    <li class="ff-page__item">{t.ext_bookmarklet_step_click()}</li>
+  </ol>
+  <BookmarkletTool {locale} client:load />
+  <p class="ff-page__text">{t.ext_bookmarklet_manual()}</p>
+  <p class="ff-page__text">{t.ext_bookmarklet_csp()}</p>
+
+  <h2 class="ff-heading ff-page__heading ff-prose__heading">{t.ext_extension_heading()}</h2>
+  <p class="ff-page__text">{t.ext_extension_text()}</p>
+  <p class="ff-page__text">{t.ext_extension_permissions()}</p>
+  <h3 class="ff-heading ff-page__heading ff-prose__heading">{t.ext_extension_availability_heading()}</h3>
+  <ul class="ff-page__list">
+    <li class="ff-page__item">{t.ext_extension_chromium()}</li>
+    <li class="ff-page__item">{t.ext_extension_firefox()}</li>
+    <li class="ff-page__item">{t.ext_extension_safari()}</li>
+    <li class="ff-page__item">{t.ext_extension_stores()}</li>
+  </ul>
+  <h3 class="ff-heading ff-page__heading ff-prose__heading">{t.ext_extension_install_heading()}</h3>
+  <ol class="ff-page__list">
+    <li class="ff-page__item">{t.ext_extension_step_download()}</li>
+    <li class="ff-page__item">{t.ext_extension_step_developer()}</li>
+    <li class="ff-page__item">{t.ext_extension_step_load()}</li>
+    <li class="ff-page__item">{t.ext_extension_step_use()}</li>
+  </ol>
+  <p class="ff-page__text"><a class="ff-link ff-link--tap" href={sourceUrl} rel="noopener noreferrer">{t.ext_extension_source()}</a></p>
+</div>

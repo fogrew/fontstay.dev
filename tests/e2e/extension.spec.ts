@@ -73,3 +73,20 @@ test('the extension sends the page to the import page of fontstay.dev', async ({
   await expect(confirm).toBeVisible({ timeout: 20_000 });
   await expect(confirm).toContainText('1 font files');
 });
+
+test('the extensions page offers the bookmarklet without inline handlers', async ({
+  page,
+  context,
+}) => {
+  await context.grantPermissions(['clipboard-read', 'clipboard-write']);
+  await page.goto('/en/extensions/');
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText(
+    'Browser extension and bookmarklet',
+  );
+  const link = page.getByRole('link', { name: 'Send to fontstay' });
+  await expect(link).toHaveAttribute('href', /^javascript:/);
+  await expect(link).not.toHaveAttribute('onclick', /.*/);
+  await page.getByRole('button', { name: 'Copy the bookmarklet code' }).click();
+  await expect(page.getByRole('status')).toContainText('Copied');
+  expect(await page.evaluate(() => navigator.clipboard.readText())).toMatch(/^javascript:/);
+});

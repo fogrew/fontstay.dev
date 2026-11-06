@@ -1,3 +1,4 @@
+export { BookmarkletTool } from './ui/BookmarkletTool';
 export { ImportConfirm } from './ui/ImportConfirm';
 export { SiteImportPanel } from './ui/SiteImportPanel';
 
