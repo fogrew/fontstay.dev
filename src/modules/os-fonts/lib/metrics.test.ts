@@ -30,6 +30,16 @@ describe('bundled metrics', () => {
     for (const font of osFontMetrics()) expect(ids.has(font.id), font.id).toBe(true);
   });
 
+  it('carries shaped width ratios for every face and language', () => {
+    for (const font of osFontMetrics()) {
+      for (const face of [font, ...Object.values(font.variants)]) {
+        for (const language of ['en', 'ru']) {
+          expect(face.ratios?.[language], `${font.id} ${language}`).toBeGreaterThan(0.5);
+        }
+      }
+    }
+  });
+
   it('keeps sorted code points and positive units per em', () => {
     for (const font of osFontMetrics()) {
       expect(font.unitsPerEm, font.id).toBeGreaterThan(0);

@@ -1,3 +1,4 @@
+import type { Page } from '@playwright/test';
 import { expect, test } from './fixtures';
 
 test('pages carry the baseline security headers', async ({ page }) => {
@@ -26,18 +27,30 @@ test('only the import page can keep its opener and it has no app code', async ({
   expect(scripts.length).toBeLessThanOrEqual(2);
 });
 
+const policyOf = (page: Page) =>
+  page.locator('meta[http-equiv="content-security-policy"]').getAttribute('content');
+
 test('the hashed CSP allows no unsafe sources', async ({ page }) => {
   await page.goto('/en/');
-  const policy = await page
-    .locator('meta[http-equiv="content-security-policy"]')
-    .getAttribute('content');
+  const policy = await policyOf(page);
   expect(policy).toContain("default-src 'self'");
   expect(policy).toMatch(/script-src[^;]*'sha256-/);
   expect(policy).toContain("object-src 'none'");
   expect(policy).toContain("base-uri 'none'");
-  expect(policy).not.toContain('unsafe-eval');
+  expect((policy ?? '').replaceAll("'wasm-unsafe-eval'", '')).not.toContain('unsafe-eval');
   expect(policy).not.toContain('unsafe-inline');
 });
+
+for (const locale of ['en', 'ru']) {
+  test(`only the ${locale} generator page may compile WebAssembly`, async ({ page }) => {
+    await page.goto(`/${locale}/`);
+    expect(await policyOf(page)).toContain("'wasm-unsafe-eval'");
+    for (const path of ['guide/', 'presets/', 'credits/', 'changelog/', 'fonts/', 'import/']) {
+      await page.goto(`/${locale}/${path}`);
+      expect(await policyOf(page), path).not.toContain('wasm-unsafe-eval');
+    }
+  });
+}
 
 test('hashed build assets are cached immutably', async ({ page }) => {
   await page.goto('/en/');

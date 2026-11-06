@@ -55,6 +55,7 @@ export async function fit(options: FitOptions): Promise<FitOutput> {
     fonts: options.fonts.map((font) => ({
       fileName: font.fileName,
       metrics: parseFontBuffer(arrayBufferOf(font.data)),
+      bytes: font.data,
       kind: options.kind,
     })),
     audience: options.audience,

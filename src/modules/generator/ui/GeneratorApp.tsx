@@ -635,7 +635,7 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
     if (!(failure instanceof StackResolveError)) throw failure;
   }
   const previewPick = currentPick ?? chosen[0]?.candidate;
-  const spacingKey = JSON.stringify([selected?.id, language, kind, previewPick?.id]);
+  const spacingKey = JSON.stringify([selected?.id, language, kind, chosen[0]?.candidate.id]);
   const optimizedSpacing = spacingResult?.key === spacingKey ? spacingResult.value : undefined;
 
   const spacingEm: SpacingEm = spacingOn
@@ -1270,9 +1270,11 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
 
   const fitFaces = [
     ...new Map(
-      [...(previewPick ? [previewPick] : []), ...chosen.map((item) => item.candidate)].map(
-        (candidate) => [candidate.id, candidate],
-      ),
+      [
+        ...(chosen[0] ? [chosen[0].candidate] : []),
+        ...(previewPick ? [previewPick] : []),
+        ...chosen.map((item) => item.candidate),
+      ].map((candidate) => [candidate.id, candidate]),
     ).values(),
   ];
   const fitJobs = [

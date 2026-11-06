@@ -14,6 +14,7 @@ export interface FitMetrics {
 export interface FitFont extends FitMetrics {
   codePoints: Uint32Array;
   advances: Float64Array;
+  ratios?: Partial<Record<string, number>> | undefined;
 }
 
 export interface GlyphWeight {

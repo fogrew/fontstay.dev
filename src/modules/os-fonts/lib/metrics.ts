@@ -18,6 +18,7 @@ export interface FaceMetrics {
   win: { ascent: number; descent: number } | null;
   codePoints: Uint32Array;
   advances: Float64Array;
+  ratios?: Record<string, number> | undefined;
   source: MetricsSource;
 }
 
@@ -37,6 +38,7 @@ interface RawFace {
   win: FaceMetrics['win'];
   codePoints: number[];
   advances: number[];
+  ratios?: Record<string, number>;
 }
 
 interface RawMetrics extends RawFace {
@@ -64,6 +66,7 @@ function decodeFace(id: string, entry: RawFace): FaceMetrics {
     win: entry.win,
     codePoints: Uint32Array.from(points),
     advances: Float64Array.from(entry.advances),
+    ratios: entry.ratios,
     source: entry.source,
   };
 }

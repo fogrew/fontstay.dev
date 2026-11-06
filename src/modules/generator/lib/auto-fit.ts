@@ -30,6 +30,7 @@ export interface AutoFitResult {
   after: number;
 }
 
+const NO_TIME_LIMIT = 2_147_483_647;
 const WORST_WEIGHT = 1;
 const SUM_WEIGHT = 0.1;
 const WIDTH_WEIGHT = 0.05;
@@ -114,7 +115,7 @@ export async function autoFit(input: AutoFitInput): Promise<AutoFitResult | null
     },
     {
       maxEvaluations: input.maxEvaluations ?? 800,
-      maxMs: input.maxMs ?? 10_000,
+      maxMs: input.maxMs ?? NO_TIME_LIMIT,
       signal: input.signal,
     },
   );
