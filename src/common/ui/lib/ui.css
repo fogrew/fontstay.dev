@@ -748,6 +748,32 @@ html[data-transition] .ff-dock__panel[data-id="export"] {
 .ff-dock__toggle[aria-expanded="true"]:dir(rtl)::before {
   content: "▾" / "";
 }
+.ff-toggle-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--ff-space-1);
+  min-inline-size: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+.ff-toggle-buttons > .ff-button {
+  min-inline-size: 2.75rem;
+  min-block-size: 2rem;
+  padding: 0 var(--ff-space-2);
+  user-select: none;
+}
+.ff-toggle-buttons > [aria-pressed="true"] {
+  border-color: var(--ff-accent);
+  background: var(--ff-accent);
+  color: var(--ff-on-accent, #fff);
+}
+@media (forced-colors: active) {
+  .ff-toggle-buttons > [aria-pressed="true"] {
+    outline: 2px solid Highlight;
+    outline-offset: -2px;
+  }
+}
 .ff-button-group {
   display: inline-flex;
   flex-wrap: nowrap;
@@ -762,15 +788,6 @@ html[data-transition] .ff-dock__panel[data-id="export"] {
   min-inline-size: 2.75rem;
   min-block-size: 2rem;
   padding: 0 var(--ff-space-2);
-}
-.ff-button-group--scroll {
-  overflow-x: auto;
-}
-.ff-button-group--scroll .ff-button {
-  user-select: none;
-}
-.ff-button-group--scroll .ff-button:focus-visible {
-  outline-offset: -2px;
 }
 .ff-button-group > .ff-button,
 .ff-button-group > .ff-popover > .ff-button {

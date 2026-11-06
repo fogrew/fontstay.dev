@@ -2422,6 +2422,31 @@ test.describe('the single input field', () => {
     );
   });
 
+  test('style and subset buttons wrap inside a 320 px panel and ext subsets get their own row', async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 320, height: 800 });
+    const field = await open(page);
+    await field.fill('Open S');
+    await field.press('Tab');
+    const chosen = page.locator('.ff-source__chosen');
+    await expect(chosen).toBeVisible();
+    const subsets = chosen.getByRole('group', { name: 'Script subsets' });
+    await expect(subsets.getByRole('group', { name: 'Base' })).toBeVisible();
+    await expect(subsets.getByRole('group', { name: 'Extended (ext)' })).toBeVisible();
+    await expect(chosen).toContainText('extra letters for the same script');
+    const overflow = await chosen.evaluate((root) => {
+      const limit = root.getBoundingClientRect().right;
+      return [...root.querySelectorAll('button')].filter(
+        (button) => button.getBoundingClientRect().right > limit + 1,
+      ).length;
+    });
+    expect(overflow).toBe(0);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(
+      320,
+    );
+  });
+
   test('arrows move the highlighted suggestion and Enter accepts it', async ({ page }) => {
     const field = await open(page);
     const list = page.getByRole('listbox', { name: 'Matching families' });
