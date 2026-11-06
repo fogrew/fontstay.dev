@@ -45,6 +45,8 @@ describe('catalog search', () => {
     expect(bestMatchIndex(['Sans Open', 'Open Sans', 'Open Sauce'], 'Open S')).toBe(1);
     expect(bestMatchIndex(['Open Sans', 'Open Sauce'], 'open s')).toBe(0);
     expect(bestMatchIndex(['Open Sans'], 'Open Sans')).toBe(0);
+    expect(bestMatchIndex(['Open Sans', 'Sans Open'], 'sans')).toBe(1);
+    expect(bestMatchIndex(['Open Sans'], 'sans')).toBe(-1);
     expect(bestMatchIndex(['Open Sans'], '')).toBe(-1);
     expect(bestMatchIndex(['Open Sans'], 'Lora')).toBe(-1);
   });

@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'preact/hooks';
 import { type Locale, messagesFor } from '@/common/i18n';
 import { Button } from '@/common/ui';
-import { FamilySearch, type FontOrigin } from '@/modules/font-sources';
+import { type FontOrigin, useFamilySearch } from '@/modules/font-sources';
 import type { SiteImport } from '@/modules/import-receiver';
 import { readClipboardImport, SiteImportPanel } from '@/modules/site-import';
 import { classifyInput } from '../lib/classify-input';
@@ -62,12 +62,21 @@ export function FontInput({
 }) {
   const t = messagesFor(locale);
   const input = useRef<HTMLInputElement>(null);
-  const textInput = useRef<HTMLTextAreaElement>(null);
   const [text, setText] = useState('');
   const [site, setSite] = useState(false);
   const [importError, setImportError] = useState(false);
   const [oversized, setOversized] = useState(false);
   const kind = classifyInput(text);
+  const searching = kind === 'empty' || kind === 'name';
+  const familySearch = useFamilySearch({
+    locale,
+    busy,
+    query: text,
+    enabled: searching,
+    onAccepted: setText,
+    slots,
+    onFiles,
+  });
 
   const css = useMemo(() => {
     if (kind !== 'css') return undefined;
@@ -127,13 +136,12 @@ export function FontInput({
         <label for="ff-input-text">{t.input_label()}</label>
         <textarea
           id="ff-input-text"
-          ref={textInput}
           class="ff-input ff-drop__text"
           rows={2}
           spellcheck={false}
           autocomplete="off"
-          aria-autocomplete={kind === 'empty' || kind === 'name' ? 'list' : undefined}
-          aria-haspopup={kind === 'empty' || kind === 'name' ? 'listbox' : undefined}
+          aria-autocomplete={searching ? 'list' : undefined}
+          aria-controls={familySearch.listId}
           aria-describedby="ff-input-hint"
           placeholder={t.input_placeholder()}
           value={text}
@@ -141,22 +149,13 @@ export function FontInput({
             setOversized(false);
             setText(event.currentTarget.value);
           }}
+          onKeyDown={searching ? familySearch.onKeyDown : undefined}
         />
         <p id="ff-input-hint" class="ff-drop__paragraph ff-muted ff-drop__hint">
           {t.input_hint()} {t.source_keyboard_hint()} {t.input_formats()}
         </p>
       </div>
-      {(kind === 'empty' || kind === 'name') && (
-        <FamilySearch
-          locale={locale}
-          busy={busy}
-          query={text}
-          inputRef={textInput}
-          onAccepted={setText}
-          slots={slots}
-          onFiles={onFiles}
-        />
-      )}
+      {familySearch.content}
       <p class="ff-drop__paragraph ff-drop__links">
         <button
           type="button"

@@ -392,6 +392,9 @@
 .ff-source__item[aria-selected="true"] {
   background: var(--ff-state-full);
 }
+.ff-source__item--chosen {
+  border-color: var(--ff-accent);
+}
 .ff-source__groups {
   display: flex;
   flex-wrap: wrap;

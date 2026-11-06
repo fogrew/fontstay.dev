@@ -1922,6 +1922,7 @@ test('fonts and CSS files can be dropped anywhere on the page', async ({ page })
     );
   await drop('SourceSansPro-Regular.woff2', 'font/woff2', bytes);
   await expect(page.locator('.ff-article-view__slider')).toBeVisible({ timeout: 15_000 });
+  await expect(page.getByRole('status').filter({ hasText: 'Font added: 1' })).toBeVisible();
   await drop(
     'fonts.css',
     'text/css',
@@ -2318,6 +2319,8 @@ test.describe('the single input field', () => {
     const field = await open(page);
     const list = page.getByRole('listbox', { name: 'Matching families' });
     await expect(list.getByRole('option').first()).toBeVisible();
+    await expect(list.getByRole('option').first()).toContainText('Open Sans');
+    await expect(list.getByRole('option', { name: /Geist Sans.*Fontsource/ })).toBeVisible();
     await expect(
       page.getByRole('status').filter({ hasText: 'catalog fonts available' }),
     ).toContainText('catalog fonts available');
@@ -2329,7 +2332,9 @@ test.describe('the single input field', () => {
       'aria-selected',
       'true',
     );
-    await expect(field).toHaveAttribute('aria-controls', 'ff-source-list');
+    const listId = await list.getAttribute('id');
+    expect(listId).toBeTruthy();
+    await expect(field).toHaveAttribute('aria-controls', listId ?? '');
     await expect(
       page.getByRole('status').filter({ hasText: 'Highlighted font: Open Sans.' }),
     ).toContainText('Highlighted font: Open Sans.');
@@ -2343,6 +2348,60 @@ test.describe('the single input field', () => {
     await field.fill('Lora');
     await field.press('Enter');
     await expect(page.locator('.ff-source__chosen strong')).toHaveText('Lora');
+  });
+
+  test('Tab skips incomplete matches only once and preserves the chosen style', async ({
+    page,
+  }) => {
+    const field = await open(page);
+    const list = page.getByRole('listbox', { name: 'Matching families' });
+    await expect(list.getByRole('option').first()).toBeVisible();
+    await field.focus();
+    await field.press('Tab');
+    await expect(field).toHaveValue('');
+    await expect(list).toBeFocused();
+
+    await field.fill('sans');
+    await field.press('Tab');
+    await expect(field).toHaveValue('sans');
+    await expect(page.locator('.ff-source__chosen')).toHaveCount(0);
+
+    await field.fill('Open S');
+    await field.press('Tab');
+    await expect(field).toHaveValue('Open Sans');
+    const chosen = page.locator('.ff-source__chosen');
+    await expect(chosen).toBeVisible();
+    const styles = chosen.getByRole('group', { name: 'Upright' });
+    await styles.getByRole('button', { name: '700' }).click();
+    await expect(styles.getByRole('button', { name: '700' })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    );
+    await field.focus();
+    await field.press('Tab');
+    await expect(styles.getByRole('button', { name: '700' })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    );
+    await field.focus();
+    await field.press('Shift+Tab');
+    await expect(field).toHaveValue('Open Sans');
+    await expect(styles.getByRole('button', { name: '700' })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    );
+  });
+
+  test('arrows move the highlighted suggestion and Enter accepts it', async ({ page }) => {
+    const field = await open(page);
+    const list = page.getByRole('listbox', { name: 'Matching families' });
+    await field.fill('Open S');
+    await field.press('ArrowDown');
+    await expect(list.getByRole('option', { selected: true })).not.toContainText('Open Sans');
+    await field.press('ArrowUp');
+    await expect(list.getByRole('option', { selected: true })).toContainText('Open Sans');
+    await field.press('Enter');
+    await expect(field).toHaveValue('Open Sans');
   });
 
   test('a font name lists families of both catalogs with their source', async ({ page }) => {

@@ -1,4 +1,4 @@
-// Mirrors the storage key and breakpoint of the Dock component.
+// Mirrors Dock ids in GeneratorApp plus the storage key and breakpoint of Dock.
 try {
   const opened = JSON.parse(localStorage.getItem('fontstay:layout:dock')).opened[0];
   if (
