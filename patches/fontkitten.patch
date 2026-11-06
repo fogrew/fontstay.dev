@@ -1,5 +1,5 @@
 diff --git a/dist/index.js b/dist/index.js
-index 4a3fa937a0640364f3e30fe4fcbdf94b082d914f..8ae3f47bc5034897d0ea04b66d0a66477db66c34 100644
+index 4a3fa937a0640364f3e30fe4fcbdf94b082d914f..eea7ba0be31874c78af8bf1308d160d1b0c1f825 100644
 --- a/dist/index.js
 +++ b/dist/index.js
 @@ -4077,6 +4077,16 @@ var CmapProcessor = class {
@@ -19,6 +19,19 @@ index 4a3fa937a0640364f3e30fe4fcbdf94b082d914f..8ae3f47bc5034897d0ea04b66d0a6647
  		switch (cmap.version) {
  			case 0: return range(0, cmap.codeMap.length);
  			case 4: return cmap.endCode.toArray().flatMap((endCode, i) => range(cmap.startCode.get(i), endCode + 1));
+@@ -6124,9 +6134,9 @@ var WOFFFont = class extends TTFFont {
+ 			this.stream.pos = table.offset;
+ 			if (table.compLength < table.length) {
+ 				this.stream.pos += 2;
+-				const outBuffer = new Uint8Array(table.length);
+-				const buf = inflate(this.stream.readBuffer(table.compLength - 2), outBuffer);
+-				return new DecodeStream(buf);
++				this._inflated ??= {};
++				if (!this._inflated[tag]) this._inflated[tag] = inflate(this.stream.readBuffer(table.compLength - 2), new Uint8Array(table.length));
++				return new DecodeStream(this._inflated[tag]);
+ 			} else return this.stream;
+ 		}
+ 		return null;
 @@ -7694,7 +7704,7 @@ function makeError(s, code) {
  /**
  * Decodes brotli stream.

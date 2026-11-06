@@ -163,7 +163,7 @@ settings:
   excludeLinksFromLockfile: false
 
 patchedDependencies:
-  fontkitten: 122eb6d697fccbd30a07d42611f03229ce1e1f8570f9fd53483ac493ba83c323
+  fontkitten: 7a87e20ce00e78307cfa7c8db9ed10bd15b6deddd078e438b885ab6f7932edb7
 
 importers:
 
@@ -183,7 +183,7 @@ importers:
         version: 4.29.4
       fontkitten:
         specifier: 1.0.3
-        version: 1.0.3(patch_hash=122eb6d697fccbd30a07d42611f03229ce1e1f8570f9fd53483ac493ba83c323)
+        version: 1.0.3(patch_hash=7a87e20ce00e78307cfa7c8db9ed10bd15b6deddd078e438b885ab6f7932edb7)
       harfbuzzjs:
         specifier: 1.6.4
         version: 1.6.4
@@ -3593,7 +3593,7 @@ snapshots:
 
   '@capsizecss/unpack@4.0.1':
     dependencies:
-      fontkitten: 1.0.3(patch_hash=122eb6d697fccbd30a07d42611f03229ce1e1f8570f9fd53483ac493ba83c323)
+      fontkitten: 1.0.3(patch_hash=7a87e20ce00e78307cfa7c8db9ed10bd15b6deddd078e438b885ab6f7932edb7)
 
   '@clack/core@1.5.1':
     dependencies:
@@ -4838,9 +4838,9 @@ snapshots:
 
   fontace@0.4.1:
     dependencies:
-      fontkitten: 1.0.3(patch_hash=122eb6d697fccbd30a07d42611f03229ce1e1f8570f9fd53483ac493ba83c323)
+      fontkitten: 1.0.3(patch_hash=7a87e20ce00e78307cfa7c8db9ed10bd15b6deddd078e438b885ab6f7932edb7)
 
-  fontkitten@1.0.3(patch_hash=122eb6d697fccbd30a07d42611f03229ce1e1f8570f9fd53483ac493ba83c323):
+  fontkitten@1.0.3(patch_hash=7a87e20ce00e78307cfa7c8db9ed10bd15b6deddd078e438b885ab6f7932edb7):
     dependencies:
       tiny-inflate: 1.0.3
 
