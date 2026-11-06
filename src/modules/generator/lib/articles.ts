@@ -182,7 +182,7 @@ const en: Article = {
   ],
   glyphsHeading: 'Special characters',
   glyphs:
-    '& © ® ™ § ¶ † ‡ • … – — « » “ ” ‘ ’ № € £ ¥ ¢ % ‰ ° ± × ÷ ≈ ≠ ≤ ≥ ∞ √ π → ← ↑ ↓ ½ ¼ ¾ ¹ ² ³ ℃ ﬁ ﬂ',
+    '& © ® ™ § ¶ † ‡ • … – — « » “ ” ‘ ’ № € £ ¥ ¢ % ‰ ° ± × ÷ ≈ ≠ ≤ ≥ ∞ √ π → ← ↑ ↓ ½ ¼ ¾ ¹ ² ³ ℃ ﬁ ﬂ 0123456789 1/2 3/4 1st 2nd office affluent',
   footer:
     'Set in two typefaces: the headings and the text come from different families. Switch the view above to compare the web font with its adjusted fallback.',
 };

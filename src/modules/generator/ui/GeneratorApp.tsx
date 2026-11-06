@@ -1837,15 +1837,16 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
                 {selected && !shares && (
                   <p class="ff-generator__text ff-muted">{t.plan_waiting()}</p>
                 )}
-                <LazyFontDetails
-                  locale={locale}
-                  fonts={fonts.map((font) => ({
-                    id: font.id,
-                    title: displayName(font.metrics.names.fullName ?? font.fileName),
-                    metrics: font.metrics,
-                    bytes: font.bytes,
-                  }))}
-                />
+                {fonts.length > 0 && (
+                  <LazyFontDetails
+                    locale={locale}
+                    fonts={fonts.map((font) => ({
+                      id: font.id,
+                      title: displayName(font.metrics.names.fullName ?? font.fileName),
+                      metrics: font.metrics,
+                    }))}
+                  />
+                )}
               </div>
             ),
           },

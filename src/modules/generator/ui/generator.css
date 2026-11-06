@@ -573,6 +573,8 @@
 .ff-article-view .ff-article__head {
   margin: 0;
   font-family: var(--ff-article-heading);
+  font-feature-settings: normal;
+  font-variation-settings: normal;
 }
 .ff-article-view .ff-article__kicker {
   font-size: 0.8em;
@@ -655,6 +657,8 @@
 }
 .ff-article-view .ff-article__cell--head {
   font-family: var(--ff-article-heading);
+  font-feature-settings: normal;
+  font-variation-settings: normal;
 }
 .ff-article-view .ff-article__glyphs {
   font-size: 1.4em;

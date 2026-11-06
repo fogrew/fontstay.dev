@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { buildDetailsCss, changedFeatures } from './css';
-import { classifyFeature, isDefaultOn, sampleFor } from './features';
+import { isDefaultOn } from './default-on';
+import { classifyFeature } from './features';
 
 const axes = [
   { tag: 'wght', name: 'Weight', min: 100, default: 400, max: 900 },
@@ -104,11 +105,5 @@ describe('feature catalog', () => {
     expect(classifyFeature('init')).toEqual({ kind: 'joining' });
     expect(classifyFeature('rphf')).toEqual({ kind: 'shaping' });
     expect(classifyFeature('xxxx')).toEqual({ kind: 'unknown' });
-  });
-
-  it('has a sample for every tag', () => {
-    expect(sampleFor('smcp')).toBe('Small caps');
-    expect(sampleFor('ss04')).not.toBe('');
-    expect(sampleFor('zzzz')).not.toBe('');
   });
 });

@@ -8,7 +8,6 @@ export interface FontDetailsEntry {
   id: number;
   title: string;
   metrics: FontMetrics;
-  bytes: ArrayBuffer;
 }
 
 export interface FontDetailsGroupsProps {
@@ -39,14 +38,7 @@ export function FontDetailsGroups({ locale, fonts }: FontDetailsGroupsProps) {
             })
           }
         >
-          {open.has(font.id) && (
-            <FontDetailsPanel
-              locale={locale}
-              metrics={font.metrics}
-              bytes={font.bytes}
-              fontId={font.id}
-            />
-          )}
+          {open.has(font.id) && <FontDetailsPanel locale={locale} metrics={font.metrics} />}
         </Collapsible>
       ))}
     </section>
