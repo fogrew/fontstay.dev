@@ -313,27 +313,27 @@
   min-block-size: 1.5rem;
 }
 .ff-quick {
-  position: relative;
   display: inline-flex;
-  align-items: center;
+  align-items: stretch;
+  overflow: hidden;
+  border: 1px solid var(--ff-border);
+  border-radius: 0.75rem;
 }
 .ff-quick .ff-tag {
-  position: relative;
-  z-index: 1;
+  border: 0;
+  border-radius: 0;
 }
 .ff-quick__not {
   display: inline-flex;
-  gap: var(--ff-space-1);
   align-items: center;
+  justify-content: center;
   min-block-size: 1.5rem;
-  margin-inline-end: -0.75rem;
-  padding: 0 1rem 0 var(--ff-space-2);
-  border: 1px solid var(--ff-border);
-  border-radius: 0.75rem 0 0 0.75rem;
+  min-inline-size: 1.5rem;
+  padding: 0 0.25rem;
+  border: 0;
+  border-inline-start: 1px solid var(--ff-border);
+  border-radius: 0;
   background: var(--ff-surface-2);
-  color: var(--ff-muted);
-  font: inherit;
-  font-size: 0.75rem;
   cursor: pointer;
 }
 .ff-quick__ban {
@@ -343,26 +343,8 @@
   opacity: 0.5;
   cursor: default;
 }
-@media (hover: hover) {
-  .ff-quick__not {
-    position: absolute;
-    inset-inline-end: 100%;
-    inset-block-start: 50%;
-    z-index: 2;
-    margin-inline-end: -0.75rem;
-    transform: translateY(-50%);
-    opacity: 0;
-    pointer-events: none;
-  }
-  .ff-quick:hover .ff-quick__not,
-  .ff-quick:focus-within .ff-quick__not {
-    opacity: 1;
-    pointer-events: auto;
-  }
-  .ff-quick:hover .ff-quick__not:disabled,
-  .ff-quick:focus-within .ff-quick__not:disabled {
-    opacity: 0.5;
-  }
+.ff-quick .ff-control:focus-visible {
+  outline-offset: -2px;
 }
 .ff-audience__columns {
   display: grid;

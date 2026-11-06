@@ -816,6 +816,43 @@ test('system shares follow the query and the tag controls edit it', async ({ pag
   await expect(queryField(page)).toHaveAttribute('data-query', 'firefox 120, > 1%');
 });
 
+for (const [name, width] of [
+  ['desktop', 1280],
+  ['phone', 320],
+] as const) {
+  test(`the exclude buttons stay inside their tags and never overlap on the ${name}`, async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width, height: 900 });
+    await page.goto('/en/');
+    await waitForGenerator(page);
+    await openStep(page, 'audience');
+    const boxes = await page.locator('.ff-quick').evaluateAll((items) =>
+      items.map((item) => {
+        const rect = item.getBoundingClientRect();
+        const not = item.querySelector('.ff-quick__not')?.getBoundingClientRect();
+        return {
+          rect,
+          inside: not ? not.left >= rect.left && not.right <= rect.right : true,
+          target: not ? not.width >= 24 && not.height >= 24 : true,
+        };
+      }),
+    );
+    expect(boxes.length).toBeGreaterThan(10);
+    expect(boxes.every((box) => box.inside && box.target)).toBe(true);
+    for (const [i, a] of boxes.entries()) {
+      for (const b of boxes.slice(i + 1)) {
+        const apart =
+          a.rect.right <= b.rect.left + 0.5 ||
+          b.rect.right <= a.rect.left + 0.5 ||
+          a.rect.bottom <= b.rect.top + 0.5 ||
+          b.rect.bottom <= a.rect.top + 0.5;
+        expect(apart).toBe(true);
+      }
+    }
+  });
+}
+
 test('operating system tags drop a system from the audience', async ({ page }) => {
   await page.goto('/en/');
   await waitForGenerator(page);
