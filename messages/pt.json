@@ -85,6 +85,7 @@
   "audience_stats_error_bad_value": "Uma parcela deve ser um número de 0 a 100:",
   "audience_stats_error_too_many": "O arquivo tem entradas demais.",
   "audience_stats_error_empty": "O arquivo não tem parcelas de uso para os navegadores e versões que esta ferramenta conhece.",
+  "audience_stats_error_no_match": "Nenhuma versão de navegador do arquivo atinge a quota de 0,5 % exigida pela predefinição Minhas estatísticas.",
   "audience_file_import": "Importar .browserslistrc",
   "audience_file_source": "A consulta vem de {name}.",
   "audience_preset_mystats": "Mais de 0,5% das minhas estatísticas",

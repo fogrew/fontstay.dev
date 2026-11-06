@@ -85,6 +85,7 @@
   "audience_stats_error_bad_value": "A share must be a number from 0 to 100:",
   "audience_stats_error_too_many": "The file has too many entries.",
   "audience_stats_error_empty": "The file has no usage shares for browsers and versions this tool knows.",
+  "audience_stats_error_no_match": "No browser version in the file reaches the 0.5% share the My stats preset needs.",
   "audience_file_import": "Import .browserslistrc",
   "audience_file_source": "The query comes from {name}.",
   "audience_preset_mystats": "Over 0.5% of my stats",

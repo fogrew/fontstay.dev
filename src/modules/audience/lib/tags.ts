@@ -1,3 +1,5 @@
+import { DEFAULT_QUERY } from './presets';
+
 export const TAG_BROWSERS = [
   'chrome',
   'edge',
@@ -130,4 +132,13 @@ export function browserOf(tag: string): string | undefined {
   if (/^(not\s+)?os\s/i.test(tag)) return undefined;
   const words = tag.toLowerCase().split(/\s+/);
   return words.find((word) => (TAG_BROWSERS as readonly string[]).includes(word));
+}
+
+export function normalizeQuery(query: string): string {
+  const parts = splitQuery(query).reduce((current, part) => addTag(current, part), '');
+  const list = splitQuery(parts);
+  const hasOs = list.some((part) => OS_PART.test(part));
+  return hasOs && list.every((part) => OS_PART.test(part))
+    ? joinQuery([DEFAULT_QUERY, ...list])
+    : parts;
 }
