@@ -527,7 +527,6 @@
   "webmcp_announce_fallbacks": "Um assistente alterou os fallbacks de {system} para {font}.",
   "webmcp_announce_kind": "Um assistente definiu o tipo de {font} como {kind}.",
   "details_heading": "Detalhes da fonte",
-  "details_pick_font": "Escolha uma fonte para ver os detalhes dela.",
   "details_tabs_label": "Seções dos detalhes da fonte",
   "details_tab_overview": "Visão geral",
   "details_tab_features": "Recursos",

@@ -1837,6 +1837,15 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
                 {selected && !shares && (
                   <p class="ff-generator__text ff-muted">{t.plan_waiting()}</p>
                 )}
+                <LazyFontDetails
+                  locale={locale}
+                  fonts={fonts.map((font) => ({
+                    id: font.id,
+                    title: displayName(font.metrics.names.fullName ?? font.fileName),
+                    metrics: font.metrics,
+                    bytes: font.bytes,
+                  }))}
+                />
               </div>
             ),
           },
@@ -1966,24 +1975,6 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
                 ) : (
                   selected && (
                     <CoverageMap locale={locale} codePoints={selected.metrics.codePoints} />
-                  )
-                ),
-              },
-              {
-                id: 'details',
-                label: t.details_heading(),
-                open: false,
-                content: allMode ? (
-                  <p class="ff-muted">{t.details_pick_font()}</p>
-                ) : (
-                  selected && (
-                    <LazyFontDetails
-                      key={selected.id}
-                      locale={locale}
-                      metrics={selected.metrics}
-                      bytes={selected.bytes}
-                      fontId={selected.id}
-                    />
                   )
                 ),
               },
