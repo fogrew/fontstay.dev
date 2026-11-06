@@ -47,6 +47,7 @@
   "type_mono": "أحادي المسافة (Monospace)",
   "type_cursive": "خط يدوي (Cursive)",
   "preview_mode_label": "طريقة العرض",
+  "preview_compare_label": "المقارنة",
   "mode_side": "جنبًا إلى جنب",
   "mode_overlay": "تراكب",
   "preview_size_label": "حجم النص",

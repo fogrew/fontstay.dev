@@ -7,7 +7,7 @@ export const WRAPS = ['wrap', 'balance', 'pretty', 'stable', 'nowrap'] as const;
 export type Wrap = (typeof WRAPS)[number];
 export const SUBSTITUTES = ['sans-serif', 'serif', 'monospace', 'cursive', 'system-ui'] as const;
 export type Substitute = (typeof SUBSTITUTES)[number];
-export const LENS_SHOWS = ['overlay', 'fallback', 'plain'] as const;
+export const LENS_SHOWS = ['overlay', 'web', 'fallback', 'plain'] as const;
 export type LensShows = (typeof LENS_SHOWS)[number];
 export const RENDERS = ['fill', 'outline'] as const;
 export type Render = (typeof RENDERS)[number];
@@ -33,7 +33,7 @@ export interface PreviewView {
   mode: Preset;
   stacked: boolean;
   xray: boolean;
-  lensShows: LensShows;
+  lensShows?: LensShows | undefined;
   lensSize: number;
   guides: GuideId[];
   boxes: boolean;
@@ -70,13 +70,19 @@ export interface ViewDiff {
 
 const MAX_FONT_NAME = 200;
 
+const COMPARISONS: readonly Preset[] = ['slider', 'overlay', 'side'];
+
+export function lensDefault(mode: Preset): LensShows {
+  if (COMPARISONS.includes(mode)) return 'fallback';
+  return mode === 'web' ? 'fallback' : 'web';
+}
+
 export function defaultView(article: ArticleId): PreviewView {
   return {
     article,
-    mode: 'overlay',
+    mode: 'slider',
     stacked: false,
-    xray: false,
-    lensShows: 'overlay',
+    xray: true,
     lensSize: 200,
     guides: [],
     boxes: false,

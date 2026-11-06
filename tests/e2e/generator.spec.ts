@@ -158,7 +158,7 @@ for (const { width, height } of [
   });
 }
 
-test('the article switches between overlay, side by side, web font and fallback views', async ({
+test('the article opens on the slider and switches between comparison and single views', async ({
   page,
 }) => {
   await page.goto('/en/');
@@ -167,6 +167,22 @@ test('the article switches between overlay, side by side, web font and fallback 
   await closePanels(page);
   const view = page.getByRole('region', { name: 'Article' });
   const mode = (name: string) => view.getByRole('button', { name, exact: true });
+  await expect(mode('Slider')).toHaveAttribute('aria-pressed', 'true');
+  await expect(view.getByRole('button', { name: 'X-ray', exact: true })).toHaveAttribute(
+    'aria-pressed',
+    'true',
+  );
+  const names = await view
+    .getByRole('group')
+    .evaluateAll((groups) =>
+      groups.slice(0, 2).map((group) => [...group.querySelectorAll('button')].map((b) => b.title)),
+    );
+  expect(names).toEqual([
+    ['Slider', 'Overlay', 'Side by side'],
+    ['Web font', 'Adjusted fallback', 'Plain fallback'],
+  ]);
+  await view.getByRole('button', { name: 'X-ray', exact: true }).click();
+  await mode('Overlay').click();
   await expect(mode('Overlay')).toHaveAttribute('aria-pressed', 'true');
   await expect(view.locator('.ff-article-view__overlay > .ff-article')).toHaveCount(2);
   await expect(view.locator('.ff-article--ghost')).toHaveAttribute('aria-hidden', 'true');
@@ -202,6 +218,8 @@ test('the inspect tools draw, fade and compare the web font and the fallback', a
   await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(sourceSans);
   await closePanels(page);
   const view = page.getByRole('region', { name: 'Article' });
+  await view.getByRole('button', { name: 'Overlay', exact: true }).click();
+  await view.getByRole('button', { name: 'X-ray', exact: true }).click();
   const inspect = view.getByRole('button', { name: /^Inspect/ });
   const openInspect = async () => {
     if ((await inspect.getAttribute('aria-expanded')) !== 'true') await inspect.click();
@@ -367,7 +385,6 @@ test('the loupe shows the comparison only under the lens', async ({ page }) => {
   await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(sourceSans);
   await closePanels(page);
   const view = page.getByRole('region', { name: 'Article' });
-  await view.getByRole('button', { name: 'X-ray', exact: true }).click();
   const loupe = view.getByRole('application', { name: /^X-ray:/ });
   await expect(loupe).toBeVisible();
   await loupe.evaluate((node) => node.scrollIntoView({ block: 'start' }));
@@ -406,7 +423,6 @@ test('the x-ray lens follows the pointer in every layout and covers the divider'
   await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(sourceSans);
   await closePanels(page);
   const view = page.getByRole('region', { name: 'Article' });
-  await view.getByRole('button', { name: 'X-ray', exact: true }).click();
   await expect(view.getByRole('button', { name: 'X-ray', exact: true })).toHaveAttribute(
     'aria-pressed',
     'true',
@@ -480,7 +496,6 @@ test('the slider and the x-ray lens are mirrored in a right-to-left page', async
   await page.keyboard.press('ArrowLeft');
   await expect(divider).toHaveAttribute('aria-valuenow', '2');
 
-  await view.getByRole('button', { name: 'X-ray', exact: true }).click();
   await view.getByRole('button', { name: 'Side by side', exact: true }).click();
   const loupe = view.getByRole('application', { name: /^X-ray:/ });
   const box = await loupe.boundingBox();
@@ -578,12 +593,14 @@ test('the slider moves the divider by drag and keys, vertically or horizontally'
   await expect(divider).toHaveAttribute('aria-valuenow', '52');
   await page.keyboard.press('End');
   await expect(divider).toHaveAttribute('aria-valuenow', '100');
+  await page.keyboard.press('PageUp');
+  await expect(divider).toHaveAttribute('aria-valuenow', '90');
 
   const box = await divider.boundingBox();
   if (!box) throw new Error('no divider');
   const wrap = await view.locator('.ff-article-view__slider').boundingBox();
   if (!wrap) throw new Error('no slider');
-  await page.mouse.move(box.x + box.width / 2, box.y + 40);
+  await page.mouse.move(box.x + box.width / 4, box.y + 40);
   await page.mouse.down();
   await page.mouse.move(wrap.x + wrap.width * 0.25, box.y + 40);
   await page.mouse.up();
@@ -1185,7 +1202,7 @@ test('no missing-character highlight before a web font is chosen', async ({ page
   const view = page.getByRole('region', { name: 'Article' });
   await openPopover(view, 'Content');
   await choose(view.getByLabel('Sample text'), 'ja');
-  await expect(view.locator('.ff-article:not([data-probe], .ff-article--ghost)')).toBeVisible();
+  await expect(view.getByRole('article')).toBeVisible();
   await expect(view.locator('.ff-article__missing')).toHaveCount(0);
 });
 
@@ -1569,9 +1586,10 @@ test('a share link reproduces the open panel and the preview modes with a compac
   await waitForGenerator(other);
   await expect(step(other, 'export')).toHaveAttribute('aria-expanded', 'true');
   await expect(step(other, 'inputs')).toHaveAttribute('aria-expanded', 'false');
-  for (const name of ['Side by side', 'Top and bottom', 'X-ray']) {
+  for (const name of ['Side by side', 'Top and bottom']) {
     await expect(pressed(other, name)).toHaveAttribute('aria-pressed', 'true');
   }
+  await expect(pressed(other, 'X-ray')).toHaveAttribute('aria-pressed', 'false');
   await expect(pressed(other, 'Overlay')).toHaveAttribute('aria-pressed', 'false');
   await fresh.close();
 });
@@ -1903,7 +1921,7 @@ test('fonts and CSS files can be dropped anywhere on the page', async ({ page })
       [name, type, content],
     );
   await drop('SourceSansPro-Regular.woff2', 'font/woff2', bytes);
-  await expect(page.locator('.ff-article-view__overlay')).toBeVisible({ timeout: 15_000 });
+  await expect(page.locator('.ff-article-view__slider')).toBeVisible({ timeout: 15_000 });
   await drop(
     'fonts.css',
     'text/css',
@@ -2223,8 +2241,12 @@ test.describe('loading a font keeps the surrounding UI stable', () => {
       await expect(
         view.getByRole('status').filter({ hasText: 'Your web font is loaded' }),
       ).toBeVisible();
-      const article = view.locator('.ff-article:not([data-probe]) .ff-article__title').last();
+      const article = view
+        .locator('.ff-article-view__slider .ff-article:not([data-probe]) .ff-article__title')
+        .first();
       await expect(article).toBeVisible();
+      await page.evaluate(() => document.fonts.ready);
+      await page.waitForTimeout(500);
       const settled = await article.boundingBox();
       await page.waitForTimeout(1000);
       expect(await layout()).toEqual(before);
@@ -2464,7 +2486,6 @@ test.describe('touch input', () => {
     await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(sourceSans);
     await closePanels(page);
     const view = page.getByRole('region', { name: 'Article' });
-    await view.getByRole('button', { name: 'X-ray', exact: true }).click();
     const loupe = view.getByRole('application', { name: /^X-ray:/ });
     await loupe.evaluate((node) => node.scrollIntoView({ block: 'start' }));
     const box = await loupe.boundingBox();

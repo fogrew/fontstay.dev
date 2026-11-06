@@ -9,6 +9,7 @@ import {
   defaultView,
   diffView,
   LENS_SHOWS,
+  lensDefault,
   type PreviewView,
   parseViewDiff,
   RENDERS,
@@ -30,7 +31,7 @@ const view = fc.record<PreviewView>({
   mode: fc.constantFrom(...PRESET_IDS),
   stacked: fc.boolean(),
   xray: fc.boolean(),
-  lensShows: fc.constantFrom(...LENS_SHOWS),
+  lensShows: fc.option(fc.constantFrom(...LENS_SHOWS), { nil: undefined }),
   lensSize: fc.integer({ min: 80, max: 400 }),
   guides: fc.subarray([...GUIDES]).map((list) => GUIDES.filter((id) => list.includes(id))),
   boxes: fc.boolean(),
@@ -43,6 +44,32 @@ const view = fc.record<PreviewView>({
   layers: fc.record({ web: layer, fallback: layer }),
   split: fc.double({ min: 0, max: 100, noNaN: true }),
   frame: fc.option(fc.integer({ min: 320, max: 10_000 }), { nil: undefined }),
+});
+
+describe('view defaults', () => {
+  it('opens on the slider with the lens on', () => {
+    expect(base.mode).toBe('slider');
+    expect(base.xray).toBe(true);
+    expect(base.lensShows).toBeUndefined();
+  });
+
+  it('shows the adjusted fallback in comparisons and the opposite view otherwise', () => {
+    for (const mode of ['slider', 'overlay', 'side'] as const) {
+      expect(lensDefault(mode)).toBe('fallback');
+    }
+    expect(lensDefault('web')).toBe('fallback');
+    expect(lensDefault('fallback')).toBe('web');
+    expect(lensDefault('plain')).toBe('web');
+  });
+
+  it('still reads links that name the old defaults explicitly', () => {
+    const diff = parseViewDiff({ mode: 'overlay', xray: false, lensShows: 'overlay' }) ?? {};
+    expect(applyView(base, diff)).toMatchObject({
+      mode: 'overlay',
+      xray: false,
+      lensShows: 'overlay',
+    });
+  });
 });
 
 describe('view diff', () => {
