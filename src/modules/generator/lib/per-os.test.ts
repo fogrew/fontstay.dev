@@ -187,3 +187,12 @@ describe('rankFor with a style', () => {
     expect(candidates.find((item) => item.id === 'helvetica')?.style).toBe('regular');
   });
 });
+
+describe('Candidate.shift', () => {
+  it('is the worst predicted shift for measured fonts and null for latin-only ones', () => {
+    const measured = rankFor(font(ascii, 520), 'windows', 'en').candidates;
+    expect(measured.find((item) => item.id === 'arial')?.shift).toBeGreaterThanOrEqual(0);
+    const apple = rankFor(font(ascii, 520), 'macos', 'en').candidates;
+    expect(apple.find((item) => item.id === 'helvetica')?.shift).toBeNull();
+  });
+});

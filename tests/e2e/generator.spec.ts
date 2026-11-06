@@ -2944,3 +2944,18 @@ for (const width of [320, 768, 1280]) {
     }
   });
 }
+
+test('fallback options show the predicted shift and a labelled scale, with a hint on the order', async ({
+  page,
+}) => {
+  await page.goto('/en/');
+  await waitForGenerator(page);
+  await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(sourceSans);
+  await selectSystem(page, 'windows');
+
+  await expect(page.getByText(/Listed by best overall fit/)).toBeVisible();
+  await page.getByLabel('Fallback font 1', { exact: true }).click();
+  const first = page.getByRole('option').first();
+  await expect(first).toContainText(/Shift: (Good|Needs improvement|Poor) · scale \d+\.\d%/);
+  await expect(first).not.toContainText('(');
+});

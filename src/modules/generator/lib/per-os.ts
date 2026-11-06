@@ -89,6 +89,7 @@ export interface Candidate {
   native: Vertical;
   style: FontStyleKey;
   cost: number;
+  shift: number | null;
 }
 
 export interface Ranking {
@@ -176,19 +177,25 @@ function documentsFor(language: Language): Block[][] {
   return list;
 }
 
-function predictedCost(candidate: Candidate, model: PredictModel): number {
+function predictCandidate(
+  candidate: Candidate,
+  model: PredictModel,
+): { cost: number; shift: number | null } {
   const font = fallbackPredictFont(candidate, candidate.adjustment, { letter: 0, word: 0 });
-  if (!font) return 1;
+  if (!font) return { cost: 1, shift: null };
   const scores = documentsFor(model.language).flatMap((blocks) =>
     DEFAULT_VIEWPORTS.map((viewport) => predictViewport(model.web, font, blocks, viewport).score),
   );
   const mean = scores.reduce((sum, score) => sum + score, 0) / scores.length;
-  return (
-    Math.max(...scores) +
-    mean +
-    WIDTH_WEIGHT * widthMismatch(model, font) +
-    SIZE_WEIGHT * Math.abs(Math.log(candidate.adjustment.sizeAdjust))
-  );
+  const worst = Math.max(...scores);
+  return {
+    cost:
+      worst +
+      mean +
+      WIDTH_WEIGHT * widthMismatch(model, font) +
+      SIZE_WEIGHT * Math.abs(Math.log(candidate.adjustment.sizeAdjust)),
+    shift: worst,
+  };
 }
 
 export function rankFor(
@@ -229,8 +236,9 @@ export function rankFor(
           native: font.native,
           style: variant ? style : 'regular',
           cost: 1,
+          shift: null,
         };
-        candidate.cost = predictedCost(candidate, model);
+        Object.assign(candidate, predictCandidate(candidate, model));
         candidates.push(candidate);
       } else if (font.latinWidthEm !== null && language === 'en') {
         candidates.push({
@@ -245,6 +253,7 @@ export function rankFor(
           native: font.native,
           style: 'regular',
           cost: 1,
+          shift: null,
         });
       }
     } catch (failure) {

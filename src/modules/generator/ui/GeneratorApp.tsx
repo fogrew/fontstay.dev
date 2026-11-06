@@ -1406,10 +1406,22 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
             }),
           )
           .join(' ');
-  const optionLabel = (item: Candidate) =>
-    `${item.family} (${(item.adjustment.sizeAdjust * 100).toFixed(1)}%)${
-      item.latinOnly ? ` · ${t.fit_font_latin_only()}` : ''
-    }`;
+  const scaleFormat = new Intl.NumberFormat(locale, {
+    style: 'percent',
+    minimumFractionDigits: 1,
+    maximumFractionDigits: 1,
+  });
+  const optionOf = (item: Candidate) => {
+    const scale = scaleFormat.format(item.adjustment.sizeAdjust);
+    return {
+      value: item.id,
+      label: item.latinOnly ? `${item.family} · ${t.fit_font_latin_only()}` : item.family,
+      detail:
+        item.shift === null
+          ? t.fallback_option_scale({ scale })
+          : t.fallback_option_detail({ rating: ratingText(item.shift).label, scale }),
+    };
+  };
 
   const unmatchedFonts = [
     ...new Set(
@@ -1503,6 +1515,7 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
           >
             {os === current && (
               <>
+                <p class="ff-generator__note ff-muted">{t.fallback_options_hint()}</p>
                 {currentList.map((pick, index) => (
                   <div class="ff-generator__row" key={`${current}-${index}`} data-slot={index}>
                     <Select
@@ -1514,7 +1527,7 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
                             item.id === pick.id ||
                             !currentList.some((other) => other.id === item.id),
                         )
-                        .map((item) => ({ value: item.id, label: optionLabel(item) }))}
+                        .map(optionOf)}
                       onChange={(value) => {
                         const replacement = currentCandidates.find((item) => item.id === value);
                         if (replacement) {
