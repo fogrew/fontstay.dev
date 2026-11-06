@@ -2493,7 +2493,9 @@ test.describe('the single input field', () => {
       const offsets = await rows.evaluateAll((items) =>
         items.slice(0, 20).map((item) => {
           const [name, source] = [...item.children].map((child) => {
-            const box = child.getBoundingClientRect();
+            const range = document.createRange();
+            range.selectNodeContents(child);
+            const box = range.getBoundingClientRect();
             return box.top + box.height / 2;
           });
           return Math.abs((name ?? 0) - (source ?? 0));
