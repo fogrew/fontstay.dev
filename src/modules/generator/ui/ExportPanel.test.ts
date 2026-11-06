@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { EXPORT_FORMATS } from '@/modules/export';
 import { effectiveFormat, exportFileFor, FORMAT_ICONS } from './ExportPanel';
@@ -16,9 +17,10 @@ describe('export format selection', () => {
 });
 
 describe('export format icons', () => {
+  const sprite = readFileSync('public/brands.svg', 'utf8');
   it('has an icon for every format and the report', () => {
     for (const format of [...EXPORT_FORMATS, 'report'] as const) {
-      expect(FORMAT_ICONS[format]).toBeTruthy();
+      expect(sprite).toContain(`<symbol id="${FORMAT_ICONS[format]}"`);
     }
   });
 });

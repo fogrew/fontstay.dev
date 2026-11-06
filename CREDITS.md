@@ -70,7 +70,7 @@
 - [MDN light-dark](https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/Values/color_value/light-dark) and [forced colors](https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/At-rules/@media/forced-colors) — theme and system-color handling.
 - [MDN Clipboard.writeText](https://developer.mozilla.org/en-US/docs/Web/API/Clipboard/writeText) — explicit copy actions with accessible failure feedback.
 - [Simple Icons](https://simpleicons.org/) (CC0 1.0) — brand marks for browsers, systems, GitHub, Google Fonts, CSS, HTML, Tailwind CSS, Next.js, Nuxt, Astro, WordPress, JavaScript and Markdown in `public/brands.svg`. The marks belong to their owners.
-- [Font Awesome Free brands](https://fontawesome.com/license/free) (icons under CC BY 4.0, Fonticons, Inc.) — the Windows and Edge marks and the save, share, download, copy and forget action icons and the font icon (Fontaine export) in `public/brands.svg`.
+- [Font Awesome Free](https://fontawesome.com/license/free) (icons under CC BY 4.0, Fonticons, Inc.) — the Windows and Edge marks and the save, share, download, copy and forget action icons and the font icon (Fontaine export) in `public/brands.svg`.
 - [Browserslist logo](https://github.com/browserslist/browserslist) by Anton Popov (MIT) — the Browserslist mark in `public/brands.svg`.
 - [WAI-ARIA APG select-only combobox](https://www.w3.org/WAI/ARIA/apg/patterns/combobox/examples/combobox-select-only/) — keyboard and ARIA model of the custom dropdown.
 - [Google Translate](https://translate.google.com/) — machine translation used while developing as a second opinion on the Arabic messages (back-translation to English and a forward comparison); no output is shipped verbatim.
