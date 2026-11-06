@@ -1,5 +1,5 @@
 ---
-import { type Locale, messagesFor } from '@/common/i18n';
+import { type Locale, localizeHref, messagesFor } from '@/common/i18n';
 
 interface Props {
   locale: Locale;
@@ -108,5 +108,5 @@ const snippets = [
   <ul class="ff-page__list">
     {limits.map((limit) => <li class="ff-page__item">{limit}</li>)}
   </ul>
-  <p class="ff-page__text">{t.mcp_cli_text()}</p>
+  <p class="ff-page__text">{t.mcp_cli_text()} <a class="ff-link" href={localizeHref('/cli/', { locale })}>{t.cli_heading()}</a></p>
 </div>

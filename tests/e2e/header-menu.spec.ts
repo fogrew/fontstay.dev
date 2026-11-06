@@ -16,7 +16,7 @@ test.describe('mobile header menu', () => {
 
     await toggle.click();
     await expect(toggle).toHaveAttribute('aria-expanded', 'true');
-    await expect(nav.getByRole('link')).toHaveCount(4);
+    await expect(nav.getByRole('link')).toHaveCount(5);
     await expect(nav.locator('a[aria-current="page"]')).toHaveText('System fonts');
 
     await nav.getByRole('link').first().focus();

@@ -108,10 +108,10 @@ test('a preset opens in the generator with its type and per-system fallbacks', a
 });
 
 for (const locale of LOCALES) {
-  test(`${locale}: the guide and credits pages have no accessibility violations`, async ({
+  test(`${locale}: the guide, CLI and credits pages have no accessibility violations`, async ({
     page,
   }) => {
-    for (const path of ['guide', 'credits']) {
+    for (const path of ['guide', 'cli', 'credits']) {
       await page.goto(`/${locale}/${path}/`);
       await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
       const results = await new AxeBuilder({ page }).withTags(wcagTags).analyze();
@@ -132,6 +132,18 @@ test('the guide shows descriptor support and the credits page renders CREDITS.md
   await expect(page.getByRole('link', { name: 'Fallback Font Generator' })).toBeVisible();
   await page.getByRole('contentinfo').getByRole('link', { name: 'Guide' }).click();
   await expect(page).toHaveURL(/\/en\/guide\/$/);
+});
+
+test('the CLI page lists the options and is linked from the header and the export step', async ({
+  page,
+}) => {
+  await page.goto('/en/cli/');
+  await expect(page.getByRole('heading', { level: 1, name: 'CLI and Node library' })).toBeVisible();
+  await expect(page.getByRole('cell', { name: /^Print a JSON report/ })).toBeVisible();
+  await expect(page.getByRole('navigation').getByRole('link', { name: 'CLI' })).toHaveAttribute(
+    'aria-current',
+    'page',
+  );
 });
 
 test('the catalog table filters by every column and groups by type', async ({ page }) => {

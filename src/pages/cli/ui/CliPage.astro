@@ -1,0 +1,176 @@
+---
+import { type Locale, localizeHref, messagesFor } from '@/common/i18n';
+
+interface Props {
+  locale: Locale;
+}
+
+const { locale } = Astro.props;
+const t = messagesFor(locale);
+
+const installCode = `git clone https://github.com/fogrew/fontstay.dev.git
+cd fontstay.dev
+pnpm install
+pnpm cli:build
+node packages/fontstay/dist/bin.js --version`;
+
+const exampleCommand = 'fontstay fit font.woff2 --systems windows,macos --no-scripts';
+const exampleOutput = `@font-face {
+  font-family: "Source Sans Pro Fallback";
+  src: local("Arial"), local("ArialMT");
+  size-adjust: 93.697%;
+  ascent-override: 105.0194%;
+  descent-override: 29.1365%;
+  line-gap-override: 0%;
+}
+
+body {
+  font-family: "Source Sans Pro", "Source Sans Pro Fallback", sans-serif;
+  /* Safari has no vertical overrides: match the x-height and fix the line box */
+  font-size-adjust: 0.48;
+  line-height: 1.4;
+}
+
+.fonts-loading {
+  letter-spacing: -0.0003em;
+  word-spacing: -0.0025em;
+}`;
+
+const moreCommands = `fontstay fit Inter.woff2 -o fallbacks.css
+fontstay fit regular.woff2 bold.woff2 --format tailwind
+fontstay fit font.woff2 -a 'last 2 chrome versions, os windows' --json`;
+
+const options = [
+  ['-s, --systems <list>', t.cli_opt_systems()],
+  ['-a, --audience <query>', t.cli_opt_audience()],
+  ['-f, --format <format>', t.cli_opt_format()],
+  ['-k, --kind <kind>', t.cli_opt_kind()],
+  ['--locale <en|ru>', t.cli_opt_locale()],
+  ['--unicode-range', t.cli_opt_range()],
+  ['--no-scripts', t.cli_opt_scripts()],
+  ['-o, --out <file>', t.cli_opt_out()],
+  ['--json', t.cli_opt_json()],
+  ['-h, --help / -v, --version', t.cli_opt_help()],
+] as const;
+
+const formats = [
+  ['css', t.export_css()],
+  ['variables', t.export_variables()],
+  ['tailwind', t.export_tailwind()],
+  ['next', t.export_next()],
+  ['nuxt', t.export_nuxt()],
+  ['astro', t.export_astro()],
+  ['wordpress', t.export_wordpress()],
+  ['fontaine', t.export_fontaine()],
+  ['preload', t.export_preload()],
+  ['loading', t.export_loading()],
+] as const;
+
+const libraryCode = `import { fit, fitFiles } from 'fontstay';
+import { readFile } from 'node:fs/promises';
+
+const { css, fonts, shares } = await fit({
+  fonts: [{ fileName: 'font.woff2', data: await readFile('font.woff2') }],
+  audience: 'defaults',
+  systems: ['windows', 'macos'],
+});
+
+const tailwind = (await fitFiles(['font.woff2'], { format: 'tailwind' })).file.text;`;
+
+const exitCodes = [
+  ['0', t.cli_exit_0()],
+  ['1', t.cli_exit_1()],
+  ['2', t.cli_exit_2()],
+] as const;
+
+const mcpCommand =
+  'claude mcp add fontstay -- node /path/to/fontstay.dev/packages/fontstay/dist/bin.js mcp';
+---
+
+<div class="ff-page ff-prose">
+  <h1 class="ff-heading ff-page__heading">{t.cli_heading()}</h1>
+  <p class="ff-page__text">{t.cli_intro()}</p>
+
+  <h2 class="ff-heading ff-page__heading ff-prose__heading">{t.cli_install_heading()}</h2>
+  <p class="ff-page__text">{t.cli_install_text()}</p>
+  <!-- biome-ignore lint/a11y/noNoninteractiveTabindex: scrollable code needs a keyboard focus target -->
+  <pre class="ff-prose__code" tabindex="0" dir="ltr"><code>{installCode}</code></pre>
+
+  <h2 class="ff-heading ff-page__heading ff-prose__heading">{t.cli_commands_heading()}</h2>
+  <p class="ff-page__text">{t.cli_commands_text()}</p>
+  <p class="ff-page__text">{t.cli_example_text()}</p>
+  <!-- biome-ignore lint/a11y/noNoninteractiveTabindex: scrollable code needs a keyboard focus target -->
+  <pre class="ff-prose__code" tabindex="0" dir="ltr"><code>{`$ ${exampleCommand}\n${exampleOutput}`}</code></pre>
+  <!-- biome-ignore lint/a11y/noNoninteractiveTabindex: scrollable code needs a keyboard focus target -->
+  <pre class="ff-prose__code" tabindex="0" dir="ltr"><code>{moreCommands}</code></pre>
+
+  <h2 class="ff-heading ff-page__heading ff-prose__heading">{t.cli_options_heading()}</h2>
+  <table class="ff-prose__table ff-page__table">
+    <thead>
+      <tr>
+        <th class="ff-page__cell" scope="col">{t.cli_col_option()}</th>
+        <th class="ff-page__cell" scope="col">{t.cli_col_meaning()}</th>
+      </tr>
+    </thead>
+    <tbody>
+      {options.map(([name, text]) => (
+        <tr>
+          <th class="ff-page__cell" scope="row"><code dir="ltr">{name}</code></th>
+          <td class="ff-page__cell">{text}</td>
+        </tr>
+      ))}
+    </tbody>
+  </table>
+
+  <h2 class="ff-heading ff-page__heading ff-prose__heading">{t.cli_formats_heading()}</h2>
+  <p class="ff-page__text">{t.cli_formats_text()}</p>
+  <table class="ff-prose__table ff-page__table">
+    <thead>
+      <tr>
+        <th class="ff-page__cell" scope="col">{t.cli_col_format()}</th>
+        <th class="ff-page__cell" scope="col">{t.cli_col_output()}</th>
+      </tr>
+    </thead>
+    <tbody>
+      {formats.map(([value, label]) => (
+        <tr>
+          <th class="ff-page__cell" scope="row"><code>{value}</code></th>
+          <td class="ff-page__cell">{label}</td>
+        </tr>
+      ))}
+    </tbody>
+  </table>
+
+  <h2 class="ff-heading ff-page__heading ff-prose__heading">{t.cli_output_heading()}</h2>
+  <p class="ff-page__text">{t.cli_output_text()}</p>
+  <p class="ff-page__text">{t.cli_warnings_text()}</p>
+
+  <h2 class="ff-heading ff-page__heading ff-prose__heading">{t.cli_library_heading()}</h2>
+  <p class="ff-page__text">{t.cli_library_text()}</p>
+  <!-- biome-ignore lint/a11y/noNoninteractiveTabindex: scrollable code needs a keyboard focus target -->
+  <pre class="ff-prose__code" tabindex="0" dir="ltr"><code>{libraryCode}</code></pre>
+
+  <h2 class="ff-heading ff-page__heading ff-prose__heading">{t.cli_exit_heading()}</h2>
+  <table class="ff-prose__table ff-page__table">
+    <thead>
+      <tr>
+        <th class="ff-page__cell" scope="col">{t.cli_col_code()}</th>
+        <th class="ff-page__cell" scope="col">{t.cli_col_meaning()}</th>
+      </tr>
+    </thead>
+    <tbody>
+      {exitCodes.map(([code, text]) => (
+        <tr>
+          <th class="ff-page__cell" scope="row"><code>{code}</code></th>
+          <td class="ff-page__cell">{text}</td>
+        </tr>
+      ))}
+    </tbody>
+  </table>
+
+  <h2 class="ff-heading ff-page__heading ff-prose__heading">{t.cli_mcp_heading()}</h2>
+  <p class="ff-page__text">{t.cli_mcp_text()}</p>
+  <!-- biome-ignore lint/a11y/noNoninteractiveTabindex: scrollable code needs a keyboard focus target -->
+  <pre class="ff-prose__code" tabindex="0" dir="ltr"><code>{mcpCommand}</code></pre>
+  <p class="ff-page__text"><a class="ff-link" href={localizeHref('/mcp/', { locale })}>{t.nav_mcp()}</a></p>
+</div>
