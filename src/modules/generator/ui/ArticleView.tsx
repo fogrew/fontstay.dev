@@ -3,6 +3,7 @@ import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'preact/ho
 import { type Locale, messagesFor } from '@/common/i18n';
 import { Icon, Popover, ScrollShadow, Select } from '@/common/ui';
 import { type Device, DevicePicker, loadDevices } from '@/modules/devices';
+import { type FontTuning, LazyFontFeatures } from '@/modules/font-details';
 import { isProbeWidth, measureShift, shiftWidths, type WidthShift } from '../lib/article-shift';
 import {
   ARTICLE_IDS,
@@ -296,6 +297,7 @@ export function ArticleView({
   const [size, setSize] = useState(18);
   const [lineHeight, setLineHeight] = useState(1.5);
   const [wrap, setWrap] = useState<Wrap>('wrap');
+  const [tunings, setTunings] = useState<Record<number, FontTuning>>({});
   const [substitute, setSubstitute] = useState<Substitute>('sans-serif');
   const [headingPick, setHeadingPick] = useState<string>();
   const [bodyPick, setBodyPick] = useState<string>();
@@ -423,6 +425,8 @@ export function ArticleView({
   const bodyFamily = [...families, SYSTEM].includes(bodyPick ?? '')
     ? bodyPick
     : (families[1] ?? families[0]);
+  const bodyItem = items.find((item) => item.family === bodyFamily);
+  const tuning = tunings[bodyItem?.id ?? -1];
   const categoryOf = (family: string | undefined) =>
     items.find((item) => item.family === family)?.fallback.category ?? 'sans-serif';
 
@@ -557,6 +561,7 @@ export function ArticleView({
     bodyFamily,
     substitute,
     previewWidth,
+    tuning?.style,
   ]);
 
   const empty = items.length === 0 || !headingFamily || !bodyFamily;
@@ -585,6 +590,7 @@ export function ArticleView({
       ...(styled ? { '--ff-layer-stroke': `${layer.width}px`, opacity: layer.opacity / 100 } : {}),
       ...(image && guides ? { '--ff-guides': image } : {}),
       textWrap: wrap,
+      ...(kind === 'web' ? tuning?.style : undefined),
     };
   };
   useEffect(() => {
@@ -1001,6 +1007,14 @@ export function ArticleView({
         options={ARTICLE_LANGUAGES.map(([id, label]) => ({ value: id, label }))}
         onChange={(value) => setArticleId(value as ArticleId)}
       />
+      {bodyItem && (
+        <LazyFontFeatures
+          locale={locale}
+          metrics={bodyItem.metrics}
+          selection={tuning?.selection}
+          onChange={(next) => setTunings((all) => ({ ...all, [bodyItem.id]: next }))}
+        />
+      )}
     </fieldset>
   );
 

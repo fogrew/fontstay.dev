@@ -1,6 +1,6 @@
 import AxeBuilder from '@axe-core/playwright';
 import type { Page } from '@playwright/test';
-import { expect, openStep, test, waitForGenerator } from './fixtures';
+import { expect, openPopover, openStep, test, waitForGenerator } from './fixtures';
 
 const fonts = new URL('../fixtures/fonts/', import.meta.url).pathname.replace(
   /^\/([A-Za-z]:)/,
@@ -39,8 +39,7 @@ test('the details panel lists the features, name table and languages of a font',
   for (const tag of ['liga', 'kern', 'smcp', 'onum', 'ss01']) {
     await expect(features.locator('.ff-details__tag', { hasText: tag })).toBeVisible();
   }
-  await expect(features.getByRole('checkbox', { name: /^liga / })).toBeChecked();
-  await expect(features.getByRole('checkbox', { name: /^smcp / })).not.toBeChecked();
+  await expect(features).toContainText('On by default');
 
   await page.getByRole('tab', { name: 'Languages' }).click();
   const languages = page.getByRole('tabpanel', { name: 'Languages' });
@@ -52,59 +51,69 @@ test('the details panel lists the features, name table and languages of a font',
   await expect(page.getByText('This font has no variable axes.')).toBeVisible();
 });
 
-test('ticking features and moving axes generates the matching CSS', async ({ page }) => {
-  await openDetails(page, sourceSans);
-  await page.getByRole('tab', { name: 'CSS' }).click();
-  const css = page.getByRole('tabpanel', { name: 'CSS' });
-  await expect(css).toContainText('Nothing selected yet');
-
-  await page.getByRole('tab', { name: 'Features' }).click();
-  const features = page.getByRole('tabpanel', { name: 'Features' });
-  await features.getByRole('checkbox', { name: /^smcp / }).check();
-  await features.getByRole('checkbox', { name: /^onum / }).check();
-  await features.getByRole('checkbox', { name: /^ss01 / }).check();
-  await features.getByRole('checkbox', { name: /^liga / }).uncheck();
-  await expect(page.locator('.ff-details__stage')).toHaveCSS(
-    'font-feature-settings',
-    '"liga" 0, "onum", "smcp", "ss01"',
+const pagesFeatureSettings = (page: Page) =>
+  page.evaluate(() =>
+    [...document.querySelectorAll<HTMLElement>('.ff-article:not([data-probe])')].map(
+      (element) => getComputedStyle(element).fontFeatureSettings,
+    ),
   );
 
-  await page.getByRole('tab', { name: 'CSS' }).click();
-  await expect(css).toContainText('font-variant-caps: small-caps;');
-  await expect(css).toContainText('font-variant-numeric: oldstyle-nums;');
-  await expect(css).toContainText('font-feature-settings: "liga" 0, "ss01" 1;');
-  await expect(css).not.toContainText('font-variation-settings');
+async function openControls(page: Page, file: string) {
+  await page.goto('/en/');
+  await waitForGenerator(page);
+  await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(file);
+  await openPopover(page, 'Content');
+  return page.getByRole('group', { name: 'Font features and axes' });
+}
 
-  await page.getByRole('button', { name: 'Reset selection' }).click();
-  await expect(css).toContainText('Nothing selected yet');
-});
-
-test('a variable font lists its axes and named instances and writes font-variation-settings', async ({
+test('toolbar feature controls restyle the article and write the matching CSS', async ({
   page,
 }) => {
+  const controls = await openControls(page, sourceSans);
+  await controls.getByRole('checkbox', { name: /^smcp / }).check();
+  await controls.getByRole('checkbox', { name: /^onum / }).check();
+  await controls.getByRole('checkbox', { name: /^liga / }).uncheck();
+  await expect
+    .poll(async () => (await pagesFeatureSettings(page)).some((value) => value.includes('"smcp"')))
+    .toBe(true);
+  await expect(controls).toContainText('font-variant-caps: small-caps;');
+  await expect(controls).toContainText('font-variant-numeric: oldstyle-nums;');
+  await expect(controls).toContainText('font-feature-settings: "liga" 0;');
+  await expect(controls).not.toContainText('font-variation-settings');
+
+  await controls.getByRole('button', { name: 'Reset selection' }).click();
+  await expect(controls).not.toContainText('font-variant-caps');
+  expect((await pagesFeatureSettings(page)).some((value) => value.includes('"smcp"'))).toBe(false);
+});
+
+test('a variable font gets axis sliders and named instances in the toolbar', async ({ page }) => {
+  const controls = await openControls(page, mada);
+  for (const name of ['Light', 'Regular', 'SemiBold', 'Bold', 'Black']) {
+    await expect(controls.getByRole('button', { name, exact: true })).toBeVisible();
+  }
+  await controls.getByRole('button', { name: 'Bold', exact: true }).click();
+  await expect(controls.getByRole('button', { name: 'Bold', exact: true })).toHaveAttribute(
+    'aria-pressed',
+    'true',
+  );
+  await expect(controls).toContainText('font-variation-settings: "wght" 824;');
+  await expect
+    .poll(() =>
+      page.evaluate(() =>
+        [...document.querySelectorAll<HTMLElement>('.ff-article:not([data-probe])')].some(
+          (element) => getComputedStyle(element).fontVariationSettings.includes('824'),
+        ),
+      ),
+    )
+    .toBe(true);
+});
+
+test('a variable font lists its axes in the details panel', async ({ page }) => {
   await openDetails(page, mada);
   await page.getByRole('tab', { name: 'Variable axes' }).click();
   const axes = page.getByRole('tabpanel', { name: 'Variable axes' });
   await expect(axes).toContainText('Weight (wght)');
   await expect(axes).toContainText('100 to 1,000, default 520');
-  for (const name of ['Light', 'Regular', 'SemiBold', 'Bold', 'Black']) {
-    await expect(axes.getByRole('button', { name, exact: true })).toBeVisible();
-  }
-
-  await axes.getByRole('button', { name: 'Bold', exact: true }).click();
-  await expect(axes.getByRole('button', { name: 'Bold', exact: true })).toHaveAttribute(
-    'aria-pressed',
-    'true',
-  );
-  await expect(page.locator('.ff-details__stage')).toHaveCSS(
-    'font-variation-settings',
-    '"wght" 824',
-  );
-
-  await page.getByRole('tab', { name: 'CSS' }).click();
-  await expect(page.getByRole('tabpanel', { name: 'CSS' })).toContainText(
-    'font-variation-settings: "wght" 824;',
-  );
 });
 
 test('the details panel is localized and passes the accessibility audit', async ({ page }) => {
@@ -130,14 +139,20 @@ test('a static TrueType font lists its stylistic sets and writes ligature and ca
   for (const tag of ['liga', 'kern', 'smcp', 'ss01', 'frac']) {
     await expect(features.locator('.ff-details__tag', { hasText: tag })).toBeVisible();
   }
-  await features.getByRole('checkbox', { name: /^calt / }).uncheck();
-  await features.getByRole('checkbox', { name: /^dlig / }).check();
-  await features.getByRole('checkbox', { name: /^smcp / }).check();
-  await features.getByRole('checkbox', { name: /^c2sc / }).check();
-  await page.getByRole('tab', { name: 'CSS' }).click();
-  const css = page.getByRole('tabpanel', { name: 'CSS' });
-  await expect(css).toContainText('font-variant-ligatures: no-contextual discretionary-ligatures;');
-  await expect(css).toContainText('font-variant-caps: all-small-caps;');
+});
+
+test('static TrueType ligature and caps variants are written in the toolbar CSS', async ({
+  page,
+}) => {
+  const controls = await openControls(page, fira);
+  await controls.getByRole('checkbox', { name: /^calt / }).uncheck();
+  await controls.getByRole('checkbox', { name: /^dlig / }).check();
+  await controls.getByRole('checkbox', { name: /^smcp / }).check();
+  await controls.getByRole('checkbox', { name: /^c2sc / }).check();
+  await expect(controls).toContainText(
+    'font-variant-ligatures: no-contextual discretionary-ligatures;',
+  );
+  await expect(controls).toContainText('font-variant-caps: all-small-caps;');
 });
 
 test('font details live in Inputs, one group per font, and not under the article', async ({

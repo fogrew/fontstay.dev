@@ -1,0 +1,50 @@
+export const JOINING = ['init', 'medi', 'fina', 'isol', 'fin2', 'fin3', 'med2'];
+export const SHAPING = [
+  'abvf',
+  'abvm',
+  'abvs',
+  'akhn',
+  'blwf',
+  'blwm',
+  'blws',
+  'cfar',
+  'cjct',
+  'half',
+  'haln',
+  'nukt',
+  'pref',
+  'pres',
+  'pstf',
+  'psts',
+  'rkrf',
+  'rphf',
+  'vatu',
+  'ljmo',
+  'vjmo',
+  'tjmo',
+];
+const DEFAULT_ON = new Set([
+  'ccmp',
+  'locl',
+  'mark',
+  'mkmk',
+  'calt',
+  'clig',
+  'liga',
+  'rlig',
+  'rclt',
+  'rvrn',
+  'kern',
+  'curs',
+  'dist',
+  'ltra',
+  'ltrm',
+  'rtla',
+  'rtlm',
+  ...JOINING,
+  ...SHAPING,
+]);
+
+export function isDefaultOn(tag: string): boolean {
+  return DEFAULT_ON.has(tag);
+}
