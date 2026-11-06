@@ -489,6 +489,7 @@
   "audience_file_empty": "В {name} нет запросов browserslist.",
   "audience_browsers_heading": "Браузеры ({count})",
   "audience_os_heading_count": "Операционные системы ({count})",
+  "audience_result_heading": "Результат",
   "audience_tags_group_os": "Операционные системы",
   "audience_tag_not_action": "Исключить {tag}",
   "audience_set_latest": "Только последние версии",

@@ -730,7 +730,8 @@ test('the audience editor resolves presets and reports invalid queries', async (
   const list = page.getByRole('list', { name: 'Resolved browsers' });
   await expect(list).toContainText('Chrome');
   await expect(page.getByText('Audience (browsers)')).toHaveCount(0);
-  await expect(page.getByRole('heading', { name: /^Browsers \(\d+\)$/ })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Result', level: 3 })).toBeVisible();
+  await expect(page.getByRole('heading', { name: /^Browsers \(\d+\)$/, level: 4 })).toBeVisible();
   await expect(page.getByText(/Browser data up to/)).toBeVisible();
 
   const query = page.getByLabel('Add a query');

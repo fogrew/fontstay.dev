@@ -489,6 +489,7 @@
   "audience_file_empty": "No se encontraron consultas de browserslist en {name}.",
   "audience_browsers_heading": "Navegadores ({count})",
   "audience_os_heading_count": "Sistemas operativos ({count})",
+  "audience_result_heading": "Resultado",
   "audience_tags_group_os": "Sistemas operativos",
   "audience_tag_not_action": "Excluir {tag}",
   "audience_set_latest": "Solo las últimas versiones",
