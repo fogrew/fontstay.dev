@@ -108,7 +108,7 @@
   "fallback_font_n": "Fonte de fallback {n}",
   "fallback_option_detail": "Deslocamento: {rating} · escala {scale}",
   "fallback_option_scale": "Escala {scale}",
-  "fallback_options_hint": "Ordem pelo deslocamento de layout previsto, do menor para o maior. Em caso de empate, vence a escala mais próxima de 100%. A escala é o size-adjust da fonte de fallback; valores acima de 100% são normais.",
+  "fallback_options_hint": "Ordem pelo melhor ajuste geral: cobertura de glifos, deslocamento de layout previsto (mostra-se o pior caso) e proximidade da escala a 100%. A escala é o size-adjust da fonte de fallback; valores acima de 100% são normais.",
   "plan_add": "Adicionar fallback",
   "plan_remove": "Remover",
   "fit_edit_label": "Ajustar valores de",
