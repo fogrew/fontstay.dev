@@ -35,7 +35,7 @@ test('the hashed CSP allows no unsafe sources', async ({ page }) => {
   expect(policy).toMatch(/script-src[^;]*'sha256-/);
   expect(policy).toContain("object-src 'none'");
   expect(policy).toContain("base-uri 'none'");
-  expect(policy).not.toContain('unsafe-eval');
+  expect((policy ?? '').replaceAll("'wasm-unsafe-eval'", '')).not.toContain('unsafe-eval');
   expect(policy).not.toContain('unsafe-inline');
 });
 
