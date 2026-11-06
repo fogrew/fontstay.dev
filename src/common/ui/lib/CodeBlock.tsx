@@ -40,8 +40,13 @@ export function CodeActions({
   };
   return (
     <>
+      <Button disabled={pending} onClick={copy} aria-label={`${t.ui_copy_code()}: ${label}`}>
+        <Icon name="copy" />
+        {t.ui_copy_code()}
+      </Button>
       {fileName && (
         <Button
+          variant="primary"
           onClick={() => {
             const url = URL.createObjectURL(new Blob([code], { type: 'text/plain' }));
             const link = document.createElement('a');
@@ -56,10 +61,6 @@ export function CodeActions({
           {t.ui_download()}
         </Button>
       )}
-      <Button disabled={pending} onClick={copy} aria-label={`${t.ui_copy_code()}: ${label}`}>
-        <Icon name="copy" />
-        {t.ui_copy_code()}
-      </Button>
       {status === 'failed' && (
         <p class="ff-error ff-code__error" role="alert">
           {t.ui_copy_failed()}

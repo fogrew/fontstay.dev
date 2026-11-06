@@ -2240,6 +2240,12 @@ test('the last step puts download and copy in the dock footer without share, and
   const footer = panel.locator('.ff-dock__footer');
   await expect(footer.getByRole('button', { name: /^Download/ })).toBeVisible();
   await expect(footer.getByRole('button', { name: /^Copy code/ })).toBeVisible();
+  await expect(footer.getByRole('button').first()).toHaveText(/^Copy code/);
+  await expect(footer.getByRole('button').last()).toHaveText(/^Download/);
+  await expect(footer.getByRole('button', { name: /^Download/ })).toHaveClass(/ff-button--primary/);
+  await expect(footer.getByRole('button', { name: /^Copy code/ })).toHaveClass(
+    /ff-button--secondary/,
+  );
   await expect(footer.getByRole('button', { name: 'Next', exact: false })).toHaveCount(0);
   await expect(panel.getByRole('button', { name: 'Share', exact: true })).toHaveCount(0);
   await expect(panel.locator('.ff-code__header').getByRole('button')).toHaveCount(0);
