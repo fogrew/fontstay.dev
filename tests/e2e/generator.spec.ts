@@ -778,6 +778,10 @@ test('imported usage statistics enable "in my stats" queries and report ignored 
   await upload('not json');
   await expect(page.getByText('not valid JSON')).toBeVisible();
 
+  await upload(JSON.stringify({ chrome: { '120': 0.2 } }));
+  await expect(page.getByText(/reaches the 0.5% share/)).toBeVisible();
+  await expect(queryField(page)).toHaveAttribute('data-query', 'baseline widely available');
+
   await upload(
     JSON.stringify({
       chrome: { '120': 60, '119': 3, '1': 1 },

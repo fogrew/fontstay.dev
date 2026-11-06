@@ -1,5 +1,14 @@
 import { describe, expect, it } from 'vitest';
-import { addTag, addTags, browserOf, isExcluded, joinQuery, removeTag, splitQuery } from './tags';
+import {
+  addTag,
+  addTags,
+  browserOf,
+  isExcluded,
+  joinQuery,
+  normalizeQuery,
+  removeTag,
+  splitQuery,
+} from './tags';
 
 describe('query tags', () => {
   it('splits and joins comma separated queries', () => {
@@ -37,5 +46,26 @@ describe('adding several tags', () => {
       'defaults, os linux, not os ios',
     );
     expect(addTag('defaults, Not OS iOS', 'os ios')).toBe('defaults, os ios');
+  });
+});
+
+describe('normalizeQuery', () => {
+  it('adds the default browsers when only OS tags remain', () => {
+    expect(normalizeQuery('os ios')).toBe('baseline widely available, os ios');
+    expect(normalizeQuery('not os linux, os ios')).toBe(
+      'baseline widely available, not os linux, os ios',
+    );
+  });
+
+  it('keeps a query that already names browsers', () => {
+    expect(normalizeQuery('defaults, os ios')).toBe('defaults, os ios');
+    expect(normalizeQuery('')).toBe('');
+  });
+
+  it('lets the later of two contradicting OS tags win', () => {
+    expect(normalizeQuery('defaults, os linux, os ios, not os ios')).toBe(
+      'defaults, os linux, not os ios',
+    );
+    expect(normalizeQuery('defaults, not os ios, os ios')).toBe('defaults, os ios');
   });
 });

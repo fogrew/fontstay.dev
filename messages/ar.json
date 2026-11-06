@@ -85,6 +85,7 @@
   "audience_stats_error_bad_value": "يجب أن تكون الحصة رقمًا من 0 إلى 100:",
   "audience_stats_error_too_many": "يحتوي الملف على مدخلات كثيرة جدًا.",
   "audience_stats_error_empty": "لا يحتوي الملف على حصص استخدام للمتصفحات والإصدارات التي تعرفها هذه الأداة.",
+  "audience_stats_error_no_match": "لا يصل أي إصدار متصفح في الملف إلى حصة 0.5٪ التي يتطلبها إعداد إحصاءاتي.",
   "audience_file_import": "استيراد .browserslistrc",
   "audience_file_source": "الاستعلام مأخوذ من {name}.",
   "audience_preset_mystats": "أكثر من 0.5% من إحصاءاتي",

@@ -85,6 +85,7 @@
   "audience_stats_error_bad_value": "Una cuota debe ser un número de 0 a 100:",
   "audience_stats_error_too_many": "El archivo tiene demasiadas entradas.",
   "audience_stats_error_empty": "El archivo no contiene cuotas de uso de navegadores y versiones que esta herramienta conozca.",
+  "audience_stats_error_no_match": "Ninguna versión de navegador del archivo alcanza la cuota del 0,5 % que necesita el preajuste Mis estadísticas.",
   "audience_file_import": "Importar .browserslistrc",
   "audience_file_source": "La consulta proviene de {name}.",
   "audience_preset_mystats": "Más del 0,5 % de mis estadísticas",

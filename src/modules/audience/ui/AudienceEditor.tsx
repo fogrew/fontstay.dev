@@ -13,7 +13,7 @@ import {
   type StatsResult,
   type UsageStats,
 } from '../lib/stats';
-import { joinQuery, splitOsQuery, splitQuery } from '../lib/tags';
+import { joinQuery, normalizeQuery, splitOsQuery, splitQuery } from '../lib/tags';
 import { BrowserIcon } from './BrandIcon';
 import { OsPanel } from './OsPanel';
 import { TagEditor } from './TagEditor';
@@ -63,7 +63,8 @@ export function AudienceEditor({
   const listInput = useRef<HTMLInputElement>(null);
   const actions = useRef<HTMLDivElement>(null);
   const [opened, setOpened] = useState(bare);
-  const [query, setQuery] = useState<string>(initialQuery ?? DEFAULT_QUERY);
+  const [query, setQueryRaw] = useState<string>(normalizeQuery(initialQuery ?? DEFAULT_QUERY));
+  const setQuery = (next: string) => setQueryRaw(normalizeQuery(next));
   const [state, setState] = useState<State>({ loading: true });
   useEffect(() => {
     onQueryChange?.(query);
@@ -124,6 +125,11 @@ export function AudienceEditor({
     }
     if (!result.ok) {
       setStatsError(`${statsErrors[result.code]} ${result.detail}`.trim());
+      return;
+    }
+    const preset = await resolveQuery(MY_STATS_PRESET.query, result.stats);
+    if (!preset.ok) {
+      setStatsError(t.audience_stats_error_no_match());
       return;
     }
     setStatsError('');
