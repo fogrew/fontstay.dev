@@ -186,14 +186,16 @@ describe('parseClipboardImport', () => {
 describe('sanitizeImport rules', () => {
   const base = { v: 1, faces: [{ family: 'A' }] };
 
-  it('keeps well-formed rules and drops malformed ranges', () => {
+  it('keeps well-formed rules and drops rules with a malformed range', () => {
     const result = sanitizeImport(
       {
         ...base,
         rules: [
-          { family: 'A', weight: 700, style: 'italic', unicodeRange: 'U+0-FF, U+4??' },
+          { family: 'A', weight: '700', style: 'italic', unicodeRange: 'U+0-FF, U+4??' },
           { family: 'A', weight: 'bold', unicodeRange: '<script>' },
-          { family: 'A', unicodeRange: `U+0,${' U+1,'.repeat(1000)}` },
+          { family: 'A', weight: '100 900' },
+          { family: 'A', weight: 'x'.repeat(30), unicodeRange: `U+0,${' U+1,'.repeat(1000)}` },
+          { family: 'A', weight: 5 },
           { family: '' },
           'x',
         ],
@@ -203,7 +205,7 @@ describe('sanitizeImport rules', () => {
     );
     expect(result?.rules).toEqual([
       { family: 'A', weight: '700', style: 'italic', unicodeRange: 'U+0-FF, U+4??' },
-      { family: 'A', weight: '400', style: 'normal' },
+      { family: 'A', weight: '100 900', style: 'normal' },
       { family: 'A', weight: '400', style: 'normal' },
     ]);
   });

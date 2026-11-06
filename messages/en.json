@@ -458,7 +458,7 @@
   "split_note": "Informational. When one word needs glyphs from two font files, the browser shapes it in several passes.",
   "split_latin": "{family} {weight} {style}: basic Latin ({characters}) is spread over rules {rules}.",
   "split_overlap": "{family} {weight} {style}: rules {rules} overlap on {count} characters ({characters}).",
-  "split_late": "{family} {weight} {style}: rule {first}, which carries the most glyphs, is declared before rule {second}, which overlaps it on {count} characters ({characters}). Declare it last.",
+  "split_late": "{family} {weight} {style}: rule {first}, which carries the most glyphs, is declared before rule {second}, which overlaps it on {count} characters ({characters}). Consider declaring it last.",
   "import_accept": "Import",
   "import_discard": "Discard",
   "import_done": "Imported {count} font files from {origin}.",

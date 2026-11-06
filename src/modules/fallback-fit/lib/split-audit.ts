@@ -81,10 +81,17 @@ function intersect(a: readonly CodePointRange[], b: readonly CodePointRange[]): 
   return result;
 }
 
+const SAFE_WEIGHT = /^[1-9]\d{0,3}(?:\s+[1-9]\d{0,3})?$/;
 const weightKey = (weight: string) => {
   const value = String(weight).trim().toLowerCase();
-  return value === 'normal' ? '400' : value === 'bold' ? '700' : value;
+  if (value === 'normal') return '400';
+  if (value === 'bold') return '700';
+  return SAFE_WEIGHT.test(value) ? value.replace(/\s+/g, ' ') : '400';
 };
+
+const UNSAFE_TEXT = /[\p{Cc}\p{Cf}\p{Zl}\p{Zp}]/gu;
+const cleanFamily = (family: string) =>
+  String(family).replace(UNSAFE_TEXT, ' ').replace(/\s+/g, ' ').trim();
 const styleKey = (style: string) => (/italic|oblique/i.test(String(style)) ? 'italic' : 'normal');
 
 interface Parsed {
@@ -98,18 +105,21 @@ function describe(ranges: readonly CodePointRange[]) {
 }
 
 export function auditSplitFaces(rules: readonly FaceRule[]): SplitIssue[] {
-  const groups = new Map<string, { rule: FaceRule; members: Parsed[] }>();
+  const groups = new Map<string, { rule: FaceRule; members: Parsed[]; seen: Set<string> }>();
   rules.slice(0, MAX_RULES).forEach((rule, index) => {
-    const family = String(rule.family).trim().toLowerCase();
+    const family = cleanFamily(rule.family).toLowerCase();
     if (!family) return;
     const ranges = parseRange(rule.unicodeRange);
     if (!ranges) return;
     const key = `${family}|${weightKey(rule.weight)}|${styleKey(rule.style)}`;
     let group = groups.get(key);
     if (!group) {
-      group = { rule, members: [] };
+      group = { rule, members: [], seen: new Set() };
       groups.set(key, group);
     }
+    const signature = formatUnicodeRange(ranges);
+    if (group.seen.has(signature)) return;
+    group.seen.add(signature);
     group.members.push({ index, ranges, size: countCodePoints(ranges) });
   });
 
@@ -119,7 +129,7 @@ export function auditSplitFaces(rules: readonly FaceRule[]): SplitIssue[] {
   for (const { rule, members } of groups.values()) {
     if (members.length < 2) continue;
     const label = {
-      family: String(rule.family).trim(),
+      family: cleanFamily(rule.family),
       weight: weightKey(rule.weight),
       style: styleKey(rule.style),
     };
@@ -143,6 +153,7 @@ export function auditSplitFaces(rules: readonly FaceRule[]): SplitIssue[] {
     const scan = members.slice(0, MAX_OVERLAP_RULES);
     for (let later = 1; later < scan.length; later++) {
       for (let earlier = 0; earlier < later; earlier++) {
+        if (late.length + overlap.length >= MAX_ISSUES) break;
         const first = scan[earlier] as Parsed;
         const second = scan[later] as Parsed;
         const shared = intersect(first.ranges, second.ranges);

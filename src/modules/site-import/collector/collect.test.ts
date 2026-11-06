@@ -54,6 +54,18 @@ const collect = (rules: unknown[], fetchFile?: (url: string) => Promise<unknown>
 };
 
 describe('fontstayCollect', () => {
+  it('cuts an over-long unicode-range at a comma', async () => {
+    const range = Array.from(
+      { length: 400 },
+      (_, index) => `U+${(index + 4096).toString(16)}`,
+    ).join(', ');
+    const { result } = await collect([faceRule({ family: 'Cjk', src: 'url(/c.woff2)', range })]);
+    const [cut] = result.rules as { unicodeRange: string }[];
+    expect(cut?.unicodeRange.length).toBeLessThanOrEqual(1500);
+    expect(range.startsWith(cut?.unicodeRange ?? '!')).toBe(true);
+    expect(cut?.unicodeRange.endsWith(',')).toBe(false);
+  });
+
   it('reports every @font-face rule with its unicode-range, capped at 256', async () => {
     const rules = Array.from({ length: 300 }, (_, index) =>
       faceRule({ family: 'Split', src: `url(/f${index}.woff2)`, range: `U+${index.toString(16)}` }),
@@ -61,7 +73,7 @@ describe('fontstayCollect', () => {
     const { result } = await collect(rules);
     const reported = result.rules as { family: string; unicodeRange: string }[];
     expect(reported).toHaveLength(256);
-    expect(reported[3]).toMatchObject({ family: 'Split', unicodeRange: 'U+3', weight: 400 });
+    expect(reported[3]).toMatchObject({ family: 'Split', unicodeRange: 'U+3', weight: '400' });
     expect(result.faces).toHaveLength(1);
   });
 

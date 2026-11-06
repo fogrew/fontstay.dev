@@ -116,7 +116,7 @@ export function describeIssue(issue: SplitIssue): string {
     return `${face}: basic Latin (${chars}) is spread over rules ${rulesOf(issue)}.`;
   if (issue.kind === 'late-real-face') {
     const [first, second] = issue.rules;
-    return `${face}: rule ${(first ?? 0) + 1}, which carries the most glyphs, is declared before rule ${(second ?? 0) + 1}, which overlaps it on ${issue.count} characters (${chars}). Declare it last.`;
+    return `${face}: rule ${(first ?? 0) + 1}, which carries the most glyphs, is declared before rule ${(second ?? 0) + 1}, which overlaps it on ${issue.count} characters (${chars}). Consider declaring it last.`;
   }
   return `${face}: rules ${rulesOf(issue)} overlap on ${issue.count} characters (${chars}).`;
 }

@@ -12,6 +12,7 @@ export async function fontstayCollect(win, doc, options = {}) {
   const MAX_TOTAL = 31457280;
   const MAX_FACES = 64;
   const MAX_RULES = 256;
+  const MAX_RANGE = 1500;
   const MAX_SHEETS = 6;
   const MAX_CSS = 500000;
   const readBounded = async (response, limit, budget) => {
@@ -95,6 +96,11 @@ export async function fontstayCollect(win, doc, options = {}) {
     });
   };
 
+  const rangeText = (text) => {
+    if (text.length <= MAX_RANGE) return text;
+    const cut = text.lastIndexOf(',', MAX_RANGE);
+    return cut > 0 ? text.slice(0, cut) : '';
+  };
   const faces = [];
   const faceRules = [];
   const slots = new Map();
@@ -131,11 +137,11 @@ export async function fontstayCollect(win, doc, options = {}) {
         if (faceRules.length < MAX_RULES) {
           faceRules.push({
             family,
-            weight: weightOf(rule.style.getPropertyValue('font-weight')),
+            weight: rule.style.getPropertyValue('font-weight').slice(0, 20),
             style: /italic|oblique/i.test(rule.style.getPropertyValue('font-style'))
               ? 'italic'
               : 'normal',
-            unicodeRange: rule.style.getPropertyValue('unicode-range').slice(0, 1500),
+            unicodeRange: rangeText(rule.style.getPropertyValue('unicode-range')),
           });
         }
         addFace(

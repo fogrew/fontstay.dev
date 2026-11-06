@@ -1361,12 +1361,13 @@ test('pasted CSS with a badly split web font shows informational warnings, Googl
     mimeType: 'text/css',
     buffer: Buffer.from(split),
   });
-  const warnings = page.getByRole('region', {
+  const heading = page.getByRole('heading', {
     name: 'This web font may be split in a way that slows text layout',
   });
-  await expect(warnings).toContainText(
-    'Chunky 400 normal: basic Latin (U+20-7E) is spread over rules 1, 2.',
-  );
+  await expect(heading).toBeVisible();
+  await expect(
+    page.getByText('Chunky 400 normal: basic Latin (U+20-7E) is spread over rules 1, 2.'),
+  ).toBeVisible();
   const google = [
     '@font-face { font-family: "Inter"; src: url(https://fonts.gstatic.com/a.woff2); unicode-range: U+0100-02BA, U+02BD-02C5, U+1E00-1E9F; }',
     '@font-face { font-family: "Inter"; src: url(https://fonts.gstatic.com/b.woff2); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+2000-206F; }',
@@ -1377,7 +1378,7 @@ test('pasted CSS with a badly split web font shows informational warnings, Googl
     buffer: Buffer.from(google),
   });
   await expect(page.getByRole('list', { name: 'Fonts found in the CSS' })).toBeVisible();
-  await expect(warnings).toHaveCount(0);
+  await expect(heading).toHaveCount(0);
 });
 
 test('a Google Fonts family can be searched and downloaded through the two allowed origins', async ({

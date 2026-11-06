@@ -36,11 +36,10 @@ export async function readText(path: string, limit: number): Promise<string> {
   if (process.platform === 'win32' && NETWORK_PATH.test(path)) throw new NetworkPathError(path);
   const handle = await open(path, constants.O_RDONLY | (constants.O_NONBLOCK ?? 0));
   try {
-    if (!(await handle.stat()).isFile()) throw new FontParseError('invalid-font');
-    const buffer = Buffer.alloc(limit + 1);
-    const { bytesRead } = await handle.read(buffer, 0, buffer.length, 0);
-    if (bytesRead > limit) throw new FontParseError('too-large');
-    return buffer.subarray(0, bytesRead).toString('utf8');
+    const info = await handle.stat();
+    if (!info.isFile()) throw new FontParseError('invalid-font');
+    if (info.size > limit) throw new FontParseError('too-large');
+    return (await handle.readFile()).subarray(0, limit + 1).toString('utf8');
   } finally {
     await handle.close();
   }

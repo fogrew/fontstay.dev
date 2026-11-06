@@ -12,7 +12,7 @@ export function SplitWarnings({ locale, rules }: { locale: Locale; rules: readon
   const issues = useMemo(() => auditSplitFaces(rules), [rules]);
   if (issues.length === 0) return null;
   return (
-    <section class="ff-split-warnings" aria-label={t.split_title()}>
+    <div>
       <h3 class="ff-heading">{t.split_title()}</h3>
       <p class="ff-muted">{t.split_note()}</p>
       <ul class="ff-generator__list">
@@ -39,6 +39,6 @@ export function SplitWarnings({ locale, rules }: { locale: Locale; rules: readon
           );
         })}
       </ul>
-    </section>
+    </div>
   );
 }

@@ -120,6 +120,7 @@ function faces(raw: unknown): ImportedFace[] {
 }
 
 const RANGE = /^[Uu+0-9a-fA-F?,\s-]+$/;
+const WEIGHT = /^(?:normal|bold|[1-9]\d{0,3}(?:\s+[1-9]\d{0,3})?)$/;
 
 function rules(raw: unknown): ImportedRule[] {
   if (!Array.isArray(raw)) return [];
@@ -129,13 +130,13 @@ function rules(raw: unknown): ImportedRule[] {
     const family = cleanText(item.family, 200);
     if (!family) continue;
     const range = typeof item.unicodeRange === 'string' ? item.unicodeRange.trim() : '';
+    if (range.length > MAX_RANGE || (range.length > 0 && !RANGE.test(range))) continue;
+    const weight = typeof item.weight === 'string' ? item.weight.trim().toLowerCase() : '';
     result.push({
       family,
-      weight: String(number(item.weight, 1, 1000) ?? 400),
+      weight: WEIGHT.test(weight) ? weight : '400',
       style: item.style === 'italic' ? 'italic' : 'normal',
-      ...(range.length > 0 && range.length <= MAX_RANGE && RANGE.test(range)
-        ? { unicodeRange: range }
-        : {}),
+      ...(range.length > 0 ? { unicodeRange: range } : {}),
     });
   }
   return result;

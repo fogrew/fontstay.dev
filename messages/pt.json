@@ -458,7 +458,7 @@
   "split_note": "Apenas informativo. Quando uma palavra precisa de glifos de dois arquivos de fonte, o navegador a processa em várias passagens.",
   "split_latin": "{family} {weight} {style}: o latim básico ({characters}) está distribuído pelas regras {rules}.",
   "split_overlap": "{family} {weight} {style}: as regras {rules} se sobrepõem em {count} caracteres ({characters}).",
-  "split_late": "{family} {weight} {style}: a regra {first}, que tem mais glifos, é declarada antes da regra {second}, que se sobrepõe a ela em {count} caracteres ({characters}). Declare-a por último.",
+  "split_late": "{family} {weight} {style}: a regra {first}, que tem mais glifos, é declarada antes da regra {second}, que se sobrepõe a ela em {count} caracteres ({characters}). Considere declará-la por último.",
   "import_accept": "Importar",
   "import_discard": "Descartar",
   "import_done": "{count} arquivos de fonte importados de {origin}.",

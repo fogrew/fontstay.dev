@@ -222,6 +222,7 @@ Each phase ends deployable with a green PR check.
 
 **Phase 9 — Polish**
 - Full a11y audit, performance (lazy chunks, worker), SEO/meta/OG, guide page, Credits page, README. The guide also covers `@font-face` syntax, descriptor and format support, font licenses and specification links (#102).
+- Split web font audit of imported and pasted `@font-face` rules in the generator, CLI and MCP server (#418).
 - Spike: Playwright in the Cloudflare build container (gVisor, Ubuntu 22.04, no root for `apt` deps), to decide whether e2e can run in the build (#7).
 - More UI languages (the set is chosen after researching the target markets) and a language dropdown instead of the link list in the header (#126).
 
