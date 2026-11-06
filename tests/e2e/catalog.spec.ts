@@ -140,10 +140,9 @@ test('the CLI page lists the options and is linked from the header and the expor
   await page.goto('/en/cli/');
   await expect(page.getByRole('heading', { level: 1, name: 'CLI and Node library' })).toBeVisible();
   await expect(page.getByRole('cell', { name: /^Print a JSON report/ })).toBeVisible();
-  await expect(page.getByRole('navigation').getByRole('link', { name: 'CLI' })).toHaveAttribute(
-    'aria-current',
-    'page',
-  );
+  const nav = page.getByRole('navigation', { name: 'Main' });
+  await nav.getByText('More', { exact: true }).click();
+  await expect(nav.getByRole('link', { name: 'CLI' })).toHaveAttribute('aria-current', 'page');
 });
 
 test('the catalog table filters by every column and groups by type', async ({ page }) => {
