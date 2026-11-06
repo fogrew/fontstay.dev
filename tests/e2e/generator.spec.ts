@@ -2113,18 +2113,24 @@ test('a click outside keeps settings open beside the article', async ({ page }) 
   await expect(page.locator('.ff-dock__panel:not([hidden])')).toHaveCount(1);
 });
 
-test('the layout shift score shows the value before and after in rating colours', async ({
+test('the layout shift badge is compact and keeps the before value in its details', async ({
   page,
 }) => {
   await page.goto('/en/');
   await waitForGenerator(page);
   await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(sourceSans);
   await closePanels(page);
-  const scores = page.locator('.ff-shift .ff-shift__score');
-  await expect(scores).toHaveCount(2);
-  await expect(scores.first()).toHaveAttribute('data-rating', /.+/);
-  await expect(scores.last()).toHaveAttribute('data-rating', 'good');
-  await expect(page.locator('.ff-shift__arrow')).toBeVisible();
+  const badge = page.locator('.ff-shift__change');
+  await expect(badge.locator('.ff-shift__score')).toHaveCount(1);
+  await expect(badge.locator('.ff-shift__score')).toHaveAttribute('data-rating', 'good');
+  await expect(badge).toContainText(/🟢 \d\.\d{3}/);
+  await expect(badge.locator('.ff-shift__arrow')).toHaveCount(0);
+  const box = await badge.boundingBox();
+  expect(box?.width).toBeLessThan(180);
+  await page.getByRole('button', { name: 'Layout shift by width' }).click();
+  const before = page.locator('.ff-shift__compare .ff-shift__score');
+  await expect(before).toHaveAttribute('data-rating', /.+/);
+  await expect(page.locator('.ff-shift__compare')).toContainText('Without FontStay');
 });
 
 test('the last step puts download and copy in the dock footer without share, and spacing is on by default', async ({

@@ -54,24 +54,6 @@ export function DeviceShift({
           <span class="ff-shift__change">
             <span class="ff-shift__label">CLS</span>
             {focusWidth !== undefined && <span class="ff-shift__at ff-muted">{focusWidth}px</span>}
-            {before !== undefined && beforeRating !== undefined && (
-              <>
-                <strong
-                  class="ff-shift__score"
-                  data-rating={beforeRating}
-                  title={t.article_shift_before()}
-                >
-                  <span aria-hidden="true">{SYMBOLS[beforeRating]}</span> {format.format(before)}
-                  <span class="ff-sr-only">
-                    {' '}
-                    {t.article_shift_before()}, {label(beforeRating)}
-                  </span>
-                </strong>
-                <span class="ff-shift__arrow" aria-hidden="true">
-                  →
-                </span>
-              </>
-            )}
             <strong class="ff-shift__score" data-rating={rating} title={t.article_shift_after()}>
               <span aria-hidden="true">{SYMBOLS[rating]}</span> {format.format(worst)}
               <span class="ff-sr-only">
@@ -79,11 +61,20 @@ export function DeviceShift({
                 {t.article_shift_after()}, {label(rating)}
               </span>
             </strong>
-            {before !== undefined && (
+            {before !== undefined && delta.format(worst - before) !== delta.format(0) && (
               <span class="ff-shift__baseline">({delta.format(worst - before)})</span>
             )}
           </span>
           <Popover label={t.article_shift_details()} align="end">
+            {before !== undefined && beforeRating !== undefined && (
+              <p class="ff-shift__compare">
+                <span>{t.article_shift_before()}</span>{' '}
+                <strong class="ff-shift__score" data-rating={beforeRating}>
+                  <span aria-hidden="true">{SYMBOLS[beforeRating]}</span> {format.format(before)}
+                  <span class="ff-sr-only"> {label(beforeRating)}</span>
+                </strong>
+              </p>
+            )}
             <ul class="ff-generator__list ff-shift__widths">
               {(results ?? []).map((item) => {
                 const level = ratingOf(item.score);
