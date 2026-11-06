@@ -559,7 +559,9 @@ test('choosing a device sets the preview width and measures the layout shift at 
   const status = view.getByRole('status').filter({ hasText: score });
   await expect(status).toBeVisible({ timeout: 20_000 });
   await expect(status).not.toContainText('375px');
-  expect(await listed(view.getByLabel('Device'))).toContain('iPhone SE (375 × 667)');
+  await expect
+    .poll(() => listed(view.getByLabel('Device')), { timeout: 20_000 })
+    .toMatch(/iPhone SE \(375 × 667\)\s*🟢 \d\.\d{3}/);
 
   await choose(view.getByLabel('Device'), 'iphone-se');
   await expect(frame).toHaveAttribute('data-constrained', '');
@@ -2180,9 +2182,7 @@ test('a click outside keeps settings open beside the article', async ({ page }) 
   await expect(page.locator('.ff-dock__panel:not([hidden])')).toHaveCount(1);
 });
 
-test('the layout shift badge is compact and keeps the before value in its details', async ({
-  page,
-}) => {
+test('the layout shift badge is compact', async ({ page }) => {
   await page.goto('/en/');
   await waitForGenerator(page);
   await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(sourceSans);
@@ -2194,10 +2194,7 @@ test('the layout shift badge is compact and keeps the before value in its detail
   await expect(badge.locator('.ff-shift__arrow')).toHaveCount(0);
   const box = await badge.boundingBox();
   expect(box?.width).toBeLessThan(180);
-  await page.getByRole('button', { name: 'Layout shift by width' }).click();
-  const before = page.locator('.ff-shift__compare .ff-shift__score');
-  await expect(before).toHaveAttribute('data-rating', /.+/);
-  await expect(page.locator('.ff-shift__compare')).toContainText('Without FontStay');
+  await expect(page.getByRole('button', { name: 'Layout shift by width' })).toHaveCount(0);
 });
 
 test('the preview toolbar stays above the article while scrolling and its popovers still open', async ({

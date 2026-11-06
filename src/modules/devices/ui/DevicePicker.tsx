@@ -1,3 +1,4 @@
+import type { ComponentChildren } from 'preact';
 import { useEffect, useState } from 'preact/hooks';
 import { type Locale, messagesFor } from '@/common/i18n';
 import { Select } from '@/common/ui';
@@ -8,10 +9,12 @@ const RESPONSIVE = 'responsive';
 export function DevicePicker({
   locale,
   value,
+  detail,
   onChange,
 }: {
   locale: Locale;
   value: Device | undefined;
+  detail?: ((device: Device) => ComponentChildren) | undefined;
   onChange: (device: Device | undefined) => void;
 }) {
   const t = messagesFor(locale);
@@ -42,6 +45,7 @@ export function DevicePicker({
           value: device.id,
           label: `${device.name} (${device.width} × ${device.height})`,
           group: groupLabels[group],
+          detail: detail?.(device),
         })),
     ),
   ];
