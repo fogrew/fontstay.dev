@@ -23,4 +23,4 @@ asks you to confirm before it uses anything. See `docs/security.md`.
 3. To try it against another origin (for example `http://localhost:4321`), change `ORIGIN` in
    `background.js` and the `matches` pattern in `manifest.json`.
 
-Firefox and the stores are not covered yet.
+Firefox and the stores are not covered yet. The public page about the extension and the bookmarklet is `/<locale>/extensions/`.

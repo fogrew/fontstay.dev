@@ -1,0 +1,13 @@
+.ff-site-import {
+  display: grid;
+  gap: var(--ff-space-2);
+}
+.ff-site-import__title {
+  margin: var(--ff-space-2) 0 0;
+}
+.ff-site-import__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--ff-space-2);
+  margin: 0;
+}

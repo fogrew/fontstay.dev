@@ -23,6 +23,7 @@ const pages = [
   '/guide/',
   '/mcp/',
   '/cli/',
+  '/extensions/',
   '/credits/',
 ];
 

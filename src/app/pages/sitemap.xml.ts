@@ -7,6 +7,7 @@ export function GET({ site }: { site: URL | undefined }) {
     '/',
     '/fonts/',
     '/presets/',
+    '/extensions/',
     ...osFontsDataset.fonts.map((font) => `/fonts/${font.id}/`),
   ];
   const url = (path: string, locale: (typeof locales)[number]) =>
