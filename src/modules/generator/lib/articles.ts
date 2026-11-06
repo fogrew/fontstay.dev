@@ -1,6 +1,5 @@
 import type { IconName } from '@/common/ui';
 import type { Block } from '@/modules/layout-shift';
-import type { SiteBlock } from './preview-item';
 
 export type Run =
   | string
@@ -17,7 +16,7 @@ export interface Factor {
 }
 
 export interface Article {
-  id: ArticleKey;
+  id: ArticleId;
   label: string;
   lang: string;
   dir: 'ltr' | 'rtl';
@@ -66,7 +65,6 @@ export const ARTICLE_LANGUAGES = [
 ] as const;
 export const ARTICLE_IDS = ARTICLE_LANGUAGES.map(([id]) => id);
 export type ArticleId = (typeof ARTICLE_LANGUAGES)[number][0];
-export type ArticleKey = ArticleId | 'site';
 
 const en: Article = {
   id: 'en',
@@ -312,7 +310,7 @@ const ru: Article = {
 
 export const BUILT_IN: Record<'en' | 'ru', Article> = { en, ru };
 
-export const isBuiltIn = (id: ArticleKey): id is 'en' | 'ru' => id === 'en' || id === 'ru';
+export const isBuiltIn = (id: ArticleId): id is 'en' | 'ru' => id === 'en' || id === 'ru';
 
 export async function loadArticle(id: ArticleId): Promise<Article | undefined> {
   if (isBuiltIn(id)) return BUILT_IN[id];
@@ -337,52 +335,4 @@ export function articleBlocks(article: Article): Block[] {
     ...article.list.map((runs): Block => ({ tag: 'li', text: plain(runs) })),
   ];
   return blocks.filter((block) => block.text);
-}
-
-export const SITE_MIN_CHARS = 600;
-export const SITE_MIN_BLOCKS = 3;
-
-export function siteIsMeaningful(blocks: readonly SiteBlock[]): boolean {
-  const total = blocks.reduce((sum, block) => sum + block.text.length, 0);
-  return blocks.length >= SITE_MIN_BLOCKS && total >= SITE_MIN_CHARS;
-}
-
-const RTL_LETTER = /[֐-ࣿיִ-﷿ﹰ-ﻼ]/gu;
-const LETTER = /\p{L}/gu;
-
-export function isMostlyRtl(text: string): boolean {
-  const letters = text.match(LETTER)?.length ?? 0;
-  const rtl = text.match(RTL_LETTER)?.length ?? 0;
-  return rtl * 2 > letters;
-}
-
-export function siteArticle(blocks: readonly SiteBlock[], label: string): Article {
-  const texts = (role: SiteBlock['role']) =>
-    blocks.filter((block) => block.role === role).map((block) => block.text);
-  const [title = ''] = texts('heading');
-  const [columnsHeading = ''] = texts('subheading');
-  const [lead = '', ...rest] = texts('body');
-  const [quote = ''] = texts('quote');
-  return {
-    id: 'site',
-    label,
-    lang: '',
-    dir: isMostlyRtl(blocks.map((block) => block.text).join('')) ? 'rtl' : 'ltr',
-    kicker: '',
-    title,
-    lead,
-    meta: '',
-    factors: [],
-    columnsHeading,
-    columns: rest.map((text): Run[] => [text]),
-    quote: { text: quote, cite: '' },
-    listHeading: '',
-    list: texts('item').map((text): Run[] => [text]),
-    tableHeading: '',
-    tableHead: ['', ''],
-    tableRows: [],
-    glyphsHeading: '',
-    glyphs: '',
-    footer: '',
-  };
 }

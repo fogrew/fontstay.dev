@@ -1777,7 +1777,7 @@ h1 { font-family: "Demo Sans", sans-serif; font-size: 34px; }
 <ul><li>First item of the list</li><li>Second item of the list</li></ul>
 </main>`;
 
-test('the bookmarklet hands the fonts and text of a page to the generator after a confirmation', async ({
+test('the bookmarklet hands only the fonts of a page to the generator after a confirmation', async ({
   page,
   context,
 }) => {
@@ -1811,12 +1811,10 @@ test('the bookmarklet hands the fonts and text of a page to the generator after 
   await confirm.getByRole('button', { name: 'Import' }).click();
   await openStep(generator, 'tuning');
   await expect(generator.getByRole('button', { name: /^Remove: font\.woff2/ })).toBeVisible();
-  await expect(
-    generator
-      .locator('.ff-article:not([data-probe])')
-      .getByText('Hello from the demo site')
-      .first(),
-  ).toBeVisible();
+  const article = generator.locator('.ff-article:not([data-probe])');
+  await expect(article.first()).toBeVisible();
+  await expect(article.getByText('Hello from the demo site')).toHaveCount(0);
+  await expect(generator.getByText('Your site')).toHaveCount(0);
   expect(generator.url()).not.toContain('#');
 });
 
