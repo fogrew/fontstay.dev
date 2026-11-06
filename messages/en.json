@@ -489,6 +489,7 @@
   "audience_file_empty": "No browserslist queries found in {name}.",
   "audience_browsers_heading": "Browsers ({count})",
   "audience_os_heading_count": "Operating systems ({count})",
+  "audience_result_heading": "Result",
   "audience_tags_group_os": "Operating systems",
   "audience_tag_not_action": "Exclude {tag}",
   "audience_set_latest": "Latest versions only",

@@ -360,6 +360,22 @@
   display: grid;
   gap: var(--ff-space-2);
 }
+.ff-audience__result-group {
+  display: grid;
+  gap: var(--ff-space-2);
+  padding-block-start: var(--ff-space-3);
+  border-block-start: 1px solid var(--ff-border);
+}
+.ff-audience__result-heading {
+  margin: 0;
+  font-size: 1.0625rem;
+}
+@container dock (min-width: 44rem) {
+  .ff-audience__result-group {
+    padding-block-start: 0;
+    border-block-start: 0;
+  }
+}
 .ff-audience__heading {
   margin: 0;
   font-size: 0.9375rem;

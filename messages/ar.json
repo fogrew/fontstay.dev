@@ -489,6 +489,7 @@
   "audience_file_empty": "لم يُعثر على استعلامات browserslist في {name}.",
   "audience_browsers_heading": "المتصفحات ({count})",
   "audience_os_heading_count": "أنظمة التشغيل ({count})",
+  "audience_result_heading": "النتيجة",
   "audience_tags_group_os": "أنظمة التشغيل",
   "audience_tag_not_action": "استثناء {tag}",
   "audience_set_latest": "أحدث الإصدارات فقط",

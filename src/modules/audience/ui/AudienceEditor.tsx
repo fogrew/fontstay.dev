@@ -57,6 +57,7 @@ export function AudienceEditor({
 }) {
   const t = messagesFor(locale);
   const browsersId = useId();
+  const resultId = useId();
   const messageId = useId();
   const fileInput = useRef<HTMLInputElement>(null);
   const listInput = useRef<HTMLInputElement>(null);
@@ -291,50 +292,55 @@ export function AudienceEditor({
       </div>
       <div class="ff-audience__results">
         {'ok' in state && state.ok && (
-          <div class="ff-audience__columns">
-            <section class="ff-audience__browsers" aria-labelledby={browsersId}>
-              <h3 class="ff-audience__heading ff-heading" id={browsersId}>
-                {t.audience_browsers_heading({ count: state.count })}
-              </h3>
-              {state.coverage !== undefined && (
-                <p>
-                  {t.audience_coverage({
-                    percent: new Intl.NumberFormat(locale, {
-                      minimumFractionDigits: 1,
-                      maximumFractionDigits: 1,
-                    }).format(state.coverage),
+          <section class="ff-audience__result-group" aria-labelledby={resultId}>
+            <h3 class="ff-audience__result-heading ff-heading" id={resultId}>
+              {t.audience_result_heading()}
+            </h3>
+            <div class="ff-audience__columns">
+              <section class="ff-audience__browsers" aria-labelledby={browsersId}>
+                <h4 class="ff-audience__heading ff-heading" id={browsersId}>
+                  {t.audience_browsers_heading({ count: state.count })}
+                </h4>
+                {state.coverage !== undefined && (
+                  <p>
+                    {t.audience_coverage({
+                      percent: new Intl.NumberFormat(locale, {
+                        minimumFractionDigits: 1,
+                        maximumFractionDigits: 1,
+                      }).format(state.coverage),
+                    })}
+                  </p>
+                )}
+                <ul class="ff-audience__list" aria-label={t.audience_list_label()}>
+                  {state.groups.map((group) => (
+                    <li class="ff-audience__item" key={group.id}>
+                      <span>
+                        <BrowserIcon id={group.id} />
+                        {group.name}
+                      </span>
+                      <span class="ff-muted" dir="auto">
+                        {group.ranges.join(', ')}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+                <p class="ff-muted">
+                  {t.audience_data_date({
+                    date: new Intl.DateTimeFormat(locale, {
+                      dateStyle: 'medium',
+                      timeZone: 'UTC',
+                    }).format(new Date(`${state.dataDate}T00:00:00Z`)),
                   })}
                 </p>
-              )}
-              <ul class="ff-audience__list" aria-label={t.audience_list_label()}>
-                {state.groups.map((group) => (
-                  <li class="ff-audience__item" key={group.id}>
-                    <span>
-                      <BrowserIcon id={group.id} />
-                      {group.name}
-                    </span>
-                    <span class="ff-muted" dir="auto">
-                      {group.ranges.join(', ')}
-                    </span>
-                  </li>
-                ))}
-              </ul>
-              <p class="ff-muted">
-                {t.audience_data_date({
-                  date: new Intl.DateTimeFormat(locale, {
-                    dateStyle: 'medium',
-                    timeZone: 'UTC',
-                  }).format(new Date(`${state.dataDate}T00:00:00Z`)),
-                })}
-              </p>
-            </section>
-            <OsPanel
-              locale={locale}
-              entries={state.entries}
-              allowed={allowed}
-              onChange={onShares}
-            />
-          </div>
+              </section>
+              <OsPanel
+                locale={locale}
+                entries={state.entries}
+                allowed={allowed}
+                onChange={onShares}
+              />
+            </div>
+          </section>
         )}
       </div>
     </div>
