@@ -23,7 +23,7 @@ export function exportFileFor(
     : buildExport(format, input);
 }
 
-const FORMAT_ICONS: Partial<Record<ExportChoice, IconName>> = {
+export const FORMAT_ICONS: Record<ExportChoice, IconName> = {
   css: 'css',
   variables: 'css',
   preload: 'html',
@@ -31,6 +31,10 @@ const FORMAT_ICONS: Partial<Record<ExportChoice, IconName>> = {
   next: 'next',
   nuxt: 'nuxt',
   astro: 'astro',
+  wordpress: 'wordpress',
+  fontaine: 'font',
+  loading: 'javascript',
+  report: 'markdown',
 };
 
 export function ExportPanel({
