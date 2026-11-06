@@ -485,7 +485,7 @@ test('the slider and the x-ray lens are mirrored in a right-to-left page', async
   await view.getByRole('button', { name: 'Slider', exact: true }).click();
   const divider = view.getByRole('slider', { name: /^Divider/ });
   const stage = view.locator('.ff-article-view__slider');
-  await divider.evaluate((node) => node.scrollIntoView({ block: 'start' }));
+  await divider.evaluate((node) => node.scrollIntoView({ block: 'center' }));
   await divider.focus();
   await page.keyboard.press('Home');
   const edge = await divider.boundingBox();
@@ -586,7 +586,7 @@ test('the slider moves the divider by drag and keys, vertically or horizontally'
   const view = page.getByRole('region', { name: 'Article' });
   await view.getByRole('button', { name: 'Slider', exact: true }).click();
   const divider = view.getByRole('slider', { name: /^Divider/ });
-  await divider.evaluate((node) => node.scrollIntoView({ block: 'start' }));
+  await divider.evaluate((node) => node.scrollIntoView({ block: 'center' }));
   await expect(divider).toHaveAttribute('aria-valuenow', '50');
   await divider.focus();
   await page.keyboard.press('ArrowRight');
@@ -600,9 +600,9 @@ test('the slider moves the divider by drag and keys, vertically or horizontally'
   if (!box) throw new Error('no divider');
   const wrap = await view.locator('.ff-article-view__slider').boundingBox();
   if (!wrap) throw new Error('no slider');
-  await page.mouse.move(box.x + box.width / 4, box.y + 40);
+  await page.mouse.move(box.x + box.width / 4, 400);
   await page.mouse.down();
-  await page.mouse.move(wrap.x + wrap.width * 0.25, box.y + 40);
+  await page.mouse.move(wrap.x + wrap.width * 0.25, 400);
   await page.mouse.up();
   const value = Number(await divider.getAttribute('aria-valuenow'));
   expect(value).toBeGreaterThan(20);
@@ -2131,6 +2131,38 @@ test('the layout shift badge is compact and keeps the before value in its detail
   const before = page.locator('.ff-shift__compare .ff-shift__score');
   await expect(before).toHaveAttribute('data-rating', /.+/);
   await expect(page.locator('.ff-shift__compare')).toContainText('Without FontStay');
+});
+
+test('the preview toolbar stays above the article while scrolling and its popovers still open', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await page.goto('/en/');
+  await waitForGenerator(page);
+  await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(sourceSans);
+  await closePanels(page);
+  const view = page.getByRole('region', { name: 'Article' });
+  const toolbar = view.locator('.ff-article-view__controls');
+  await page.evaluate(() => window.scrollTo(0, 900));
+  await expect.poll(async () => (await toolbar.boundingBox())?.y ?? -1).toBeLessThan(2);
+  await expect(toolbar).toBeInViewport();
+  await openPopover(view, 'Content');
+  const panel = view.locator('.ff-popover__panel:visible').first();
+  const box = await panel.boundingBox();
+  expect(box?.y).toBeGreaterThanOrEqual(0);
+  expect((box?.y ?? 0) + (box?.height ?? 0)).toBeLessThanOrEqual(800);
+});
+
+test('the preview toolbar scrolls away on a phone or a short window', async ({ page }) => {
+  await page.setViewportSize({ width: 375, height: 700 });
+  await page.goto('/en/');
+  await waitForGenerator(page);
+  await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(sourceSans);
+  await closePanels(page);
+  const toolbar = page.locator('.ff-article-view__controls');
+  await expect(toolbar).toHaveCSS('position', 'static');
+  await page.setViewportSize({ width: 1000, height: 500 });
+  await expect(toolbar).toHaveCSS('position', 'static');
 });
 
 test('the last step puts download and copy in the dock footer without share, and spacing is on by default', async ({
