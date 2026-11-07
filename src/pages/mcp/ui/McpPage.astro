@@ -1,5 +1,6 @@
 ---
 import { type Locale, localizeHref, messagesFor } from '@/common/i18n';
+import { McpSetupTabs } from './McpSetupTabs';
 
 interface Props {
   locale: Locale;
@@ -15,20 +16,6 @@ const tools = [
 ] as const;
 const prompts = [t.mcp_prompt_1(), t.mcp_prompt_2(), t.mcp_prompt_3()];
 const limits = [t.mcp_limit_1(), t.mcp_limit_2(), t.mcp_limit_3(), t.mcp_limit_4()];
-const claudeCode = 'claude mcp add fontstay -- npx -y fontstay mcp';
-const mcpServers = `{
-  "mcpServers": {
-    "fontstay": { "command": "npx", "args": ["-y", "fontstay", "mcp"] }
-  }
-}`;
-const vscode = `{
-  "servers": {
-    "fontstay": { "type": "stdio", "command": "npx", "args": ["-y", "fontstay", "mcp"] }
-  }
-}`;
-const codex = `[mcp_servers.fontstay]
-command = "npx"
-args = ["-y", "fontstay", "mcp"]`;
 const call = `{
   "name": "get_css",
   "arguments": {
@@ -56,12 +43,6 @@ body {
 .fonts-loading {
   letter-spacing: -0.0019em;
 }`;
-const snippets = [
-  [t.mcp_setup_claude_code(), claudeCode],
-  [t.mcp_setup_json(), mcpServers],
-  [t.mcp_setup_vscode(), vscode],
-  [t.mcp_setup_codex(), codex],
-] as const;
 ---
 
 <div class="ff-page ff-prose">
@@ -80,12 +61,7 @@ const snippets = [
 
   <h2 class="ff-heading ff-page__heading ff-prose__heading">{t.mcp_setup_heading()}</h2>
   <p class="ff-page__text">{t.mcp_setup_text()}</p>
-  {snippets.map(([label, code]) => (
-    <>
-      <h3 class="ff-heading ff-page__heading">{label}</h3>
-      <pre class="ff-prose__code" dir="ltr" tabindex="0"><code>{code}</code></pre>
-    </>
-  ))}
+  <McpSetupTabs locale={locale} client:load />
   <p class="ff-page__text ff-muted">{t.mcp_setup_checkout()}</p>
 
   <h2 class="ff-heading ff-page__heading ff-prose__heading">{t.mcp_prompts_heading()}</h2>

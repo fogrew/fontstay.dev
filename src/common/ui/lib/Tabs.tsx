@@ -1,18 +1,26 @@
 import type { ComponentChildren } from 'preact';
 import { useId, useRef, useState } from 'preact/hooks';
+import { transition } from './transition';
 
 export interface TabsProps {
   label: string;
   items: readonly { id: string; label: string; content: ComponentChildren }[];
+  animate?: boolean;
+  scrollable?: boolean;
 }
 
-export function Tabs({ label, items }: TabsProps) {
+export function Tabs({ label, items, animate = false, scrollable = false }: TabsProps) {
   const id = useId();
   const [selected, setSelected] = useState(items[0]?.id);
   const buttons = useRef(new Map<string, HTMLButtonElement>());
   const active = items.some((item) => item.id === selected) ? selected : items[0]?.id;
+  const select = (id: string) => {
+    if (id === active) return;
+    if (animate) transition(() => setSelected(id));
+    else setSelected(id);
+  };
   return (
-    <div class="ff-tabs">
+    <div class={scrollable ? 'ff-tabs ff-tabs--scrollable' : 'ff-tabs'}>
       <div role="tablist" aria-label={label} class="ff-tabs__list">
         {items.map((item, index) => (
           <button
@@ -28,7 +36,7 @@ export function Tabs({ label, items }: TabsProps) {
             aria-selected={item.id === active}
             aria-controls={`${id}-panel-${index}`}
             tabIndex={item.id === active ? 0 : -1}
-            onClick={() => setSelected(item.id)}
+            onClick={() => select(item.id)}
             onKeyDown={(event) => {
               let next: number;
               if (event.key === 'ArrowRight') next = (index + 1) % items.length;
@@ -39,7 +47,7 @@ export function Tabs({ label, items }: TabsProps) {
               event.preventDefault();
               const nextItem = items[next];
               if (nextItem) {
-                setSelected(nextItem.id);
+                select(nextItem.id);
                 buttons.current.get(nextItem.id)?.focus();
               }
             }}

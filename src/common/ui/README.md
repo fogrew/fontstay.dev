@@ -20,6 +20,7 @@ focus outlines and active-tab borders; reduced motion removes button transitions
 - `Tabs`: automatic activation with one tab stop, wrapping arrows and Home/End.
   Panels retain their content while hidden and provide a keyboard focus target.
   Callers provide nonempty items with stable unique IDs and localized labels.
+  Optional animation and horizontal scrolling keep long tab lists usable.
 - `CodeBlock`: escaped text in scrollable code, explicit Clipboard API action,
   pending state and localized success/failure feedback. No HTML interpretation.
 - `Disclosure`: native details/summary interaction.

@@ -51,6 +51,7 @@
 - [fontkitten](https://github.com/delucis/fontkitten) — local font parsing in a Web Worker (MIT).
 - [fontkitten test fonts](https://github.com/delucis/fontkitten/tree/43c1cfc596292fc59ef3670251a885239c7c625e/packages/fontkitten/test/data) — Source Sans Pro (Adobe), Fira Sans (Carrois Corporate / bBox Type) and Mada (Khaled Hosny) fixtures (SIL OFL 1.1; licenses included in `tests/fixtures/fonts`).
 - [Model Context Protocol specification](https://modelcontextprotocol.io/specification) by Anthropic and contributors — the stdio JSON-RPC protocol that `fontstay mcp` implements (MIT, specification only; no SDK code is used).
+- [VS Code MCP installation URLs](https://code.visualstudio.com/api/extension-guides/ai/mcp) and [Cursor MCP install links](https://cursor.com/docs/mcp/install-links) — official deep-link formats used on the MCP setup page.
 
 ## Methodology
 

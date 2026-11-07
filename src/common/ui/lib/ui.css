@@ -116,6 +116,10 @@
   gap: 0;
   border-block-end: 1px solid var(--ff-border);
 }
+.ff-tabs--scrollable .ff-tabs__list {
+  flex-wrap: nowrap;
+  overflow-x: auto;
+}
 .ff-tabs__tab {
   flex: 1 1 auto;
   min-inline-size: 0;
@@ -133,6 +137,9 @@
 }
 .ff-tabs__tab:focus-visible {
   outline-offset: -2px;
+}
+.ff-tabs--scrollable .ff-tabs__tab {
+  flex: 0 0 auto;
 }
 .ff-tabs__list [aria-selected="true"] {
   border-block-end-color: var(--ff-accent);
