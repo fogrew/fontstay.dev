@@ -1,5 +1,6 @@
 .ff-details {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: var(--ff-space-3);
   min-inline-size: 0;
 }
@@ -27,9 +28,7 @@
   white-space: pre-line;
   overflow-wrap: anywhere;
 }
-.ff-details__features,
 .ff-details__axes,
-.ff-details__languages,
 .ff-details__palettes {
   display: grid;
   gap: var(--ff-space-2);
@@ -37,29 +36,57 @@
   padding: 0;
   list-style: none;
 }
-.ff-details__feature {
-  display: flex;
-  gap: var(--ff-space-3);
-  align-items: flex-start;
-  padding: var(--ff-space-2);
-  border: 1px solid var(--ff-border);
-  border-radius: var(--ff-radius);
+.ff-details__list {
+  margin: 0;
+  padding-inline-start: var(--ff-space-4);
+  font-size: 0.875rem;
+}
+.ff-details__list--columns {
+  columns: 5rem;
+  column-gap: var(--ff-space-3);
+}
+.ff-details__item {
+  padding-block: 1px;
+  break-inside: avoid;
 }
 .ff-details--features {
+  flex: 1 1 100%;
   margin: 0;
   padding: 0;
   border: 0;
 }
+.ff-details__checklist {
+  display: flex;
+  flex-direction: column;
+  max-block-size: 9rem;
+  margin: 0;
+  padding: var(--ff-space-1) var(--ff-space-2);
+  overflow-y: auto;
+  border: 1px solid var(--ff-border);
+  border-radius: var(--ff-radius);
+  list-style: none;
+  font-size: 0.8125rem;
+}
+.ff-details__option {
+  display: flex;
+  gap: var(--ff-space-2);
+  align-items: center;
+  flex: none;
+  min-block-size: 1.75rem;
+}
 .ff-details__check {
-  inline-size: 1.25rem;
-  block-size: 1.25rem;
-  margin: 0.125rem 0 0;
+  flex: none;
+  inline-size: 1rem;
+  block-size: 1rem;
+  margin: 0;
   accent-color: var(--ff-accent);
 }
-.ff-details__feature-text {
-  display: grid;
-  gap: var(--ff-space-1);
+.ff-details__option-label {
+  flex: 1 1 auto;
   min-inline-size: 0;
+  padding-block: 2px;
+  line-height: 1.3;
+  cursor: pointer;
 }
 .ff-details__tag {
   padding: 0 var(--ff-space-1);
@@ -86,14 +113,6 @@
 .ff-details__axis-value {
   min-inline-size: 4rem;
   font-variant-numeric: tabular-nums;
-}
-.ff-details__languages {
-  grid-template-columns: repeat(auto-fill, minmax(10rem, 1fr));
-}
-.ff-details__language {
-  padding: var(--ff-space-1) var(--ff-space-2);
-  border: 1px solid var(--ff-border);
-  border-radius: var(--ff-radius);
 }
 .ff-details__palette {
   display: flex;

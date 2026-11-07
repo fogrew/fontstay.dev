@@ -39,11 +39,11 @@ export function FontFeatureControls({
     <fieldset class="ff-details ff-details--features">
       <legend class="ff-details__subheading">{t.details_controls_heading()}</legend>
       {details.features.length > 0 && (
-        <ul class="ff-details__features">
+        <ul class="ff-details__checklist">
           {details.features.map((feature, index) => {
             const id = `${scope}-feature-${index}`;
             return (
-              <li key={feature.tag} class="ff-details__feature">
+              <li key={feature.tag} class="ff-details__option">
                 <input
                   id={id}
                   class="ff-details__check"
@@ -59,11 +59,8 @@ export function FontFeatureControls({
                     })
                   }
                 />
-                <label class="ff-details__feature-text" for={id}>
-                  <span>
-                    <code class="ff-details__tag">{feature.tag}</code>{' '}
-                    <span>{featureTitle(t, feature)}</span>
-                  </span>
+                <label class="ff-details__option-label" for={id}>
+                  <code class="ff-details__tag">{feature.tag}</code> {featureTitle(t, feature)}
                 </label>
               </li>
             );
