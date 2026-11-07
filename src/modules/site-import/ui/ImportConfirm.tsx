@@ -1,6 +1,7 @@
 import { type Locale, messagesFor } from '@/common/i18n';
 import { Button } from '@/common/ui';
 import type { SiteImport } from '@/modules/import-receiver';
+import { SplitWarnings } from './SplitWarnings';
 
 const hostOf = (url: string | undefined) => {
   try {
@@ -33,6 +34,7 @@ export function ImportConfirm({
           faces: value.faces.length,
         })}
       </p>
+      <SplitWarnings locale={locale} rules={value.rules ?? []} />
       <p class={`ff-site-import__line ${value.verified ? 'ff-muted' : 'ff-error'}`}>
         {value.verified ? t.import_verified() : t.import_unverified()}
       </p>

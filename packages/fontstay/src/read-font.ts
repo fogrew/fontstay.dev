@@ -31,3 +31,24 @@ export async function readFont(path: string): Promise<Uint8Array> {
 export function arrayBufferOf(data: Uint8Array): ArrayBuffer {
   return data.buffer.slice(data.byteOffset, data.byteOffset + data.byteLength) as ArrayBuffer;
 }
+
+export async function readText(path: string, limit: number): Promise<string> {
+  if (process.platform === 'win32' && NETWORK_PATH.test(path)) throw new NetworkPathError(path);
+  const handle = await open(path, constants.O_RDONLY | (constants.O_NONBLOCK ?? 0));
+  try {
+    const info = await handle.stat();
+    if (!info.isFile()) throw new FontParseError('invalid-font');
+    if (info.size > limit) throw new FontParseError('too-large');
+    const buffer = Buffer.alloc(Math.min(info.size, limit) + 1);
+    let length = 0;
+    while (length < buffer.length) {
+      const { bytesRead } = await handle.read(buffer, length, buffer.length - length, length);
+      if (bytesRead === 0) break;
+      length += bytesRead;
+    }
+    if (length > limit) throw new FontParseError('too-large');
+    return buffer.subarray(0, length).toString('utf8');
+  } finally {
+    await handle.close();
+  }
+}

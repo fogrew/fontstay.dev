@@ -112,3 +112,13 @@ Runs vary by about 10% and the order of the two variants is not stable, so the o
 Generated ranges do not overlap between fallback families. Within one family the broad rule is declared first and the per-script rules (Latin, Cyrillic, Greek spans, which are disjoint) after it, so the browser's reverse-order check meets the specific rule first. The face with the real glyphs is the site's own web font, a separate family.
 
 Decision: keep the option and its default unchanged. The checkbox note already says that characters outside the range use the generic family; the measurement does not justify a stronger warning. No follow-up issue.
+
+## Split web font audit
+
+`auditSplitFaces(rules)` (`lib/split-audit.ts`) is a pure function over `@font-face` rules (`family`, `weight`, `style`, optional `unicode-range` text). It groups rules by family, weight and style and reports, as informational `SplitIssue`s (rule positions, affected characters as a `unicode-range` value, their count):
+
+- `latin-split`: basic Latin (U+20 to U+7E) is spread over more than one rule and no single rule covers all of it;
+- `overlap`: two rules share at least 16 code points and a quarter of the smaller rule;
+- `late-real-face`: the same, and the earlier rule has more code points than the later one, so the face with the real glyphs is declared before the rules that overlap it (browsers check overlapping rules in reverse order, so it should come last).
+
+A rule without `unicode-range` covers everything. Wildcards (`U+4??`) are understood; rules with a malformed range are skipped. The thresholds keep the Google Fonts layout (`latin`, `latin-ext`, `vietnamese`, `cyrillic`, `cyrillic-ext`, `greek`, `greek-ext`, which share a few combining marks and a few Cyrillic letters) free of warnings in any declaration order. The input is untrusted: at most 1024 rules, 1024 spans per range, 128 rules per group for the pairwise check and 50 issues are processed. The generator shows the result for pasted CSS and for site imports, the CLI and the MCP server through `fontstay audit` and `audit_font_faces`. Background: [Split webfont text layout](https://www.ivankristianto.com/split-webfont-text-layout/).

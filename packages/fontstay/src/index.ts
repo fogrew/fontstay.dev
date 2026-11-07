@@ -1,8 +1,10 @@
 import { basename } from 'node:path';
 import { buildExport, EXPORT_FORMATS, type ExportFile, type ExportFormat } from '@/modules/export';
+import { auditSplitFaces, type SplitIssue } from '@/modules/fallback-fit';
 import { FontParseError, type FontParseErrorCode } from '@/modules/font-metrics';
-// Deep imports: exporting these from the module barrels would add them to the site's initial JavaScript.
 import { parseFontBuffer } from '@/modules/font-metrics/lib/parse';
+// Deep imports: exporting these from the module barrels would add them to the site's initial JavaScript.
+import { MAX_CSS_CHARS, parseFaceRules } from '@/modules/generator/lib/css-import';
 import {
   type FitErrorCode,
   type FitFontReport,
@@ -10,7 +12,7 @@ import {
   fitFonts,
 } from '@/modules/generator/lib/fit-fonts';
 import { CATEGORIES, type Category, OS_IDS, type OsId } from '@/modules/os-fonts';
-import { arrayBufferOf, readFont } from './read-font';
+import { arrayBufferOf, readFont, readText } from './read-font';
 
 export type {
   Category,
@@ -20,6 +22,7 @@ export type {
   FitFontReport,
   FontParseErrorCode,
   OsId,
+  SplitIssue,
 };
 export { CATEGORIES, EXPORT_FORMATS, FitRunError, FontParseError, OS_IDS };
 
@@ -82,4 +85,38 @@ export async function fitFiles(
   const fonts: FontFile[] = [];
   for (const path of paths) fonts.push({ fileName: basename(path), data: await readFont(path) });
   return fit({ ...options, fonts });
+}
+
+export interface FaceAudit {
+  file: string;
+  /** Number of `@font-face` rules read; rule numbers in `issues` are 1-based positions among them. */
+  rules: number;
+  issues: SplitIssue[];
+}
+
+export function auditFontFaces(css: string, file = 'css'): FaceAudit {
+  const rules = parseFaceRules(css);
+  return { file, rules: rules.length, issues: auditSplitFaces(rules) };
+}
+
+export async function auditCssFiles(paths: readonly string[]): Promise<FaceAudit[]> {
+  const audits: FaceAudit[] = [];
+  for (const path of paths)
+    audits.push(auditFontFaces(await readText(path, MAX_CSS_CHARS), basename(path)));
+  return audits;
+}
+
+const rulesOf = (issue: SplitIssue) => issue.rules.map((index) => index + 1).join(', ');
+
+export function describeIssue(issue: SplitIssue): string {
+  const face = `${issue.family} ${issue.weight} ${issue.style}`;
+  const chars =
+    issue.characters.length > 120 ? `${issue.characters.slice(0, 120)}...` : issue.characters;
+  if (issue.kind === 'latin-split')
+    return `${face}: basic Latin (${chars}) is spread over rules ${rulesOf(issue)}.`;
+  if (issue.kind === 'late-real-face') {
+    const [first, second] = issue.rules;
+    return `${face}: rule ${(first ?? 0) + 1}, which carries the most glyphs, is declared before rule ${(second ?? 0) + 1}, which overlaps it on ${issue.count} characters (${chars}). Consider declaring it last.`;
+  }
+  return `${face}: rules ${rulesOf(issue)} overlap on ${issue.count} characters (${chars}).`;
 }

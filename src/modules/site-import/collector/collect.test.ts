@@ -5,13 +5,20 @@ interface FaceInit {
   family: string;
   src: string;
   weight?: string;
+  range?: string;
 }
 
-const faceRule = ({ family, src, weight = '400' }: FaceInit) => ({
+const faceRule = ({ family, src, weight = '400', range = '' }: FaceInit) => ({
   type: 5,
   style: {
     getPropertyValue: (name: string) =>
-      ({ 'font-family': family, src, 'font-weight': weight, 'font-style': 'normal' })[name] ?? '',
+      ({
+        'font-family': family,
+        src,
+        'font-weight': weight,
+        'font-style': 'normal',
+        'unicode-range': range,
+      })[name] ?? '',
   },
 });
 
@@ -47,6 +54,29 @@ const collect = (rules: unknown[], fetchFile?: (url: string) => Promise<unknown>
 };
 
 describe('fontstayCollect', () => {
+  it('leaves out a rule whose unicode-range is over 1500 characters', async () => {
+    const range = Array.from(
+      { length: 400 },
+      (_, index) => `U+${(index + 4096).toString(16)}`,
+    ).join(', ');
+    const { result } = await collect([
+      faceRule({ family: 'Cjk', src: 'url(/c.woff2)', range }),
+      faceRule({ family: 'Cjk', src: 'url(/d.woff2)', range: 'U+20-7E' }),
+    ]);
+    expect(result.rules).toEqual([expect.objectContaining({ unicodeRange: 'U+20-7E' })]);
+  });
+
+  it('reports every @font-face rule with its unicode-range, capped at 256', async () => {
+    const rules = Array.from({ length: 300 }, (_, index) =>
+      faceRule({ family: 'Split', src: `url(/f${index}.woff2)`, range: `U+${index.toString(16)}` }),
+    );
+    const { result } = await collect(rules);
+    const reported = result.rules as { family: string; unicodeRange: string }[];
+    expect(reported).toHaveLength(256);
+    expect(reported[3]).toMatchObject({ family: 'Split', unicodeRange: 'U+3', weight: '400' });
+    expect(result.faces).toHaveLength(1);
+  });
+
   it('picks the best format and ignores insecure sources', async () => {
     const { result } = await collect([
       faceRule({

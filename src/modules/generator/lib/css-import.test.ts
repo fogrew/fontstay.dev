@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import {
   decodeDataUrl,
   MAX_FACES,
+  parseFaceRules,
   parseFontFaces,
   parseGoogleFontsLinks,
   pickSource,
@@ -209,5 +210,23 @@ describe('parseGoogleFontsLinks', () => {
 
   it('ignores other hosts', () => {
     expect(parseGoogleFontsLinks('https://evil.example/css2?family=Inter')).toEqual([]);
+  });
+});
+
+describe('parseFaceRules', () => {
+  it('keeps every rule with its unicode-range', () => {
+    expect(
+      parseFaceRules(
+        "@font-face{font-family:'A';src:url(a.woff2);unicode-range:U+0-FF}@font-face{font-family:A;font-weight:700;src:url(b.woff2)}@font-face{src:url(c.woff2)}",
+      ),
+    ).toEqual([
+      { family: 'A', weight: 'normal', style: 'normal', unicodeRange: 'U+0-FF' },
+      { family: 'A', weight: '700', style: 'normal' },
+    ]);
+  });
+
+  it('is bounded', () => {
+    const css = '@font-face{font-family:A;src:url(a.woff2)}'.repeat(5000);
+    expect(parseFaceRules(css).length).toBeLessThanOrEqual(1024);
   });
 });

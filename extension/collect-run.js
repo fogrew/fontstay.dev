@@ -11,6 +11,8 @@ async function fontstayCollect(win, doc, options = {}) {
   const MAX_FILE = 10485760;
   const MAX_TOTAL = 31457280;
   const MAX_FACES = 64;
+  const MAX_RULES = 256;
+  const MAX_RANGE = 1500;
   const MAX_SHEETS = 6;
   const MAX_CSS = 500000;
   const readBounded = async (response, limit, budget) => {
@@ -95,6 +97,7 @@ async function fontstayCollect(win, doc, options = {}) {
   };
 
   const faces = [];
+  const faceRules = [];
   const slots = new Map();
   const latin = new Map();
   const pending = [];
@@ -126,6 +129,17 @@ async function fontstayCollect(win, doc, options = {}) {
         const family = unquote(rule.style.getPropertyValue('font-family'));
         if (!family) continue;
         const url = bestUrl(rule.style.getPropertyValue('src'), base);
+        const range = rule.style.getPropertyValue('unicode-range');
+        if (faceRules.length < MAX_RULES && range.length <= MAX_RANGE) {
+          faceRules.push({
+            family,
+            weight: rule.style.getPropertyValue('font-weight').slice(0, 20),
+            style: /italic|oblique/i.test(rule.style.getPropertyValue('font-style'))
+              ? 'italic'
+              : 'normal',
+            unicodeRange: range,
+          });
+        }
         addFace(
           {
             family,
@@ -262,6 +276,7 @@ async function fontstayCollect(win, doc, options = {}) {
     origin: win.location.origin,
     title: doc.title,
     faces,
+    rules: faceRules,
     used,
     files,
   };

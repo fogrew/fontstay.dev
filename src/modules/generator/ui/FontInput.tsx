@@ -3,13 +3,14 @@ import { type Locale, messagesFor } from '@/common/i18n';
 import { Button } from '@/common/ui';
 import { type FontOrigin, useFamilySearch } from '@/modules/font-sources';
 import type { SiteImport } from '@/modules/import-receiver';
-import { readClipboardImport, SiteImportPanel } from '@/modules/site-import';
+import { readClipboardImport, SiteImportPanel, SplitWarnings } from '@/modules/site-import';
 import { classifyInput } from '../lib/classify-input';
 import { displayName } from '../lib/compute';
 import {
   type ImportedFace,
   MAX_CSS_CHARS,
   type Pick,
+  parseFaceRules,
   parseFontFaces,
   parseGoogleFontsLinks,
   pickSource,
@@ -81,9 +82,14 @@ export function FontInput({
   const css = useMemo(() => {
     if (kind !== 'css') return undefined;
     if (oversized || text.length > MAX_CSS_CHARS)
-      return { entries: [], google: [], tooLarge: true };
+      return { entries: [], google: [], rules: [], tooLarge: true };
     const entries = parseFontFaces(text).map((face) => ({ face, pick: pickSource(face) }));
-    return { entries, google: parseGoogleFontsLinks(text), tooLarge: false };
+    return {
+      entries,
+      google: parseGoogleFontsLinks(text),
+      rules: parseFaceRules(text),
+      tooLarge: false,
+    };
   }, [kind, text, oversized]);
 
   useEffect(() => {
@@ -191,6 +197,7 @@ export function FontInput({
         {css?.tooLarge && <p class="ff-drop__paragraph ff-error">{t.cssimport_too_large()}</p>}
         {empty && <p class="ff-drop__paragraph ff-error">{t.cssimport_none()}</p>}
       </div>
+      {css && css.rules.length > 1 && <SplitWarnings locale={locale} rules={css.rules} />}
       {css && css.entries.length > 0 && (
         <ul class="ff-generator__list ff-cssimport__list" aria-label={t.cssimport_faces()}>
           {css.entries.map((entry, index) => {

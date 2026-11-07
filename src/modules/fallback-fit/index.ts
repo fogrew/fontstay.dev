@@ -10,6 +10,12 @@ export {
   type MetricsPolicy,
   type MetricsSource,
 } from './lib/model';
+export {
+  auditSplitFaces,
+  type FaceRule,
+  type SplitIssue,
+  type SplitIssueKind,
+} from './lib/split-audit';
 export { resolveStack } from './lib/stack';
 export {
   type PlatformResolution,
