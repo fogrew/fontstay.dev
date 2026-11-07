@@ -35,6 +35,31 @@ describe('bundled dataset', () => {
     expect(osAvailability(byId('lato'), 'linux', osFontsDataset).level).toBe('partial');
   });
 
+  it('covers macOS releases 11 to 26 with inferred statuses', () => {
+    expect(osFontsDataset.platforms.macos.versions).toEqual(
+      expect.arrayContaining(['10.15', '11', '12', '13', '14', '15', '26', 'current']),
+    );
+    expect(osAvailability(byId('helvetica'), 'macos', osFontsDataset).level).toBe('preinstalled');
+    const releases = byId('helvetica').availability.filter((entry) =>
+      entry.versions.some((version) => /^\d+$/.test(version)),
+    );
+    expect(releases.filter((entry) => entry.os === 'macos').every((entry) => entry.inferred)).toBe(
+      true,
+    );
+    for (const font of osFontsDataset.fonts) {
+      for (const entry of font.availability) {
+        if (entry.inferred) expect(entry.os, font.id).toBe('macos');
+      }
+    }
+  });
+
+  it('covers Windows 7 and 8.1 and several ChromeOS releases', () => {
+    expect(osFontsDataset.platforms.windows.versions).toEqual(['7', '8.1', '10', '11']);
+    expect(osAvailability(byId('segoe-ui'), 'windows', osFontsDataset).level).toBe('preinstalled');
+    expect(osFontsDataset.platforms.chromeos.versions.length).toBeGreaterThan(3);
+    expect(osAvailability(byId('carlito'), 'chromeos', osFontsDataset).level).toBe('preinstalled');
+  });
+
   it('offers measured cursive system fonts', () => {
     const cursive = osFontsDataset.fonts.filter((font) => font.category === 'cursive');
     expect(cursive.map((font) => font.id)).toEqual(
@@ -56,6 +81,12 @@ describe('bundled dataset', () => {
 
 describe('validateDataset', () => {
   const valid = () => structuredClone(osFontsDataset);
+
+  it('rejects a non-boolean inferred flag', () => {
+    const data = valid();
+    (data.fonts[0]?.availability[0] as unknown as { inferred: string }).inferred = 'yes';
+    expect(validateDataset(data).join()).toMatch(/inferred/);
+  });
 
   it('rejects a missing source, unknown versions and duplicate ids', () => {
     const noSource = valid();

@@ -27,10 +27,13 @@ export interface WindowsFamilies {
 
 const FOD_HEADING = 'id="fonts-included-in-feature-on-demand-fod-packages"';
 
-export function parseWindowsFontList(html: string): WindowsFamilies {
+export function parseWindowsFontList(html: string, hasOnDemand = true): WindowsFamilies {
   const result: WindowsFamilies = { preinstalled: new Set(), onDemand: new Set() };
-  const split = html.indexOf(FOD_HEADING);
-  if (split < 0) throw new Error('Windows font list: Feature On Demand heading not found');
+  const found = html.indexOf(FOD_HEADING);
+  if (found < 0 && hasOnDemand) {
+    throw new Error('Windows font list: Feature On Demand heading not found');
+  }
+  const split = found < 0 ? html.length : found;
   for (const [text, target] of [
     [html.slice(0, split), result.preinstalled],
     [html.slice(split), result.onDemand],
@@ -70,6 +73,22 @@ export function parseAppleSystemFonts(html: string): AppleFace[] {
       if (kind && match[2]) platforms[match[2]] = kind;
     }
     faces.push({ name: decode(name).replace(/:\d+(\.\d+)?$/, ''), platforms });
+  }
+  return faces;
+}
+
+const SUPPORT_VERSION = /\s+(?:Version\s+)?\d[\w.]*$/;
+
+export function parseAppleSupportFonts(html: string): AppleFace[] {
+  const end = html.search(/<h[23][^>]*>[^<]*document/i);
+  const section = end < 0 ? html : html.slice(0, end);
+  const faces: AppleFace[] = [];
+  for (const match of section.matchAll(/<p class="gb-paragraph">([^<]+)<\/p>/g)) {
+    const name = decode(match[1] ?? '')
+      .replace(SUPPORT_VERSION, '')
+      .replace(/:\d+(\.\d+)?$/, '')
+      .trim();
+    if (name) faces.push({ name, platforms: { macOS: 'system' } });
   }
   return faces;
 }

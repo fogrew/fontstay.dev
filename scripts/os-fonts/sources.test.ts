@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   appleStatus,
   parseAndroidFontFiles,
+  parseAppleSupportFonts,
   parseAppleSystemFonts,
   parseChromeosFontPackages,
   parseOsFontListCsv,
@@ -124,5 +125,45 @@ describe('other sources', () => {
       'fonts-ubuntu',
       'xfonts-base',
     ]);
+  });
+});
+
+describe('parseWindowsFontList without Feature On Demand', () => {
+  it('treats every table as preinstalled when the page has no on-demand section', () => {
+    const html = '<table><tr><td>Arial</td></tr><tr><td>Segoe UI</td></tr></table>';
+    expect(() => parseWindowsFontList(html)).toThrow();
+    const result = parseWindowsFontList(html, false);
+    expect([...result.preinstalled]).toEqual(['Arial', 'Segoe UI']);
+    expect(result.onDemand.size).toBe(0);
+  });
+});
+
+describe('parseAppleSupportFonts', () => {
+  const item = (text: string) =>
+    `<li class="gb-list_item"><p class="gb-paragraph">${text}</p></li>`;
+  const html = `<h2>Installed or downloadable fonts</h2><ul>${[
+    'Arial Version 5.01.2x',
+    'Arial Bold  5.01.2x',
+    'Helvetica Neue Light 13.0d1e2',
+    'Academy Engraved LET Plain:1.0 16.0d1e1',
+  ]
+    .map(item)
+    .join('')}</ul><h2>Document-support fonts</h2><ul>${item('Athelas Regular 12.0d1e1')}</ul>`;
+
+  it('strips versions and ignores the document-support section', () => {
+    const names = parseAppleSupportFonts(html).map((face) => face.name);
+    expect(names).toEqual([
+      'Arial',
+      'Arial Bold',
+      'Helvetica Neue Light',
+      'Academy Engraved LET Plain',
+    ]);
+  });
+
+  it('matches families through appleStatus', () => {
+    const faces = parseAppleSupportFonts(html);
+    expect(appleStatus(faces, 'Arial', 'macOS')).toBe('preinstalled');
+    expect(appleStatus(faces, 'Helvetica Neue', 'macOS')).toBe('preinstalled');
+    expect(appleStatus(faces, 'Athelas', 'macOS')).toBeNull();
   });
 });

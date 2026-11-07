@@ -98,6 +98,9 @@ export function validateDataset(data: unknown): string[] {
       if (!(STATUSES as readonly string[]).includes(entry.status as string)) {
         errors.push(`${label}.status is invalid`);
       }
+      if (entry.inferred !== undefined && typeof entry.inferred !== 'boolean') {
+        errors.push(`${label}.inferred must be a boolean`);
+      }
       if (!isHttps(entry.source)) errors.push(`${label}.source must be an https URL`);
       if (
         !Array.isArray(entry.versions) ||
