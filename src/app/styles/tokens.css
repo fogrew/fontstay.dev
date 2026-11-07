@@ -239,6 +239,10 @@ body {
   }
 }
 @media (max-width: 47.999rem) and (scripting: enabled) {
+  .ff-header__toggle[hidden] {
+    display: inline-flex;
+    visibility: hidden;
+  }
   .ff-header__menu {
     position: absolute;
     inset-block-start: 100%;

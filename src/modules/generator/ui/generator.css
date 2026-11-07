@@ -1072,6 +1072,7 @@
 }
 @media (max-width: 40rem) {
   .ff-toolbar .ff-shift {
+    justify-content: flex-start;
     min-block-size: 4rem;
   }
 }
@@ -1227,6 +1228,7 @@
   align-items: center;
 }
 .ff-shift__change {
+  min-block-size: 1.625rem;
   display: inline-flex;
   flex-wrap: wrap;
   gap: var(--ff-space-1);
@@ -1280,6 +1282,9 @@
 }
 .ff-article-view__resize-size {
   position: absolute;
+  min-inline-size: 6ch;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
   inset-block-start: calc(min(50%, 14rem) - 1.75rem);
   inset-inline-end: 0.75rem;
   padding: 0 var(--ff-space-1);
