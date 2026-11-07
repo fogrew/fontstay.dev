@@ -98,21 +98,14 @@ function urlLicenseKind(value: string): LicenseKind | null {
 export function licenseKind(license: string | null, licenseUrl: string | null): LicenseKind {
   const description = bounded(license) ?? '';
   const url = bounded(licenseUrl) ?? '';
-  const text = `${description}\n${url}`;
-  if (!text.trim()) return 'none';
-  const apacheVersion = text.match(
+  if (!description.trim() && !url.trim()) return 'none';
+  const apacheVersion = description.match(
     /apache licen[sc]e(?:,?\s+(?:version|v))?[\s-]+(\d+\.\d+)\b/i,
   )?.[1];
-  const apacheUrlVersion = text.match(/apache\.org\/licenses\/(?:LICENSE-)?(\d+\.\d+)\b/i)?.[1];
-  const oflVersion = text.match(
+  const oflVersion = description.match(
     /(?:open font licen[sc]e|\bOFL)(?:,?\s+(?:version|v))?[\s-]+(\d+\.\d+)\b/i,
   )?.[1];
-  if (
-    (apacheVersion && apacheVersion !== '2.0') ||
-    (apacheUrlVersion && apacheUrlVersion !== '2.0') ||
-    (oflVersion && oflVersion !== '1.1') ||
-    /scripts\.sil\.org\/OFL10\b/i.test(text)
-  )
+  if ((apacheVersion && apacheVersion !== '2.0') || (oflVersion && oflVersion !== '1.1'))
     return 'unknown';
   const textKinds = KIND_PATTERNS.filter(([, pattern]) => pattern.test(description));
   if (textKinds.length > 1) return 'unknown';
