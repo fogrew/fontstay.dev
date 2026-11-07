@@ -1,7 +1,7 @@
-import { type ComponentChildren, Fragment } from 'preact';
+import { type ComponentChildren, type ComponentType, Fragment } from 'preact';
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'preact/hooks';
 import { type Locale, messagesFor } from '@/common/i18n';
-import { Icon, Popover, ScrollShadow, Select } from '@/common/ui';
+import { Icon, Popover, ScrollShadow, Select, transition } from '@/common/ui';
 import { type Device, DevicePicker, loadDevices } from '@/modules/devices';
 import { type FontTuning, LazyFontFeatures } from '@/modules/font-details';
 import { isProbeWidth, measureShift, shiftWidths, type WidthShift } from '../lib/article-shift';
@@ -56,6 +56,7 @@ import {
 } from '../lib/view-state';
 import { DeviceShift, ShiftBadge } from './DeviceShift';
 import { IntroGuide } from './IntroGuide';
+import type { SpecimenPanelProps } from './SpecimenPanel';
 import { ToolIcon } from './ToolIcons';
 
 type Layer = LayerKind;
@@ -322,6 +323,18 @@ export function ArticleView({
     descender: false,
   });
   const [boxes, setBoxes] = useState(false);
+  const [specimenOpen, setSpecimenOpen] = useState(false);
+  const [Specimen, setSpecimen] = useState<ComponentType<SpecimenPanelProps>>();
+  useEffect(() => {
+    if (!specimenOpen || Specimen) return;
+    let cancelled = false;
+    void import('./SpecimenPanel').then((module) => {
+      if (!cancelled) setSpecimen(() => module.SpecimenPanel);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [specimenOpen, Specimen]);
   const [guideMetrics, setGuideMetrics] = useState<Partial<Record<Layer, GuideOffsets>>>({});
   const activeGuides = GUIDES.filter((id) => guideOn[id]);
   const guides = activeGuides.length > 0;
@@ -1127,6 +1140,16 @@ export function ArticleView({
         <Popover label={t.article_group_inspect()} disabled={empty}>
           {inspectContent}
         </Popover>
+        <button
+          class="ff-control ff-button ff-button--secondary"
+          type="button"
+          aria-expanded={specimenOpen}
+          aria-controls="ff-specimen-panel"
+          disabled={empty}
+          onClick={() => transition(() => setSpecimenOpen((open) => !open))}
+        >
+          {t.specimen_heading()}
+        </button>
         <DeviceShift
           locale={locale}
           results={shiftResults?.adjusted}
@@ -1146,6 +1169,11 @@ export function ArticleView({
           <span class="ff-error">{t.preview_not_installed({ font: notInstalled.join(', ') })}</span>{' '}
           <span class="ff-muted">{t.preview_not_installed_note()}</span>
         </p>
+      )}
+      {specimenOpen && (
+        <div id="ff-specimen-panel">
+          {Specimen && fontsReady && <Specimen locale={locale} items={items} fontKey={keyOf} />}
+        </div>
       )}
       <div
         ref={frame}
