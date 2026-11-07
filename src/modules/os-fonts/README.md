@@ -16,7 +16,7 @@ The dataset covers a curated list of fallback-relevant families (`scripts/os-fon
 | Linux | Ubuntu 20.04 to 26.04, Debian 12 and 13 | desktop ISO manifests and the Debian GNOME live image package lists, mapped from package to families |
 | ChromeOS | R100 to R150, current | `chromeos-fonts` ebuild at release branches and `main` |
 
-`inferred: true` on an availability entry marks a status that is not read directly from its source. The Apple Support lists do not separate installed from downloadable fonts, so macOS 11 to 26 entries take `preinstalled` or `on-demand` from the current Apple system fonts page.
+`inferred: true` on an availability entry marks a status that is not read directly from its source. The Apple Support lists do not separate installed from downloadable fonts, so macOS 11 to 26 entries take `preinstalled` or `on-demand` from the current Apple system fonts page: presence in the release is real, the status is an upper bound. `current` is the latest Apple system fonts page and may be newer than 26. Apple Support pages and the ChromeOS release branches are fetched live, not pinned, so a regeneration can differ if they change.
 
 Gaps (#172): iOS releases before the current one (no per-release Apple source), vendor Android builds, Fedora and other distributions, per-font local names.
 

@@ -160,6 +160,10 @@ describe('parseAppleSupportFonts', () => {
     ]);
   });
 
+  it('rejects a page without the document-support heading', () => {
+    expect(() => parseAppleSupportFonts(item('Arial 1.0'))).toThrow();
+  });
+
   it('matches families through appleStatus', () => {
     const faces = parseAppleSupportFonts(html);
     expect(appleStatus(faces, 'Arial', 'macOS')).toBe('preinstalled');

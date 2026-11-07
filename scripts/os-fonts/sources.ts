@@ -81,6 +81,7 @@ const SUPPORT_VERSION = /\s+(?:Version\s+)?\d[\w.]*$/;
 
 export function parseAppleSupportFonts(html: string): AppleFace[] {
   const end = html.search(/<h[23][^>]*>[^<]*document/i);
+  if (end < 0) throw new Error('Apple support list: document-support heading not found');
   const section = end < 0 ? html : html.slice(0, end);
   const faces: AppleFace[] = [];
   for (const match of section.matchAll(/<p class="gb-paragraph">([^<]+)<\/p>/g)) {
