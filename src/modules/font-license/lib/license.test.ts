@@ -9,6 +9,16 @@ describe('licenseKind', () => {
     [null, 'http://scripts.sil.org/OFL', 'ofl'],
     [null, 'https://openfontlicense.org', 'ofl'],
     ['Licensed under the Apache License, Version 2.0', null, 'apache'],
+    ['Licensed under the Apache License, Version 1.1', null, 'unknown'],
+    [null, 'https://www.apache.org/licenses/LICENSE-1.1', 'unknown'],
+    ['SIL Open Font License, Version 1.0', null, 'unknown'],
+    [null, 'https://scripts.sil.org/OFL10', 'unknown'],
+    ['OFL-1.0', null, 'unknown'],
+    [null, 'https://spdx.org/licenses/OFL-1.0', 'unknown'],
+    [null, 'https://spdx.org/licenses/OFL-1.1', 'ofl'],
+    [null, 'https://attacker.example/?next=https://opensource.org/licenses/MIT', 'unknown'],
+    ['MIT License and SIL Open Font License', null, 'unknown'],
+    ['SIL Open Font License, Version 1.1', 'https://opensource.org/licenses/MIT', 'unknown'],
     [null, 'https://www.apache.org/licenses/LICENSE-2.0', 'apache'],
     ['MIT License', null, 'mit'],
     [null, 'https://opensource.org/licenses/MIT', 'mit'],
@@ -75,19 +85,34 @@ describe('analyzeLicense', () => {
 
   it('blocks conversion and subsetting for restricted embedding', () => {
     const info = analyzeLicense({ ...base, license: 'MIT License', fsType: 2 });
-    expect(info).toMatchObject({ conversionBlocked: true, subsettingBlocked: true });
+    expect(info).toMatchObject({
+      conversionBlocked: true,
+      subsettingBlocked: true,
+      conversionBlockReason: 'restricted',
+      subsettingBlockReason: 'restricted',
+    });
     expect(info.notices).toEqual(['restricted']);
   });
 
   it('blocks only subsetting for the no-subsetting bit', () => {
     const info = analyzeLicense({ ...base, license: 'MIT License', fsType: 0x0100 });
-    expect(info).toMatchObject({ conversionBlocked: false, subsettingBlocked: true });
+    expect(info).toMatchObject({
+      conversionBlocked: false,
+      subsettingBlocked: true,
+      conversionBlockReason: null,
+      subsettingBlockReason: 'no-subsetting',
+    });
     expect(info.notices).toEqual(['no-subsetting']);
   });
 
   it('blocks bitmap-only fonts', () => {
     const info = analyzeLicense({ ...base, license: 'MIT License', fsType: 0x0200 });
-    expect(info).toMatchObject({ conversionBlocked: true, subsettingBlocked: true });
+    expect(info).toMatchObject({
+      conversionBlocked: true,
+      subsettingBlocked: true,
+      conversionBlockReason: 'bitmap-only',
+      subsettingBlockReason: 'bitmap-only',
+    });
     expect(info.notices).toEqual(['bitmap-only']);
   });
 
@@ -122,5 +147,42 @@ describe('analyzeLicense', () => {
   it('treats a missing fsType as no restriction', () => {
     const info = analyzeLicense({ ...base, license: 'MIT License', fsType: null });
     expect(info).toMatchObject({ embedding: null, conversionBlocked: false });
+  });
+
+  it('returns bounded name-table metadata for a later LICENSE file', () => {
+    const info = analyzeLicense({
+      ...base,
+      copyright: `Copyright \u001b[31m${'x'.repeat(4000)}`,
+      license: `MIT License ${'y'.repeat(4000)}`,
+      licenseUrl: 'https://opensource.org/licenses/MIT',
+    });
+    expect(info.licenseFile?.copyright).toBe(`Copyright [31m${'x'.repeat(1985)}`);
+    expect(info.licenseFile?.licenseDescription).toBe(`MIT License ${'y'.repeat(1988)}`);
+    expect(info.licenseFile?.licenseText).toContain('Permission is hereby granted');
+    expect(info.licenseFile?.licenseUrl).toBe('https://opensource.org/licenses/MIT');
+    expect(analyzeLicense({ ...base, license: 'Custom EULA' }).licenseFile).toBeNull();
+  });
+
+  it('supplies full standard text for URL-only recognition in every supported license', () => {
+    for (const [url, heading] of [
+      ['https://scripts.sil.org/OFL', 'SIL OPEN FONT LICENSE'],
+      ['https://www.apache.org/licenses/LICENSE-2.0', 'Apache License'],
+      ['https://opensource.org/licenses/MIT', 'MIT License'],
+      ['https://ubuntu.com/legal/font-licence', 'UBUNTU FONT LICENCE'],
+      ['https://creativecommons.org/publicdomain/zero/1.0/', 'CC0 1.0 Universal'],
+    ] as const) {
+      const info = analyzeLicense({ ...base, licenseUrl: url });
+      expect(info.licenseFile?.licenseText).toContain(heading);
+      expect(info.licenseFile?.licenseText.length).toBeGreaterThan(500);
+    }
+  });
+
+  it('bounds direct string inputs before matching reserved names', () => {
+    const longPrefix = 'x'.repeat(2000);
+    expect(reservedFontNames([`${longPrefix} Reserved Font Name "Hidden"`])).toEqual({
+      present: false,
+      names: [],
+    });
+    expect(licenseKind(`${longPrefix} MIT License`, null)).toBe('unknown');
   });
 });

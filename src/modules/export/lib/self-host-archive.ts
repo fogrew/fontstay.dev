@@ -1,4 +1,4 @@
-import { LICENSE_TEXTS } from './license-texts';
+import { licenseKind as detectedLicenseKind, LICENSE_TEXTS } from '@/modules/font-license';
 import { selfHostFontFaces } from './self-host';
 import { createZip, type ZipEntry } from './zip';
 
@@ -15,16 +15,9 @@ export interface SelfHostArchiveFont {
 
 type LicenseKind = keyof typeof LICENSE_TEXTS;
 
-const OFL = /open font licen[sc]e|scripts\.sil\.org\/ofl|openfontlicense\.org|\bOFL\b/i;
-const APACHE = /apache licen[sc]e|apache\.org\/licenses/i;
-const UBUNTU = /ubuntu font licen[sc]e|ubuntu\.com\/legal\/terms-and-policies\/font-licen/i;
-
 export function licenseKind(license: string | null, url: string | null): LicenseKind | null {
-  const text = `${license ?? ''}\n${url ?? ''}`;
-  if (OFL.test(text)) return 'ofl';
-  if (APACHE.test(text)) return 'apache';
-  if (UBUNTU.test(text)) return 'ubuntu';
-  return null;
+  const kind = detectedLicenseKind(license, url);
+  return kind === 'unknown' || kind === 'none' ? null : kind;
 }
 
 const slugOf = (name: string) =>

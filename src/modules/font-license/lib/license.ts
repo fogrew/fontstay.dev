@@ -1,3 +1,5 @@
+import { LICENSE_TEXTS } from './license-texts';
+
 export type LicenseKind = 'ofl' | 'apache' | 'mit' | 'ubuntu' | 'cc0' | 'unknown' | 'none';
 
 export type EmbeddingLevel = 'installable' | 'restricted' | 'preview-print' | 'editable';
@@ -17,6 +19,15 @@ export type LicenseNotice =
   | 'reserved-name'
   | 'unknown';
 
+export type LicenseBlockReason = 'restricted' | 'bitmap-only' | 'no-subsetting';
+
+export interface LicenseFileMetadata {
+  copyright: string | null;
+  licenseText: string;
+  licenseDescription: string | null;
+  licenseUrl: string | null;
+}
+
 export interface LicenseInfo {
   kind: LicenseKind;
   embedding: EmbeddingLevel | null;
@@ -26,25 +37,89 @@ export interface LicenseInfo {
   hasReservedFontName: boolean;
   conversionBlocked: boolean;
   subsettingBlocked: boolean;
+  conversionBlockReason: LicenseBlockReason | null;
+  subsettingBlockReason: LicenseBlockReason | null;
   renameRequired: boolean;
+  licenseFile: LicenseFileMetadata | null;
   notices: LicenseNotice[];
 }
 
+const MAX_LICENSE_FIELD_LENGTH = 2000;
+
+function bounded(value: string | null): string | null {
+  return (
+    value
+      ?.slice(0, MAX_LICENSE_FIELD_LENGTH)
+      .replace(/\r\n?/g, '\n')
+      .replace(/[\p{Cc}\p{Cf}]/gu, (char) => (char === '\n' || char === '\t' ? char : '')) ?? null
+  );
+}
+
 const KIND_PATTERNS: readonly [Exclude<LicenseKind, 'unknown' | 'none'>, RegExp][] = [
-  ['ofl', /open font licen[sc]e|scripts\.sil\.org\/ofl|openfontlicense\.org|\bOFL\b/i],
-  ['ubuntu', /ubuntu font licen[sc]e|ubuntu\.com\/legal\/terms-and-policies\/font-licen/i],
-  ['apache', /apache licen[sc]e|apache\.org\/licenses/i],
-  [
-    'mit',
-    /\bMIT licen[sc]e|opensource\.org\/licenses?\/MIT|permission is hereby granted, free of charge/i,
-  ],
-  ['cc0', /\bCC0\b|creativecommons\.org\/publicdomain\/zero|public domain dedication/i],
+  ['ofl', /open font licen[sc]e|\bOFL\b/i],
+  ['ubuntu', /ubuntu font licen[sc]e/i],
+  ['apache', /apache licen[sc]e/i],
+  ['mit', /\bMIT licen[sc]e|permission is hereby granted, free of charge/i],
+  ['cc0', /\bCC0\b|public domain dedication/i],
 ];
 
+function urlLicenseKind(value: string): LicenseKind | null {
+  if (!value) return null;
+  try {
+    const url = new URL(value);
+    if (!['http:', 'https:'].includes(url.protocol) || url.username || url.password) return null;
+    const host = url.hostname.replace(/^www\./, '').toLowerCase();
+    const path = url.pathname.replace(/\/$/, '').toLowerCase();
+    if (host === 'scripts.sil.org' && (path === '/ofl' || path === '/ofl11')) return 'ofl';
+    if (host === 'openfontlicense.org') return 'ofl';
+    if (host === 'apache.org' && path === '/licenses/license-2.0') return 'apache';
+    if (host === 'opensource.org' && (path === '/licenses/mit' || path === '/license/mit'))
+      return 'mit';
+    if (
+      host === 'ubuntu.com' &&
+      (path === '/legal/font-licence' || path === '/legal/terms-and-policies/font-licence')
+    )
+      return 'ubuntu';
+    if (host === 'creativecommons.org' && path === '/publicdomain/zero/1.0') return 'cc0';
+    if (host === 'spdx.org') {
+      const id = path.replace(/\.html$/, '');
+      if (id === '/licenses/ofl-1.1') return 'ofl';
+      if (id === '/licenses/apache-2.0') return 'apache';
+      if (id === '/licenses/mit') return 'mit';
+      if (id === '/licenses/ubuntu-font-1.0') return 'ubuntu';
+      if (id === '/licenses/cc0-1.0') return 'cc0';
+    }
+    return null;
+  } catch {
+    return null;
+  }
+}
+
 export function licenseKind(license: string | null, licenseUrl: string | null): LicenseKind {
-  const text = `${license ?? ''}\n${licenseUrl ?? ''}`;
+  const description = bounded(license) ?? '';
+  const url = bounded(licenseUrl) ?? '';
+  const text = `${description}\n${url}`;
   if (!text.trim()) return 'none';
-  return KIND_PATTERNS.find(([, pattern]) => pattern.test(text))?.[0] ?? 'unknown';
+  const apacheVersion = text.match(
+    /apache licen[sc]e(?:,?\s+(?:version|v))?[\s-]+(\d+\.\d+)\b/i,
+  )?.[1];
+  const apacheUrlVersion = text.match(/apache\.org\/licenses\/(?:LICENSE-)?(\d+\.\d+)\b/i)?.[1];
+  const oflVersion = text.match(
+    /(?:open font licen[sc]e|\bOFL)(?:,?\s+(?:version|v))?[\s-]+(\d+\.\d+)\b/i,
+  )?.[1];
+  if (
+    (apacheVersion && apacheVersion !== '2.0') ||
+    (apacheUrlVersion && apacheUrlVersion !== '2.0') ||
+    (oflVersion && oflVersion !== '1.1') ||
+    /scripts\.sil\.org\/OFL10\b/i.test(text)
+  )
+    return 'unknown';
+  const textKinds = KIND_PATTERNS.filter(([, pattern]) => pattern.test(description));
+  if (textKinds.length > 1) return 'unknown';
+  const textKind = textKinds[0]?.[0];
+  const urlKind = urlLicenseKind(url);
+  if (textKind && urlKind && textKind !== urlKind) return 'unknown';
+  return textKind ?? urlKind ?? 'unknown';
 }
 
 const RESERVED = /reserved font names?/gi;
@@ -58,7 +133,8 @@ export function reservedFontNames(texts: readonly (string | null)[]): {
 } {
   const names = new Set<string>();
   let present = false;
-  for (const text of texts) {
+  for (const raw of texts) {
+    const text = bounded(raw);
     if (!text) continue;
     for (const match of text.matchAll(RESERVED)) {
       const start = match.index;
@@ -91,13 +167,20 @@ export function embeddingLevel(fsType: number | null): EmbeddingLevel | null {
 }
 
 export function analyzeLicense(input: LicenseInput): LicenseInfo {
-  const kind = licenseKind(input.license, input.licenseUrl);
+  const copyright = bounded(input.copyright);
+  const trademark = bounded(input.trademark);
+  const licenseDescription = bounded(input.license);
+  const licenseUrl = bounded(input.licenseUrl);
+  const kind = licenseKind(licenseDescription, licenseUrl);
   const embedding = embeddingLevel(input.fsType);
   const noSubsetting = input.fsType !== null && (input.fsType & NO_SUBSETTING) !== 0;
   const bitmapOnly = input.fsType !== null && (input.fsType & BITMAP_ONLY) !== 0;
-  const reserved = reservedFontNames([input.copyright, input.license, input.trademark]);
-  const conversionBlocked = embedding === 'restricted' || bitmapOnly;
-  const subsettingBlocked = conversionBlocked || noSubsetting;
+  const reserved = reservedFontNames([copyright, licenseDescription, trademark]);
+  const conversionBlockReason =
+    embedding === 'restricted' ? 'restricted' : bitmapOnly ? 'bitmap-only' : null;
+  const subsettingBlockReason = conversionBlockReason ?? (noSubsetting ? 'no-subsetting' : null);
+  const conversionBlocked = conversionBlockReason !== null;
+  const subsettingBlocked = subsettingBlockReason !== null;
   const renameRequired = !subsettingBlocked && reserved.present && kind === 'ofl';
   const notices: LicenseNotice[] = [];
   if (embedding === 'restricted') notices.push('restricted');
@@ -114,7 +197,13 @@ export function analyzeLicense(input: LicenseInput): LicenseInfo {
     hasReservedFontName: reserved.present,
     conversionBlocked,
     subsettingBlocked,
+    conversionBlockReason,
+    subsettingBlockReason,
     renameRequired,
+    licenseFile:
+      kind === 'unknown' || kind === 'none'
+        ? null
+        : { copyright, licenseText: LICENSE_TEXTS[kind], licenseDescription, licenseUrl },
     notices,
   };
 }
