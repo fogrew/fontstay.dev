@@ -17,3 +17,4 @@ export { ScrollShadow, type ScrollShadowProps } from './lib/ScrollShadow';
 export { Select, type SelectProps } from './lib/Select';
 export { Tabs, type TabsProps } from './lib/Tabs';
 export { ToggleGroup, type ToggleGroupItem, type ToggleGroupProps } from './lib/ToggleGroup';
+export { transition } from './lib/transition';
