@@ -40,6 +40,7 @@ export interface FontPalettes {
 
 export interface FontNames {
   copyright: string | null;
+  trademark: string | null;
   version: string | null;
   designer: string | null;
   manufacturer: string | null;
@@ -56,6 +57,7 @@ export interface FontDetails {
   axes: FontAxis[];
   instances: FontInstance[];
   names: FontNames;
+  fsType: number | null;
   colorFormats: string[];
   palettes: FontPalettes | null;
 }

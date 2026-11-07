@@ -29,6 +29,8 @@ test('the details panel lists the features, name table and languages of a font',
   const overview = page.getByRole('tabpanel', { name: 'Overview' });
   await expect(overview).toContainText('Paul D. Hunt');
   await expect(overview).toContainText('Adobe Systems Incorporated');
+  await expect(overview).toContainText('SIL Open Font License 1.1');
+  await expect(overview).toContainText('Installable');
   await expect(overview.getByRole('link', { name: /OFL/ }).first()).toHaveAttribute(
     'href',
     'http://scripts.sil.org/OFL',

@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'preact/hooks';
 import { type Locale, messagesFor } from '@/common/i18n';
 import { Tabs } from '@/common/ui';
+import { analyzeLicense, type EmbeddingLevel, type LicenseKind } from '@/modules/font-license';
 import type { FontMetrics } from '@/modules/font-metrics';
 import { isDefaultOn } from '../lib/default-on';
 import { loadLanguageRequirements, supportedLanguages } from '../lib/languages';
@@ -80,6 +81,35 @@ export function FontDetailsPanel({ locale, metrics }: FontDetailsPanelProps) {
     </>
   );
 
+  const license = useMemo(
+    () => analyzeLicense({ ...details.names, fsType: details.fsType }),
+    [details.names, details.fsType],
+  );
+  const kindLabels: Record<LicenseKind, string> = {
+    ofl: t.details_license_ofl(),
+    apache: t.details_license_apache(),
+    mit: t.details_license_mit(),
+    ubuntu: t.details_license_ubuntu(),
+    cc0: t.details_license_cc0(),
+    unknown: t.details_license_unknown(),
+    none: t.details_license_unknown(),
+  };
+  const embeddingLabels: Record<EmbeddingLevel, string> = {
+    installable: t.details_embedding_installable(),
+    restricted: t.details_embedding_restricted(),
+    'preview-print': t.details_embedding_preview(),
+    editable: t.details_embedding_editable(),
+  };
+  const noticeTexts = {
+    restricted: t.details_notice_restricted(),
+    'bitmap-only': t.details_notice_bitmap_only(),
+    'no-subsetting': t.details_notice_no_subsetting(),
+    'reserved-name': t.details_notice_reserved_name({
+      names: license.reservedFontNames.join(', ') || '-',
+    }),
+    unknown: t.details_notice_unknown(),
+  };
+
   const overview = (
     <dl class="ff-details__fields">
       {field(t.details_field_family(), metrics.names.family)}
@@ -101,6 +131,11 @@ export function FontDetailsPanel({ locale, metrics }: FontDetailsPanelProps) {
         safeUrl(details.names.vendorUrl),
       )}
       {field(t.details_field_license(), details.names.license, safeUrl(details.names.licenseUrl))}
+      {field(t.details_field_license_detected(), kindLabels[license.kind])}
+      {field(
+        t.details_field_embedding(),
+        license.embedding ? embeddingLabels[license.embedding] : null,
+      )}
       {field(t.details_field_description(), details.names.description)}
       {field(t.details_field_copyright(), details.names.copyright)}
       {field(t.details_field_characters(), number.format(metrics.codePoints.length))}
@@ -109,6 +144,16 @@ export function FontDetailsPanel({ locale, metrics }: FontDetailsPanelProps) {
         details.scripts.length > 0 ? details.scripts.join(', ') : null,
       )}
     </dl>
+  );
+
+  const licenseNotices = license.notices.length > 0 && (
+    <ul class="ff-details__notices">
+      {license.notices.map((notice) => (
+        <li key={notice} class="ff-details__notice">
+          {noticeTexts[notice]}
+        </li>
+      ))}
+    </ul>
   );
 
   const featureList =
@@ -236,7 +281,16 @@ export function FontDetailsPanel({ locale, metrics }: FontDetailsPanelProps) {
       <Tabs
         label={t.details_tabs_label()}
         items={[
-          { id: 'overview', label: t.details_tab_overview(), content: overview },
+          {
+            id: 'overview',
+            label: t.details_tab_overview(),
+            content: (
+              <>
+                {overview}
+                {licenseNotices}
+              </>
+            ),
+          },
           { id: 'features', label: t.details_tab_features(), content: featureList },
           { id: 'axes', label: t.details_tab_axes(), content: axesView },
           { id: 'languages', label: t.details_tab_languages(), content: languagesView },

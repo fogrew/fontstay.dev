@@ -51,6 +51,7 @@ const COLOR_TABLES: readonly [string, string][] = [
 ];
 const NAME_FIELDS: Record<keyof FontNames, string> = {
   copyright: 'copyright',
+  trademark: 'trademark',
   version: 'version',
   designer: 'designer',
   manufacturer: 'manufacturer',
@@ -209,6 +210,18 @@ function readVariations(font: RawFont): Pick<FontDetails, 'axes' | 'instances'> 
   return { axes, instances };
 }
 
+const FS_TYPE_OFFSET = 8;
+
+function readFsType(font: RawFont): number | null {
+  if ((font.directory.tables['OS/2']?.length ?? 0) < FS_TYPE_OFFSET + 2) return null;
+  const stream = font._getTableStream('OS/2');
+  if (!stream) return null;
+  const at = stream.pos + FS_TYPE_OFFSET;
+  const high = stream.buffer[at];
+  const low = stream.buffer[at + 1];
+  return high === undefined || low === undefined ? null : (high << 8) | low;
+}
+
 function readNames(font: RawFont): FontNames {
   const records = font.name?.records ?? {};
   const names = {} as FontNames;
@@ -257,6 +270,7 @@ export function emptyFontDetails(): FontDetails {
     instances: [],
     names: {
       copyright: null,
+      trademark: null,
       version: null,
       designer: null,
       manufacturer: null,
@@ -266,6 +280,7 @@ export function emptyFontDetails(): FontDetails {
       vendorUrl: null,
       designerUrl: null,
     },
+    fsType: null,
     colorFormats: [],
     palettes: null,
   };
@@ -278,6 +293,7 @@ export function readFontDetails(font: Font): FontDetails {
     ...guarded(() => readFeatures(raw), { features: empty.features, scripts: empty.scripts }),
     ...guarded(() => readVariations(raw), { axes: empty.axes, instances: empty.instances }),
     names: guarded(() => readNames(raw), empty.names),
+    fsType: guarded(() => readFsType(raw), null),
     colorFormats: COLOR_TABLES.filter(([tag]) => raw.directory.tables[tag]).map(
       ([, label]) => label,
     ),

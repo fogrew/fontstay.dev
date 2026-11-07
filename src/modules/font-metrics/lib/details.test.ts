@@ -206,3 +206,24 @@ describe('hostile tags and strings', () => {
     expect(names.license).toBe('One\nTwo');
   });
 });
+
+describe('embedding permissions', () => {
+  it('reads the OS/2 fsType and the trademark notice', () => {
+    const os2 = new Uint8Array(78);
+    new DataView(os2.buffer).setUint16(8, 0x0102);
+    const details = readFontDetails(
+      stub({ 'OS/2': os2 }, { name: { records: { trademark: { en: 'Acme is a trademark' } } } }),
+    );
+    expect(details.fsType).toBe(0x0102);
+    expect(details.names.trademark).toBe('Acme is a trademark');
+  });
+
+  it('reports no fsType for a missing or truncated OS/2 table', () => {
+    expect(readFontDetails(stub({})).fsType).toBeNull();
+    expect(readFontDetails(stub({ 'OS/2': new Uint8Array(6) })).fsType).toBeNull();
+  });
+
+  it('reads an installable fsType from a real font', () => {
+    expect(load('SourceSansPro-Regular.woff2').details.fsType).toBe(0);
+  });
+});
