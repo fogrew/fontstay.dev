@@ -3,6 +3,9 @@ import { expect, test } from './fixtures';
 
 test('MCP setup tabs switch with arrows and offer verified install URLs', async ({ page }) => {
   await page.goto('/en/mcp/');
+  await expect
+    .poll(() => page.locator('astro-island[component-url*="McpSetupTabs"]').getAttribute('ssr'))
+    .toBeNull();
   const tabs = page.getByRole('tablist', { name: 'Setup' }).getByRole('tab');
   await expect(tabs).toHaveCount(5);
   await expect(tabs.nth(0)).toHaveAttribute('aria-selected', 'true');
