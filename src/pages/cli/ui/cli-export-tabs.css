@@ -1,0 +1,18 @@
+.ff-cli-export {
+  min-inline-size: 0;
+}
+
+.ff-cli-export__content {
+  display: grid;
+  gap: var(--ff-space-2);
+  min-inline-size: 0;
+}
+
+.ff-cli-export__label {
+  margin: 0;
+}
+
+.ff-cli-export__code {
+  min-inline-size: 0;
+  margin: 0;
+}
