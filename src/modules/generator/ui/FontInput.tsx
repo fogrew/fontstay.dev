@@ -155,9 +155,14 @@ export function FontInput({
           }}
           onKeyDown={searching ? familySearch.onKeyDown : undefined}
         />
-        <p id="ff-input-hint" class="ff-drop__paragraph ff-muted ff-drop__hint">
-          {t.input_hint()} {t.source_keyboard_hint()} {t.input_formats()}
-        </p>
+        <div id="ff-input-hint" class="ff-drop__paragraph ff-muted ff-drop__hint">
+          <p class="ff-drop__hint-line">{t.input_hint()}</p>
+          <ul class="ff-drop__hint-list">
+            <li>{t.input_hint_paste()}</li>
+            <li>{t.input_hint_drop()}</li>
+          </ul>
+          {searching && <p class="ff-drop__hint-line">{t.source_keyboard_hint()}</p>}
+        </div>
       </div>
       {familySearch.content}
       <p class="ff-drop__paragraph ff-drop__links">

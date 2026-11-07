@@ -146,6 +146,13 @@
 .ff-drop__hint {
   margin: 0;
 }
+.ff-drop__hint-line {
+  margin: 0;
+}
+.ff-drop__hint-list {
+  margin: 0;
+  padding-inline-start: var(--ff-space-4);
+}
 .ff-drop__links {
   display: flex;
   flex-wrap: wrap;
