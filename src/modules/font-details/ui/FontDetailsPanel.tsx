@@ -156,64 +156,53 @@ export function FontDetailsPanel({ locale, metrics }: FontDetailsPanelProps) {
     </ul>
   );
 
-  const featureList =
-    details.features.length === 0 ? (
-      <p class="ff-muted">{t.details_features_none()}</p>
-    ) : (
-      <>
-        <p class="ff-details__note">
-          {t.details_features_summary({ count: details.features.length })}
-        </p>
-        <ul class="ff-details__features">
-          {details.features.map((feature) => (
-            <li key={feature.tag} class="ff-details__feature">
-              <div class="ff-details__feature-text">
-                <span>
-                  <code class="ff-details__tag">{feature.tag}</code>{' '}
-                  <span>{featureTitle(t, feature)}</span>
-                </span>
-                <span class="ff-details__meta">
-                  {feature.tables
-                    .map((table) =>
-                      table === 'GSUB' ? t.details_feature_gsub() : t.details_feature_gpos(),
-                    )
-                    .join(' · ')}
-                  {isDefaultOn(feature.tag) && ` · ${t.details_feature_default_on()}`}
-                </span>
-              </div>
-            </li>
-          ))}
-        </ul>
-      </>
-    );
+  const featureList = (
+    <>
+      <p class="ff-details__note">
+        {t.details_features_summary({ count: details.features.length })}
+      </p>
+      <ul class="ff-details__list">
+        {details.features.map((feature) => (
+          <li key={feature.tag} class="ff-details__item">
+            <code class="ff-details__tag">{feature.tag}</code> {featureTitle(t, feature)}{' '}
+            <span class="ff-details__meta">
+              {feature.tables
+                .map((table) =>
+                  table === 'GSUB' ? t.details_feature_gsub() : t.details_feature_gpos(),
+                )
+                .join(' · ')}
+              {isDefaultOn(feature.tag) && ` · ${t.details_feature_default_on()}`}
+            </span>
+          </li>
+        ))}
+      </ul>
+    </>
+  );
 
-  const axesView =
-    details.axes.length === 0 ? (
-      <p class="ff-muted">{t.details_axes_none()}</p>
-    ) : (
-      <>
-        <p class="ff-details__note">
-          {t.details_axes_summary({
-            count: details.axes.length,
-            instances: details.instances.length,
-          })}
-        </p>
-        <ul class="ff-details__axes">
-          {details.axes.map((axis) => (
-            <li key={axis.tag} class="ff-details__axis">
-              <span>{t.details_axis_label({ name: axis.name, tag: axis.tag })}</span>
-              <span class="ff-details__meta">
-                {t.details_axis_range({
-                  min: number.format(axis.min),
-                  max: number.format(axis.max),
-                  initial: number.format(axis.default),
-                })}
-              </span>
-            </li>
-          ))}
-        </ul>
-      </>
-    );
+  const axesView = (
+    <>
+      <p class="ff-details__note">
+        {t.details_axes_summary({
+          count: details.axes.length,
+          instances: details.instances.length,
+        })}
+      </p>
+      <ul class="ff-details__axes">
+        {details.axes.map((axis) => (
+          <li key={axis.tag} class="ff-details__axis">
+            <span>{t.details_axis_label({ name: axis.name, tag: axis.tag })}</span>
+            <span class="ff-details__meta">
+              {t.details_axis_range({
+                min: number.format(axis.min),
+                max: number.format(axis.max),
+                initial: number.format(axis.default),
+              })}
+            </span>
+          </li>
+        ))}
+      </ul>
+    </>
+  );
 
   const languagesView =
     languages === undefined ? (
@@ -227,9 +216,12 @@ export function FontDetailsPanel({ locale, metrics }: FontDetailsPanelProps) {
         <p class="ff-details__note">
           {t.details_languages_summary({ count: languageList.length })}
         </p>
-        <ul class="ff-details__languages" aria-label={t.details_languages_list()}>
+        <ul
+          class="ff-details__list ff-details__list--columns"
+          aria-label={t.details_languages_list()}
+        >
           {languageList.map((language) => (
-            <li key={language.code} class="ff-details__language" title={language.code}>
+            <li key={language.code} class="ff-details__item" title={language.code}>
               {language.name}
             </li>
           ))}
@@ -237,44 +229,41 @@ export function FontDetailsPanel({ locale, metrics }: FontDetailsPanelProps) {
       </>
     );
 
-  const colorView =
-    details.colorFormats.length === 0 && !details.palettes ? (
-      <p class="ff-muted">{t.details_color_none()}</p>
-    ) : (
-      <>
-        {details.colorFormats.length > 0 && (
+  const colorView = (
+    <>
+      {details.colorFormats.length > 0 && (
+        <p class="ff-details__note">
+          {t.details_color_formats({ formats: details.colorFormats.join(', ') })}
+        </p>
+      )}
+      {details.palettes && (
+        <>
           <p class="ff-details__note">
-            {t.details_color_formats({ formats: details.colorFormats.join(', ') })}
+            {t.details_palettes_summary({
+              count: details.palettes.palettes.length,
+              entries: details.palettes.entries,
+            })}
           </p>
-        )}
-        {details.palettes && (
-          <>
-            <p class="ff-details__note">
-              {t.details_palettes_summary({
-                count: details.palettes.palettes.length,
-                entries: details.palettes.entries,
-              })}
-            </p>
-            <ul class="ff-details__palettes">
-              {details.palettes.palettes.map((palette, index) => (
-                <li key={index} class="ff-details__palette">
-                  <span>{t.details_palette_label({ number: index + 1 })}</span>
-                  <span class="ff-details__swatches" role="img" aria-label={palette.join(', ')}>
-                    {palette.map((color, position) => (
-                      <span
-                        key={position}
-                        class="ff-details__swatch"
-                        style={{ backgroundColor: color }}
-                      />
-                    ))}
-                  </span>
-                </li>
-              ))}
-            </ul>
-          </>
-        )}
-      </>
-    );
+          <ul class="ff-details__palettes">
+            {details.palettes.palettes.map((palette, index) => (
+              <li key={index} class="ff-details__palette">
+                <span>{t.details_palette_label({ number: index + 1 })}</span>
+                <span class="ff-details__swatches" role="img" aria-label={palette.join(', ')}>
+                  {palette.map((color, position) => (
+                    <span
+                      key={position}
+                      class="ff-details__swatch"
+                      style={{ backgroundColor: color }}
+                    />
+                  ))}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </>
+      )}
+    </>
+  );
 
   return (
     <div class="ff-details">
@@ -291,10 +280,16 @@ export function FontDetailsPanel({ locale, metrics }: FontDetailsPanelProps) {
               </>
             ),
           },
-          { id: 'features', label: t.details_tab_features(), content: featureList },
-          { id: 'axes', label: t.details_tab_axes(), content: axesView },
+          ...(details.features.length > 0
+            ? [{ id: 'features', label: t.details_tab_features(), content: featureList }]
+            : []),
+          ...(details.axes.length > 0
+            ? [{ id: 'axes', label: t.details_tab_axes(), content: axesView }]
+            : []),
           { id: 'languages', label: t.details_tab_languages(), content: languagesView },
-          { id: 'color', label: t.details_tab_color(), content: colorView },
+          ...(details.colorFormats.length > 0 || details.palettes
+            ? [{ id: 'color', label: t.details_tab_color(), content: colorView }]
+            : []),
         ]}
       />
     </div>

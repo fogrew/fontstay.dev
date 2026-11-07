@@ -25,6 +25,7 @@ async function openDetails(page: Page, file: string, locale = 'en', heading = 'F
 test('the details panel lists the features, name table and languages of a font', async ({
   page,
 }) => {
+  await page.setViewportSize({ width: 320, height: 900 });
   await openDetails(page, sourceSans);
   const overview = page.getByRole('tabpanel', { name: 'Overview' });
   await expect(overview).toContainText('Paul D. Hunt');
@@ -49,8 +50,10 @@ test('the details panel lists the features, name table and languages of a font',
   await expect(languages.getByRole('listitem').filter({ hasText: /^Russian$/ })).toBeVisible();
   await expect(languages.getByRole('listitem').filter({ hasText: /^Arabic$/ })).toHaveCount(0);
 
-  await page.getByRole('tab', { name: 'Variable axes' }).click();
-  await expect(page.getByText('This font has no variable axes.')).toBeVisible();
+  await expect(page.getByRole('tab', { name: 'Axes' })).toHaveCount(0);
+  await expect(page.getByRole('tab', { name: 'Colour' })).toHaveCount(0);
+  const tabs = page.getByRole('tablist', { name: 'Font detail sections' });
+  expect(await tabs.evaluate((el) => el.scrollWidth <= el.clientWidth)).toBe(true);
 });
 
 const pagesFeatureSettings = (page: Page) =>
@@ -112,8 +115,8 @@ test('a variable font gets axis sliders and named instances in the toolbar', asy
 
 test('a variable font lists its axes in the details panel', async ({ page }) => {
   await openDetails(page, mada);
-  await page.getByRole('tab', { name: 'Variable axes' }).click();
-  const axes = page.getByRole('tabpanel', { name: 'Variable axes' });
+  await page.getByRole('tab', { name: 'Axes' }).click();
+  const axes = page.getByRole('tabpanel', { name: 'Axes' });
   await expect(axes).toContainText('Weight (wght)');
   await expect(axes).toContainText('100 to 1,000, default 520');
 });
