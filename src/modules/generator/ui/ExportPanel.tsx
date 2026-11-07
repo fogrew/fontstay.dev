@@ -1,5 +1,5 @@
 import { type Locale, localizeHref, messagesFor } from '@/common/i18n';
-import { CodeBlock, type CodeLanguage, Icon, type IconName, Select } from '@/common/ui';
+import { Button, CodeBlock, type CodeLanguage, Icon, type IconName, Select } from '@/common/ui';
 import { buildExport, EXPORT_FORMATS, type ExportFormat, type ExportInput } from '@/modules/export';
 
 export type ExportChoice = ExportFormat | 'report';
@@ -37,6 +37,13 @@ export const FORMAT_ICONS: Record<ExportChoice, IconName> = {
   report: 'markdown',
 };
 
+export interface SelfHostControl {
+  checked: boolean;
+  onChange: (checked: boolean) => void;
+  onDownload: () => void;
+  failed: boolean;
+}
+
 export function ExportPanel({
   locale,
   chosen,
@@ -45,6 +52,7 @@ export function ExportPanel({
   reordered = false,
   multi = false,
   label,
+  selfHost,
 }: {
   locale: Locale;
   chosen: ExportChoice;
@@ -53,6 +61,7 @@ export function ExportPanel({
   reordered?: boolean;
   multi?: boolean;
   label: string;
+  selfHost?: SelfHostControl | undefined;
 }) {
   const t = messagesFor(locale);
   const format = effectiveFormat(chosen, multi);
@@ -88,6 +97,34 @@ export function ExportPanel({
       )}
       {format === 'wordpress' && <p class="ff-muted">{t.wordpress_note()}</p>}
       {format === 'loading' && <p class="ff-muted">{t.loading_note()}</p>}
+      {selfHost && (
+        <>
+          <label>
+            <input
+              class="ff-control"
+              type="checkbox"
+              aria-describedby="ff-self-host-note"
+              checked={selfHost.checked}
+              onChange={(event) => selfHost.onChange(event.currentTarget.checked)}
+            />{' '}
+            {t.self_host_label()}
+          </label>
+          <p class="ff-muted" id="ff-self-host-note">
+            {t.self_host_note()}
+          </p>
+          {selfHost.checked && (
+            <Button class="ff-export__download" onClick={selfHost.onDownload}>
+              <Icon name="download" />
+              {t.self_host_download()}
+            </Button>
+          )}
+          {selfHost.failed && (
+            <p class="ff-error" role="alert">
+              {t.self_host_error()}
+            </p>
+          )}
+        </>
+      )}
       <CodeBlock
         locale={locale}
         label={label}

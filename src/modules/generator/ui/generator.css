@@ -432,6 +432,9 @@
   display: grid;
   gap: var(--ff-space-2);
 }
+.ff-export__download {
+  justify-self: start;
+}
 .ff-share {
   display: grid;
   gap: var(--ff-space-2);

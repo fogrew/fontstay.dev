@@ -37,6 +37,10 @@ import {
   EXPORT_FORMATS,
   type ExportFormat,
   type ExportInput,
+  loadSelfHostArchive,
+  prependSelfHost,
+  type SelfHostFont,
+  selfHostFontFaces,
 } from '@/modules/export';
 import { compactRanges, formatUnicodeRange, StackResolveError } from '@/modules/fallback-fit';
 import { LazyFontDetails } from '@/modules/font-details';
@@ -54,6 +58,7 @@ import {
   downloadOrigin,
   type FontOrigin,
   isHandwritingOrigin,
+  parseStyle,
   sameOrigin,
 } from '@/modules/font-sources';
 import type { SiteImport } from '@/modules/import-receiver';
@@ -191,6 +196,8 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
   const [kindChoices, setKindChoices] = useState<Record<number, Category>>({});
   const [presetId, setPresetId] = useState<PresetId>();
   const [exportChoice, setExportChoice] = useState<ExportChoice>('css');
+  const [selfHost, setSelfHost] = useState(false);
+  const [selfHostFailed, setSelfHostFailed] = useState(false);
   const [styleChoices, setStyleChoices] = useState<Record<number, FontStyleKey>>({});
   const [shares, setShares] = useState<OsShares>();
   const [audience, setAudience] = useState<AudienceData>();
@@ -905,13 +912,70 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
     style: styleOf(entry.font).includes('italic') ? 'italic' : 'normal',
   }));
   const exportFamilies = groupFonts(exportOutputs);
+  const googleFonts = [
+    ...new Map(
+      exportEntries.flatMap((entry) =>
+        entry.font.origin?.source === 'google' ? [[entry.font.id, entry.font] as const] : [],
+      ),
+    ).values(),
+  ];
+  const selfHostFonts: (SelfHostFont & { font: LoadedFont })[] = googleFonts.flatMap((font) => {
+    if (!font.origin) return [];
+    const { weight, italic } = parseStyle(font.origin.style);
+    return [
+      {
+        family: font.origin.family,
+        fileName: displayName(font.fileName),
+        weight,
+        style: italic ? ('italic' as const) : ('normal' as const),
+        font,
+      },
+    ];
+  });
+  let selfHostCss = '';
+  let selfHostCssFailed = false;
+  if (selfHost && selfHostFonts.length > 0) {
+    try {
+      selfHostCss = selfHostFontFaces(selfHostFonts);
+    } catch {
+      selfHostCssFailed = true;
+    }
+  }
+  const withSelfHost = (css: string) => prependSelfHost(selfHostCss, css);
+  const downloadSelfHost = async () => {
+    setSelfHostFailed(false);
+    try {
+      const { buildSelfHostArchive } = await loadSelfHostArchive();
+      const zip = buildSelfHostArchive(
+        selfHostFonts.map(({ font, ...face }) => ({
+          ...face,
+          bytes: new Uint8Array(font.bytes),
+          copyright: font.metrics.details.names.copyright,
+          license: font.metrics.details.names.license,
+          licenseUrl: font.metrics.details.names.licenseUrl,
+        })),
+      );
+      const url = URL.createObjectURL(new Blob([new Uint8Array(zip)], { type: 'application/zip' }));
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = 'self-hosted-fonts.zip';
+      document.body.append(link);
+      link.click();
+      link.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    } catch {
+      setSelfHostFailed(true);
+    }
+  };
   const exportInput: ExportInput = {
     families: exportFamilies,
-    fontFaces: [
-      ...new Set(exportOutputs.flatMap((entry) => entry.fontFaces.split('\n\n')).filter(Boolean)),
-    ].join('\n\n'),
+    fontFaces: withSelfHost(
+      [
+        ...new Set(exportOutputs.flatMap((entry) => entry.fontFaces.split('\n\n')).filter(Boolean)),
+      ].join('\n\n'),
+    ),
     strategy: exportEntries[0]?.strategy ?? '',
-    css: mergeOutputs(exportOutputs, loadingCss(spacingEm)),
+    css: withSelfHost(mergeOutputs(exportOutputs, loadingCss(spacingEm))),
     loadingScript: loadingScript(exportFamilies.map((family) => family.targetFamily)),
   };
   const anyRanking = Object.values(rankings.result).find(Boolean);
@@ -1945,6 +2009,16 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
                 reordered={reordered}
                 multi={allMode}
                 label={exportLabel}
+                selfHost={
+                  selfHostFonts.length > 0
+                    ? {
+                        checked: selfHost,
+                        onChange: setSelfHost,
+                        onDownload: () => void downloadSelfHost(),
+                        failed: selfHostFailed || selfHostCssFailed,
+                      }
+                    : undefined
+                }
               />
             ) : (
               <p class="ff-generator__empty">{t.results_empty()}</p>

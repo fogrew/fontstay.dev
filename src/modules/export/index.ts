@@ -16,4 +16,12 @@ export {
   type FallbackFace,
   type GenericFamily,
 } from './lib/model';
+export {
+  prependSelfHost,
+  SELF_HOST_BASE,
+  type SelfHostFont,
+  selfHostFontFaces,
+} from './lib/self-host';
+export type { SelfHostArchiveFont } from './lib/self-host-archive';
 export { createZip, MAX_ZIP_BYTES, MAX_ZIP_ENTRIES, type ZipEntry, ZipError } from './lib/zip';
+export const loadSelfHostArchive = () => import('./lib/self-host-archive');
