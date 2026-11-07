@@ -54,12 +54,22 @@ test('the extension sends the page to the import page of fontstay.dev', async ({
       body: isFont ? font : DEMO_SITE,
     });
   });
-  let [worker] = context.serviceWorkers();
-  worker ??= await context.waitForEvent('serviceworker');
+  const ctx = context;
+  const readyWorker = async () => {
+    const [worker] = ctx.serviceWorkers();
+    if (!worker) return null;
+    const ready = await worker
+      .evaluate(() => typeof (globalThis as { fontstaySend?: unknown }).fontstaySend)
+      .catch(() => null);
+    return ready === 'function' ? worker : null;
+  };
+  await expect.poll(async () => (await readyWorker()) !== null, { timeout: 30_000 }).toBe(true);
   const page = await context.newPage();
   await page.goto('https://site.test/');
   await page.bringToFront();
   const opened = context.waitForEvent('page');
+  const worker = await readyWorker();
+  if (!worker) throw new Error('extension service worker is not ready');
   await worker.evaluate(async () => {
     const scope = globalThis as unknown as {
       chrome: { tabs: { query: (query: object) => Promise<unknown[]> } };

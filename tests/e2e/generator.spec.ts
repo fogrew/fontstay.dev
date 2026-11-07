@@ -1781,6 +1781,9 @@ test.describe('the first visit', () => {
       page.evaluate(async () => (await indexedDB.databases()).map((db) => db.name));
     expect(await names()).toContain('fontstay-import');
     await page.getByRole('button', { name: 'Forget', exact: true }).click();
+    await expect
+      .poll(() => names().catch(() => ['navigating']), { timeout: 15_000 })
+      .not.toContain('fontstay-import');
     await waitForGenerator(page);
     expect(await names()).not.toContain('fontstay-import');
     await context.close();
