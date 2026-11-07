@@ -33,7 +33,8 @@ Options:
   -s, --systems <list>     Comma-separated systems to fit: ${OS_IDS.join(', ')}
                            (default: every system in the audience)
   -a, --audience <query>   Browserslist query, optionally with "os <system>" and
-                           "not os <system>" parts (default: baseline widely available)
+                           "not os <system>" parts (default: project Browserslist
+                           config, or baseline widely available if none)
   -f, --format <format>    ${EXPORT_FORMATS.join(', ')} (default: css)
   -k, --kind <kind>        Fallback kind: ${CATEGORIES.join(', ')} (default: detected from the font)
       --locale <en|ru>     Frequency profile for the fit (default: en)
@@ -76,6 +77,20 @@ function reportOf({ css: _css, ...rest }: FitOutput) {
 async function version(): Promise<string> {
   const file = new URL('../package.json', import.meta.url);
   return (JSON.parse(await readFile(file, 'utf8')) as { version: string }).version;
+}
+
+async function projectAudience(): Promise<string | undefined> {
+  const { default: browserslist } = await import('browserslist');
+  try {
+    const config = browserslist.loadConfig({ path: process.cwd() }) as
+      | string[]
+      | string
+      | undefined;
+    return Array.isArray(config) ? config.join(', ') : config;
+  } catch (failure) {
+    const detail = failure instanceof Error ? failure.message : String(failure);
+    throw new FitRunError('invalid-audience', `Invalid project Browserslist config: ${detail}`);
+  }
 }
 
 export async function run(argv: readonly string[], io: Io): Promise<number> {
@@ -133,9 +148,10 @@ export async function run(argv: readonly string[], io: Io): Promise<number> {
       ? choice(values.kind, CATEGORIES, '--kind')
       : undefined;
     const locale = values.locale ? choice(values.locale, ['en', 'ru'] as const, '--locale') : 'en';
+    const audience = values.audience ?? (await projectAudience());
 
     const result = await fitFiles(files, {
-      ...(values.audience ? { audience: values.audience } : {}),
+      ...(audience ? { audience } : {}),
       ...(values.systems ? { systems: systemsOf(values.systems) } : {}),
       ...(kind ? { kind } : {}),
       locale,
