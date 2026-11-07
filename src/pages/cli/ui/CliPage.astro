@@ -1,5 +1,6 @@
 ---
 import { type Locale, localizeHref, messagesFor } from '@/common/i18n';
+import { CliExportTabs } from './CliExportTabs';
 
 interface Props {
   locale: Locale;
@@ -53,19 +54,6 @@ const options = [
   ['-h, --help / -v, --version', t.cli_opt_help()],
 ] as const;
 
-const formats = [
-  ['css', t.export_css()],
-  ['variables', t.export_variables()],
-  ['tailwind', t.export_tailwind()],
-  ['next', t.export_next()],
-  ['nuxt', t.export_nuxt()],
-  ['astro', t.export_astro()],
-  ['wordpress', t.export_wordpress()],
-  ['fontaine', t.export_fontaine()],
-  ['preload', t.export_preload()],
-  ['loading', t.export_loading()],
-] as const;
-
 const libraryCode = `import { fit, fitFiles } from 'fontstay';
 import { readFile } from 'node:fs/promises';
 
@@ -83,8 +71,6 @@ const exitCodes = [
   ['2', t.cli_exit_2()],
 ] as const;
 
-const mcpCommand =
-  'claude mcp add fontstay -- node /path/to/fontstay.dev/packages/fontstay/dist/bin.js mcp';
 ---
 
 <div class="ff-page ff-prose">
@@ -124,22 +110,8 @@ const mcpCommand =
 
   <h2 class="ff-heading ff-page__heading ff-prose__heading">{t.cli_formats_heading()}</h2>
   <p class="ff-page__text">{t.cli_formats_text()}</p>
-  <table class="ff-prose__table ff-page__table">
-    <thead>
-      <tr>
-        <th class="ff-page__cell" scope="col">{t.cli_col_format()}</th>
-        <th class="ff-page__cell" scope="col">{t.cli_col_output()}</th>
-      </tr>
-    </thead>
-    <tbody>
-      {formats.map(([value, label]) => (
-        <tr>
-          <th class="ff-page__cell" scope="row"><code>{value}</code></th>
-          <td class="ff-page__cell">{label}</td>
-        </tr>
-      ))}
-    </tbody>
-  </table>
+  <p class="ff-page__text">{t.cli_formats_example_text()}</p>
+  <CliExportTabs locale={locale} client:load />
 
   <h2 class="ff-heading ff-page__heading ff-prose__heading">{t.cli_output_heading()}</h2>
   <p class="ff-page__text">{t.cli_output_text()}</p>
@@ -168,9 +140,5 @@ const mcpCommand =
     </tbody>
   </table>
 
-  <h2 class="ff-heading ff-page__heading ff-prose__heading">{t.cli_mcp_heading()}</h2>
-  <p class="ff-page__text">{t.cli_mcp_text()}</p>
-  <!-- biome-ignore lint/a11y/noNoninteractiveTabindex: scrollable code needs a keyboard focus target -->
-  <pre class="ff-prose__code" tabindex="0" dir="ltr"><code>{mcpCommand}</code></pre>
-  <p class="ff-page__text"><a class="ff-link" href={localizeHref('/mcp/', { locale })}>{t.nav_mcp()}</a></p>
+  <p class="ff-page__text"><a class="ff-link" href={localizeHref('/mcp/', { locale })}>{t.cli_mcp_link()}</a></p>
 </div>

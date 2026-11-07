@@ -1,0 +1,20 @@
+export const cliExampleOutput = {
+  css: '@font-face {\n  font-family: "Fira Sans Fallback";\n  src: local("Trebuchet MS"), local("TrebuchetMS");\n  size-adjust: 100.3942%;\n  ascent-override: 93.1328%;\n  descent-override: 26.3959%;\n  line-gap-override: 0%;\n}\n\nbody {\n  font-family: "Fira Sans", "Fira Sans Fallback", sans-serif;\n  /* Safari has no vertical overrides: match the x-height and fix the line box */\n  font-size-adjust: 0.527;\n  line-height: 1.4;\n}\n\n.fonts-loading {\n  letter-spacing: -0.0019em;\n}',
+  variables:
+    '@font-face {\n  font-family: "Fira Sans Fallback";\n  src: local("Trebuchet MS"), local("TrebuchetMS");\n  size-adjust: 100.3942%;\n  ascent-override: 93.1328%;\n  descent-override: 26.3959%;\n  line-gap-override: 0%;\n}\n\n:root {\n  --font-body: "Fira Sans", "Fira Sans Fallback", sans-serif;\n}\n\nbody {\n  font-family: var(--font-body);\n  /* Safari has no vertical overrides: match the x-height and fix the line box */\n  font-size-adjust: 0.527;\n  line-height: 1.4;\n}',
+  tailwind:
+    '@import "tailwindcss";\n\n@font-face {\n  font-family: "Fira Sans Fallback";\n  src: local("Trebuchet MS"), local("TrebuchetMS");\n  size-adjust: 100.3942%;\n  ascent-override: 93.1328%;\n  descent-override: 26.3959%;\n  line-gap-override: 0%;\n}\n\n@theme {\n  --font-sans: "Fira Sans", "Fira Sans Fallback", sans-serif;\n}',
+  next: "// Put FiraSans-Regular.ttf into ./fonts/ and the @font-face rules from the CSS export into your global CSS.\nimport localFont from 'next/font/local';\n\nexport const font = localFont({\n  src: './fonts/FiraSans-Regular.ttf',\n  display: 'swap',\n  adjustFontFallback: false,\n  fallback: ['Fira Sans Fallback', 'sans-serif'],\n  variable: '--font-body',\n});",
+  nuxt: "// Add the @font-face rules from the CSS export to a stylesheet listed in `css`.\nexport default defineNuxtConfig({\n  modules: ['@nuxt/fonts'],\n  fonts: {\n    families: [\n      {\n        name: 'Fira Sans',\n        src: '/fonts/FiraSans-Regular.ttf',\n        fallbacks: ['Fira Sans Fallback', 'sans-serif'],\n      },\n    ],\n  },\n});",
+  astro:
+    "// Add the @font-face rules from the CSS export to your global styles.\nimport { defineConfig } from 'astro/config';\n\nexport default defineConfig({\n  fonts: [\n    {\n      name: 'Fira Sans',\n      cssVariable: '--font-body',\n      provider: 'local',\n      options: {\n        variants: [{ weight: 400, style: 'normal', src: ['./src/assets/fonts/FiraSans-Regular.ttf'] }],\n      },\n      fallbacks: ['Fira Sans Fallback', 'sans-serif'],\n    },\n  ],\n});",
+  wordpress:
+    '{\n  "$schema": "https://schemas.wp.org/trunk/theme.json",\n  "version": 3,\n  "settings": {\n    "typography": {\n      "fontFamilies": [\n        {\n          "name": "Fira Sans",\n          "slug": "fira-sans",\n          "fontFamily": "\\"Fira Sans\\", \\"Fira Sans Fallback\\", sans-serif",\n          "fontFace": [\n            {\n              "fontFamily": "Fira Sans",\n              "fontWeight": "400",\n              "fontStyle": "normal",\n              "src": [\n                "file:./assets/fonts/FiraSans-Regular.ttf"\n              ]\n            }\n          ]\n        }\n      ]\n    }\n  }\n}',
+  fontaine:
+    // biome-ignore lint/suspicious/noTemplateCurlyInString: Preserve the CLI's literal output.
+    "// Put FiraSans-Regular.ttf into ./public/fonts/ and declare their @font-face rules in your CSS. In Nuxt, put the plugin under vite.plugins.\nimport { FontaineTransform } from 'fontaine';\nimport { defineConfig } from 'vite';\n\nexport default defineConfig({\n  plugins: [\n    FontaineTransform.vite({\n      fallbacks: {\n        'Fira Sans': ['Trebuchet MS'],\n      },\n      resolvePath: (id) => new URL(`./public${id}`, import.meta.url),\n    }),\n  ],\n});",
+  preload:
+    '<link rel="preload" href="/fonts/FiraSans-Regular.ttf" as="font" type="font/ttf" crossorigin>',
+  loading:
+    "const root = document.documentElement;\nconst done = () => root.classList.remove('fonts-loading');\nroot.classList.add('fonts-loading');\ndocument.fonts.load('1em \"Fira Sans\"').then(done, done);",
+} as const;
