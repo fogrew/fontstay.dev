@@ -68,6 +68,9 @@ test('specimen fits a 320 px phone without horizontal overflow', async ({ page }
   await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(font);
   const toggle = page.locator('.ff-article-view').getByRole('button', { name: 'Specimen' });
   await expect(toggle).toBeEnabled();
+  await page.evaluate(() => {
+    (window as unknown as { shifts: number }).shifts = 0;
+  });
   await toggle.click();
   await page.getByRole('tab', { name: 'Glyphs' }).click();
   await expect
