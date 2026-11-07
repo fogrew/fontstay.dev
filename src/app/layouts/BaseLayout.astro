@@ -46,7 +46,11 @@ const structured = JSON.stringify({
   inLanguage: locale,
   offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
 });
-const moreItems = [
+const navItems = [
+  { page: 'generator', href: '/', label: t.nav_generator() },
+  { page: 'fonts', href: '/fonts/', label: t.nav_fonts() },
+  { page: 'presets', href: '/presets/', label: t.nav_presets() },
+  { page: 'guide', href: '/guide/', label: t.nav_guide() },
   { page: 'cli', href: '/cli/', label: t.nav_cli() },
   { page: 'mcp', href: '/mcp/', label: t.nav_mcp() },
   { page: 'extensions', href: '/extensions/', label: t.nav_extensions() },
@@ -97,28 +101,15 @@ const indexable = !process.env.WORKERS_CI_BRANCH || process.env.WORKERS_CI_BRANC
       <a class="ff-link ff-link--tap ff-brand" href={localizeHref('/', { locale })}><img class="ff-brand__logo" src="/favicon.svg" alt="" width="24" height="24" />{t.app_title()}</a>
       <nav class="ff-header__menu" id="ff-nav" aria-label={t.nav_label()}>
         <ul class="ff-header__nav">
-          <li>
-            <a class="ff-link ff-link--tap ff-header__nav-link" href={localizeHref('/', { locale })} aria-current={page === 'generator' ? 'page' : undefined}>{t.nav_generator()}</a>
-          </li>
-          <li>
-            <a class="ff-link ff-link--tap ff-header__nav-link" href={localizeHref('/fonts/', { locale })} aria-current={page === 'fonts' ? 'page' : undefined}>{t.nav_fonts()}</a>
-          </li>
-          <li>
-            <a class="ff-link ff-link--tap ff-header__nav-link" href={localizeHref('/presets/', { locale })} aria-current={page === 'presets' ? 'page' : undefined}>{t.nav_presets()}</a>
-          </li>
-          <li>
-            <a class="ff-link ff-link--tap ff-header__nav-link" href={localizeHref('/guide/', { locale })} aria-current={page === 'guide' ? 'page' : undefined}>{t.nav_guide()}</a>
-          </li>
-          <li class="ff-header__more">
+          {navItems.map((item) => (
+            <li data-nav-item>
+              <a class="ff-link ff-link--tap ff-header__nav-link" href={localizeHref(item.href, { locale })} aria-current={page === item.page ? 'page' : undefined}>{item.label}</a>
+            </li>
+          ))}
+          <li class="ff-header__more" data-more hidden>
             <details class="ff-header__more-menu" data-more-menu>
-              <summary class:list={['ff-header__nav-link', 'ff-header__more-summary', { 'ff-header__more-summary--active': moreItems.some((item) => item.page === page) }]}>{t.nav_more()}</summary>
-              <ul class="ff-header__more-list">
-                {moreItems.map((item) => (
-                  <li>
-                    <a class="ff-link ff-link--tap ff-header__nav-link" href={localizeHref(item.href, { locale })} aria-current={page === item.page ? 'page' : undefined}>{item.label}</a>
-                  </li>
-                ))}
-              </ul>
+              <summary class="ff-link--tap ff-header__nav-link ff-header__more-summary">{t.nav_more()}</summary>
+              <ul class="ff-header__more-list" data-more-list></ul>
             </details>
           </li>
         </ul>
@@ -144,18 +135,37 @@ const indexable = !process.env.WORKERS_CI_BRANCH || process.env.WORKERS_CI_BRANC
         };
         const locale = document.querySelector<HTMLDetailsElement>('[data-locale-menu]');
         const more = nav.querySelector<HTMLDetailsElement>('[data-more-menu]');
-        const syncMore = () => {
-          if (more && !wide.matches) more.open = true;
-          else if (more) more.open = false;
+        const navList = nav.querySelector<HTMLUListElement>('.ff-header__nav');
+        const moreItem = nav.querySelector<HTMLLIElement>('[data-more]');
+        const moreList = nav.querySelector<HTMLUListElement>('[data-more-list]');
+        const items = [...nav.querySelectorAll<HTMLLIElement>('[data-nav-item]')];
+        let collapsed = 0;
+        const layoutNav = () => {
+          if (!navList || !moreItem || !moreList) return;
+          if (!wide.matches && collapsed === 0) return;
+          const focused = nav.contains(document.activeElement) ? (document.activeElement as HTMLElement) : null;
+          for (const item of items) navList.insertBefore(item, moreItem);
+          moreItem.hidden = true;
+          let hidden = 0;
+          if (wide.matches) {
+            while (navList.scrollWidth > navList.clientWidth && hidden < items.length - 1) {
+              moreItem.hidden = false;
+              hidden += 1;
+              const last = items[items.length - hidden];
+              if (last) moreList.prepend(last);
+            }
+          }
+          if (more && (hidden !== collapsed || hidden === 0)) more.open = false;
+          collapsed = hidden;
+          if (focused && document.activeElement !== focused) focused.focus({ preventScroll: true });
+          moreItem.querySelector('summary')?.classList.toggle('ff-header__more-summary--active', moreList.querySelector('[aria-current]') !== null);
         };
         toggle.hidden = false;
         setOpen(false);
-        syncMore();
         toggle.addEventListener('click', (event) => {
           const open = toggle.getAttribute('aria-expanded') !== 'true';
           if (open && locale) locale.open = false;
           setOpen(open);
-          syncMore();
           if (open && event.detail === 0) nav.querySelector<HTMLElement>('a')?.focus();
         });
         document.addEventListener('click', (event) => {
@@ -190,8 +200,16 @@ const indexable = !process.env.WORKERS_CI_BRANCH || process.env.WORKERS_CI_BRANC
         });
         wide.addEventListener('change', () => {
           setOpen(false);
-          syncMore();
+          layoutNav();
         });
+        let frame = 0;
+        nav.dataset.ready = '';
+        new ResizeObserver(() => {
+          cancelAnimationFrame(frame);
+          frame = requestAnimationFrame(layoutNav);
+        }).observe(nav);
+        document.fonts?.ready.then(layoutNav);
+        layoutNav();
       }
     </script>
     <PwaManager locale={locale} client:idle />

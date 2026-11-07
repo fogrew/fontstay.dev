@@ -123,3 +123,74 @@ test.describe('desktop header menu', () => {
     });
   }
 });
+
+test.describe('header navigation fit', () => {
+  const visibleLinks = (page: import('@playwright/test').Page) =>
+    page.locator('.ff-header__nav > li[data-nav-item]:visible > a').count();
+
+  const settled = (page: import('@playwright/test').Page) =>
+    expect(page.locator('#ff-nav')).toHaveAttribute('data-ready', '');
+
+  test('shows every item directly when the width allows and hides More', async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 700 });
+    await page.goto('/en/');
+    await settled(page);
+    await expect(page.locator('[data-more]')).toBeHidden();
+    expect(await visibleLinks(page)).toBe(9);
+  });
+
+  test('collapses only the items that do not fit into More as the width shrinks', async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 1440, height: 700 });
+    await page.goto('/en/');
+    await settled(page);
+    let previous = 9;
+    for (const width of [1200, 1024, 768]) {
+      await page.setViewportSize({ width, height: 700 });
+      await expect
+        .poll(async () => {
+          const direct = await visibleLinks(page);
+          const inMore = await page.locator('[data-more-list] > li').count();
+          const fits = await page.evaluate(() => {
+            const list = document.querySelector('.ff-header__nav') as HTMLElement;
+            return list.scrollWidth <= list.clientWidth;
+          });
+          const moreShown = await page.locator('[data-more]').isVisible();
+          return direct + inMore === 9 && fits && moreShown === inMore > 0;
+        })
+        .toBe(true);
+      const direct = await visibleLinks(page);
+      expect(direct).toBeLessThanOrEqual(previous);
+      previous = direct;
+    }
+    expect(previous).toBeLessThan(9);
+  });
+
+  for (const width of [768, 1024, 1440]) {
+    test(`${width}px: More is aligned with the other items`, async ({ page }) => {
+      await page.setViewportSize({ width, height: 700 });
+      await page.goto('/en/');
+      await settled(page);
+      const box = async (selector: string) => {
+        const rect = await page.locator(selector).first().boundingBox();
+        if (!rect) throw new Error(`${selector} has no box`);
+        return rect;
+      };
+      if (await page.locator('[data-more]').isVisible()) {
+        const link = await box('[data-nav-item]:visible > a');
+        const summary = await box('[data-more-menu] > summary');
+        expect(summary.y).toBeCloseTo(link.y, 0);
+        expect(summary.height).toBeCloseTo(link.height, 0);
+      }
+    });
+  }
+
+  test('320px: the menu lists every page flat without a More group', async ({ page }) => {
+    await page.setViewportSize({ width: 320, height: 700 });
+    await page.goto('/en/');
+    await page.getByRole('button', { name: 'Menu' }).click();
+    await expect(page.locator('[data-more]')).toBeHidden();
+    await expect(page.locator('#ff-nav').getByRole('link')).toHaveCount(9);
+  });
+});
