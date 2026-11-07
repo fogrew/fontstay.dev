@@ -84,10 +84,11 @@
 .ff-specimen__colour-sample {
   margin: 0;
   padding: var(--ff-space-4);
-  min-block-size: 8rem;
+  block-size: 8rem;
   border-radius: var(--ff-radius);
   font: 2rem / 1.4 var(--ff-specimen-font);
   overflow-wrap: anywhere;
+  overflow: auto;
   background: var(--ff-specimen-bg);
   color: var(--ff-specimen-fg);
 }

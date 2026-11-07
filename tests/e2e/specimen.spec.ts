@@ -47,6 +47,10 @@ test('specimen tabs show waterfall, accessible colour presets and glyph metrics'
 
 test('specimen fits a 320 px phone without horizontal overflow', async ({ page }) => {
   await page.setViewportSize({ width: 320, height: 700 });
+  await page.route('**/SpecimenPanel.*.js', async (route) => {
+    await new Promise((resolve) => setTimeout(resolve, 800));
+    await route.continue();
+  });
   await page.addInitScript(() => {
     const state = window as unknown as { shifts: number };
     state.shifts = 0;
@@ -62,7 +66,9 @@ test('specimen fits a 320 px phone without horizontal overflow', async ({ page }
   await page.goto('/en/');
   await waitForGenerator(page);
   await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(font);
-  await page.locator('.ff-article-view').getByRole('button', { name: 'Specimen' }).click();
+  const toggle = page.locator('.ff-article-view').getByRole('button', { name: 'Specimen' });
+  await expect(toggle).toBeEnabled();
+  await toggle.click();
   await page.getByRole('tab', { name: 'Glyphs' }).click();
   await expect
     .poll(() => page.evaluate(() => document.documentElement.scrollWidth))

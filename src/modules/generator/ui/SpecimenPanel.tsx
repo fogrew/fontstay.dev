@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'preact/hooks';
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'preact/hooks';
 import { type Locale, messagesFor } from '@/common/i18n';
 import { Select, Tabs } from '@/common/ui';
 import type { PreviewItem } from '../lib/preview-item';
@@ -12,9 +12,10 @@ export interface SpecimenPanelProps {
   locale: Locale;
   items: readonly PreviewItem[];
   fontKey: (family: string) => string;
+  fontsReady: boolean;
 }
 
-export function SpecimenPanel({ locale, items, fontKey }: SpecimenPanelProps) {
+export function SpecimenPanel({ locale, items, fontKey, fontsReady }: SpecimenPanelProps) {
   const t = messagesFor(locale);
   const [family, setFamily] = useState(items[0]?.family ?? '');
   const [preset, setPreset] = useState<SpecimenPreset>('paper');
@@ -39,7 +40,7 @@ export function SpecimenPanel({ locale, items, fontKey }: SpecimenPanelProps) {
   const ascent = metrics?.typo?.ascent ?? metrics?.hhea.ascent ?? 0;
   const descent = metrics?.typo?.descent ?? metrics?.hhea.descent ?? 0;
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (item)
       root.current?.style.setProperty(
         '--ff-specimen-font',
@@ -49,7 +50,7 @@ export function SpecimenPanel({ locale, items, fontKey }: SpecimenPanelProps) {
 
   useEffect(() => {
     const element = canvas.current;
-    if (!element || !item || active === undefined) return;
+    if (!element || !item || active === undefined || !fontsReady) return;
     const context = element.getContext('2d');
     if (!context) return;
     const ratio = window.devicePixelRatio || 1;
@@ -88,7 +89,7 @@ export function SpecimenPanel({ locale, items, fontKey }: SpecimenPanelProps) {
     context.moveTo(advanceX, 24);
     context.lineTo(advanceX, 166);
     context.stroke();
-  }, [active, advance, ascent, descent, em, item?.family]);
+  }, [active, advance, ascent, descent, em, item?.family, fontsReady]);
 
   if (!item) return null;
   return (

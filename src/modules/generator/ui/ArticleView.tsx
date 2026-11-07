@@ -326,7 +326,7 @@ export function ArticleView({
   const [specimenOpen, setSpecimenOpen] = useState(false);
   const [Specimen, setSpecimen] = useState<ComponentType<SpecimenPanelProps>>();
   useEffect(() => {
-    if (!specimenOpen || Specimen) return;
+    if (items.length === 0 || Specimen) return;
     let cancelled = false;
     void import('./SpecimenPanel').then((module) => {
       if (!cancelled) setSpecimen(() => module.SpecimenPanel);
@@ -334,7 +334,7 @@ export function ArticleView({
     return () => {
       cancelled = true;
     };
-  }, [specimenOpen, Specimen]);
+  }, [items.length, Specimen]);
   const [guideMetrics, setGuideMetrics] = useState<Partial<Record<Layer, GuideOffsets>>>({});
   const activeGuides = GUIDES.filter((id) => guideOn[id]);
   const guides = activeGuides.length > 0;
@@ -1145,7 +1145,7 @@ export function ArticleView({
           type="button"
           aria-expanded={specimenOpen}
           aria-controls="ff-specimen-panel"
-          disabled={empty}
+          disabled={empty || !Specimen || !fontsReady}
           onClick={() => transition(() => setSpecimenOpen((open) => !open))}
         >
           {t.specimen_heading()}
@@ -1172,7 +1172,9 @@ export function ArticleView({
       )}
       {specimenOpen && (
         <div id="ff-specimen-panel">
-          {Specimen && fontsReady && <Specimen locale={locale} items={items} fontKey={keyOf} />}
+          {Specimen && (
+            <Specimen locale={locale} items={items} fontKey={keyOf} fontsReady={fontsReady} />
+          )}
         </div>
       )}
       <div
