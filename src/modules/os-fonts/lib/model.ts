@@ -11,6 +11,7 @@ export interface Availability {
   versions: string[];
   status: Status;
   source: string;
+  inferred?: boolean;
 }
 
 export interface OsFont {

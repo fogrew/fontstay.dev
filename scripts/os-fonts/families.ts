@@ -141,9 +141,17 @@ export const FAMILIES: readonly FamilySpec[] = [
   { id: 'caladea', family: 'Caladea', category: 'serif', chromeosPackages: ['crosextrafonts'] },
 ];
 
-export const CHROMEOS_SOURCE = [
-  'current',
-  'https://chromium.googlesource.com/chromiumos/overlays/chromiumos-overlay/+/refs/heads/main/chromeos-base/chromeos-fonts/chromeos-fonts-0.0.1.ebuild',
+const chromeosEbuild = (ref: string) =>
+  `https://chromium.googlesource.com/chromiumos/overlays/chromiumos-overlay/+/refs/heads/${ref}/chromeos-base/chromeos-fonts/chromeos-fonts-0.0.1.ebuild`;
+
+export const CHROMEOS_SOURCES = [
+  ['R100', chromeosEbuild('release-R100-14526.B')],
+  ['R110', chromeosEbuild('release-R110-15278.B')],
+  ['R120', chromeosEbuild('release-R120-15662.B')],
+  ['R130', chromeosEbuild('release-R130-16033.B')],
+  ['R140', chromeosEbuild('release-R140-16371.B')],
+  ['R150', chromeosEbuild('release-R150-16700.B')],
+  ['current', chromeosEbuild('main')],
 ] as const;
 
 export const ANDROID_TAGS = [
@@ -175,9 +183,13 @@ export const DEBIAN_MANIFESTS = [
 ] as const;
 
 export const WINDOWS_LISTS = [
+  ['7', 'https://learn.microsoft.com/en-us/typography/fonts/windows_7_font_list'],
+  ['8.1', 'https://learn.microsoft.com/en-us/typography/fonts/windows_81_font_list'],
   ['10', 'https://learn.microsoft.com/en-us/typography/fonts/windows_10_font_list'],
   ['11', 'https://learn.microsoft.com/en-us/typography/fonts/windows_11_font_list'],
 ] as const;
+
+export const WINDOWS_WITHOUT_ON_DEMAND: ReadonlySet<string> = new Set(['7', '8.1']);
 
 export const APPLE_SOURCE = 'https://developer.apple.com/fonts/system-fonts/';
 
@@ -186,4 +198,13 @@ export const OS_FONT_LIST_MACOS = [
     '10.15',
     'https://raw.githubusercontent.com/adrg/os-font-list/master/csv/macOS/macOS-10.15_Catalina.csv',
   ],
+] as const;
+
+export const MACOS_SUPPORT_PAGES = [
+  ['11', 'https://support.apple.com/en-us/HT211240'],
+  ['12', 'https://support.apple.com/en-us/HT212587'],
+  ['13', 'https://support.apple.com/en-us/HT213266'],
+  ['14', 'https://support.apple.com/en-us/108939'],
+  ['15', 'https://support.apple.com/en-us/120414'],
+  ['26', 'https://support.apple.com/en-us/122869'],
 ] as const;

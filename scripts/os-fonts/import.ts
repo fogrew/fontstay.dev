@@ -10,16 +10,19 @@ import type {
 import {
   ANDROID_TAGS,
   APPLE_SOURCE,
-  CHROMEOS_SOURCE,
+  CHROMEOS_SOURCES,
   DEBIAN_MANIFESTS,
   FAMILIES,
+  MACOS_SUPPORT_PAGES,
   OS_FONT_LIST_MACOS,
   UBUNTU_MANIFESTS,
   WINDOWS_LISTS,
+  WINDOWS_WITHOUT_ON_DEMAND,
 } from './families.ts';
 import {
   appleStatus,
   parseAndroidFontFiles,
+  parseAppleSupportFonts,
   parseAppleSystemFonts,
   parseChromeosFontPackages,
   parseOsFontListCsv,
@@ -46,13 +49,14 @@ interface Hit {
   version: string;
   status: Status;
   source: string;
+  inferred?: boolean;
 }
 
 const hits = new Map<string, Hit[]>();
 const add = (id: string, hit: Hit) => hits.set(id, [...(hits.get(id) ?? []), hit]);
 
 for (const [version, url] of WINDOWS_LISTS) {
-  const lists = parseWindowsFontList(await fetchText(url));
+  const lists = parseWindowsFontList(await fetchText(url), !WINDOWS_WITHOUT_ON_DEMAND.has(version));
   expectAtLeast(`Windows ${version} preinstalled families`, lists.preinstalled.size, 40);
   for (const spec of FAMILIES) {
     if (!spec.windows) continue;
@@ -74,6 +78,23 @@ for (const spec of FAMILIES) {
   ] as const) {
     const status = appleStatus(apple, spec.apple, platform);
     if (status) add(spec.id, { os, version: 'current', status, source: APPLE_SOURCE });
+  }
+}
+
+for (const [version, url] of MACOS_SUPPORT_PAGES) {
+  const faces = parseAppleSupportFonts(await fetchText(url));
+  expectAtLeast(`macOS ${version} faces`, faces.length, 500);
+  for (const spec of FAMILIES) {
+    if (!spec.apple) continue;
+    if (!appleStatus(faces, spec.apple, 'macOS')) continue;
+    const current = appleStatus(apple, spec.apple, 'macOS');
+    add(spec.id, {
+      os: 'macos',
+      version,
+      status: current === 'preinstalled' ? 'preinstalled' : 'on-demand',
+      source: url,
+      inferred: true,
+    });
   }
 }
 
@@ -110,11 +131,10 @@ for (const [version, url] of [...UBUNTU_MANIFESTS, ...DEBIAN_MANIFESTS]) {
   }
 }
 
-{
-  const [version, url] = CHROMEOS_SOURCE;
+for (const [version, url] of CHROMEOS_SOURCES) {
   const encoded = await fetchText(`${url}?format=TEXT`);
   const packages = parseChromeosFontPackages(Buffer.from(encoded, 'base64').toString('utf8'));
-  expectAtLeast('ChromeOS font packages', packages.size, 4);
+  expectAtLeast(`ChromeOS ${version} font packages`, packages.size, 4);
   for (const spec of FAMILIES) {
     if (spec.chromeosPackages?.some((name) => packages.has(name))) {
       add(spec.id, { os: 'chromeos', version, status: 'preinstalled', source: url });
@@ -125,7 +145,7 @@ for (const [version, url] of [...UBUNTU_MANIFESTS, ...DEBIAN_MANIFESTS]) {
 function merge(list: Hit[]): Availability[] {
   const groups = new Map<string, Availability>();
   for (const hit of list) {
-    const key = `${hit.os}|${hit.status}|${hit.source}`;
+    const key = `${hit.os}|${hit.status}|${hit.source}|${hit.inferred ?? false}`;
     const group = groups.get(key);
     if (group) group.versions.push(hit.version);
     else
@@ -134,6 +154,7 @@ function merge(list: Hit[]): Availability[] {
         versions: [hit.version],
         status: hit.status,
         source: hit.source,
+        ...(hit.inferred ? { inferred: true } : {}),
       });
   }
   return [...groups.values()];
@@ -152,8 +173,12 @@ const dataset: OsFontsDataset = {
   platforms: {
     windows: { versions: WINDOWS_LISTS.map(([version]) => version) },
     macos: {
-      versions: [...OS_FONT_LIST_MACOS.map(([version]) => version), 'current'],
-      note: 'Versions between 10.15 and the current release are not covered by a source.',
+      versions: [
+        ...OS_FONT_LIST_MACOS.map(([version]) => version),
+        ...MACOS_SUPPORT_PAGES.map(([version]) => version),
+        'current',
+      ],
+      note: 'Releases 11 to 26 come from the per-release Apple support lists, which do not separate installed from downloadable fonts; the status is inferred from the current Apple system fonts page.',
     },
     ios: { versions: ['current'] },
     android: {
@@ -164,8 +189,8 @@ const dataset: OsFontsDataset = {
       versions: [...UBUNTU_MANIFESTS, ...DEBIAN_MANIFESTS].map(([version]) => version),
     },
     chromeos: {
-      versions: [CHROMEOS_SOURCE[0]],
-      note: 'Chromium OS font packages; devices differ by board and Chrome OS version.',
+      versions: CHROMEOS_SOURCES.map(([version]) => version),
+      note: 'Chromium OS font packages at release branches; devices differ by board.',
     },
   },
   fonts,

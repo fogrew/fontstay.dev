@@ -1,13 +1,13 @@
 {
   "schema": 1,
-  "generated": "2026-11-04",
+  "generated": "2026-11-07",
   "platforms": {
     "windows": {
-      "versions": ["10", "11"]
+      "versions": ["7", "8.1", "10", "11"]
     },
     "macos": {
-      "versions": ["10.15", "current"],
-      "note": "Versions between 10.15 and the current release are not covered by a source."
+      "versions": ["10.15", "11", "12", "13", "14", "15", "26", "current"],
+      "note": "Releases 11 to 26 come from the per-release Apple support lists, which do not separate installed from downloadable fonts; the status is inferred from the current Apple system fonts page."
     },
     "ios": {
       "versions": ["current"]
@@ -27,8 +27,8 @@
       ]
     },
     "chromeos": {
-      "versions": ["current"],
-      "note": "Chromium OS font packages; devices differ by board and Chrome OS version."
+      "versions": ["R100", "R110", "R120", "R130", "R140", "R150", "current"],
+      "note": "Chromium OS font packages at release branches; devices differ by board."
     }
   },
   "fonts": [
@@ -37,6 +37,18 @@
       "family": "Arial",
       "category": "sans-serif",
       "availability": [
+        {
+          "os": "windows",
+          "versions": ["7"],
+          "status": "preinstalled",
+          "source": "https://learn.microsoft.com/en-us/typography/fonts/windows_7_font_list"
+        },
+        {
+          "os": "windows",
+          "versions": ["8.1"],
+          "status": "preinstalled",
+          "source": "https://learn.microsoft.com/en-us/typography/fonts/windows_81_font_list"
+        },
         {
           "os": "windows",
           "versions": ["10"],
@@ -60,6 +72,48 @@
           "versions": ["current"],
           "status": "preinstalled",
           "source": "https://developer.apple.com/fonts/system-fonts/"
+        },
+        {
+          "os": "macos",
+          "versions": ["11"],
+          "status": "preinstalled",
+          "source": "https://support.apple.com/en-us/HT211240",
+          "inferred": true
+        },
+        {
+          "os": "macos",
+          "versions": ["12"],
+          "status": "preinstalled",
+          "source": "https://support.apple.com/en-us/HT212587",
+          "inferred": true
+        },
+        {
+          "os": "macos",
+          "versions": ["13"],
+          "status": "preinstalled",
+          "source": "https://support.apple.com/en-us/HT213266",
+          "inferred": true
+        },
+        {
+          "os": "macos",
+          "versions": ["14"],
+          "status": "preinstalled",
+          "source": "https://support.apple.com/en-us/108939",
+          "inferred": true
+        },
+        {
+          "os": "macos",
+          "versions": ["15"],
+          "status": "preinstalled",
+          "source": "https://support.apple.com/en-us/120414",
+          "inferred": true
+        },
+        {
+          "os": "macos",
+          "versions": ["26"],
+          "status": "preinstalled",
+          "source": "https://support.apple.com/en-us/122869",
+          "inferred": true
         },
         {
           "os": "macos",
@@ -76,6 +130,18 @@
       "availability": [
         {
           "os": "windows",
+          "versions": ["7"],
+          "status": "preinstalled",
+          "source": "https://learn.microsoft.com/en-us/typography/fonts/windows_7_font_list"
+        },
+        {
+          "os": "windows",
+          "versions": ["8.1"],
+          "status": "preinstalled",
+          "source": "https://learn.microsoft.com/en-us/typography/fonts/windows_81_font_list"
+        },
+        {
+          "os": "windows",
           "versions": ["10"],
           "status": "preinstalled",
           "source": "https://learn.microsoft.com/en-us/typography/fonts/windows_10_font_list"
@@ -100,6 +166,48 @@
         },
         {
           "os": "macos",
+          "versions": ["11"],
+          "status": "preinstalled",
+          "source": "https://support.apple.com/en-us/HT211240",
+          "inferred": true
+        },
+        {
+          "os": "macos",
+          "versions": ["12"],
+          "status": "preinstalled",
+          "source": "https://support.apple.com/en-us/HT212587",
+          "inferred": true
+        },
+        {
+          "os": "macos",
+          "versions": ["13"],
+          "status": "preinstalled",
+          "source": "https://support.apple.com/en-us/HT213266",
+          "inferred": true
+        },
+        {
+          "os": "macos",
+          "versions": ["14"],
+          "status": "preinstalled",
+          "source": "https://support.apple.com/en-us/108939",
+          "inferred": true
+        },
+        {
+          "os": "macos",
+          "versions": ["15"],
+          "status": "preinstalled",
+          "source": "https://support.apple.com/en-us/120414",
+          "inferred": true
+        },
+        {
+          "os": "macos",
+          "versions": ["26"],
+          "status": "preinstalled",
+          "source": "https://support.apple.com/en-us/122869",
+          "inferred": true
+        },
+        {
+          "os": "macos",
           "versions": ["10.15"],
           "status": "preinstalled",
           "source": "https://raw.githubusercontent.com/adrg/os-font-list/master/csv/macOS/macOS-10.15_Catalina.csv"
@@ -111,6 +219,18 @@
       "family": "Tahoma",
       "category": "sans-serif",
       "availability": [
+        {
+          "os": "windows",
+          "versions": ["7"],
+          "status": "preinstalled",
+          "source": "https://learn.microsoft.com/en-us/typography/fonts/windows_7_font_list"
+        },
+        {
+          "os": "windows",
+          "versions": ["8.1"],
+          "status": "preinstalled",
+          "source": "https://learn.microsoft.com/en-us/typography/fonts/windows_81_font_list"
+        },
         {
           "os": "windows",
           "versions": ["10"],
@@ -137,6 +257,48 @@
         },
         {
           "os": "macos",
+          "versions": ["11"],
+          "status": "preinstalled",
+          "source": "https://support.apple.com/en-us/HT211240",
+          "inferred": true
+        },
+        {
+          "os": "macos",
+          "versions": ["12"],
+          "status": "preinstalled",
+          "source": "https://support.apple.com/en-us/HT212587",
+          "inferred": true
+        },
+        {
+          "os": "macos",
+          "versions": ["13"],
+          "status": "preinstalled",
+          "source": "https://support.apple.com/en-us/HT213266",
+          "inferred": true
+        },
+        {
+          "os": "macos",
+          "versions": ["14"],
+          "status": "preinstalled",
+          "source": "https://support.apple.com/en-us/108939",
+          "inferred": true
+        },
+        {
+          "os": "macos",
+          "versions": ["15"],
+          "status": "preinstalled",
+          "source": "https://support.apple.com/en-us/120414",
+          "inferred": true
+        },
+        {
+          "os": "macos",
+          "versions": ["26"],
+          "status": "preinstalled",
+          "source": "https://support.apple.com/en-us/122869",
+          "inferred": true
+        },
+        {
+          "os": "macos",
           "versions": ["10.15"],
           "status": "preinstalled",
           "source": "https://raw.githubusercontent.com/adrg/os-font-list/master/csv/macOS/macOS-10.15_Catalina.csv"
@@ -148,6 +310,18 @@
       "family": "Trebuchet MS",
       "category": "sans-serif",
       "availability": [
+        {
+          "os": "windows",
+          "versions": ["7"],
+          "status": "preinstalled",
+          "source": "https://learn.microsoft.com/en-us/typography/fonts/windows_7_font_list"
+        },
+        {
+          "os": "windows",
+          "versions": ["8.1"],
+          "status": "preinstalled",
+          "source": "https://learn.microsoft.com/en-us/typography/fonts/windows_81_font_list"
+        },
         {
           "os": "windows",
           "versions": ["10"],
@@ -171,6 +345,48 @@
           "versions": ["current"],
           "status": "preinstalled",
           "source": "https://developer.apple.com/fonts/system-fonts/"
+        },
+        {
+          "os": "macos",
+          "versions": ["11"],
+          "status": "preinstalled",
+          "source": "https://support.apple.com/en-us/HT211240",
+          "inferred": true
+        },
+        {
+          "os": "macos",
+          "versions": ["12"],
+          "status": "preinstalled",
+          "source": "https://support.apple.com/en-us/HT212587",
+          "inferred": true
+        },
+        {
+          "os": "macos",
+          "versions": ["13"],
+          "status": "preinstalled",
+          "source": "https://support.apple.com/en-us/HT213266",
+          "inferred": true
+        },
+        {
+          "os": "macos",
+          "versions": ["14"],
+          "status": "preinstalled",
+          "source": "https://support.apple.com/en-us/108939",
+          "inferred": true
+        },
+        {
+          "os": "macos",
+          "versions": ["15"],
+          "status": "preinstalled",
+          "source": "https://support.apple.com/en-us/120414",
+          "inferred": true
+        },
+        {
+          "os": "macos",
+          "versions": ["26"],
+          "status": "preinstalled",
+          "source": "https://support.apple.com/en-us/122869",
+          "inferred": true
         },
         {
           "os": "macos",
@@ -187,6 +403,18 @@
       "availability": [
         {
           "os": "windows",
+          "versions": ["7"],
+          "status": "preinstalled",
+          "source": "https://learn.microsoft.com/en-us/typography/fonts/windows_7_font_list"
+        },
+        {
+          "os": "windows",
+          "versions": ["8.1"],
+          "status": "preinstalled",
+          "source": "https://learn.microsoft.com/en-us/typography/fonts/windows_81_font_list"
+        },
+        {
+          "os": "windows",
           "versions": ["10"],
           "status": "preinstalled",
           "source": "https://learn.microsoft.com/en-us/typography/fonts/windows_10_font_list"
@@ -211,6 +439,48 @@
         },
         {
           "os": "macos",
+          "versions": ["11"],
+          "status": "preinstalled",
+          "source": "https://support.apple.com/en-us/HT211240",
+          "inferred": true
+        },
+        {
+          "os": "macos",
+          "versions": ["12"],
+          "status": "preinstalled",
+          "source": "https://support.apple.com/en-us/HT212587",
+          "inferred": true
+        },
+        {
+          "os": "macos",
+          "versions": ["13"],
+          "status": "preinstalled",
+          "source": "https://support.apple.com/en-us/HT213266",
+          "inferred": true
+        },
+        {
+          "os": "macos",
+          "versions": ["14"],
+          "status": "preinstalled",
+          "source": "https://support.apple.com/en-us/108939",
+          "inferred": true
+        },
+        {
+          "os": "macos",
+          "versions": ["15"],
+          "status": "preinstalled",
+          "source": "https://support.apple.com/en-us/120414",
+          "inferred": true
+        },
+        {
+          "os": "macos",
+          "versions": ["26"],
+          "status": "preinstalled",
+          "source": "https://support.apple.com/en-us/122869",
+          "inferred": true
+        },
+        {
+          "os": "macos",
           "versions": ["10.15"],
           "status": "preinstalled",
           "source": "https://raw.githubusercontent.com/adrg/os-font-list/master/csv/macOS/macOS-10.15_Catalina.csv"
@@ -222,6 +492,18 @@
       "family": "Georgia",
       "category": "serif",
       "availability": [
+        {
+          "os": "windows",
+          "versions": ["7"],
+          "status": "preinstalled",
+          "source": "https://learn.microsoft.com/en-us/typography/fonts/windows_7_font_list"
+        },
+        {
+          "os": "windows",
+          "versions": ["8.1"],
+          "status": "preinstalled",
+          "source": "https://learn.microsoft.com/en-us/typography/fonts/windows_81_font_list"
+        },
         {
           "os": "windows",
           "versions": ["10"],
@@ -261,6 +543,18 @@
       "availability": [
         {
           "os": "windows",
+          "versions": ["7"],
+          "status": "preinstalled",
+          "source": "https://learn.microsoft.com/en-us/typography/fonts/windows_7_font_list"
+        },
+        {
+          "os": "windows",
+          "versions": ["8.1"],
+          "status": "preinstalled",
+          "source": "https://learn.microsoft.com/en-us/typography/fonts/windows_81_font_list"
+        },
+        {
+          "os": "windows",
           "versions": ["10"],
           "status": "preinstalled",
           "source": "https://learn.microsoft.com/en-us/typography/fonts/windows_10_font_list"
@@ -285,6 +579,48 @@
         },
         {
           "os": "macos",
+          "versions": ["11"],
+          "status": "preinstalled",
+          "source": "https://support.apple.com/en-us/HT211240",
+          "inferred": true
+        },
+        {
+          "os": "macos",
+          "versions": ["12"],
+          "status": "preinstalled",
+          "source": "https://support.apple.com/en-us/HT212587",
+          "inferred": true
+        },
+        {
+          "os": "macos",
+          "versions": ["13"],
+          "status": "preinstalled",
+          "source": "https://support.apple.com/en-us/HT213266",
+          "inferred": true
+        },
+        {
+          "os": "macos",
+          "versions": ["14"],
+          "status": "preinstalled",
+          "source": "https://support.apple.com/en-us/108939",
+          "inferred": true
+        },
+        {
+          "os": "macos",
+          "versions": ["15"],
+          "status": "preinstalled",
+          "source": "https://support.apple.com/en-us/120414",
+          "inferred": true
+        },
+        {
+          "os": "macos",
+          "versions": ["26"],
+          "status": "preinstalled",
+          "source": "https://support.apple.com/en-us/122869",
+          "inferred": true
+        },
+        {
+          "os": "macos",
           "versions": ["10.15"],
           "status": "preinstalled",
           "source": "https://raw.githubusercontent.com/adrg/os-font-list/master/csv/macOS/macOS-10.15_Catalina.csv"
@@ -296,6 +632,18 @@
       "family": "Comic Sans MS",
       "category": "cursive",
       "availability": [
+        {
+          "os": "windows",
+          "versions": ["7"],
+          "status": "preinstalled",
+          "source": "https://learn.microsoft.com/en-us/typography/fonts/windows_7_font_list"
+        },
+        {
+          "os": "windows",
+          "versions": ["8.1"],
+          "status": "preinstalled",
+          "source": "https://learn.microsoft.com/en-us/typography/fonts/windows_81_font_list"
+        },
         {
           "os": "windows",
           "versions": ["10"],
@@ -322,6 +670,48 @@
         },
         {
           "os": "macos",
+          "versions": ["11"],
+          "status": "preinstalled",
+          "source": "https://support.apple.com/en-us/HT211240",
+          "inferred": true
+        },
+        {
+          "os": "macos",
+          "versions": ["12"],
+          "status": "preinstalled",
+          "source": "https://support.apple.com/en-us/HT212587",
+          "inferred": true
+        },
+        {
+          "os": "macos",
+          "versions": ["13"],
+          "status": "preinstalled",
+          "source": "https://support.apple.com/en-us/HT213266",
+          "inferred": true
+        },
+        {
+          "os": "macos",
+          "versions": ["14"],
+          "status": "preinstalled",
+          "source": "https://support.apple.com/en-us/108939",
+          "inferred": true
+        },
+        {
+          "os": "macos",
+          "versions": ["15"],
+          "status": "preinstalled",
+          "source": "https://support.apple.com/en-us/120414",
+          "inferred": true
+        },
+        {
+          "os": "macos",
+          "versions": ["26"],
+          "status": "preinstalled",
+          "source": "https://support.apple.com/en-us/122869",
+          "inferred": true
+        },
+        {
+          "os": "macos",
           "versions": ["10.15"],
           "status": "preinstalled",
           "source": "https://raw.githubusercontent.com/adrg/os-font-list/master/csv/macOS/macOS-10.15_Catalina.csv"
@@ -333,6 +723,18 @@
       "family": "Segoe Script",
       "category": "cursive",
       "availability": [
+        {
+          "os": "windows",
+          "versions": ["7"],
+          "status": "preinstalled",
+          "source": "https://learn.microsoft.com/en-us/typography/fonts/windows_7_font_list"
+        },
+        {
+          "os": "windows",
+          "versions": ["8.1"],
+          "status": "preinstalled",
+          "source": "https://learn.microsoft.com/en-us/typography/fonts/windows_81_font_list"
+        },
         {
           "os": "windows",
           "versions": ["10"],
@@ -354,6 +756,18 @@
       "availability": [
         {
           "os": "windows",
+          "versions": ["7"],
+          "status": "preinstalled",
+          "source": "https://learn.microsoft.com/en-us/typography/fonts/windows_7_font_list"
+        },
+        {
+          "os": "windows",
+          "versions": ["8.1"],
+          "status": "preinstalled",
+          "source": "https://learn.microsoft.com/en-us/typography/fonts/windows_81_font_list"
+        },
+        {
+          "os": "windows",
           "versions": ["10"],
           "status": "preinstalled",
           "source": "https://learn.microsoft.com/en-us/typography/fonts/windows_10_font_list"
@@ -371,6 +785,18 @@
       "family": "Calibri",
       "category": "sans-serif",
       "availability": [
+        {
+          "os": "windows",
+          "versions": ["7"],
+          "status": "preinstalled",
+          "source": "https://learn.microsoft.com/en-us/typography/fonts/windows_7_font_list"
+        },
+        {
+          "os": "windows",
+          "versions": ["8.1"],
+          "status": "preinstalled",
+          "source": "https://learn.microsoft.com/en-us/typography/fonts/windows_81_font_list"
+        },
         {
           "os": "windows",
           "versions": ["10"],
@@ -392,6 +818,18 @@
       "availability": [
         {
           "os": "windows",
+          "versions": ["7"],
+          "status": "preinstalled",
+          "source": "https://learn.microsoft.com/en-us/typography/fonts/windows_7_font_list"
+        },
+        {
+          "os": "windows",
+          "versions": ["8.1"],
+          "status": "preinstalled",
+          "source": "https://learn.microsoft.com/en-us/typography/fonts/windows_81_font_list"
+        },
+        {
+          "os": "windows",
           "versions": ["10"],
           "status": "preinstalled",
           "source": "https://learn.microsoft.com/en-us/typography/fonts/windows_10_font_list"
@@ -409,6 +847,18 @@
       "family": "Corbel",
       "category": "sans-serif",
       "availability": [
+        {
+          "os": "windows",
+          "versions": ["7"],
+          "status": "preinstalled",
+          "source": "https://learn.microsoft.com/en-us/typography/fonts/windows_7_font_list"
+        },
+        {
+          "os": "windows",
+          "versions": ["8.1"],
+          "status": "preinstalled",
+          "source": "https://learn.microsoft.com/en-us/typography/fonts/windows_81_font_list"
+        },
         {
           "os": "windows",
           "versions": ["10"],
@@ -430,6 +880,18 @@
       "availability": [
         {
           "os": "windows",
+          "versions": ["7"],
+          "status": "preinstalled",
+          "source": "https://learn.microsoft.com/en-us/typography/fonts/windows_7_font_list"
+        },
+        {
+          "os": "windows",
+          "versions": ["8.1"],
+          "status": "preinstalled",
+          "source": "https://learn.microsoft.com/en-us/typography/fonts/windows_81_font_list"
+        },
+        {
+          "os": "windows",
           "versions": ["10"],
           "status": "preinstalled",
           "source": "https://learn.microsoft.com/en-us/typography/fonts/windows_10_font_list"
@@ -447,6 +909,18 @@
       "family": "Constantia",
       "category": "serif",
       "availability": [
+        {
+          "os": "windows",
+          "versions": ["7"],
+          "status": "preinstalled",
+          "source": "https://learn.microsoft.com/en-us/typography/fonts/windows_7_font_list"
+        },
+        {
+          "os": "windows",
+          "versions": ["8.1"],
+          "status": "preinstalled",
+          "source": "https://learn.microsoft.com/en-us/typography/fonts/windows_81_font_list"
+        },
         {
           "os": "windows",
           "versions": ["10"],
@@ -468,6 +942,18 @@
       "availability": [
         {
           "os": "windows",
+          "versions": ["7"],
+          "status": "preinstalled",
+          "source": "https://learn.microsoft.com/en-us/typography/fonts/windows_7_font_list"
+        },
+        {
+          "os": "windows",
+          "versions": ["8.1"],
+          "status": "preinstalled",
+          "source": "https://learn.microsoft.com/en-us/typography/fonts/windows_81_font_list"
+        },
+        {
+          "os": "windows",
           "versions": ["10"],
           "status": "preinstalled",
           "source": "https://learn.microsoft.com/en-us/typography/fonts/windows_10_font_list"
@@ -487,6 +973,18 @@
       "availability": [
         {
           "os": "windows",
+          "versions": ["7"],
+          "status": "preinstalled",
+          "source": "https://learn.microsoft.com/en-us/typography/fonts/windows_7_font_list"
+        },
+        {
+          "os": "windows",
+          "versions": ["8.1"],
+          "status": "preinstalled",
+          "source": "https://learn.microsoft.com/en-us/typography/fonts/windows_81_font_list"
+        },
+        {
+          "os": "windows",
           "versions": ["10"],
           "status": "preinstalled",
           "source": "https://learn.microsoft.com/en-us/typography/fonts/windows_10_font_list"
@@ -504,6 +1002,18 @@
       "family": "Lucida Console",
       "category": "monospace",
       "availability": [
+        {
+          "os": "windows",
+          "versions": ["7"],
+          "status": "preinstalled",
+          "source": "https://learn.microsoft.com/en-us/typography/fonts/windows_7_font_list"
+        },
+        {
+          "os": "windows",
+          "versions": ["8.1"],
+          "status": "preinstalled",
+          "source": "https://learn.microsoft.com/en-us/typography/fonts/windows_81_font_list"
+        },
         {
           "os": "windows",
           "versions": ["10"],
@@ -537,6 +1047,48 @@
         },
         {
           "os": "macos",
+          "versions": ["11"],
+          "status": "preinstalled",
+          "source": "https://support.apple.com/en-us/HT211240",
+          "inferred": true
+        },
+        {
+          "os": "macos",
+          "versions": ["12"],
+          "status": "preinstalled",
+          "source": "https://support.apple.com/en-us/HT212587",
+          "inferred": true
+        },
+        {
+          "os": "macos",
+          "versions": ["13"],
+          "status": "preinstalled",
+          "source": "https://support.apple.com/en-us/HT213266",
+          "inferred": true
+        },
+        {
+          "os": "macos",
+          "versions": ["14"],
+          "status": "preinstalled",
+          "source": "https://support.apple.com/en-us/108939",
+          "inferred": true
+        },
+        {
+          "os": "macos",
+          "versions": ["15"],
+          "status": "preinstalled",
+          "source": "https://support.apple.com/en-us/120414",
+          "inferred": true
+        },
+        {
+          "os": "macos",
+          "versions": ["26"],
+          "status": "preinstalled",
+          "source": "https://support.apple.com/en-us/122869",
+          "inferred": true
+        },
+        {
+          "os": "macos",
           "versions": ["10.15"],
           "status": "preinstalled",
           "source": "https://raw.githubusercontent.com/adrg/os-font-list/master/csv/macOS/macOS-10.15_Catalina.csv"
@@ -562,6 +1114,48 @@
         },
         {
           "os": "macos",
+          "versions": ["11"],
+          "status": "preinstalled",
+          "source": "https://support.apple.com/en-us/HT211240",
+          "inferred": true
+        },
+        {
+          "os": "macos",
+          "versions": ["12"],
+          "status": "preinstalled",
+          "source": "https://support.apple.com/en-us/HT212587",
+          "inferred": true
+        },
+        {
+          "os": "macos",
+          "versions": ["13"],
+          "status": "preinstalled",
+          "source": "https://support.apple.com/en-us/HT213266",
+          "inferred": true
+        },
+        {
+          "os": "macos",
+          "versions": ["14"],
+          "status": "preinstalled",
+          "source": "https://support.apple.com/en-us/108939",
+          "inferred": true
+        },
+        {
+          "os": "macos",
+          "versions": ["15"],
+          "status": "preinstalled",
+          "source": "https://support.apple.com/en-us/120414",
+          "inferred": true
+        },
+        {
+          "os": "macos",
+          "versions": ["26"],
+          "status": "preinstalled",
+          "source": "https://support.apple.com/en-us/122869",
+          "inferred": true
+        },
+        {
+          "os": "macos",
           "versions": ["10.15"],
           "status": "preinstalled",
           "source": "https://raw.githubusercontent.com/adrg/os-font-list/master/csv/macOS/macOS-10.15_Catalina.csv"
@@ -584,6 +1178,48 @@
           "versions": ["current"],
           "status": "on-demand",
           "source": "https://developer.apple.com/fonts/system-fonts/"
+        },
+        {
+          "os": "macos",
+          "versions": ["11"],
+          "status": "preinstalled",
+          "source": "https://support.apple.com/en-us/HT211240",
+          "inferred": true
+        },
+        {
+          "os": "macos",
+          "versions": ["12"],
+          "status": "preinstalled",
+          "source": "https://support.apple.com/en-us/HT212587",
+          "inferred": true
+        },
+        {
+          "os": "macos",
+          "versions": ["13"],
+          "status": "preinstalled",
+          "source": "https://support.apple.com/en-us/HT213266",
+          "inferred": true
+        },
+        {
+          "os": "macos",
+          "versions": ["14"],
+          "status": "preinstalled",
+          "source": "https://support.apple.com/en-us/108939",
+          "inferred": true
+        },
+        {
+          "os": "macos",
+          "versions": ["15"],
+          "status": "preinstalled",
+          "source": "https://support.apple.com/en-us/120414",
+          "inferred": true
+        },
+        {
+          "os": "macos",
+          "versions": ["26"],
+          "status": "preinstalled",
+          "source": "https://support.apple.com/en-us/122869",
+          "inferred": true
         },
         {
           "os": "macos",
@@ -639,6 +1275,42 @@
           "versions": ["16"],
           "status": "preinstalled",
           "source": "https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-16.0.0_r1/data/fonts/fonts.xml"
+        },
+        {
+          "os": "chromeos",
+          "versions": ["R100"],
+          "status": "preinstalled",
+          "source": "https://chromium.googlesource.com/chromiumos/overlays/chromiumos-overlay/+/refs/heads/release-R100-14526.B/chromeos-base/chromeos-fonts/chromeos-fonts-0.0.1.ebuild"
+        },
+        {
+          "os": "chromeos",
+          "versions": ["R110"],
+          "status": "preinstalled",
+          "source": "https://chromium.googlesource.com/chromiumos/overlays/chromiumos-overlay/+/refs/heads/release-R110-15278.B/chromeos-base/chromeos-fonts/chromeos-fonts-0.0.1.ebuild"
+        },
+        {
+          "os": "chromeos",
+          "versions": ["R120"],
+          "status": "preinstalled",
+          "source": "https://chromium.googlesource.com/chromiumos/overlays/chromiumos-overlay/+/refs/heads/release-R120-15662.B/chromeos-base/chromeos-fonts/chromeos-fonts-0.0.1.ebuild"
+        },
+        {
+          "os": "chromeos",
+          "versions": ["R130"],
+          "status": "preinstalled",
+          "source": "https://chromium.googlesource.com/chromiumos/overlays/chromiumos-overlay/+/refs/heads/release-R130-16033.B/chromeos-base/chromeos-fonts/chromeos-fonts-0.0.1.ebuild"
+        },
+        {
+          "os": "chromeos",
+          "versions": ["R140"],
+          "status": "preinstalled",
+          "source": "https://chromium.googlesource.com/chromiumos/overlays/chromiumos-overlay/+/refs/heads/release-R140-16371.B/chromeos-base/chromeos-fonts/chromeos-fonts-0.0.1.ebuild"
+        },
+        {
+          "os": "chromeos",
+          "versions": ["R150"],
+          "status": "preinstalled",
+          "source": "https://chromium.googlesource.com/chromiumos/overlays/chromiumos-overlay/+/refs/heads/release-R150-16700.B/chromeos-base/chromeos-fonts/chromeos-fonts-0.0.1.ebuild"
         },
         {
           "os": "chromeos",
@@ -721,6 +1393,42 @@
         },
         {
           "os": "chromeos",
+          "versions": ["R100"],
+          "status": "preinstalled",
+          "source": "https://chromium.googlesource.com/chromiumos/overlays/chromiumos-overlay/+/refs/heads/release-R100-14526.B/chromeos-base/chromeos-fonts/chromeos-fonts-0.0.1.ebuild"
+        },
+        {
+          "os": "chromeos",
+          "versions": ["R110"],
+          "status": "preinstalled",
+          "source": "https://chromium.googlesource.com/chromiumos/overlays/chromiumos-overlay/+/refs/heads/release-R110-15278.B/chromeos-base/chromeos-fonts/chromeos-fonts-0.0.1.ebuild"
+        },
+        {
+          "os": "chromeos",
+          "versions": ["R120"],
+          "status": "preinstalled",
+          "source": "https://chromium.googlesource.com/chromiumos/overlays/chromiumos-overlay/+/refs/heads/release-R120-15662.B/chromeos-base/chromeos-fonts/chromeos-fonts-0.0.1.ebuild"
+        },
+        {
+          "os": "chromeos",
+          "versions": ["R130"],
+          "status": "preinstalled",
+          "source": "https://chromium.googlesource.com/chromiumos/overlays/chromiumos-overlay/+/refs/heads/release-R130-16033.B/chromeos-base/chromeos-fonts/chromeos-fonts-0.0.1.ebuild"
+        },
+        {
+          "os": "chromeos",
+          "versions": ["R140"],
+          "status": "preinstalled",
+          "source": "https://chromium.googlesource.com/chromiumos/overlays/chromiumos-overlay/+/refs/heads/release-R140-16371.B/chromeos-base/chromeos-fonts/chromeos-fonts-0.0.1.ebuild"
+        },
+        {
+          "os": "chromeos",
+          "versions": ["R150"],
+          "status": "preinstalled",
+          "source": "https://chromium.googlesource.com/chromiumos/overlays/chromiumos-overlay/+/refs/heads/release-R150-16700.B/chromeos-base/chromeos-fonts/chromeos-fonts-0.0.1.ebuild"
+        },
+        {
+          "os": "chromeos",
           "versions": ["current"],
           "status": "preinstalled",
           "source": "https://chromium.googlesource.com/chromiumos/overlays/chromiumos-overlay/+/refs/heads/main/chromeos-base/chromeos-fonts/chromeos-fonts-0.0.1.ebuild"
@@ -755,6 +1463,42 @@
           "versions": ["debian-13"],
           "status": "preinstalled",
           "source": "https://cdimage.debian.org/cdimage/archive/13.6.0-live/amd64/iso-hybrid/debian-live-13.6.0-amd64-gnome.iso.packages"
+        },
+        {
+          "os": "chromeos",
+          "versions": ["R100"],
+          "status": "preinstalled",
+          "source": "https://chromium.googlesource.com/chromiumos/overlays/chromiumos-overlay/+/refs/heads/release-R100-14526.B/chromeos-base/chromeos-fonts/chromeos-fonts-0.0.1.ebuild"
+        },
+        {
+          "os": "chromeos",
+          "versions": ["R110"],
+          "status": "preinstalled",
+          "source": "https://chromium.googlesource.com/chromiumos/overlays/chromiumos-overlay/+/refs/heads/release-R110-15278.B/chromeos-base/chromeos-fonts/chromeos-fonts-0.0.1.ebuild"
+        },
+        {
+          "os": "chromeos",
+          "versions": ["R120"],
+          "status": "preinstalled",
+          "source": "https://chromium.googlesource.com/chromiumos/overlays/chromiumos-overlay/+/refs/heads/release-R120-15662.B/chromeos-base/chromeos-fonts/chromeos-fonts-0.0.1.ebuild"
+        },
+        {
+          "os": "chromeos",
+          "versions": ["R130"],
+          "status": "preinstalled",
+          "source": "https://chromium.googlesource.com/chromiumos/overlays/chromiumos-overlay/+/refs/heads/release-R130-16033.B/chromeos-base/chromeos-fonts/chromeos-fonts-0.0.1.ebuild"
+        },
+        {
+          "os": "chromeos",
+          "versions": ["R140"],
+          "status": "preinstalled",
+          "source": "https://chromium.googlesource.com/chromiumos/overlays/chromiumos-overlay/+/refs/heads/release-R140-16371.B/chromeos-base/chromeos-fonts/chromeos-fonts-0.0.1.ebuild"
+        },
+        {
+          "os": "chromeos",
+          "versions": ["R150"],
+          "status": "preinstalled",
+          "source": "https://chromium.googlesource.com/chromiumos/overlays/chromiumos-overlay/+/refs/heads/release-R150-16700.B/chromeos-base/chromeos-fonts/chromeos-fonts-0.0.1.ebuild"
         },
         {
           "os": "chromeos",
@@ -1153,6 +1897,42 @@
       "availability": [
         {
           "os": "chromeos",
+          "versions": ["R100"],
+          "status": "preinstalled",
+          "source": "https://chromium.googlesource.com/chromiumos/overlays/chromiumos-overlay/+/refs/heads/release-R100-14526.B/chromeos-base/chromeos-fonts/chromeos-fonts-0.0.1.ebuild"
+        },
+        {
+          "os": "chromeos",
+          "versions": ["R110"],
+          "status": "preinstalled",
+          "source": "https://chromium.googlesource.com/chromiumos/overlays/chromiumos-overlay/+/refs/heads/release-R110-15278.B/chromeos-base/chromeos-fonts/chromeos-fonts-0.0.1.ebuild"
+        },
+        {
+          "os": "chromeos",
+          "versions": ["R120"],
+          "status": "preinstalled",
+          "source": "https://chromium.googlesource.com/chromiumos/overlays/chromiumos-overlay/+/refs/heads/release-R120-15662.B/chromeos-base/chromeos-fonts/chromeos-fonts-0.0.1.ebuild"
+        },
+        {
+          "os": "chromeos",
+          "versions": ["R130"],
+          "status": "preinstalled",
+          "source": "https://chromium.googlesource.com/chromiumos/overlays/chromiumos-overlay/+/refs/heads/release-R130-16033.B/chromeos-base/chromeos-fonts/chromeos-fonts-0.0.1.ebuild"
+        },
+        {
+          "os": "chromeos",
+          "versions": ["R140"],
+          "status": "preinstalled",
+          "source": "https://chromium.googlesource.com/chromiumos/overlays/chromiumos-overlay/+/refs/heads/release-R140-16371.B/chromeos-base/chromeos-fonts/chromeos-fonts-0.0.1.ebuild"
+        },
+        {
+          "os": "chromeos",
+          "versions": ["R150"],
+          "status": "preinstalled",
+          "source": "https://chromium.googlesource.com/chromiumos/overlays/chromiumos-overlay/+/refs/heads/release-R150-16700.B/chromeos-base/chromeos-fonts/chromeos-fonts-0.0.1.ebuild"
+        },
+        {
+          "os": "chromeos",
           "versions": ["current"],
           "status": "preinstalled",
           "source": "https://chromium.googlesource.com/chromiumos/overlays/chromiumos-overlay/+/refs/heads/main/chromeos-base/chromeos-fonts/chromeos-fonts-0.0.1.ebuild"
@@ -1164,6 +1944,42 @@
       "family": "Tinos",
       "category": "serif",
       "availability": [
+        {
+          "os": "chromeos",
+          "versions": ["R100"],
+          "status": "preinstalled",
+          "source": "https://chromium.googlesource.com/chromiumos/overlays/chromiumos-overlay/+/refs/heads/release-R100-14526.B/chromeos-base/chromeos-fonts/chromeos-fonts-0.0.1.ebuild"
+        },
+        {
+          "os": "chromeos",
+          "versions": ["R110"],
+          "status": "preinstalled",
+          "source": "https://chromium.googlesource.com/chromiumos/overlays/chromiumos-overlay/+/refs/heads/release-R110-15278.B/chromeos-base/chromeos-fonts/chromeos-fonts-0.0.1.ebuild"
+        },
+        {
+          "os": "chromeos",
+          "versions": ["R120"],
+          "status": "preinstalled",
+          "source": "https://chromium.googlesource.com/chromiumos/overlays/chromiumos-overlay/+/refs/heads/release-R120-15662.B/chromeos-base/chromeos-fonts/chromeos-fonts-0.0.1.ebuild"
+        },
+        {
+          "os": "chromeos",
+          "versions": ["R130"],
+          "status": "preinstalled",
+          "source": "https://chromium.googlesource.com/chromiumos/overlays/chromiumos-overlay/+/refs/heads/release-R130-16033.B/chromeos-base/chromeos-fonts/chromeos-fonts-0.0.1.ebuild"
+        },
+        {
+          "os": "chromeos",
+          "versions": ["R140"],
+          "status": "preinstalled",
+          "source": "https://chromium.googlesource.com/chromiumos/overlays/chromiumos-overlay/+/refs/heads/release-R140-16371.B/chromeos-base/chromeos-fonts/chromeos-fonts-0.0.1.ebuild"
+        },
+        {
+          "os": "chromeos",
+          "versions": ["R150"],
+          "status": "preinstalled",
+          "source": "https://chromium.googlesource.com/chromiumos/overlays/chromiumos-overlay/+/refs/heads/release-R150-16700.B/chromeos-base/chromeos-fonts/chromeos-fonts-0.0.1.ebuild"
+        },
         {
           "os": "chromeos",
           "versions": ["current"],
@@ -1179,6 +1995,42 @@
       "availability": [
         {
           "os": "chromeos",
+          "versions": ["R100"],
+          "status": "preinstalled",
+          "source": "https://chromium.googlesource.com/chromiumos/overlays/chromiumos-overlay/+/refs/heads/release-R100-14526.B/chromeos-base/chromeos-fonts/chromeos-fonts-0.0.1.ebuild"
+        },
+        {
+          "os": "chromeos",
+          "versions": ["R110"],
+          "status": "preinstalled",
+          "source": "https://chromium.googlesource.com/chromiumos/overlays/chromiumos-overlay/+/refs/heads/release-R110-15278.B/chromeos-base/chromeos-fonts/chromeos-fonts-0.0.1.ebuild"
+        },
+        {
+          "os": "chromeos",
+          "versions": ["R120"],
+          "status": "preinstalled",
+          "source": "https://chromium.googlesource.com/chromiumos/overlays/chromiumos-overlay/+/refs/heads/release-R120-15662.B/chromeos-base/chromeos-fonts/chromeos-fonts-0.0.1.ebuild"
+        },
+        {
+          "os": "chromeos",
+          "versions": ["R130"],
+          "status": "preinstalled",
+          "source": "https://chromium.googlesource.com/chromiumos/overlays/chromiumos-overlay/+/refs/heads/release-R130-16033.B/chromeos-base/chromeos-fonts/chromeos-fonts-0.0.1.ebuild"
+        },
+        {
+          "os": "chromeos",
+          "versions": ["R140"],
+          "status": "preinstalled",
+          "source": "https://chromium.googlesource.com/chromiumos/overlays/chromiumos-overlay/+/refs/heads/release-R140-16371.B/chromeos-base/chromeos-fonts/chromeos-fonts-0.0.1.ebuild"
+        },
+        {
+          "os": "chromeos",
+          "versions": ["R150"],
+          "status": "preinstalled",
+          "source": "https://chromium.googlesource.com/chromiumos/overlays/chromiumos-overlay/+/refs/heads/release-R150-16700.B/chromeos-base/chromeos-fonts/chromeos-fonts-0.0.1.ebuild"
+        },
+        {
+          "os": "chromeos",
           "versions": ["current"],
           "status": "preinstalled",
           "source": "https://chromium.googlesource.com/chromiumos/overlays/chromiumos-overlay/+/refs/heads/main/chromeos-base/chromeos-fonts/chromeos-fonts-0.0.1.ebuild"
@@ -1192,6 +2044,42 @@
       "availability": [
         {
           "os": "chromeos",
+          "versions": ["R100"],
+          "status": "preinstalled",
+          "source": "https://chromium.googlesource.com/chromiumos/overlays/chromiumos-overlay/+/refs/heads/release-R100-14526.B/chromeos-base/chromeos-fonts/chromeos-fonts-0.0.1.ebuild"
+        },
+        {
+          "os": "chromeos",
+          "versions": ["R110"],
+          "status": "preinstalled",
+          "source": "https://chromium.googlesource.com/chromiumos/overlays/chromiumos-overlay/+/refs/heads/release-R110-15278.B/chromeos-base/chromeos-fonts/chromeos-fonts-0.0.1.ebuild"
+        },
+        {
+          "os": "chromeos",
+          "versions": ["R120"],
+          "status": "preinstalled",
+          "source": "https://chromium.googlesource.com/chromiumos/overlays/chromiumos-overlay/+/refs/heads/release-R120-15662.B/chromeos-base/chromeos-fonts/chromeos-fonts-0.0.1.ebuild"
+        },
+        {
+          "os": "chromeos",
+          "versions": ["R130"],
+          "status": "preinstalled",
+          "source": "https://chromium.googlesource.com/chromiumos/overlays/chromiumos-overlay/+/refs/heads/release-R130-16033.B/chromeos-base/chromeos-fonts/chromeos-fonts-0.0.1.ebuild"
+        },
+        {
+          "os": "chromeos",
+          "versions": ["R140"],
+          "status": "preinstalled",
+          "source": "https://chromium.googlesource.com/chromiumos/overlays/chromiumos-overlay/+/refs/heads/release-R140-16371.B/chromeos-base/chromeos-fonts/chromeos-fonts-0.0.1.ebuild"
+        },
+        {
+          "os": "chromeos",
+          "versions": ["R150"],
+          "status": "preinstalled",
+          "source": "https://chromium.googlesource.com/chromiumos/overlays/chromiumos-overlay/+/refs/heads/release-R150-16700.B/chromeos-base/chromeos-fonts/chromeos-fonts-0.0.1.ebuild"
+        },
+        {
+          "os": "chromeos",
           "versions": ["current"],
           "status": "preinstalled",
           "source": "https://chromium.googlesource.com/chromiumos/overlays/chromiumos-overlay/+/refs/heads/main/chromeos-base/chromeos-fonts/chromeos-fonts-0.0.1.ebuild"
@@ -1203,6 +2091,42 @@
       "family": "Caladea",
       "category": "serif",
       "availability": [
+        {
+          "os": "chromeos",
+          "versions": ["R100"],
+          "status": "preinstalled",
+          "source": "https://chromium.googlesource.com/chromiumos/overlays/chromiumos-overlay/+/refs/heads/release-R100-14526.B/chromeos-base/chromeos-fonts/chromeos-fonts-0.0.1.ebuild"
+        },
+        {
+          "os": "chromeos",
+          "versions": ["R110"],
+          "status": "preinstalled",
+          "source": "https://chromium.googlesource.com/chromiumos/overlays/chromiumos-overlay/+/refs/heads/release-R110-15278.B/chromeos-base/chromeos-fonts/chromeos-fonts-0.0.1.ebuild"
+        },
+        {
+          "os": "chromeos",
+          "versions": ["R120"],
+          "status": "preinstalled",
+          "source": "https://chromium.googlesource.com/chromiumos/overlays/chromiumos-overlay/+/refs/heads/release-R120-15662.B/chromeos-base/chromeos-fonts/chromeos-fonts-0.0.1.ebuild"
+        },
+        {
+          "os": "chromeos",
+          "versions": ["R130"],
+          "status": "preinstalled",
+          "source": "https://chromium.googlesource.com/chromiumos/overlays/chromiumos-overlay/+/refs/heads/release-R130-16033.B/chromeos-base/chromeos-fonts/chromeos-fonts-0.0.1.ebuild"
+        },
+        {
+          "os": "chromeos",
+          "versions": ["R140"],
+          "status": "preinstalled",
+          "source": "https://chromium.googlesource.com/chromiumos/overlays/chromiumos-overlay/+/refs/heads/release-R140-16371.B/chromeos-base/chromeos-fonts/chromeos-fonts-0.0.1.ebuild"
+        },
+        {
+          "os": "chromeos",
+          "versions": ["R150"],
+          "status": "preinstalled",
+          "source": "https://chromium.googlesource.com/chromiumos/overlays/chromiumos-overlay/+/refs/heads/release-R150-16700.B/chromeos-base/chromeos-fonts/chromeos-fonts-0.0.1.ebuild"
+        },
         {
           "os": "chromeos",
           "versions": ["current"],
