@@ -1417,6 +1417,36 @@ test('a Google Fonts family can be searched and downloaded through the two allow
   await expect(page.getByRole('button', { name: /^Remove: Open-Sans-400-latin/ })).toBeVisible();
 });
 
+test('the default family list is long, a second click deselects, the source links to the font page', async ({
+  page,
+}) => {
+  await page.goto('/en/');
+  await waitForGenerator(page);
+  await openStep(page, 'inputs');
+  const list = page.getByRole('listbox', { name: 'Matching families' });
+  await expect(list.getByRole('option').nth(29)).toBeVisible();
+  expect(await list.getByRole('option').count()).toBeGreaterThanOrEqual(40);
+  await expect(page.getByText('they see your IP address')).toHaveCount(0);
+
+  const option = list.getByRole('option', { name: /^Roboto\s*Google Fonts/ });
+  await option.click();
+  await expect(option).toHaveAttribute('aria-selected', 'true');
+  const link = page.locator('.ff-source__chosen').getByRole('link', { name: 'Google Fonts' });
+  await expect(link).toHaveAttribute('href', 'https://fonts.google.com/specimen/Roboto');
+  await expect(link).toHaveAttribute('target', '_blank');
+  await expect(link).toHaveAttribute('rel', /noopener/);
+
+  await option.click();
+  await expect(option).toHaveAttribute('aria-selected', 'false');
+  await expect(page.locator('.ff-source__chosen')).toHaveCount(0);
+
+  await list.getByRole('option', { name: /^Geist Sans\s*Fontsource/ }).click();
+  await expect(page.locator('.ff-source__chosen').getByRole('link')).toHaveAttribute(
+    'href',
+    'https://fontsource.org/fonts/geist-sans',
+  );
+});
+
 test('several styles of a catalog family are added with one click', async ({ page }) => {
   const cors = { 'access-control-allow-origin': '*' };
   await page.route('https://fonts.googleapis.com/**', (route) =>

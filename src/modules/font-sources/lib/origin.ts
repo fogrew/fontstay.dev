@@ -26,6 +26,12 @@ export const SOURCES: Record<
   fontsource: { loadCatalog: fontsource.loadCatalog, download: fontsource.downloadFont },
 };
 
+export function familyPageUrl(source: SourceId, family: FontFamily): string {
+  return source === 'google'
+    ? `https://fonts.google.com/specimen/${encodeURIComponent(family.name).replace(/%20/g, '+')}`
+    : `https://fontsource.org/fonts/${encodeURIComponent(family.id)}`;
+}
+
 export const sameOrigin = (a: FontOrigin, b: FontOrigin) =>
   a.source === b.source && a.family === b.family && a.style === b.style && a.subset === b.subset;
 

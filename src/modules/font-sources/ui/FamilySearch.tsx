@@ -2,7 +2,13 @@ import { useEffect, useId, useMemo, useState } from 'preact/hooks';
 import { type Locale, messagesFor } from '@/common/i18n';
 import { Button, ScrollShadow, ToggleGroup } from '@/common/ui';
 import { FontSourceError } from '../lib/download';
-import { downloadOrigin, type FontOrigin, SOURCES, type SourceId } from '../lib/origin';
+import {
+  downloadOrigin,
+  type FontOrigin,
+  familyPageUrl,
+  SOURCES,
+  type SourceId,
+} from '../lib/origin';
 import {
   bestMatchIndex,
   CJK_SUBSETS,
@@ -21,7 +27,9 @@ interface Hit {
   family: FontFamily;
 }
 
-const HITS_PER_SOURCE = 8;
+const HITS_PER_SOURCE = 20;
+const DEFAULT_GOOGLE_HITS = 30;
+const DEFAULT_FONTSOURCE_HITS = 20;
 const FONTSOURCE_EXAMPLES = [
   'Geist Sans',
   'Open Sauce Sans',
@@ -32,6 +40,13 @@ const FONTSOURCE_EXAMPLES = [
   'Aileron',
   'Clear Sans',
 ];
+const defaultFontsource = (families: readonly FontFamily[]) => {
+  const examples = FONTSOURCE_EXAMPLES.flatMap((name) =>
+    families.filter((family) => family.name === name),
+  );
+  const rest = families.filter((family) => !examples.includes(family));
+  return [...examples, ...rest].slice(0, DEFAULT_FONTSOURCE_HITS);
+};
 const scriptsOf = (family: FontFamily) => family.subsets.filter((name) => !CJK_SUBSETS.has(name));
 
 export function useFamilySearch({
@@ -80,12 +95,11 @@ export function useFamilySearch({
     for (const id of Object.keys(SOURCES) as SourceId[]) {
       const catalog = catalogs[id];
       if (catalog?.state !== 'ready') continue;
-      const families =
-        !query.trim() && id === 'fontsource'
-          ? FONTSOURCE_EXAMPLES.flatMap((name) =>
-              catalog.families.filter((family) => family.name === name),
-            )
-          : searchFamilies(catalog.families, query, '', HITS_PER_SOURCE);
+      const families = query.trim()
+        ? searchFamilies(catalog.families, query, '', HITS_PER_SOURCE)
+        : id === 'google'
+          ? searchFamilies(catalog.families, '', '', DEFAULT_GOOGLE_HITS)
+          : defaultFontsource(catalog.families);
       for (const family of families) {
         result.push({ source: id, family });
       }
@@ -109,8 +123,10 @@ export function useFamilySearch({
     return italic ? `${weight} ${t.style_italic()}` : String(weight);
   };
 
+  const isChosen = (hit: Hit) =>
+    chosen?.source === hit.source && chosen.family.id === hit.family.id;
   const choose = (hit: Hit) => {
-    if (chosen?.source === hit.source && chosen.family.id === hit.family.id) return;
+    if (isChosen(hit)) return;
     setChosen(hit);
     const { family } = hit;
     setStyles(new Set([family.styles.includes('400') ? '400' : (family.styles[0] ?? '400')]));
@@ -236,7 +252,10 @@ export function useFamilySearch({
                   key={`${hit.source}-${hit.family.id}`}
                   onClick={() => {
                     setNavigation({ query, index });
-                    choose(hit);
+                    if (isChosen(hit)) {
+                      setChosen(undefined);
+                      setMessage('');
+                    } else choose(hit);
                   }}
                 >
                   <span>{hit.family.name}</span>
@@ -252,7 +271,14 @@ export function useFamilySearch({
           <div class="ff-source__chosen">
             <p class="ff-source__text">
               <strong>{chosen.family.name}</strong>{' '}
-              <span class="ff-muted">{sourceName(chosen.source)}</span>
+              <a
+                class="ff-link"
+                href={familyPageUrl(chosen.source, chosen.family)}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                {sourceName(chosen.source)}
+              </a>
             </p>
             <div class="ff-source__groups">
               <fieldset class="ff-toggle-set">
@@ -339,7 +365,6 @@ export function useFamilySearch({
             {t.source_name_fontsource()}
           </a>
         </p>
-        <p class="ff-source__text ff-muted">{t.source_note()}</p>
       </div>
     ) : null,
   };
