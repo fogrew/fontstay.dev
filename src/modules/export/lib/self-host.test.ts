@@ -78,6 +78,8 @@ describe('license files', () => {
     expect(licenseKind(null, 'https://scripts.sil.org/OFL')).toBe('ofl');
     expect(licenseKind(null, 'https://www.apache.org/licenses/LICENSE-2.0')).toBe('apache');
     expect(licenseKind('Ubuntu Font Licence 1.0', null)).toBe('ubuntu');
+    expect(licenseKind('MIT License', null)).toBe('mit');
+    expect(licenseKind(null, 'https://creativecommons.org/publicdomain/zero/1.0/')).toBe('cc0');
     expect(licenseKind('Proprietary', null)).toBeNull();
   });
 
@@ -100,6 +102,18 @@ describe('license files', () => {
       { ...roboto, bytes: new Uint8Array(), copyright: null, license: null, licenseUrl: null },
     ]);
     expect(text).toContain('not recognised');
+  });
+
+  it('includes standard text for MIT and CC0', () => {
+    for (const [license, heading] of [
+      ['MIT License', 'Permission is hereby granted'],
+      ['CC0 1.0 Universal', 'CC0 1.0 Universal'],
+    ] as const) {
+      const text = licenseFile('Test', [
+        { ...roboto, bytes: new Uint8Array(), copyright: null, license, licenseUrl: null },
+      ]);
+      expect(text).toContain(heading);
+    }
   });
 });
 
