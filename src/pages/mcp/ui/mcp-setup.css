@@ -1,0 +1,22 @@
+.ff-mcp-setup {
+  min-inline-size: 0;
+}
+
+.ff-mcp-setup__content {
+  display: grid;
+  gap: var(--ff-space-2);
+  min-inline-size: 0;
+}
+
+.ff-mcp-setup__install {
+  justify-self: start;
+}
+
+.ff-mcp-setup__path {
+  margin: 0;
+}
+
+.ff-mcp-setup__code {
+  min-inline-size: 0;
+  margin: 0;
+}
