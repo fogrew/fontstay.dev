@@ -30,6 +30,7 @@ export interface FontState {
 
 export interface ShareState extends FontState {
   v: number;
+  data?: string;
   query?: string;
   fontName?: string;
   all?: boolean;
@@ -50,6 +51,7 @@ const OS_LIST: readonly OsId[] = ['windows', 'macos', 'ios', 'android', 'linux',
 const KINDS: readonly Category[] = ['sans-serif', 'serif', 'monospace', 'cursive'];
 const STYLES: readonly FontStyleKey[] = ['regular', 'bold', 'italic', 'bold-italic'];
 const ID = /^[a-z0-9-]{1,40}$/;
+const DATA_VERSION_PATTERN = /^[0-9a-f]{8}$/;
 const LIMITS: Record<ManualKey, [number, number]> = {
   sizeAdjust: [25, 400],
   ascentOverride: [0, 400],
@@ -130,6 +132,9 @@ export function parseShareState(
   const input = migrate(raw, migrations);
   if (!input) return null;
   const state: ShareState = { v: SHARE_VERSION };
+  if (typeof input.data === 'string' && DATA_VERSION_PATTERN.test(input.data)) {
+    state.data = input.data;
+  }
   if (typeof input.query === 'string' && input.query.length <= 500) state.query = input.query;
   if (typeof input.fontName === 'string' && input.fontName.length <= 200) {
     state.fontName = input.fontName;

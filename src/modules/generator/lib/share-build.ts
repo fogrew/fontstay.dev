@@ -22,6 +22,7 @@ export interface FontChoices {
 }
 
 export interface ShareInput {
+  data?: string | undefined;
   query?: string | undefined;
   fontName?: string | undefined;
   all?: boolean | undefined;
@@ -82,6 +83,7 @@ export function buildShareState(input: ShareInput): ShareState {
     spacing && (!spacing.on || spacing.letter !== undefined || spacing.word !== undefined);
   return {
     v: SHARE_VERSION,
+    ...(input.data ? { data: input.data } : {}),
     ...(input.query ? { query: input.query } : {}),
     ...(input.fontName ? { fontName: input.fontName } : {}),
     ...(input.all ? { all: true } : {}),
@@ -105,5 +107,33 @@ export function buildShareState(input: ShareInput): ShareState {
     ...(input.os ? { os: input.os } : {}),
     ...(input.face ? { face: input.face } : {}),
     ...(input.view && Object.keys(input.view).length > 0 ? { view: input.view } : {}),
+  };
+}
+
+export function dataVersionOf(picksByPreset: Record<string, Picks>): string {
+  const text = JSON.stringify(
+    Object.entries(picksByPreset)
+      .sort(([a], [b]) => (a < b ? -1 : 1))
+      .map(([id, picks]) => [id, OS_ORDER.map((os) => picks[os] ?? [])]),
+  );
+  let hash = 0x811c9dc5;
+  for (let index = 0; index < text.length; index++) {
+    hash = Math.imul(hash ^ text.charCodeAt(index), 0x01000193);
+  }
+  return (hash >>> 0).toString(16).padStart(8, '0');
+}
+
+export function isStaleLink(state: ShareState, current: string): boolean {
+  return state.data !== undefined && state.data !== current;
+}
+
+export function withoutPicks(state: ShareState): ShareState {
+  const strip = ({ picks: _picks, ...rest }: FontState): FontState => rest;
+  const { picks: _picks, others, ...rest } = state;
+  return {
+    ...rest,
+    ...(others
+      ? { others: Object.fromEntries(Object.entries(others).map(([k, v]) => [k, strip(v)])) }
+      : {}),
   };
 }

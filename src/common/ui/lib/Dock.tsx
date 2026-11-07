@@ -24,6 +24,7 @@ export const DOCK_OPEN_EVENT = 'ff-dock-open';
 export interface DockOpenDetail {
   id: string | null;
   focus?: boolean;
+  persist?: boolean;
 }
 
 const DESKTOP_LAYOUT = '(min-width: 64rem)';
@@ -35,6 +36,7 @@ export function Dock({ items, storageKey, defaultOpen, nextLabel, onChange }: Do
   const [ready, setReady] = useState(false);
   const root = useRef<HTMLDivElement>(null);
   const skippedRestore = useRef(false);
+  const transient = useRef<{ id: string | undefined }>();
   const [focusRequest, setFocusRequest] = useState<{ id: string }>();
 
   useEffect(() => {
@@ -52,8 +54,10 @@ export function Dock({ items, storageKey, defaultOpen, nextLabel, onChange }: Do
   useEffect(() => {
     const open = (event: Event) => {
       const { detail } = event as CustomEvent<string | DockOpenDetail>;
-      const { id, focus } = typeof detail === 'string' ? { id: detail, focus: false } : detail;
+      const { id, focus, persist } =
+        typeof detail === 'string' ? { id: detail, focus: false, persist: true } : detail;
       if (id !== null && !ids.includes(id)) return;
+      transient.current = persist === false ? { id: id ?? undefined } : undefined;
       transition(() => {
         setActive(id ?? undefined);
         if (focus && id !== null) setFocusRequest({ id });
@@ -69,6 +73,10 @@ export function Dock({ items, storageKey, defaultOpen, nextLabel, onChange }: Do
     if (focusRequest) document.getElementById(`${base}-${focusRequest.id}-button`)?.focus();
   }, [focusRequest]);
   useEffect(() => {
+    if (transient.current) {
+      if (transient.current.id === active) return;
+      transient.current = undefined;
+    }
     if (active) skippedRestore.current = false;
     if (ready && !skippedRestore.current)
       saveLayout(storageKey, { opened: active ? [active] : [] });
