@@ -15,7 +15,7 @@ fontstay fit regular.woff2 bold.woff2 --format tailwind
 | Option | Meaning |
 |---|---|
 | `-s, --systems <list>` | Systems to fit: `windows`, `macos`, `ios`, `android`, `linux`, `chromeos`. Default: every system with a share of at least 1% in the audience. Shares stay those of the whole audience, as when a system is switched off in the app. |
-| `-a, --audience <query>` | [Browserslist](https://browsersl.ist) query, including `baseline widely available`. `os <system>` and `not os <system>` parts select systems like the app. Default: `baseline widely available`. |
+| `-a, --audience <query>` | [Browserslist](https://browsersl.ist) query, including `baseline widely available`. `os <system>` and `not os <system>` parts select systems like the app. Overrides the project config. |
 | `-f, --format <format>` | `css` (default), `variables`, `tailwind`, `next`, `nuxt`, `astro`, `wordpress`, `fontaine`, `preload`, `loading`. |
 | `-k, --kind <kind>` | Generic family of the fallbacks: `sans-serif`, `serif`, `monospace`, `cursive`. Default: detected from the font. |
 | `--locale <en\|ru>` | Frequency profile of the fit. `ru` applies to fonts that cover Cyrillic. Default: `en`. |
@@ -25,6 +25,8 @@ fontstay fit regular.woff2 bold.woff2 --format tailwind
 | `--json` | Print a JSON report: the output file, the fallbacks chosen per system, the audience shares. |
 
 Several font files are merged into one stylesheet, as in the app. Warnings (low glyph overlap, systems without fallback fonts) go to stderr. Exit codes: `0` success, `1` failure (unreadable or invalid font, invalid audience), `2` usage error.
+
+By default, `fontstay fit` finds the project's Browserslist config from the current working directory, including `.browserslistrc` and the `browserslist` field in `package.json`. If there is no project config, it uses `baseline widely available`. Pass `--audience` to use a specific query instead of the project config; `--systems` can further restrict the systems fitted.
 
 The output is byte-identical to the app's CSS export for the same font and audience: the same fallbacks, order, scripts and `unicode-range`, and the same optimizer (it nudges the sizes and may add a `.fonts-loading` letter-spacing rule). The optimizer is deterministic: it runs a fixed number of evaluations with no time limit and takes its width ratios from HarfBuzz (`harfbuzzjs`, WebAssembly) for the font you pass and from precomputed values for the system fonts, so it does not depend on a browser or on the fonts installed on the machine. `tests/e2e/cli-parity.spec.ts` compares the test fonts with the app and requires identical output.
 

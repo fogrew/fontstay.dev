@@ -1,4 +1,4 @@
-import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterAll, describe, expect, it } from 'vitest';
@@ -25,7 +25,68 @@ async function cli(...args: string[]) {
 const scratch = mkdtempSync(join(tmpdir(), 'fontstay-cli-'));
 afterAll(() => rmSync(scratch, { recursive: true, force: true }));
 
+async function inDirectory<T>(directory: string, action: () => Promise<T>): Promise<T> {
+  const previous = process.cwd();
+  process.chdir(directory);
+  try {
+    return await action();
+  } finally {
+    process.chdir(previous);
+  }
+}
+
 describe('fontstay fit', () => {
+  it('uses a .browserslistrc found above the working directory', async () => {
+    const project = join(scratch, 'rc-project');
+    const nested = join(project, 'nested');
+    mkdirSync(nested, { recursive: true });
+    writeFileSync(join(project, '.browserslistrc'), 'last 1 chrome version\n');
+
+    const result = await inDirectory(nested, () =>
+      cli('fit', font('FiraSans-Regular.ttf'), '--json'),
+    );
+    expect(result.code).toBe(0);
+    expect(JSON.parse(result.stdout).audience.query).toBe('last 1 chrome version');
+  });
+
+  it('uses the browserslist field in package.json', async () => {
+    const project = join(scratch, 'package-project');
+    mkdirSync(project);
+    writeFileSync(
+      join(project, 'package.json'),
+      JSON.stringify({ browserslist: ['last 1 firefox version'] }),
+    );
+
+    const result = await inDirectory(project, () =>
+      cli('fit', font('FiraSans-Regular.ttf'), '--json'),
+    );
+    expect(result.code).toBe(0);
+    expect(JSON.parse(result.stdout).audience.query).toBe('last 1 firefox version');
+  });
+
+  it('lets an explicit audience override the project config', async () => {
+    const project = join(scratch, 'override-project');
+    mkdirSync(project);
+    writeFileSync(join(project, '.browserslistrc'), 'last 1 chrome version\n');
+
+    const result = await inDirectory(project, () =>
+      cli('fit', font('FiraSans-Regular.ttf'), '--audience', 'defaults', '--json'),
+    );
+    expect(result.code).toBe(0);
+    expect(JSON.parse(result.stdout).audience.query).toBe('defaults');
+  });
+
+  it('keeps the baseline audience when no project config exists', async () => {
+    const project = join(scratch, 'no-config-project');
+    mkdirSync(project);
+
+    const result = await inDirectory(project, () =>
+      cli('fit', font('FiraSans-Regular.ttf'), '--json'),
+    );
+    expect(result.code).toBe(0);
+    expect(JSON.parse(result.stdout).audience.query).toBe('baseline widely available');
+  });
+
   it('prints the CSS of the web app for the same font and audience', async () => {
     const result = await cli('fit', font('SourceSansPro-Regular.woff2'), '--audience', 'defaults');
     expect(result.code).toBe(0);
