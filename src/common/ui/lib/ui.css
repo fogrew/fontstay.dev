@@ -114,13 +114,15 @@
 .ff-tabs__list {
   display: flex;
   gap: 0;
-  overflow-x: auto;
-  scrollbar-width: thin;
   border-block-end: 1px solid var(--ff-border);
 }
 .ff-tabs__tab {
-  flex: 1 0 auto;
+  flex: 1 1 auto;
+  min-inline-size: 0;
   min-block-size: 2.75rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
   padding: var(--ff-space-2) var(--ff-space-1);
   font-size: 0.8125rem;
   border: 0;
