@@ -1282,7 +1282,7 @@
 }
 .ff-article-view__resize-size {
   position: absolute;
-  min-inline-size: 2.5rem;
+  min-inline-size: 6ch;
   text-align: center;
   font-variant-numeric: tabular-nums;
   inset-block-start: calc(min(50%, 14rem) - 1.75rem);
