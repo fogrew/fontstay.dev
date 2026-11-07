@@ -70,6 +70,8 @@ Both modes:
 - Machine-readable JSON (all inputs, computed metrics, outputs).
 - Impact report (Markdown): CLS per viewport, support matrix, coverage, warnings.
 - Share link: only the difference from the app defaults is serialized into the URL hash, including the open dock panel and the preview modes (uploaded font files are kept in IndexedDB locally; link warns they are not shared; fonts picked from Google Fonts or Fontsource travel as `sources` and are downloaded again after the recipient confirms).
+  - The link carries a short fingerprint of the preset picks over the bundled OS font dataset (`data`). If it differs from the recipient's, the picks (a diff against the preset) are not restored and a notice is shown; the other settings are applied. Opening a link does not overwrite the recipient's saved dock layout. The preview heading and body families travel in the view diff (`headingFont`, `bodyFont`); page text is never carried.
+  - Known limit: auto-fit values are recomputed by the recipient from a browser-dependent calibration, so the numbers can differ slightly between browsers; pinning them is tracked separately.
 
 ### 1.8 Other pages
 - **Font catalog** (cssfontstack analog): table of system fonts × OS/versions with availability and estimated audience coverage; static page per font with metrics and specimen.

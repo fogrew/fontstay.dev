@@ -1,6 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import { decodeShareState, encodeShareState, parseShareState } from './share';
-import { buildShareState, diffPicks, mergePicks } from './share-build';
+import {
+  buildShareState,
+  dataVersionOf,
+  diffPicks,
+  isStaleLink,
+  mergePicks,
+  withoutPicks,
+} from './share-build';
 
 const preset = { windows: ['arial', 'segoe-ui'], macos: ['helvetica'] };
 
@@ -113,6 +120,49 @@ describe('older links', () => {
       disabled: [],
       range: false,
       spacing: { on: true },
+    });
+  });
+});
+
+describe('data version', () => {
+  const picks = { a: { windows: ['arial'] }, b: { macos: ['menlo'] } };
+
+  it('is stable, order-independent and sensitive to a changed pick', () => {
+    const version = dataVersionOf(picks);
+    expect(version).toMatch(/^[0-9a-f]{8}$/);
+    expect(dataVersionOf({ b: picks.b, a: picks.a })).toBe(version);
+    expect(dataVersionOf({ ...picks, a: { windows: ['arial', 'segoe-ui'] } })).not.toBe(version);
+    expect(dataVersionOf({ ...picks, c: {} })).not.toBe(version);
+  });
+
+  it('round-trips through the link and is optional', () => {
+    expect(parseShareState(buildShareState({ data: 'deadbeef' }))?.data).toBe('deadbeef');
+    expect(parseShareState({ v: 1, data: 'nope' })?.data).toBeUndefined();
+    expect(parseShareState({ v: 1, data: 7 })?.data).toBeUndefined();
+    expect(buildShareState({})).toEqual({ v: 1 });
+  });
+
+  it('treats only a different version as stale', () => {
+    expect(isStaleLink({ v: 1 }, 'deadbeef')).toBe(false);
+    expect(isStaleLink({ v: 1, data: 'deadbeef' }, 'deadbeef')).toBe(false);
+    expect(isStaleLink({ v: 1, data: '00000000' }, 'deadbeef')).toBe(true);
+  });
+
+  it('removes picks but keeps the other choices', () => {
+    const state = {
+      v: 1,
+      data: '00000000',
+      preset: 'system-ui',
+      picks: { windows: ['arial'] },
+      manual: { arial: { sizeAdjust: 100 } },
+      others: { 'a.woff2': { picks: { macos: ['menlo'] }, style: 'bold' as const } },
+    };
+    expect(withoutPicks(state)).toEqual({
+      v: 1,
+      data: '00000000',
+      preset: 'system-ui',
+      manual: { arial: { sizeAdjust: 100 } },
+      others: { 'a.woff2': { style: 'bold' } },
     });
   });
 });

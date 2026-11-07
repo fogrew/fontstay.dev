@@ -1707,6 +1707,57 @@ test('a share link reproduces the open panel and the preview modes with a compac
   await fresh.close();
 });
 
+const encodeLink = (page: Page, state: object) =>
+  page.evaluate(async (value) => {
+    const bytes = new TextEncoder().encode(JSON.stringify(value));
+    const stream = new Blob([bytes]).stream().pipeThrough(new CompressionStream('deflate-raw'));
+    const packed = new Uint8Array(await new Response(stream).arrayBuffer());
+    let binary = '';
+    for (const byte of packed) binary += String.fromCharCode(byte);
+    return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+  }, state);
+
+test('a link made with other font data is flagged and does not restore its picks', async ({
+  page,
+}) => {
+  await page.goto('/en/');
+  await waitForGenerator(page);
+  const payload = await encodeLink(page, {
+    v: 1,
+    data: '00000000',
+    panel: 'export',
+    picks: { windows: ['arial'] },
+    spacing: { on: false },
+  });
+  await page.goto(`/en/#s=${payload}`);
+  await page.reload();
+  await waitForGenerator(page);
+  await expect(
+    page.getByRole('status').filter({ hasText: /older version of the font data/ }),
+  ).toBeVisible();
+  await expect(
+    page.locator('.ff-dock__column[data-id="inputs"] .ff-dock__heading button'),
+  ).toHaveAttribute('aria-expanded', 'true');
+});
+
+test('a link does not overwrite the saved dock layout', async ({ page }) => {
+  await page.goto('/en/');
+  await waitForGenerator(page);
+  await openStep(page, 'audience');
+  const payload = await encodeLink(page, { v: 1, panel: 'export' });
+  const column = (id: string) =>
+    page.locator(`.ff-dock__column[data-id="${id}"] .ff-dock__heading button`);
+  await page.goto('about:blank');
+  await page.goto(`/en/#s=${payload}`);
+  await waitForGenerator(page);
+  await expect(column('export')).toHaveAttribute('aria-expanded', 'true');
+  await page.waitForTimeout(500);
+  await page.goto('about:blank');
+  await page.goto('/en/');
+  await waitForGenerator(page);
+  await expect(column('audience')).toHaveAttribute('aria-expanded', 'true');
+});
+
 test.describe('the first visit', () => {
   const expanded = (page: Page, step: string) =>
     page.locator(`.ff-dock__column[data-id="${step}"] .ff-dock__heading button`);

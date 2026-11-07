@@ -534,6 +534,7 @@
   "share_offer": "Este link usa {count} fontes do Google Fonts ou do Fontsource. Baixá-las mostra o seu endereço IP ao Google ou ao jsDelivr.",
   "share_offer_accept": "Baixar as fontes",
   "share_offer_dismiss": "Pular",
+  "share_stale": "Este link foi criado com uma versão mais antiga dos dados de fontes, por isso as fontes escolhidas nele não foram restauradas; as outras configurações foram aplicadas.",
   "source_upright": "Normal",
   "source_too_many": "Cabem no máximo mais {max} fontes. Desmarque alguns estilos ou escritas.",
   "webmcp_announce_font": "Um assistente selecionou {font}.",

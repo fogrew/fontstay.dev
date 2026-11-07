@@ -118,7 +118,14 @@ import {
   payloadFromHash,
   type ShareState,
 } from '../lib/share';
-import { buildShareState, mergePicks, type ShareInput } from '../lib/share-build';
+import {
+  buildShareState,
+  dataVersionOf,
+  isStaleLink,
+  mergePicks,
+  type ShareInput,
+  withoutPicks,
+} from '../lib/share-build';
 import {
   clearStorage,
   loadSettings,
@@ -150,6 +157,11 @@ const MAX_FONTS = 8;
 const MIN_SHARE = 1;
 const MAX_FACES = 16;
 const ALL_SYSTEMS = ['windows', 'macos', 'ios', 'android', 'linux', 'chromeos'] as const;
+const DATA_VERSION = dataVersionOf(
+  Object.fromEntries(
+    PRESETS.map((item) => [item.id, presetPicks(item, osFontsDataset, ALL_SYSTEMS)]),
+  ),
+);
 
 type Picks = Partial<Record<OsId, string[]>>;
 const NO_PICKS: Picks = {};
@@ -271,6 +283,7 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
     setTimeout(() => setAnnouncement(text), 50);
   };
   const [offer, setOffer] = useState<FontOrigin[]>([]);
+  const [staleLink, setStaleLink] = useState(false);
   useEffect(() => () => parser.current?.dispose(), []);
   useEffect(() => {
     if (focusSlot === undefined) return;
@@ -374,7 +387,9 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
     let current = true;
     void (async () => {
       const payload = payloadFromHash(location.hash);
-      const linked = payload ? await decodeShareState(payload) : null;
+      const decoded = payload ? await decodeShareState(payload) : null;
+      const stale = decoded ? isStaleLink(decoded, DATA_VERSION) : false;
+      const linked = decoded && stale ? withoutPicks(decoded) : decoded;
       const state = linked ?? loadSettings();
       if (payload && state) history.replaceState(null, '', location.pathname + location.search);
       if (state && current) {
@@ -394,7 +409,8 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
         }
         pending.current = state;
         if (linked) {
-          linkPanel.current = state.panel ?? DEFAULT_PANEL;
+          linkPanel.current = stale ? 'inputs' : (state.panel ?? DEFAULT_PANEL);
+          setStaleLink(stale);
           setViewRestore(state.view ?? {});
           if (state.os) setActiveOs(state.os);
           if (state.face) setEditId(state.face);
@@ -417,7 +433,9 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
       if (files.length > 0 && current) await addFiles(files, false, origins);
       if (missing.length > 0 && current) {
         setOffer(missing);
-        window.dispatchEvent(new CustomEvent(DOCK_OPEN_EVENT, { detail: 'inputs' }));
+        window.dispatchEvent(
+          new CustomEvent(DOCK_OPEN_EVENT, { detail: { id: 'inputs', persist: false } }),
+        );
       } else if (current) {
         openLinkPanel();
       }
@@ -432,7 +450,9 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
     if (!id) return;
     linkPanel.current = undefined;
     window.dispatchEvent(
-      new CustomEvent(DOCK_OPEN_EVENT, { detail: { id: id === NO_PANEL ? null : id } }),
+      new CustomEvent(DOCK_OPEN_EVENT, {
+        detail: { id: id === NO_PANEL ? null : id, persist: false },
+      }),
     );
   };
   const acceptOffer = async () => {
@@ -1173,6 +1193,7 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
       os: activeOs,
       face: editId,
       view: viewDiff.current,
+      data: DATA_VERSION,
     });
   const stateKey = restored ? JSON.stringify(currentShareState()) : '';
   useEffect(() => {
@@ -1890,6 +1911,11 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
                       void discardPending();
                     }}
                   />
+                )}
+                {staleLink && (
+                  <p class="ff-generator__text ff-error" role="status">
+                    {t.share_stale()}
+                  </p>
                 )}
                 {offer.length > 0 && (
                   <section class="ff-offer" aria-label={t.share_offer_label()}>
