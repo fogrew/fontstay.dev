@@ -2114,7 +2114,7 @@ test('an unsupported file dropped while a font is parsing keeps its warning', as
 test.describe('the generator page itself does not shift while it loads', () => {
   for (const [name, width, budget] of [
     ['desktop', 1500, 0.003],
-    ['phone', 360, 0.002],
+    ['phone', 360, 0.001],
   ] as const) {
     for (const opened of [undefined, 'inputs', 'audience', 'tuning', 'export']) {
       test(`${name}, ${opened ? `${opened} panel saved open` : 'no saved panel'}`, async ({
