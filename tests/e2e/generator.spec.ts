@@ -1605,13 +1605,11 @@ test('weights 200-600 in Cyrillic and Latin are added together by dragging acros
   await mockMontserrat(page);
   await chooseMontserrat(page);
   const upright = page.locator('.ff-source__chosen').getByRole('group', { name: 'Upright' });
-  await upright.scrollIntoViewIfNeeded();
-  const from = await upright.getByRole('button', { name: '200', exact: true }).boundingBox();
-  const to = await upright.getByRole('button', { name: '600', exact: true }).boundingBox();
-  if (!from || !to) throw new Error('missing buttons');
-  await page.mouse.move(from.x + from.width / 2, from.y + from.height / 2);
+  const weightButton = (weight: string) =>
+    upright.getByRole('button', { name: weight, exact: true });
+  await weightButton('200').hover();
   await page.mouse.down();
-  await page.mouse.move(to.x + to.width / 2, to.y + to.height / 2, { steps: 10 });
+  for (const weight of ['300', '400', '500', '600']) await weightButton(weight).hover();
   await page.mouse.up();
   for (const weight of ['200', '300', '400', '500', '600']) {
     await expect(upright.getByRole('button', { name: weight, exact: true })).toHaveAttribute(
