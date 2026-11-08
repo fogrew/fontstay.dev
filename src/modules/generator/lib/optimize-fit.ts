@@ -1,7 +1,7 @@
 import type { FontMetrics } from '@/modules/font-metrics';
 import type { PredictModel } from '@/modules/layout-shift';
 import { type AutoFitResult, autoFit } from './auto-fit';
-import { fallbackRatio, webRatio } from './calibration';
+import { fallbackRatio, measureWebRatio } from './calibration';
 import type { Overrides } from './css';
 import type { SpacingEm } from './loading';
 import type { Candidate, Language, Ranking } from './per-os';
@@ -51,9 +51,10 @@ export function newOptimizerState(): OptimizerState {
 export async function optimizeFaces(
   input: OptimizeFacesInput,
   state: OptimizerState,
-): Promise<Map<string, Overrides>> {
+): Promise<{ found: Map<string, Overrides>; webRatioFailed: boolean }> {
   const { metrics, bytes, language, ranking, faces } = input;
-  const webK = bytes ? await webRatio(bytes, metrics, language) : 1;
+  const measured = bytes ? await measureWebRatio(bytes, metrics, language) : undefined;
+  const webK = measured?.ratio ?? 1;
   const model = { web: webPredictFont(metrics, ranking, undefined, webK), language };
   const found = new Map<string, Overrides>();
   for (const [index, candidate] of faces.entries()) {
@@ -70,5 +71,5 @@ export async function optimizeFaces(
     if (free) state.spacing = result.spacing;
   }
   state.free = false;
-  return found;
+  return { found, webRatioFailed: measured?.failed ?? false };
 }

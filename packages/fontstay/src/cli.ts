@@ -165,6 +165,10 @@ export async function run(argv: readonly string[], io: Io): Promise<number> {
           `warning: ${font.fileName}: fallbacks share only ${Math.round(font.coverage * 100)}% of its glyphs\n`,
         );
       }
+      if (font.webRatioFailed) {
+        io.stderr(`warning: ${font.fileName}: could not shape the font, web width is estimated
+`);
+      }
     }
     if (result.uncovered.length > 0) {
       io.stderr(`warning: no fallback fonts available for: ${result.uncovered.join(', ')}\n`);

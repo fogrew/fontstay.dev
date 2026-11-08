@@ -61,7 +61,7 @@
 - [FEOD — Fractal Entity Oriented Design](https://fractal-oriented.tech/) — project architecture.
 - [Vite Web Workers](https://vite.dev/guide/features.html#web-workers) — bundling dedicated module workers.
 - [MDN Worker.terminate](https://developer.mozilla.org/en-US/docs/Web/API/Worker/terminate) — watchdog cancellation of parsing.
-- [FontTools](https://github.com/fonttools/fonttools) — independent fixture metric checks (MIT).
+- [FontTools](https://github.com/fonttools/fonttools) — independent fixture metric checks and the WOFF and WOFF2 conversions of the Mada fixture (MIT).
 - [OpenType OS/2 specification](https://learn.microsoft.com/en-us/typography/opentype/spec/os2) — legacy table lengths and vertical metric fields.
 - [CSS Fonts Level 5](https://drafts.csswg.org/css-fonts-5/#descdef-font-face-size-adjust) — scaling metric overrides and nonnegative descriptors.
 - [Capsize core](https://github.com/seek-oss/capsize/blob/master/packages/core/src/createFontStack.ts) (MIT) and [Fontaine](https://github.com/unjs/fontaine/blob/main/packages/fontaine/src/css.ts) (MIT) — fit formulas; frozen Capsize 4.1.3 reference outputs with metrics 4.3.0.

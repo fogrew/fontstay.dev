@@ -42,7 +42,20 @@ export async function shapedRatio(
   const model = textWidth(modelFont(metrics), text, PROBE_PX);
   if (model <= 0) return 1;
   const shaped = await shapedWidthEm(bytes, text, options);
-  return shaped > 0 ? clamp(shaped * (PROBE_PX / model)) : 1;
+  if (!(shaped > 0)) throw new Error('Shaping produced no width');
+  return clamp(shaped * (PROBE_PX / model));
+}
+
+export async function measureWebRatio(
+  bytes: ArrayBuffer | Uint8Array,
+  metrics: FontMetrics,
+  language: SampleLanguage,
+): Promise<{ ratio: number; failed: boolean }> {
+  try {
+    return { ratio: await shapedRatio(bytes, metrics, language), failed: false };
+  } catch {
+    return { ratio: 1, failed: true };
+  }
 }
 
 export async function webRatio(
@@ -50,11 +63,7 @@ export async function webRatio(
   metrics: FontMetrics,
   language: SampleLanguage,
 ): Promise<number> {
-  try {
-    return await shapedRatio(bytes, metrics, language);
-  } catch {
-    return 1;
-  }
+  return (await measureWebRatio(bytes, metrics, language)).ratio;
 }
 
 export function fallbackRatio(candidate: Candidate, language: SampleLanguage): number | null {
