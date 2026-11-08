@@ -2,6 +2,7 @@ import { useState } from 'preact/hooks';
 import { type Locale, messagesFor } from '@/common/i18n';
 import { Collapsible } from '@/common/ui';
 import type { FontMetrics } from '@/modules/font-metrics';
+import { detailsToggleId } from '../lib/toggle-id';
 import { FontDetailsPanel } from './FontDetailsPanel';
 
 export interface FontDetailsEntry {
@@ -29,6 +30,7 @@ export function FontDetailsGroups({ locale, fonts, onRemove }: FontDetailsGroups
         <Collapsible
           key={font.id}
           title={font.title}
+          toggleId={detailsToggleId(font.id)}
           open={open.has(font.id)}
           after={
             <button

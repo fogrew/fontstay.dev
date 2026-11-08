@@ -187,6 +187,38 @@ test('the cross in the font details removes the font and keeps the narrow layout
   await expect(remove).toBeFocused();
   await page.keyboard.press('Enter');
   await expect(heading).toBeHidden();
+  await expect(page.locator('#ff-input-text')).toBeFocused();
   await expect(page.getByRole('button', { name: /^Remove: SourceSans/ })).toHaveCount(0);
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(320);
+});
+
+test('removing a font moves focus to the next font toggle', async ({ page }) => {
+  await openDetails(page, sourceSans);
+  await page.locator('input[type="file"][accept*="woff2"]').setInputFiles([fira, mada]);
+  const detailToggles = page.locator(
+    '[aria-labelledby="ff-details-heading"] .ff-collapsible__toggle',
+  );
+  await expect(detailToggles).toHaveCount(3);
+  const second = await detailToggles.nth(1).textContent();
+  await page
+    .getByRole('button', { name: /^Remove from the fonts:/ })
+    .first()
+    .press('Enter');
+  await expect(detailToggles).toHaveCount(2);
+  await expect(detailToggles.first()).toBeFocused();
+  await expect(detailToggles.first()).toHaveText(second ?? '');
+
+  await openStep(page, 'tuning');
+  const fitRemove = page.getByRole('button', { name: /^Remove: .+\.(ttf|woff2)$/ });
+  await expect(fitRemove).toHaveCount(2);
+  const fitToggles = page.locator('.ff-collapsible__toggle[data-toggle-id^="fit-"]');
+  const remaining = await fitToggles.nth(1).textContent();
+  await fitRemove.first().press('Enter');
+  await expect(fitRemove).toHaveCount(1);
+  await expect(fitToggles).toBeFocused();
+  await expect(fitToggles).toHaveText(remaining ?? '');
+  await fitRemove.press('Enter');
+  await expect(
+    page.locator('.ff-dock__column[data-id="inputs"] .ff-dock__heading button'),
+  ).toBeFocused();
 });

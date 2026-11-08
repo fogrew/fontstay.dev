@@ -6,6 +6,7 @@ export interface CollapsibleProps {
   title: string;
   icon?: ComponentChildren;
   open: boolean;
+  toggleId?: string;
   onToggle: (open: boolean) => void;
   before?: ComponentChildren;
   after?: ComponentChildren;
@@ -16,6 +17,7 @@ export function Collapsible({
   title,
   icon,
   open,
+  toggleId,
   onToggle,
   before,
   after,
@@ -31,6 +33,7 @@ export function Collapsible({
           class="ff-control ff-collapsible__toggle"
           aria-expanded={open}
           aria-controls={id}
+          data-toggle-id={toggleId}
           onClick={() => transition(() => onToggle(!open))}
         >
           {icon}
