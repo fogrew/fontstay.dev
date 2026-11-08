@@ -209,7 +209,7 @@ test('removing a font moves focus to the next font toggle', async ({ page }) => 
   await expect(detailToggles.first()).toHaveText(second ?? '');
 
   await openStep(page, 'tuning');
-  const fitRemove = page.getByRole('button', { name: /^Remove: .+.(ttf|woff2)$/ });
+  const fitRemove = page.getByRole('button', { name: /^Remove: .+\.(ttf|woff2)$/ });
   await expect(fitRemove).toHaveCount(2);
   await fitRemove.first().press('Enter');
   await expect(fitRemove).toHaveCount(1);
