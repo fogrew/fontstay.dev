@@ -1,5 +1,6 @@
+import { useRef } from 'preact/hooks';
 import { type Locale, localizeHref, messagesFor } from '@/common/i18n';
-import { Button, CodeBlock, type CodeLanguage, Icon, type IconName, Select } from '@/common/ui';
+import { CodeBlock, type CodeLanguage, Icon, type IconName, Select } from '@/common/ui';
 import { buildExport, EXPORT_FORMATS, type ExportFormat, type ExportInput } from '@/modules/export';
 
 export type ExportChoice = ExportFormat | 'report';
@@ -40,7 +41,6 @@ export const FORMAT_ICONS: Record<ExportChoice, IconName> = {
 export interface SelfHostControl {
   checked: boolean;
   onChange: (checked: boolean) => void;
-  onDownload: () => void;
   failed: boolean;
 }
 
@@ -64,6 +64,14 @@ export function ExportPanel({
   selfHost?: SelfHostControl | undefined;
 }) {
   const t = messagesFor(locale);
+  const helpButton = useRef<HTMLButtonElement>(null);
+  const helpTooltip = useRef<HTMLSpanElement>(null);
+  const showHelp = () => {
+    if (!helpTooltip.current?.matches(':popover-open')) helpTooltip.current?.showPopover();
+  };
+  const hideHelp = () => {
+    if (helpTooltip.current?.matches(':popover-open')) helpTooltip.current.hidePopover();
+  };
   const format = effectiveFormat(chosen, multi);
   const labels: Record<ExportChoice, string> = {
     report: t.export_report(),
@@ -99,25 +107,45 @@ export function ExportPanel({
       {format === 'loading' && <p class="ff-muted">{t.loading_note()}</p>}
       {selfHost && (
         <>
-          <label>
-            <input
-              class="ff-control"
-              type="checkbox"
-              aria-describedby="ff-self-host-note"
-              checked={selfHost.checked}
-              onChange={(event) => selfHost.onChange(event.currentTarget.checked)}
-            />{' '}
-            {t.self_host_label()}
-          </label>
-          <p class="ff-muted" id="ff-self-host-note">
-            {t.self_host_note()}
-          </p>
-          {selfHost.checked && (
-            <Button class="ff-export__download" onClick={selfHost.onDownload}>
-              <Icon name="download" />
-              {t.self_host_download()}
-            </Button>
-          )}
+          <div class="ff-export__self-host">
+            <label>
+              <input
+                class="ff-control"
+                type="checkbox"
+                checked={selfHost.checked}
+                onChange={(event) => selfHost.onChange(event.currentTarget.checked)}
+              />{' '}
+              {t.self_host_label()}
+            </label>
+            <span class="ff-export__help">
+              <button
+                ref={helpButton}
+                class="ff-export__question"
+                type="button"
+                aria-label={t.self_host_help()}
+                aria-describedby="ff-self-host-note"
+                onPointerEnter={showHelp}
+                onPointerLeave={() => {
+                  if (!helpButton.current?.matches(':focus')) hideHelp();
+                }}
+                onFocus={showHelp}
+                onBlur={() => {
+                  if (!helpButton.current?.matches(':hover')) hideHelp();
+                }}
+              >
+                ?
+              </button>
+              <span
+                ref={helpTooltip}
+                class="ff-export__tooltip"
+                id="ff-self-host-note"
+                role="tooltip"
+                popover="manual"
+              >
+                {t.self_host_note()}
+              </span>
+            </span>
+          </div>
           {selfHost.failed && (
             <p class="ff-error" role="alert">
               {t.self_host_error()}

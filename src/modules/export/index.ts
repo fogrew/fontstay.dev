@@ -17,6 +17,7 @@ export {
   type GenericFamily,
 } from './lib/model';
 export {
+  archiveFontFileName,
   prependSelfHost,
   SELF_HOST_BASE,
   type SelfHostFont,
