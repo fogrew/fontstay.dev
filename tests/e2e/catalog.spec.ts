@@ -207,6 +207,6 @@ test('a preset lists the stack fonts the fallbacks cannot use', async ({ page })
   await openStep(page, 'tuning');
   await expect(page.getByText('Stack preset applied: Slab serif')).toBeVisible();
   await expect(
-    page.getByText('Rockwell, Rockwell Nova, Roboto Slab have no metrics for the selected systems'),
+    page.getByText('Rockwell, Rockwell Nova, Roboto Slab are not used in the fallbacks'),
   ).toBeVisible({ timeout: 15_000 });
 });
