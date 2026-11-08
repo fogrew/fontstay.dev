@@ -863,10 +863,10 @@ export function ArticleView({
       </div>
     </>
   );
-  const inspectContent = (
+  const settingsContent = (
     <>
-      <fieldset class="ff-inspect__section">
-        <legend class="ff-inspect__legend">{t.article_group_fonts()}</legend>
+      <fieldset class="ff-settings__section">
+        <legend class="ff-settings__legend">{t.article_group_fonts()}</legend>
         <Select
           compact
           label={t.article_heading_font()}
@@ -889,14 +889,74 @@ export function ArticleView({
           onChange={(value) => setSubstitute(value as Substitute)}
         />
       </fieldset>
-      <fieldset class="ff-inspect__section ff-layers" disabled={!overlaid}>
-        <legend class="ff-inspect__legend">{t.article_group_layers()}</legend>
+      <fieldset class="ff-settings__section">
+        <legend class="ff-settings__legend">{t.article_group_text()}</legend>
+        <div class="ff-field ff-preview__slider">
+          <div class="ff-preview__label">
+            <label class="ff-preview__caption" for="ff-article-size">
+              {t.preview_size_label()}
+            </label>
+            <output for="ff-article-size">{size}px</output>
+          </div>
+          <input
+            class="ff-article-view__range ff-control"
+            id="ff-article-size"
+            type="range"
+            min={12}
+            max={32}
+            value={size}
+            onInput={(event) => setSize(event.currentTarget.valueAsNumber)}
+          />
+        </div>
+        <div class="ff-field ff-preview__slider">
+          <div class="ff-preview__label">
+            <label class="ff-preview__caption" for="ff-article-line">
+              {t.preview_line_height_label()}
+            </label>
+            <output for="ff-article-line">{lineHeight}</output>
+          </div>
+          <input
+            class="ff-article-view__range ff-control"
+            id="ff-article-line"
+            type="range"
+            min={1}
+            max={2.4}
+            step={0.05}
+            value={lineHeight}
+            onInput={(event) => setLineHeight(event.currentTarget.valueAsNumber)}
+          />
+        </div>
+        <Select
+          compact
+          label={t.article_wrap_label()}
+          value={wrap}
+          options={WRAPS.map((value) => ({ value, label: wrapLabel(value) }))}
+          onChange={(value) => setWrap(value as Wrap)}
+        />
+        <Select
+          compact
+          label={t.article_sample_label()}
+          value={articleId}
+          options={ARTICLE_LANGUAGES.map(([id, label]) => ({ value: id, label }))}
+          onChange={(value) => setArticleId(value as ArticleId)}
+        />
+      </fieldset>
+      {bodyItem && (
+        <LazyFontFeatures
+          locale={locale}
+          metrics={bodyItem.metrics}
+          selection={tuning?.selection}
+          onChange={(next) => setTunings((all) => ({ ...all, [bodyItem.id]: next }))}
+        />
+      )}
+      <fieldset class="ff-settings__section ff-layers" disabled={!overlaid}>
+        <legend class="ff-settings__legend">{t.article_group_layers()}</legend>
         {LAYER_KINDS.map((layer, row) => {
           const name = layer === 'web' ? t.preview_web_label() : t.preview_fallback_label();
           const caption = row === 0 ? undefined : 'ff-sr-only';
           return (
             <fieldset class="ff-layers__row" key={layer}>
-              <legend class="ff-inspect__legend ff-sr-only">{name}</legend>
+              <legend class="ff-settings__legend ff-sr-only">{name}</legend>
               <span class="ff-layers__name" aria-hidden="true">
                 {name}
               </span>
@@ -971,69 +1031,32 @@ export function ArticleView({
           );
         })}
       </fieldset>
+      <fieldset class="ff-settings__section" disabled={empty || !inspectable}>
+        <legend class="ff-settings__legend">{t.guides_enable()}</legend>
+        {GUIDES.map((id) => (
+          <button
+            key={id}
+            type="button"
+            class="ff-control ff-button ff-button--secondary ff-settings__toggle"
+            data-guide={id}
+            aria-pressed={guideOn[id]}
+            onClick={() => setGuideOn((all) => ({ ...all, [id]: !all[id] }))}
+          >
+            <ToolIcon name={id} />
+            {guideLabel(id)}
+          </button>
+        ))}
+        <button
+          type="button"
+          class="ff-control ff-button ff-button--secondary ff-settings__toggle"
+          aria-pressed={boxes}
+          onClick={() => setBoxes((on) => !on)}
+        >
+          <ToolIcon name="boxes" />
+          {t.boxes_enable()}
+        </button>
+      </fieldset>
     </>
-  );
-  const contentGroup = (
-    <fieldset class="ff-article-view__group">
-      <legend class="ff-article-view__group-legend">{t.article_group_content()}</legend>
-      <div class="ff-field ff-preview__slider">
-        <div class="ff-preview__label">
-          <label class="ff-preview__caption" for="ff-article-size">
-            {t.preview_size_label()}
-          </label>
-          <output for="ff-article-size">{size}px</output>
-        </div>
-        <input
-          class="ff-article-view__range ff-control"
-          id="ff-article-size"
-          type="range"
-          min={12}
-          max={32}
-          value={size}
-          onInput={(event) => setSize(event.currentTarget.valueAsNumber)}
-        />
-      </div>
-      <div class="ff-field ff-preview__slider">
-        <div class="ff-preview__label">
-          <label class="ff-preview__caption" for="ff-article-line">
-            {t.preview_line_height_label()}
-          </label>
-          <output for="ff-article-line">{lineHeight}</output>
-        </div>
-        <input
-          class="ff-article-view__range ff-control"
-          id="ff-article-line"
-          type="range"
-          min={1}
-          max={2.4}
-          step={0.05}
-          value={lineHeight}
-          onInput={(event) => setLineHeight(event.currentTarget.valueAsNumber)}
-        />
-      </div>
-      <Select
-        compact
-        label={t.article_wrap_label()}
-        value={wrap}
-        options={WRAPS.map((value) => ({ value, label: wrapLabel(value) }))}
-        onChange={(value) => setWrap(value as Wrap)}
-      />
-      <Select
-        compact
-        label={t.article_sample_label()}
-        value={articleId}
-        options={ARTICLE_LANGUAGES.map(([id, label]) => ({ value: id, label }))}
-        onChange={(value) => setArticleId(value as ArticleId)}
-      />
-      {bodyItem && (
-        <LazyFontFeatures
-          locale={locale}
-          metrics={bodyItem.metrics}
-          selection={tuning?.selection}
-          onChange={(next) => setTunings((all) => ({ ...all, [bodyItem.id]: next }))}
-        />
-      )}
-    </fieldset>
   );
 
   return (
@@ -1102,33 +1125,6 @@ export function ArticleView({
             {xrayContent}
           </Popover>
         </div>
-        <fieldset class="ff-toolbar__guides ff-button-group" disabled={empty || !inspectable}>
-          <legend class="ff-button-group__legend ff-sr-only">{t.guides_enable()}</legend>
-          {GUIDES.map((id) => (
-            <button
-              key={id}
-              type="button"
-              class="ff-control ff-button ff-button--secondary ff-tool-button"
-              data-guide={id}
-              aria-pressed={guideOn[id]}
-              aria-label={guideLabel(id)}
-              title={guideLabel(id)}
-              onClick={() => setGuideOn((all) => ({ ...all, [id]: !all[id] }))}
-            >
-              <ToolIcon name={id} />
-            </button>
-          ))}
-          <button
-            type="button"
-            class="ff-control ff-button ff-button--secondary ff-tool-button"
-            aria-pressed={boxes}
-            aria-label={t.boxes_enable()}
-            title={t.boxes_enable()}
-            onClick={() => setBoxes((on) => !on)}
-          >
-            <ToolIcon name="boxes" />
-          </button>
-        </fieldset>
         <DevicePicker
           locale={locale}
           value={device}
@@ -1141,10 +1137,7 @@ export function ArticleView({
             sizeFrame(next?.width);
           }}
         />
-        <Popover label={t.article_group_content()}>{contentGroup}</Popover>
-        <Popover label={t.article_group_inspect()} disabled={empty}>
-          {inspectContent}
-        </Popover>
+        <Popover label={t.article_group_settings()}>{settingsContent}</Popover>
         <DeviceShift
           locale={locale}
           results={shiftResults?.adjusted}

@@ -24,6 +24,7 @@ import {
   closePanels,
   expect,
   fillQuery,
+  LOCALES,
   listed,
   openExport,
   openPopover,
@@ -222,7 +223,7 @@ test('the article opens on the slider and switches between comparison and single
     /sans-serif/,
   );
 
-  await openPopover(view, 'Content');
+  await openPopover(view, 'Settings');
   await view.getByLabel(/Text size/).fill('24');
   await expect(view.locator('.ff-article:not([data-probe])')).toHaveCSS('font-size', '24px');
   await view.getByLabel(/Line height/).fill('2');
@@ -237,7 +238,7 @@ test('the inspect tools draw, fade and compare the web font and the fallback', a
   const view = page.getByRole('region', { name: 'Article' });
   await view.getByRole('button', { name: 'Overlay', exact: true }).click();
   await view.getByRole('button', { name: 'X-ray', exact: true }).click();
-  const inspect = view.getByRole('button', { name: /^Inspect/ });
+  const inspect = view.getByRole('button', { name: /^Settings/ });
   const openInspect = async () => {
     if ((await inspect.getAttribute('aria-expanded')) !== 'true') await inspect.click();
   };
@@ -256,8 +257,6 @@ test('the inspect tools draw, fade and compare the web font and the fallback', a
   await choose(layer('Adjusted fallback').getByLabel('Colour'), 'red');
   await expect(ghost).toHaveCSS('-webkit-text-stroke-color', /^rgb/);
 
-  await page.keyboard.press('Escape');
-  await expect(inspect).toHaveAttribute('aria-expanded', 'false');
   await view.getByRole('button', { name: 'Glyph boxes' }).click();
   await expect(view.getByRole('button', { name: 'Glyph boxes' })).toHaveAttribute(
     'aria-pressed',
@@ -267,6 +266,8 @@ test('the inspect tools draw, fade and compare the web font and the fallback', a
     2,
   );
 
+  await page.keyboard.press('Escape');
+  await expect(inspect).toHaveAttribute('aria-expanded', 'false');
   await view.getByRole('button', { name: 'Side by side', exact: true }).click();
   const side = view.locator('.ff-article-view__side');
   const rows = () =>
@@ -279,6 +280,7 @@ test('the inspect tools draw, fade and compare the web font and the fallback', a
   const body = view.locator('.ff-article:not([data-probe])').first();
   const guides = () => body.evaluate((node) => node.style.getPropertyValue('--ff-guides'));
   await expect.poll(guides).toBe('');
+  await openInspect();
   await view.getByRole('button', { name: 'Baseline', exact: true }).click();
   await expect.poll(guides).toContain('--ff-guide-baseline');
   expect(await guides()).not.toContain('--ff-guide-cap');
@@ -642,7 +644,7 @@ test('dropdowns and their options show a hover state', async ({ page }) => {
   await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(sourceSans);
   await closePanels(page);
   const view = page.getByRole('region', { name: 'Article' });
-  await openPopover(view, 'Content');
+  await openPopover(view, 'Settings');
   const trigger = view.getByLabel('Text wrapping');
   const background = (locator: typeof trigger) =>
     locator.evaluate((node) => getComputedStyle(node).backgroundColor);
@@ -672,7 +674,7 @@ test('the text wrapping and sample text controls change the article', async ({ p
   await closePanels(page);
   const view = page.getByRole('region', { name: 'Article' });
   const article = view.locator('.ff-article:not([data-probe])').first();
-  await openPopover(view, 'Content');
+  await openPopover(view, 'Settings');
   await choose(view.getByLabel('Text wrapping'), 'balance');
   await expect(article).toHaveCSS('text-wrap-mode', 'wrap');
   await expect(article).toHaveCSS('text-wrap-style', 'balance');
@@ -691,7 +693,7 @@ test('the article can be shown in many scripts and loads each text on demand', a
   await closePanels(page);
   const view = page.getByRole('region', { name: 'Article' });
   const article = view.locator('.ff-article:not([data-probe])').first();
-  await openPopover(view, 'Content');
+  await openPopover(view, 'Settings');
   for (const [id, direction] of [
     ['he', 'rtl'],
     ['th', 'ltr'],
@@ -1348,7 +1350,7 @@ test('no missing-character highlight before a web font is chosen', async ({ page
   await waitForGenerator(page);
   await closePanels(page);
   const view = page.getByRole('region', { name: 'Article' });
-  await openPopover(view, 'Content');
+  await openPopover(view, 'Settings');
   await choose(view.getByLabel('Sample text'), 'ja');
   await expect(view.getByRole('article')).toBeVisible();
   await expect(view.locator('.ff-article__missing')).toHaveCount(0);
@@ -1362,7 +1364,7 @@ test('characters missing from the font are highlighted and explained on focus', 
   await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(sourceSans);
   await closePanels(page);
   const view = page.getByRole('region', { name: 'Article' });
-  await openPopover(view, 'Content');
+  await openPopover(view, 'Settings');
   await choose(view.getByLabel('Sample text'), 'ja');
   const mark = view.locator('.ff-article:not(.ff-article--ghost) .ff-article__missing').first();
   await expect(mark).toBeVisible();
@@ -1383,7 +1385,7 @@ test('characters missing from the font are highlighted and explained on focus', 
   await mark.focus();
   await expect(mark).toBeFocused();
   expect(await overflow()).toEqual(before);
-  await openPopover(view, 'Inspect');
+  await openPopover(view, 'Settings');
   await choose(view.getByLabel('Missing characters'), 'serif');
   await expect(mark).toHaveAttribute('aria-description', /Serif/);
 });
@@ -1399,7 +1401,7 @@ test('the article shows the layout shift measured on this device and ellipsizes 
   await expect(view.getByRole('status').filter({ hasText: /CLS.*\d\.\d{3}/ })).toBeVisible({
     timeout: 20_000,
   });
-  await openPopover(view, 'Content');
+  await openPopover(view, 'Settings');
   await choose(view.getByLabel('Text wrapping'), 'nowrap');
   await expect(view.locator('.ff-article__lead').first()).toHaveCSS('text-overflow', 'ellipsis');
   await expect(view.locator('.ff-article__lead').first()).toHaveCSS('overflow', 'hidden');
@@ -2334,7 +2336,7 @@ test('several fonts share the article and the export and are tuned one by one', 
   await expect(code).not.toContainText('Source Sans Pro Fallback');
   await closePanels(page);
   const view = page.getByRole('region', { name: 'Article' });
-  await openPopover(view, 'Inspect');
+  await openPopover(view, 'Settings');
   await expect(view.getByLabel('Headings font')).toBeVisible();
   await expect(view.getByLabel('Text font')).toBeVisible();
   await expect(view.locator('.ff-article:not([data-probe])').first()).toBeVisible();
@@ -2764,7 +2766,7 @@ test('the preview toolbar stays above the article while scrolling and its popove
   await page.evaluate(() => window.scrollTo(0, 900));
   await expect.poll(async () => (await toolbar.boundingBox())?.y ?? -1).toBeLessThan(2);
   await expect(toolbar).toBeInViewport();
-  await openPopover(view, 'Content');
+  await openPopover(view, 'Settings');
   const panel = view.locator('.ff-popover__panel:visible').first();
   const box = await panel.boundingBox();
   expect(box?.y).toBeGreaterThanOrEqual(0);
@@ -3567,7 +3569,7 @@ for (const width of [320, 768, 1280]) {
     await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(sourceSans);
     await closePanels(page);
     const view = page.getByRole('region', { name: 'Article' });
-    for (const name of ['Content', 'Inspect']) {
+    for (const name of ['Settings']) {
       await openPopover(view, name);
       const panel = view.locator('.ff-popover__panel:not([hidden])');
       await expect(panel).toBeVisible();
@@ -3580,6 +3582,60 @@ for (const width of [320, 768, 1280]) {
         .click();
     }
   });
+}
+
+for (const locale of LOCALES) {
+  for (const width of [320, 1280]) {
+    test(`${locale}: the settings panel has no horizontal scroll at ${width}px`, async ({
+      page,
+    }) => {
+      await page.setViewportSize({ width, height: 800 });
+      await page.goto(`/${locale}/`);
+      await waitForGenerator(page);
+      await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(sourceSans);
+      await closePanels(page);
+      const view = page.locator('.ff-article-view');
+      const toolbar = view.locator('.ff-toolbar');
+      const popover = toolbar.locator('.ff-popover', {
+        has: page.locator('.ff-settings__section'),
+      });
+      await popover.locator('.ff-popover__button').click();
+      const panel = popover.locator('.ff-popover__panel');
+      await expect(panel).toBeVisible();
+      const fit = await panel.evaluate((node) => ({
+        clipped: node.scrollWidth > node.clientWidth,
+        list: [...node.querySelectorAll('.ff-details__checklist')].some(
+          (list) => list.scrollHeight > list.clientHeight,
+        ),
+        sections: node.querySelectorAll('.ff-settings__section').length,
+      }));
+      expect(fit.sections).toBeGreaterThanOrEqual(4);
+      expect(fit.clipped).toBe(false);
+      expect(fit.list).toBe(false);
+      const overlap = await panel.evaluate((node) => {
+        const boxes = [...node.querySelectorAll('.ff-preview__label')].map((label) => {
+          const caption = label.firstElementChild?.getBoundingClientRect();
+          const value = label.lastElementChild?.getBoundingClientRect();
+          return { caption, value };
+        });
+        return boxes.some(
+          ({ caption, value }) =>
+            caption &&
+            value &&
+            caption.top < value.bottom &&
+            value.top < caption.bottom &&
+            caption.left < value.right &&
+            value.left < caption.right,
+        );
+      });
+      expect(overlap).toBe(false);
+      expect(
+        await page.evaluate(
+          () => document.documentElement.scrollWidth <= document.documentElement.clientWidth,
+        ),
+      ).toBe(true);
+    });
+  }
 }
 
 test('fallback options show the predicted shift and a labelled scale, with a hint on the order', async ({
