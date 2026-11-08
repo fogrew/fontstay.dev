@@ -55,6 +55,8 @@
   "fit_descent_label": "descent-override",
   "fit_line_gap_label": "line-gap-override",
   "css_code_label": "Сгенерированный CSS",
+  "css_expand": "Развернуть сгенерированный CSS",
+  "css_collapse": "Закрыть полноэкранный CSS",
   "css_error": "Не удалось сгенерировать CSS для этого шрифта.",
   "preview_web_label": "Веб-шрифт",
   "preview_fallback_label": "Запасной шрифт с подгонкой",
