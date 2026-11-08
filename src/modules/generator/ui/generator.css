@@ -269,6 +269,10 @@
   display: grid;
   gap: var(--ff-space-2);
 }
+.ff-map--ids {
+  min-block-size: 26rem;
+  align-content: start;
+}
 .ff-map__text {
   margin: 0;
 }

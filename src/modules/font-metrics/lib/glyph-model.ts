@@ -2,7 +2,8 @@ export const MAX_GLYPHS = 65535;
 export const MAX_GLYPH_ALTERNATES = 20000;
 export const MAX_GLYPH_PATH_LENGTH = 100_000;
 export const GLYPH_TIMEOUT_MS = 5000;
-export const GLYPH_BUDGET_MS = 3500;
+export const GLYPH_BUDGET_MS = 3000;
+export const GSUB_BUDGET_MS = 1000;
 
 export const GLYPH_ENCODED = 1;
 export const GLYPH_EMPTY = 2;

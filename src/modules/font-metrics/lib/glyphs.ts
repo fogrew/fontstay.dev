@@ -6,6 +6,7 @@ import {
   GLYPH_ENCODED,
   type GlyphAlternate,
   type GlyphTable,
+  GSUB_BUDGET_MS,
   MAX_GLYPH_ALTERNATES,
   MAX_GLYPH_PATH_LENGTH,
   MAX_GLYPHS,
@@ -15,7 +16,10 @@ import { validateFontBuffer } from './validate';
 
 const MAX_READS = 2_000_000;
 const MAX_RANGES = 4096;
+const CLOCK_INTERVAL = 4096;
 const FEATURE_TAG = /^[A-Za-z0-9]{4}$/;
+
+class BudgetError extends Error {}
 
 function openFont(buffer: ArrayBuffer) {
   validateFontBuffer(buffer);
@@ -24,13 +28,23 @@ function openFont(buffer: ArrayBuffer) {
   return font;
 }
 
-function readSubstitutions(bytes: Uint8Array, glyphs: number): GlyphAlternate[] {
+function readSubstitutions(bytes: Uint8Array, glyphs: number, deadline: number): GlyphAlternate[] {
   const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
   let reads = 0;
+  let clockAt = 0;
+  const charge = (units: number) => {
+    reads += units;
+    if (reads > MAX_READS) throw new BudgetError();
+    if (reads >= clockAt) {
+      clockAt = reads + CLOCK_INTERVAL;
+      if (Date.now() > deadline) throw new BudgetError();
+    }
+  };
   const check = (offset: number, size: number) => {
-    if (offset < 0 || offset + size > view.byteLength || ++reads > MAX_READS) {
+    if (offset < 0 || offset + size > view.byteLength) {
       throw new RangeError('layout table out of bounds');
     }
+    charge(1);
   };
   const u16 = (offset: number) => {
     check(offset, 2);
@@ -61,6 +75,7 @@ function readSubstitutions(bytes: Uint8Array, glyphs: number): GlyphAlternate[] 
         const start = u16(record);
         const end = Math.min(u16(record + 2), glyphs - 1);
         const index = u16(record + 4);
+        charge(Math.max(0, end - start + 1));
         for (let glyph = start; glyph <= end; glyph++) {
           if (index + glyph - start < glyphs) out[index + glyph - start] = glyph;
         }
@@ -69,7 +84,10 @@ function readSubstitutions(bytes: Uint8Array, glyphs: number): GlyphAlternate[] 
     return out;
   };
 
+  const parsed = new Set<number>();
   const subtable = (type: number, offset: number, tag: string): void => {
+    if (parsed.has(offset)) return;
+    parsed.add(offset);
     if (type === 7) {
       if (u16(offset) !== 1) return;
       const inner = u16(offset + 2);
@@ -79,6 +97,7 @@ function readSubstitutions(bytes: Uint8Array, glyphs: number): GlyphAlternate[] 
     if (type !== 1 && type !== 3 && type !== 4) return;
     const format = u16(offset);
     const covered = coverage(offset + u16(offset + 2));
+    charge(covered.length);
     if (type === 1) {
       if (format === 1) {
         const delta = (u16(offset + 4) << 16) >> 16;
@@ -131,7 +150,8 @@ function readSubstitutions(bytes: Uint8Array, glyphs: number): GlyphAlternate[] 
           try {
             subtable(type, lookup + u16(lookup + 6 + s * 2), tag);
           } catch (error) {
-            if (found.size >= MAX_GLYPH_ALTERNATES || reads > MAX_READS) throw error;
+            if (error instanceof BudgetError) throw error;
+            if (found.size >= MAX_GLYPH_ALTERNATES) throw error;
           }
         }
       }
@@ -184,7 +204,10 @@ export function readGlyphTable(
       advances: advances.slice(0, count),
       bounds: bounds.slice(0, count * 4),
       flags: flags.slice(0, count),
-      alternates: gsub && gsub.length >= 10 ? readSubstitutions(gsub, count) : [],
+      alternates:
+        gsub && gsub.length >= 10
+          ? readSubstitutions(gsub, count, Date.now() + GSUB_BUDGET_MS)
+          : [],
     };
   } catch (error) {
     if (error instanceof FontParseError) throw error;

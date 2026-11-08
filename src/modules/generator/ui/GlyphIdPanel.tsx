@@ -42,7 +42,7 @@ function GlyphOutline({
   const canvas = useRef<HTMLCanvasElement>(null);
   const [path, setPath] = useState<string | null>();
   const { em, ascent, descent } = glyphVertical(metrics);
-  const bounds = glyphBounds(table, glyph);
+  const bounds = useMemo(() => glyphBounds(table, glyph), [table, glyph]);
   const advance = table.advances[glyph] ?? 0;
   const alternate =
     mode === 'alternates' ? table.alternates.find((item) => item.glyph === glyph) : undefined;
@@ -152,15 +152,19 @@ export function GlyphIdPanel({ locale, metrics, bytes, mode }: GlyphIdPanelProps
 
   if (table === undefined)
     return (
-      <p class="ff-muted" role="status">
-        {t.glyph_loading()}
-      </p>
+      <div class="ff-map ff-map--ids">
+        <p class="ff-muted" role="status">
+          {t.glyph_loading()}
+        </p>
+      </div>
     );
   if (table === null)
     return (
-      <p class="ff-muted" role="alert">
-        {t.glyph_failed()}
-      </p>
+      <div class="ff-map ff-map--ids">
+        <p class="ff-muted" role="alert">
+          {t.glyph_failed()}
+        </p>
+      </div>
     );
 
   const pages = Math.max(1, Math.ceil(ids.length / PAGE_SIZE));
@@ -175,7 +179,7 @@ export function GlyphIdPanel({ locale, metrics, bytes, mode }: GlyphIdPanelProps
   };
 
   return (
-    <div class="ff-map">
+    <div class="ff-map ff-map--ids">
       <p class="ff-map__text">
         {t.glyph_summary({ count: table.count, unencoded, alternates: table.alternates.length })}
       </p>
@@ -242,6 +246,7 @@ export function GlyphIdPanel({ locale, metrics, bytes, mode }: GlyphIdPanelProps
                   data-gid={id}
                   data-covered="true"
                   data-cursor={id === shown}
+                  aria-current={id === shown ? 'true' : undefined}
                 >
                   {id}
                 </span>
