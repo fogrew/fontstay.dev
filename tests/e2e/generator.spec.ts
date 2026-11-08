@@ -3569,18 +3569,12 @@ for (const width of [320, 768, 1280]) {
     await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(sourceSans);
     await closePanels(page);
     const view = page.getByRole('region', { name: 'Article' });
-    for (const name of ['Settings']) {
-      await openPopover(view, name);
-      const panel = view.locator('.ff-popover__panel:not([hidden])');
-      await expect(panel).toBeVisible();
-      const box = await panel.boundingBox();
-      expect(box?.x).toBeGreaterThanOrEqual(-0.5);
-      expect((box?.x ?? 0) + (box?.width ?? 0)).toBeLessThanOrEqual(width + 0.5);
-      await view
-        .getByRole('button', { name: new RegExp(`^${name}`) })
-        .first()
-        .click();
-    }
+    await openPopover(view, 'Settings');
+    const panel = view.locator('.ff-popover__panel:not([hidden])');
+    await expect(panel).toBeVisible();
+    const box = await panel.boundingBox();
+    expect(box?.x).toBeGreaterThanOrEqual(-0.5);
+    expect((box?.x ?? 0) + (box?.width ?? 0)).toBeLessThanOrEqual(width + 0.5);
   });
 }
 
