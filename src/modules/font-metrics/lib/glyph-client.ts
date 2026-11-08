@@ -37,7 +37,7 @@ function request(message: GlyphRequest, signal?: AbortSignal): Promise<GlyphResp
     return Promise.resolve(null);
   }
   return runWorkerTask<GlyphRequest, GlyphResponse>(
-    () => new Worker(new URL('./glyphs.worker.ts', import.meta.url), { type: 'module' }),
+    () => new Worker(new URL('./parse.worker.ts', import.meta.url), { type: 'module' }),
     message,
     {
       timeoutMs: GLYPH_TIMEOUT_MS,
