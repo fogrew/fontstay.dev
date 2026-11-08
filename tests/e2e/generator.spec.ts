@@ -1707,6 +1707,44 @@ test('a share link reproduces the open panel and the preview modes with a compac
   await fresh.close();
 });
 
+test('pinning the auto-fit values puts the fit numbers in a compact link', async ({
+  page,
+  context,
+}) => {
+  await context.grantPermissions(['clipboard-read', 'clipboard-write']);
+  await page.goto('/en/');
+  await waitForGenerator(page);
+  await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(sourceSans);
+  await expect(page.getByRole('button', { name: /^Remove: SourceSansPro-Regular/ })).toBeVisible();
+  const share = async () => {
+    await page.getByRole('button', { name: 'Share', exact: true }).click();
+    await expect(page.getByRole('status').filter({ hasText: /link was copied/ })).toBeVisible();
+    const payload = (await page.evaluate(() => navigator.clipboard.readText())).split('#s=')[1];
+    return page.evaluate(async (value) => {
+      const text = value.replace(/-/g, '+').replace(/_/g, '/');
+      const bytes = Uint8Array.from(atob(text), (char) => char.charCodeAt(0));
+      const stream = new Blob([bytes]).stream().pipeThrough(new DecompressionStream('deflate-raw'));
+      return { length: value.length, state: JSON.parse(await new Response(stream).text()) };
+    }, payload ?? '');
+  };
+  const plain = await share();
+  expect(plain.state.manual).toBeUndefined();
+  await page.getByLabel('Pin auto-fit values').check();
+  await page.waitForTimeout(500);
+  const pinned = await share();
+  const entries = Object.values(pinned.state.manual ?? {}) as Record<string, number>[];
+  expect(entries.length).toBeGreaterThan(0);
+  for (const entry of entries) {
+    expect(Object.keys(entry).sort()).toEqual([
+      'ascentOverride',
+      'descentOverride',
+      'lineGapOverride',
+      'sizeAdjust',
+    ]);
+  }
+  expect(pinned.length).toBeLessThan(1500);
+});
+
 const encodeLink = (page: Page, state: object) =>
   page.evaluate(async (value) => {
     const bytes = new TextEncoder().encode(JSON.stringify(value));

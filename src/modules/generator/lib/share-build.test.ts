@@ -7,6 +7,7 @@ import {
   isStaleLink,
   keepKnownPicks,
   mergePicks,
+  pinFitValues,
 } from './share-build';
 
 const preset = { windows: ['arial', 'segoe-ui'], macos: ['helvetica'] };
@@ -165,6 +166,21 @@ describe('data version', () => {
       picks: { windows: ['arial'], macos: ['gone'] },
       manual: { arial: { sizeAdjust: 100 } },
       others: { 'a.woff2': { style: 'bold' } },
+    });
+  });
+
+  it('pins fits as rounded percentages', () => {
+    expect(
+      pinFitValues({
+        arial: {
+          sizeAdjust: 1.04567,
+          ascentOverride: 0.9,
+          descentOverride: 0.2,
+          lineGapOverride: 0,
+        },
+      }),
+    ).toEqual({
+      arial: { sizeAdjust: 104.57, ascentOverride: 90, descentOverride: 20, lineGapOverride: 0 },
     });
   });
 });
