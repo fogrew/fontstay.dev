@@ -65,6 +65,8 @@ export interface FitFontReport {
   coverage: number;
   picks: { system: OsId; share: number; family: string }[];
   fallbackFamilies: string[];
+  /** True when the font could not be shaped, so the fit assumes the metrics-only width of the web font. */
+  webRatioFailed: boolean;
 }
 
 export interface FitOutput {

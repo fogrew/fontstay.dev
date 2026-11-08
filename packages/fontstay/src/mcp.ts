@@ -228,6 +228,9 @@ function warningsOf(result: FitOutput): string[] {
         `${font.fileName}: the fallbacks share only ${Math.round(font.coverage * 100)}% of its glyphs.`,
       );
     }
+    if (font.webRatioFailed) {
+      warnings.push(`${font.fileName}: could not shape the font, the web width is estimated.`);
+    }
   }
   if (result.uncovered.length > 0) {
     warnings.push(`No fallback fonts available for: ${result.uncovered.join(', ')}.`);

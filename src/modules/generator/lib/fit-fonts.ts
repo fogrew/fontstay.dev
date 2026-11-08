@@ -72,6 +72,7 @@ export interface FitFontReport {
   coverage: number;
   picks: { system: OsId; share: number; family: string }[];
   fallbackFamilies: string[];
+  webRatioFailed: boolean;
 }
 
 export interface FitResult {
@@ -141,7 +142,7 @@ async function fitFont(
     throw failure;
   }
 
-  const optimized =
+  const optimizedFit =
     optimizer && anyRanking && chosen[0]
       ? await optimizeFaces(
           {
@@ -157,7 +158,8 @@ async function fitFont(
           },
           optimizer,
         )
-      : new Map<string, Overrides>();
+      : { found: new Map<string, Overrides>(), webRatioFailed: false };
+  const optimized = optimizedFit.found;
 
   const ranges = compactRanges(metrics.codePoints);
   const range = options.unicodeRange && ranges.length > 0 ? formatUnicodeRange(ranges) : undefined;
@@ -228,6 +230,7 @@ async function fitFont(
         family: item.candidate.family,
       })),
       fallbackFamilies,
+      webRatioFailed: optimizedFit.webRatioFailed,
     },
   };
 }
