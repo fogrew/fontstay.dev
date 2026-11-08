@@ -1,5 +1,6 @@
 import type { FontMetrics } from '@/modules/font-metrics';
-import { autoFit } from './auto-fit';
+import type { PredictModel } from '@/modules/layout-shift';
+import { type AutoFitResult, autoFit } from './auto-fit';
 import { fallbackRatio, webRatio } from './calibration';
 import type { Overrides } from './css';
 import type { SpacingEm } from './loading';
@@ -19,6 +20,30 @@ export interface OptimizeFacesInput {
   faces: readonly Candidate[];
 }
 
+export interface FaceStepInput {
+  candidate: Candidate;
+  manual?: Partial<Overrides>;
+  widthK: number;
+  model: PredictModel;
+  spacing: SpacingEm;
+  free: boolean;
+  manualSpacing?: { letter: boolean; word: boolean };
+  signal?: AbortSignal | undefined;
+}
+
+export function optimizeFace(input: FaceStepInput): Promise<AutoFitResult | null> {
+  const { candidate, manual, widthK, model, spacing, free, manualSpacing, signal } = input;
+  return autoFit({
+    candidate,
+    manual: manual ?? {},
+    widthK,
+    spacing,
+    pinSpacing: { letter: !free || !!manualSpacing?.letter, word: !free || !!manualSpacing?.word },
+    model,
+    signal,
+  });
+}
+
 export function newOptimizerState(): OptimizerState {
   return { spacing: { letter: 0, word: 0 }, free: true };
 }
@@ -33,13 +58,12 @@ export async function optimizeFaces(
   const found = new Map<string, Overrides>();
   for (const [index, candidate] of faces.entries()) {
     const free = state.free && index === 0;
-    const result = await autoFit({
+    const result = await optimizeFace({
       candidate,
-      manual: {},
       widthK: fallbackRatio(candidate, language) ?? 1,
-      spacing: state.spacing,
-      pinSpacing: { letter: !free, word: !free },
       model,
+      spacing: state.spacing,
+      free,
     });
     if (!result) continue;
     found.set(candidate.id, result.adjustment);
