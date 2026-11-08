@@ -76,7 +76,7 @@
   "results_empty": "Carga una fuente para ver aquí el ajuste del respaldo, el CSS y la vista previa.",
   "preview_load_failed": "El navegador no pudo cargar este archivo de fuente, por lo que la vista previa no puede mostrarla. El CSS generado se sigue aplicando a la fuente en tu sitio.",
   "fit_low_coverage": "Esta fuente tiene glifos solo para una parte de las letras de muestra, por lo que el ajuste no es fiable. Proporción cubierta:",
-  "fit_ratio_failed": "No se pudo medir el ancho de esta fuente web, por lo que el ajuste supone que coincide con el del texto de respaldo. Los resultados pueden ser inexactos.",
+  "fit_ratio_failed": "No se pudo medir el ancho de una fuente web, por lo que el ajuste supone que coincide con el del texto de respaldo. Los resultados pueden ser inexactos.",
   "audience_heading": "Audiencia (navegadores)",
   "audience_preset_widely": "Baseline ampliamente disponible",
   "audience_preset_newly": "Baseline recién disponible",
