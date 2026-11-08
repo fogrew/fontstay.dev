@@ -4,7 +4,12 @@ import { decodeCatalog, downloadFont, fileUrl } from './fontsource';
 
 const [aileron] = decodeCatalog({
   categories: ['Sans Serif', 'Other'],
-  families: [['aileron', 'Aileron', 0, ['latin'], ['400', '400i'], '5.3.0']],
+  licenses: ['OFL-1.1', 'MIT'],
+  families: [['aileron', 'Aileron', 0, ['latin'], ['400', '400i'], '5.3.0', 1]],
+});
+
+it('decodes the license', () => {
+  expect(aileron?.license).toBe('MIT');
 });
 
 describe('fileUrl', () => {

@@ -5,10 +5,11 @@ import { bestMatchIndex, parseStyle, searchFamilies } from './types';
 
 const families = decodeCatalog({
   categories: ['Sans Serif', 'Serif', 'Monospace'],
+  licenses: ['OFL-1.1', 'Apache-2.0'],
   families: [
-    ['Open Sans', 0, ['latin', 'cyrillic'], ['400', '700', '400i'], []],
-    ['Lora', 1, ['latin'], ['400'], []],
-    ['Fira Code', 2, ['latin'], ['400'], ['wght']],
+    ['Open Sans', 0, ['latin', 'cyrillic'], ['400', '700', '400i'], [], 0],
+    ['Lora', 1, ['latin'], ['400'], [], 1],
+    ['Fira Code', 2, ['latin'], ['400'], ['wght'], 0],
   ],
 });
 
@@ -149,5 +150,11 @@ describe('downloadFont', () => {
         }),
       ),
     ).rejects.toMatchObject({ code: 'too-large' });
+  });
+});
+
+describe('decodeCatalog license', () => {
+  it('maps the license index to its name', () => {
+    expect(families.map((family) => family.license)).toEqual(['OFL-1.1', 'Apache-2.0', 'OFL-1.1']);
   });
 });

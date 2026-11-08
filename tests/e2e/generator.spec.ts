@@ -1513,7 +1513,7 @@ test('the default family list is long, a second click deselects, the source link
   expect(await list.getByRole('option').count()).toBeGreaterThanOrEqual(40);
   await expect(page.getByText('they see your IP address')).toHaveCount(0);
 
-  const option = list.getByRole('option', { name: /^Roboto\s*Google Fonts/ });
+  const option = list.getByRole('option', { name: /^Roboto, Google Fonts/ });
   await option.click();
   await expect(option).toHaveAttribute('aria-selected', 'true');
   const link = page.locator('.ff-source__chosen').getByRole('link', { name: 'Google Fonts' });
@@ -1525,7 +1525,7 @@ test('the default family list is long, a second click deselects, the source link
   await expect(option).toHaveAttribute('aria-selected', 'false');
   await expect(page.locator('.ff-source__chosen')).toHaveCount(0);
 
-  await list.getByRole('option', { name: /^Geist Sans\s*Fontsource/ }).click();
+  await list.getByRole('option', { name: /^Geist Sans, Fontsource/ }).click();
   await expect(page.locator('.ff-source__chosen').getByRole('link')).toHaveAttribute(
     'href',
     'https://fontsource.org/fonts/geist-sans',
@@ -2812,7 +2812,7 @@ test.describe('the single input field', () => {
     await field.focus();
     await field.press('Tab');
     await expect(field).toHaveValue('');
-    await expect(page.getByRole('region', { name: 'Matching families' })).toBeFocused();
+    await expect(page.locator('#ff-input-hint').getByRole('link').first()).toBeFocused();
     await expect(list).not.toBeFocused();
     await expect(list).not.toHaveAttribute('tabindex');
 
@@ -2956,8 +2956,57 @@ test.describe('the single input field', () => {
       list.getByRole('option', { name: /^Roboto\b.*Google Fonts/ }).first(),
     ).toBeVisible();
     await field.fill('a');
-    await expect(list.getByText('Fontsource').first()).toBeVisible();
-    await expect(list.getByText('Google Fonts').first()).toBeVisible();
+    await expect(list.getByRole('option', { name: /Fontsource/ }).first()).toBeVisible();
+    await expect(list.getByRole('option', { name: /Google Fonts/ }).first()).toBeVisible();
+  });
+
+  test('arrow keys move focus through the list and Enter and Escape act on it', async ({
+    page,
+  }) => {
+    const field = await open(page);
+    await field.fill('roboto');
+    const list = page.getByRole('listbox', { name: 'Matching families' });
+    const options = list.getByRole('option');
+    await expect(options.first()).toBeVisible();
+    await options.first().focus();
+    const scrollY = await page.evaluate(() => window.scrollY);
+    await page.keyboard.press('ArrowDown');
+    await expect(options.nth(1)).toBeFocused();
+    await page.keyboard.press('ArrowUp');
+    await expect(options.first()).toBeFocused();
+    await page.keyboard.press('End');
+    await expect(options.last()).toBeFocused();
+    expect(await page.evaluate(() => window.scrollY)).toBe(scrollY);
+    await page.keyboard.press('Enter');
+    await expect(options.last()).toHaveAttribute('aria-selected', 'true');
+    await page.keyboard.press('Escape');
+    await expect(field).toBeFocused();
+  });
+
+  test('a list row shows service and license icons with a tooltip', async ({ page }) => {
+    const field = await open(page);
+    await field.fill('roboto');
+    const option = page
+      .getByRole('listbox', { name: 'Matching families' })
+      .getByRole('option', { name: /^Roboto, Google Fonts, license OFL-1.1$/ });
+    await expect(option).toBeVisible();
+    await option.hover();
+    await expect(page.locator('.ff-source__tip')).toHaveText('Google Fonts · license OFL-1.1');
+    await page.mouse.move(0, 0);
+    await expect(page.locator('.ff-source__tip')).toHaveCount(0);
+    await option.focus();
+    await expect(page.locator('.ff-source__tip')).toBeVisible();
+  });
+
+  test('the hint links both services and the catalog link line is gone', async ({ page }) => {
+    await open(page);
+    const hint = page.locator('#ff-input-hint');
+    await expect(hint.getByRole('link', { name: 'Google Fonts' })).toHaveAttribute(
+      'href',
+      'https://fonts.google.com/',
+    );
+    await expect(hint.getByRole('link', { name: 'Fontsource' })).toBeVisible();
+    await expect(page.getByText('Browse the catalogs')).toHaveCount(0);
   });
 
   test('a name that matches nothing says so', async ({ page }) => {

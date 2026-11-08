@@ -12,6 +12,8 @@ list, search, style and subset UI; a `FontSource` supplies the catalog and the d
   fetched from `cdn.jsdelivr.net/fontsource/fonts/<id>@<npm version>/` with an id, version, subset
   and style built from validated parts.
 
+Both catalogs carry a license index per family (`licenses` list plus one number per family): Google families get it from the `ofl/`, `apache/` and `ufl/` directories of `github.com/google/fonts`, Fontsource families from the API `license` field.
+
 Catalogs are loaded lazily when a picker is first opened. Downloads check the https host and
 path, are size bounded and time out after 15 s. The file then goes through the normal upload
 path, so it is validated like any file. These three origins are the only network access in the

@@ -1,6 +1,6 @@
 import { useEffect, useId, useMemo, useState } from 'preact/hooks';
 import { type Locale, messagesFor } from '@/common/i18n';
-import { Button, Popover, ScrollShadow, ToggleGroup } from '@/common/ui';
+import { Button, Icon, Popover, ScrollShadow, ToggleGroup } from '@/common/ui';
 import { FontSourceError } from '../lib/download';
 import {
   downloadOrigin,
@@ -16,6 +16,7 @@ import {
   parseStyle,
   searchFamilies,
 } from '../lib/types';
+import { ServiceIcon } from './ServiceLink';
 
 type Catalog =
   | { state: 'loading' }
@@ -88,6 +89,7 @@ export function useFamilySearch({
   const [message, setMessage] = useState('');
   const [downloading, setDownloading] = useState(false);
   const [navigation, setNavigation] = useState<{ query: string; index: number }>();
+  const [tip, setTip] = useState<{ text: string; left: number; top: number }>();
 
   useEffect(() => {
     for (const id of Object.keys(SOURCES) as SourceId[]) {
@@ -143,6 +145,46 @@ export function useFamilySearch({
     const names = scriptsOf(family);
     setSubsets(new Set([names.includes('latin') ? 'latin' : (names[0] ?? 'latin')]));
     setMessage('');
+  };
+  const toggle = (hit: Hit) => {
+    if (isChosen(hit)) {
+      setChosen(undefined);
+      setMessage('');
+    } else choose(hit);
+  };
+  const optionElement = (index: number) => document.getElementById(`${listId}-option-${index}`);
+  const showTip = (hit: Hit, index: number) => {
+    const badges = optionElement(index)?.querySelector('.ff-source__badges');
+    if (!badges) return;
+    const box = badges.getBoundingClientRect();
+    setTip({
+      text: t.source_tip({ service: sourceName(hit.source), license: hit.family.license }),
+      left: box.right,
+      top: box.top,
+    });
+  };
+  const handleListKeyDown = (event: KeyboardEvent) => {
+    if (event.isComposing || event.altKey || event.ctrlKey || event.metaKey) return;
+    const current = activeIndex < 0 ? 0 : activeIndex;
+    let index: number | undefined;
+    if (event.key === 'ArrowDown') index = Math.min(current + 1, hits.length - 1);
+    else if (event.key === 'ArrowUp') index = Math.max(current - 1, 0);
+    else if (event.key === 'Home') index = 0;
+    else if (event.key === 'End') index = hits.length - 1;
+    if (index !== undefined) {
+      event.preventDefault();
+      setNavigation({ query, index });
+      optionElement(index)?.focus();
+    } else if (event.key === 'Enter' || event.key === ' ') {
+      const hit = hits[current];
+      if (!hit) return;
+      event.preventDefault();
+      toggle(hit);
+    } else if (event.key === 'Escape') {
+      event.preventDefault();
+      setTip(undefined);
+      document.getElementById('ff-input-text')?.focus();
+    }
   };
   const handleKeyDown = (event: KeyboardEvent) => {
     if (event.isComposing || event.shiftKey || event.altKey || event.ctrlKey || event.metaKey)
@@ -249,33 +291,54 @@ export function useFamilySearch({
               role="listbox"
               class="ff-generator__list ff-source__list"
               aria-label={t.source_list_label()}
+              onKeyDown={handleListKeyDown}
+              onMouseLeave={() => setTip(undefined)}
             >
               {hits.map((hit, index) => (
-                // biome-ignore lint/a11y/useFocusableInteractive lint/a11y/useKeyWithClickEvents: keyboard selection stays on the textarea
+                // biome-ignore lint/a11y/useKeyWithClickEvents: keys are handled on the listbox
                 <div
                   id={`${listId}-option-${index}`}
                   role="option"
-                  aria-selected={
-                    chosen?.source === hit.source && chosen.family.id === hit.family.id
-                  }
-                  class={`ff-control ff-generator__item ff-source__item${index === activeIndex ? ' ff-source__item--active' : ''}${chosen?.source === hit.source && chosen.family.id === hit.family.id ? ' ff-source__item--chosen' : ''}`}
+                  tabIndex={index === (activeIndex < 0 ? 0 : activeIndex) ? 0 : -1}
+                  aria-selected={isChosen(hit)}
+                  aria-label={t.source_option_label({
+                    name: hit.family.name,
+                    service: sourceName(hit.source),
+                    license: hit.family.license,
+                  })}
+                  class={`ff-control ff-generator__item ff-source__item${index === activeIndex ? ' ff-source__item--active' : ''}${isChosen(hit) ? ' ff-source__item--chosen' : ''}`}
                   key={`${hit.source}-${hit.family.id}`}
                   onClick={() => {
                     setNavigation({ query, index });
-                    if (isChosen(hit)) {
-                      setChosen(undefined);
-                      setMessage('');
-                    } else choose(hit);
+                    toggle(hit);
                   }}
+                  onFocus={() => {
+                    setNavigation({ query, index });
+                    showTip(hit, index);
+                  }}
+                  onBlur={() => setTip(undefined)}
+                  onMouseEnter={() => showTip(hit, index)}
                 >
                   <span>{hit.family.name}</span>
-                  <span class="ff-muted">{sourceName(hit.source)}</span>
+                  <span class="ff-source__badges" aria-hidden="true">
+                    <Icon name="license" />
+                    <ServiceIcon source={hit.source} />
+                  </span>
                 </div>
               ))}
             </div>
           </ScrollShadow>
         ) : (
           loading && <div class="ff-source__placeholder" aria-hidden="true" />
+        )}
+        {tip && (
+          <div
+            class="ff-source__tip"
+            aria-hidden="true"
+            style={{ left: `${tip.left}px`, top: `${tip.top}px` }}
+          >
+            {tip.text}
+          </div>
         )}
         {chosen && (
           <div class="ff-source__chosen">
@@ -398,26 +461,6 @@ export function useFamilySearch({
         )}
         <p role="status" class="ff-source__text ff-muted">
           {message}
-        </p>
-        <p class="ff-source__text ff-muted">
-          {t.source_browse()}{' '}
-          <a
-            class="ff-link"
-            href="https://fonts.google.com/"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            {t.source_name_google()}
-          </a>
-          {', '}
-          <a
-            class="ff-link"
-            href="https://fontsource.org/fonts"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            {t.source_name_fontsource()}
-          </a>
         </p>
       </div>
     ) : null,

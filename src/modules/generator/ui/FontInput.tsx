@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'preact/hooks';
 import { type Locale, messagesFor } from '@/common/i18n';
 import { Button } from '@/common/ui';
-import { type FontOrigin, useFamilySearch } from '@/modules/font-sources';
+import { type FontOrigin, ServiceLink, useFamilySearch } from '@/modules/font-sources';
 import type { SiteImport } from '@/modules/import-receiver';
 import { readClipboardImport, SiteImportPanel, SplitWarnings } from '@/modules/site-import';
 import { classifyInput } from '../lib/classify-input';
@@ -15,6 +15,8 @@ import {
   parseGoogleFontsLinks,
   pickSource,
 } from '../lib/css-import';
+
+const LINK_TOKENS = /(\{google\}|\{fontsource\})/;
 
 interface Entry {
   face: ImportedFace;
@@ -170,8 +172,27 @@ export function FontInput({
         <div id="ff-input-hint" class="ff-drop__paragraph ff-muted ff-drop__hint">
           <p class="ff-drop__hint-line">{t.input_hint()}</p>
           <ul class="ff-drop__hint-list">
-            <li>{t.input_hint_paste()}</li>
+            <li>{t.input_hint_name()}</li>
+            <li>
+              {t
+                .input_hint_link({ google: '{google}', fontsource: '{fontsource}' })
+                .split(LINK_TOKENS)
+                .map((part) =>
+                  part === '{google}' ? (
+                    <ServiceLink source="google" key={part}>
+                      {t.source_name_google()}
+                    </ServiceLink>
+                  ) : part === '{fontsource}' ? (
+                    <ServiceLink source="fontsource" key={part}>
+                      {t.source_name_fontsource()}
+                    </ServiceLink>
+                  ) : (
+                    part
+                  ),
+                )}
+            </li>
             <li>{t.input_hint_drop()}</li>
+            <li>{t.input_hint_css()}</li>
           </ul>
           {searching && <p class="ff-drop__hint-line">{t.source_keyboard_hint()}</p>}
         </div>
