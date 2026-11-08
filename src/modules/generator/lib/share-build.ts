@@ -4,6 +4,7 @@ import type { Overrides } from './css';
 import {
   DEFAULT_PANEL,
   type FontState,
+  LIMITS,
   type NO_PANEL,
   type PanelId,
   SHARE_VERSION,
@@ -151,15 +152,18 @@ export function keepKnownPicks(
 }
 
 export function pinFitValues(fits: Record<string, Overrides>): NonNullable<FontState['manual']> {
-  const percent = (ratio: number) => Math.round(ratio * 10_000) / 100;
+  const percent = (key: keyof Overrides, ratio: number) => {
+    const [min, max] = LIMITS[key];
+    return Math.min(max, Math.max(min, Math.round(ratio * 10_000) / 100));
+  };
   return Object.fromEntries(
     Object.entries(fits).map(([faceId, fit]) => [
       faceId,
       {
-        sizeAdjust: percent(fit.sizeAdjust),
-        ascentOverride: percent(fit.ascentOverride),
-        descentOverride: percent(fit.descentOverride),
-        lineGapOverride: percent(fit.lineGapOverride),
+        sizeAdjust: percent('sizeAdjust', fit.sizeAdjust),
+        ascentOverride: percent('ascentOverride', fit.ascentOverride),
+        descentOverride: percent('descentOverride', fit.descentOverride),
+        lineGapOverride: percent('lineGapOverride', fit.lineGapOverride),
       },
     ]),
   );

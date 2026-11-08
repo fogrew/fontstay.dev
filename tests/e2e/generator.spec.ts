@@ -1743,6 +1743,16 @@ test('pinning the auto-fit values puts the fit numbers in a compact link', async
     ]);
   }
   expect(pinned.length).toBeLessThan(1500);
+  const link = await page.evaluate(() => navigator.clipboard.readText());
+  await page.evaluate(() => localStorage.removeItem('fontstay:settings'));
+  await page.goto('about:blank');
+  await page.goto(link);
+  await waitForGenerator(page);
+  await expect
+    .poll(async () =>
+      page.evaluate(() => JSON.parse(localStorage.getItem('fontstay:settings') ?? '{}').manual),
+    )
+    .toEqual(pinned.state.manual);
 });
 
 const encodeLink = (page: Page, state: object) =>

@@ -183,4 +183,12 @@ describe('data version', () => {
       arial: { sizeAdjust: 104.57, ascentOverride: 90, descentOverride: 20, lineGapOverride: 0 },
     });
   });
+
+  it('clamps pinned fits to the values a link accepts', () => {
+    expect(
+      pinFitValues({
+        x: { sizeAdjust: 0.1, ascentOverride: 9, descentOverride: 0, lineGapOverride: 0 },
+      }).x,
+    ).toEqual({ sizeAdjust: 25, ascentOverride: 400, descentOverride: 0, lineGapOverride: 0 });
+  });
 });

@@ -2105,15 +2105,19 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
                 <Icon name="forget" />
                 {t.share_forget_short()}
               </Button>
-              <label title={t.share_pin_note()}>
+              <label>
                 <input
                   class="ff-control"
                   type="checkbox"
+                  aria-describedby="ff-share-pin-note"
                   checked={pinFit}
                   onChange={(event) => setPinFit(event.currentTarget.checked)}
                 />{' '}
                 {t.share_pin()}
               </label>
+              <p class="ff-muted" id="ff-share-pin-note">
+                {t.share_pin_note()}
+              </p>
               <span class="ff-muted" role="status">
                 {shareMessage}
               </span>
