@@ -480,7 +480,7 @@
   "script_cyrillic": "Cyrillic",
   "script_greek": "Greek",
   "stack_legend": "Stacks for text the font cannot draw",
-  "stack_note": "When the web font has no glyphs for a script, the browser takes the spaces from the web font and the letters from a system font, so every word is shaped in pieces. A :lang() rule per script puts the system fonts that carry it first. It applies to the CSS and variables exports and overrides font-family on matching elements.",
+  "stack_note": "When the web font has no glyphs for a script, the browser takes the spaces from the web font and the letters from a system font, so every word is shaped in pieces. A :lang() rule per script puts the system fonts that carry it first. It applies to the CSS and variables exports and overrides font-family on matching elements, so Latin text inside them also uses the system font.",
   "stack_arabic": "Arabic (ar, fa, ur)",
   "stack_hebrew": "Hebrew (he)",
   "stack_devanagari": "Devanagari (hi, mr, ne)",

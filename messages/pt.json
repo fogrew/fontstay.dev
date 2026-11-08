@@ -480,7 +480,7 @@
   "script_cyrillic": "Cirílico",
   "script_greek": "Grego",
   "stack_legend": "Pilhas para texto que a fonte não consegue desenhar",
-  "stack_note": "Quando a fonte web não tem glifos de uma escrita, o navegador usa os espaços da fonte web e as letras de uma fonte do sistema, e cada palavra é moldada em partes. Uma regra :lang() por escrita coloca primeiro as fontes do sistema que a incluem. Vale para as exportações CSS e de variáveis e substitui font-family nos elementos correspondentes.",
+  "stack_note": "Quando a fonte web não tem glifos de uma escrita, o navegador usa os espaços da fonte web e as letras de uma fonte do sistema, e cada palavra é moldada em partes. Uma regra :lang() por escrita coloca primeiro as fontes do sistema que a incluem. Vale para as exportações CSS e de variáveis e substitui font-family nos elementos correspondentes, então o texto latino dentro deles também usa a fonte do sistema.",
   "stack_arabic": "Árabe (ar, fa, ur)",
   "stack_hebrew": "Hebraico (he)",
   "stack_devanagari": "Devanágari (hi, mr, ne)",

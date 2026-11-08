@@ -62,6 +62,14 @@ describe('buildExport', () => {
     expect(buildExport('tailwind', cursive).text).toContain('--font-cursive:');
   });
 
+  it('appends the script rules to the variables export', () => {
+    const rules = ':lang(th) {\n  font-family: "Tahoma", sans-serif;\n}';
+    expect(buildExport('variables', { ...input, scriptRules: rules }).text.endsWith(rules)).toBe(
+      true,
+    );
+    expect(buildExport('variables', input).text).not.toContain(':lang(');
+  });
+
   it('names the variables after the families when there are several', () => {
     expect(buildExport('tailwind', several).text).toContain('--font-inter:');
     expect(buildExport('tailwind', several).text).toContain('--font-merriweather:');

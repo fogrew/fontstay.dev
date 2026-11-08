@@ -16,10 +16,11 @@ const NOTO = (name: string) => [`Noto Sans ${name}`];
 
 const STACKS: Record<StackScript, ScriptStack> = {
   arabic: {
-    langs: ['ar', 'fa', 'ur'],
+    langs: ['ar', 'fa', 'ur', 'ps', 'ckb', 'sd'],
     spans: [
       [0x600, 0x6ff],
       [0x750, 0x77f],
+      [0x8a0, 0x8ff],
       [0xfb50, 0xfdff],
       [0xfe70, 0xfeff],
     ],
@@ -27,13 +28,13 @@ const STACKS: Record<StackScript, ScriptStack> = {
       windows: ['Segoe UI', 'Tahoma'],
       macos: ['Geeza Pro'],
       ios: ['Geeza Pro'],
-      android: NOTO('Arabic'),
+      android: ['Noto Naskh Arabic', ...NOTO('Arabic')],
       linux: NOTO('Arabic'),
       chromeos: NOTO('Arabic'),
     },
   },
   hebrew: {
-    langs: ['he'],
+    langs: ['he', 'iw', 'yi'],
     spans: [
       [0x590, 0x5ff],
       [0xfb1d, 0xfb4f],
@@ -48,8 +49,11 @@ const STACKS: Record<StackScript, ScriptStack> = {
     },
   },
   devanagari: {
-    langs: ['hi', 'mr', 'ne'],
-    spans: [[0x900, 0x97f]],
+    langs: ['hi', 'mr', 'ne', 'sa'],
+    spans: [
+      [0x900, 0x97f],
+      [0xa8e0, 0xa8ff],
+    ],
     fonts: {
       windows: ['Nirmala UI'],
       macos: ['Devanagari Sangam MN'],

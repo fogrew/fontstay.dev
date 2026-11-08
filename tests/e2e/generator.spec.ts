@@ -1139,7 +1139,9 @@ test('script stacks add :lang() rules for scripts the web font cannot draw', asy
   const group = page.getByRole('group', { name: 'Stacks for text the font cannot draw' });
   await expect(group.getByRole('checkbox', { name: /Latin|Cyrillic/ })).toHaveCount(0);
   await group.getByRole('checkbox', { name: /Arabic/ }).check();
-  await expect(code).toContainText(':lang(ar), :lang(fa), :lang(ur) {');
+  await expect(code).toContainText(
+    ':lang(ar), :lang(fa), :lang(ur), :lang(ps), :lang(ckb), :lang(sd) {',
+  );
   await expect(code).toContainText('"Geeza Pro"');
   await group.getByRole('checkbox', { name: /Arabic/ }).uncheck();
   await expect(code).not.toContainText(':lang(');

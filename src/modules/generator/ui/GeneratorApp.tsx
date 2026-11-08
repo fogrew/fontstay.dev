@@ -1047,7 +1047,9 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
   const scriptRules = scriptStackRules(
     stackScripts.filter((script) => stackCandidates.includes(script)),
     systems.filter(isEnabled),
-    exportFamilies[0]?.generic ?? 'sans-serif',
+    new Set(exportFamilies.map((family) => family.generic)).size === 1
+      ? (exportFamilies[0]?.generic ?? 'sans-serif')
+      : 'sans-serif',
   );
   const exportInput: ExportInput = {
     families: exportFamilies,

@@ -21,7 +21,13 @@ describe('uncoveredScripts', () => {
 describe('scriptStackRules', () => {
   it('puts the system fonts of the chosen systems first and ends with the generic family', () => {
     expect(scriptStackRules(['arabic'], ['windows', 'macos'], 'sans-serif')).toBe(
-      ':lang(ar), :lang(fa), :lang(ur) {\n  font-family: "Segoe UI", "Tahoma", "Geeza Pro", sans-serif;\n}',
+      ':lang(ar), :lang(fa), :lang(ur), :lang(ps), :lang(ckb), :lang(sd) {\n  font-family: "Segoe UI", "Tahoma", "Geeza Pro", sans-serif;\n}',
+    );
+  });
+
+  it('lists the Android Naskh font before Noto Sans on Android', () => {
+    expect(scriptStackRules(['arabic'], ['android', 'ios'], 'serif')).toContain(
+      '"Noto Naskh Arabic", "Noto Sans Arabic", "Geeza Pro", serif',
     );
   });
 

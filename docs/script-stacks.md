@@ -16,7 +16,7 @@ For each script the web font cannot draw and the user ticks in the Tuning panel 
 
 - The font list is the union of the system fonts that carry the script on the systems currently enabled in the audience, in system order, followed by the page's generic family. The web font is left out on purpose, so spaces and letters come from the same font.
 - Scripts: Arabic, Hebrew, Devanagari, Thai. A script is offered when the font has fewer than 20 letters of it. The font-to-script table is curated in `src/modules/generator/lib/script-stacks.ts` (system font names only, no metrics).
-- `:lang()` matches through the inherited `lang` attribute, so the rule applies to every element of a page declared in that language and overrides `font-family` there (including headings with a different family).
+- `:lang()` matches through the inherited `lang` attribute, so the rule applies to every element of a page declared in that language and overrides `font-family` there (including headings with a different family). Latin words inside those elements use the system font too.
 
 ## Effect on CLS
 

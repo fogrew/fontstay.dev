@@ -1569,3 +1569,12 @@ html[data-transition] .ff-share-dialog[open] {
   gap: var(--ff-space-2);
   align-items: center;
 }
+
+.ff-generator__stacks {
+  display: grid;
+  gap: var(--ff-space-2);
+  min-width: 0;
+  margin: 0;
+  padding: var(--ff-space-3);
+  border: 1px solid var(--ff-border);
+}
