@@ -138,6 +138,15 @@ body {
 .ff-appearance {
   position: relative;
 }
+@media (max-width: 40rem) {
+  .ff-appearance {
+    position: static;
+  }
+  .ff-appearance__panel {
+    inset-inline: 0.5rem;
+    inline-size: auto;
+  }
+}
 .ff-appearance__summary {
   display: inline-flex;
   align-items: center;

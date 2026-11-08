@@ -161,6 +161,12 @@ test('high contrast and text aids keep the page accessible at 320px', async ({ p
     () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
   );
   expect(overflow).toBeLessThanOrEqual(0);
+  await page.locator('.ff-appearance__summary').click();
+  const box = await page.locator('.ff-appearance__panel').boundingBox();
+  expect(box?.x).toBeGreaterThanOrEqual(0);
+  expect((box?.x ?? 0) + (box?.width ?? 0)).toBeLessThanOrEqual(320);
+  await page.mouse.click(5, 690);
+  await expect(page.locator('[data-appearance-menu]')).not.toHaveAttribute('open', '');
   const results = await new AxeBuilder({ page })
     .withTags(['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa'])
     .analyze();

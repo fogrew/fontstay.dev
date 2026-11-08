@@ -260,6 +260,9 @@ const indexable = !process.env.WORKERS_CI_BRANCH || process.env.WORKERS_CI_BRANC
           if (locale) locale.open = false;
           if (more) more.open = false;
         });
+        document.addEventListener('click', (event) => {
+          if (appearance?.open && !appearance.contains(event.target as Node)) appearance.open = false;
+        });
         more?.addEventListener('toggle', () => {
           if (more.open && wide.matches && locale) locale.open = false;
           if (more?.open && appearance) appearance.open = false;
