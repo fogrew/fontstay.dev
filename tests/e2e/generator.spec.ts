@@ -2802,7 +2802,12 @@ test('the last step puts download and copy in the dock footer without share, and
   );
   await expect(footer.getByRole('button', { name: 'Next', exact: false })).toHaveCount(0);
   await expect(panel.getByRole('button', { name: 'Share', exact: true })).toHaveCount(0);
-  await expect(panel.locator('.ff-code__header').getByRole('button')).toHaveCount(0);
+  await expect(
+    panel.locator('.ff-code__header').getByRole('button', { name: 'Expand generated CSS' }),
+  ).toHaveCount(1);
+  await expect(
+    panel.locator('.ff-code__header').getByRole('button', { name: /Copy|Download/ }),
+  ).toHaveCount(0);
   await expect(page.getByRole('button', { name: 'Copy share link' })).toHaveCount(0);
 
   await openStep(page, 'tuning');
