@@ -1076,7 +1076,9 @@ html[data-transition] .ff-export[data-expanded] .ff-export__fullscreen[open] .ff
   min-inline-size: 0;
 }
 .ff-settings__section .ff-article-view__range {
+  box-sizing: border-box;
   inline-size: 100%;
+  margin-inline: 0;
   min-inline-size: 0;
 }
 .ff-settings__section .ff-preview__label {
