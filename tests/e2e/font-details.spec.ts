@@ -174,3 +174,19 @@ test('font details live in Inputs, one group per font, and not under the article
   await expect(groups.last()).toHaveAttribute('aria-expanded', 'false');
   await expect(page.getByRole('button', { name: 'Font details', exact: true })).toHaveCount(0);
 });
+
+test('the cross in the font details removes the font and keeps the narrow layout', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 320, height: 900 });
+  await openDetails(page, sourceSans);
+  const remove = page.getByRole('button', { name: /^Remove from the fonts:/ });
+  await expect(remove).toBeVisible();
+  const heading = page.getByRole('heading', { name: 'Font details', exact: true });
+  await remove.focus();
+  await expect(remove).toBeFocused();
+  await page.keyboard.press('Enter');
+  await expect(heading).toBeHidden();
+  await expect(page.getByRole('button', { name: /^Remove: SourceSans/ })).toHaveCount(0);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(320);
+});

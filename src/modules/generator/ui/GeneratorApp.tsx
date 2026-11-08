@@ -301,6 +301,14 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
     setFocusSlot(undefined);
   }, [focusSlot]);
 
+  const removeFont = (font: LoadedFont) => {
+    void removeStoredFont(font.fileName);
+    setFonts((current) => current.filter((item) => item.id !== font.id));
+    setSelectedId((id) => (id === font.id ? undefined : id));
+    setValues({});
+    resetOptimization();
+  };
+
   const addFiles = async (
     files: File[],
     persist = true,
@@ -1883,13 +1891,7 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
               type="button"
               class="ff-control ff-icon-button"
               aria-label={`${t.upload_remove()}: ${font.fileName}`}
-              onClick={() => {
-                void removeStoredFont(font.fileName);
-                setFonts((current) => current.filter((item) => item.id !== font.id));
-                setSelectedId((id) => (id === font.id ? undefined : id));
-                setValues({});
-                resetOptimization();
-              }}
+              onClick={() => removeFont(font)}
             >
               <span aria-hidden="true">×</span>
             </button>
@@ -1988,6 +1990,10 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
                       title: displayName(font.metrics.names.fullName ?? font.fileName),
                       metrics: font.metrics,
                     }))}
+                    onRemove={(id) => {
+                      const font = fonts.find((item) => item.id === id);
+                      if (font) removeFont(font);
+                    }}
                   />
                 )}
               </div>

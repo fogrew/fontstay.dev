@@ -572,6 +572,7 @@
   "webmcp_announce_fallbacks": "Ассистент изменил запасные шрифты системы {system} для {font}.",
   "webmcp_announce_kind": "Ассистент задал тип шрифта {font}: {kind}.",
   "details_heading": "Сведения о шрифте",
+  "details_remove": "Убрать из шрифтов: {name}",
   "details_tabs_label": "Разделы сведений о шрифте",
   "details_tab_overview": "Обзор",
   "details_tab_features": "Возможности",

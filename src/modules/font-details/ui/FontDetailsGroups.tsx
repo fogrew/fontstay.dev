@@ -13,9 +13,10 @@ export interface FontDetailsEntry {
 export interface FontDetailsGroupsProps {
   locale: Locale;
   fonts: readonly FontDetailsEntry[];
+  onRemove: (id: number) => void;
 }
 
-export function FontDetailsGroups({ locale, fonts }: FontDetailsGroupsProps) {
+export function FontDetailsGroups({ locale, fonts, onRemove }: FontDetailsGroupsProps) {
   const t = messagesFor(locale);
   const [open, setOpen] = useState<ReadonlySet<number>>(new Set());
   if (fonts.length === 0) return null;
@@ -29,6 +30,16 @@ export function FontDetailsGroups({ locale, fonts }: FontDetailsGroupsProps) {
           key={font.id}
           title={font.title}
           open={open.has(font.id)}
+          after={
+            <button
+              type="button"
+              class="ff-control ff-icon-button"
+              aria-label={t.details_remove({ name: font.title })}
+              onClick={() => onRemove(font.id)}
+            >
+              <span aria-hidden="true">×</span>
+            </button>
+          }
           onToggle={(next) =>
             setOpen((current) => {
               const copy = new Set(current);
