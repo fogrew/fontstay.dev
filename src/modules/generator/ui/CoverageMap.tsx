@@ -4,11 +4,15 @@ import { type Locale, messagesFor } from '@/common/i18n';
 import { Button, Select } from '@/common/ui';
 import { blockCoverage, type FontMetrics } from '@/modules/font-metrics';
 import { GLYPH_FAMILY } from '../lib/glyph-detail';
+import type { GlyphIdMode } from '../lib/glyph-ids';
 import type { GlyphDetailProps } from './GlyphDetail';
+import type { GlyphIdPanelProps } from './GlyphIdPanel';
 
 const COLUMNS = 16;
 const PAGE_SIZE = 256;
 const NON_PRINTABLE = /[\p{C}\p{Z}\p{M}]/u;
+
+type CoverageView = 'chars' | GlyphIdMode;
 
 const hex = (value: number) => value.toString(16).toUpperCase().padStart(4, '0');
 
@@ -38,6 +42,20 @@ export function CoverageMap({
 
   const [Detail, setDetail] = useState<ComponentType<GlyphDetailProps>>();
   const [fontReady, setFontReady] = useState(false);
+  const [view, setView] = useState<CoverageView>('chars');
+  const [idsMode, setIdsMode] = useState<GlyphIdMode>('unencoded');
+  const [IdPanel, setIdPanel] = useState<ComponentType<GlyphIdPanelProps>>();
+
+  useEffect(() => {
+    if (view === 'chars' || IdPanel) return;
+    let cancelled = false;
+    void import('./GlyphIdPanel').then((module) => {
+      if (!cancelled) setIdPanel(() => module.GlyphIdPanel);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [view, IdPanel]);
 
   useEffect(() => {
     let cancelled = false;
@@ -71,6 +89,7 @@ export function CoverageMap({
     setBlockIndex(0);
     setPage(0);
     setCursor(undefined);
+    setView('chars');
   }, [codePoints]);
 
   if (!block) return <p class="ff-muted">{t.coverage_empty()}</p>;
@@ -103,19 +122,34 @@ export function CoverageMap({
       </p>
       <div class="ff-map__controls">
         <Select
-          label={t.coverage_block_label()}
-          value={String(blockIndex)}
-          options={blocks.map((item, index) => ({
-            value: String(index),
-            label: `${item.name} (${item.covered}/${item.total})`,
-          }))}
+          label={t.coverage_view_label()}
+          value={view}
+          options={[
+            { value: 'chars', label: t.coverage_view_chars() },
+            { value: 'unencoded', label: t.coverage_view_unencoded() },
+            { value: 'alternates', label: t.coverage_view_alternates() },
+          ]}
           onChange={(value) => {
-            setBlockIndex(Number(value));
-            setPage(0);
-            setCursor(undefined);
+            setView(value as CoverageView);
+            if (value !== 'chars') setIdsMode(value as GlyphIdMode);
           }}
         />
-        {pages > 1 && (
+        {view === 'chars' && (
+          <Select
+            label={t.coverage_block_label()}
+            value={String(blockIndex)}
+            options={blocks.map((item, index) => ({
+              value: String(index),
+              label: `${item.name} (${item.covered}/${item.total})`,
+            }))}
+            onChange={(value) => {
+              setBlockIndex(Number(value));
+              setPage(0);
+              setCursor(undefined);
+            }}
+          />
+        )}
+        {view === 'chars' && pages > 1 && (
           <div class="ff-map__pages">
             <Button
               disabled={page === 0}
@@ -139,66 +173,72 @@ export function CoverageMap({
           </div>
         )}
       </div>
-      <div class="ff-map__layout">
-        {/* biome-ignore-start lint/a11y/noNoninteractiveElementInteractions: the grid is a pointer and arrow-key readout */}
-        {/* biome-ignore-start lint/a11y/noNoninteractiveTabindex: arrow keys move through the cells */}
-        {/* biome-ignore-start lint/a11y/useSemanticElements: a grid of cells has no native element */}
-        <div
-          class="ff-map__grid"
-          role="group"
-          aria-label={t.coverage_map_label({ block: block.name })}
-          tabIndex={0}
-          onPointerOver={(event) => {
-            const value = (event.target as HTMLElement).dataset.cp;
-            if (value) setCursor(Number(value));
-          }}
-          onClick={(event) => {
-            const value = (event.target as HTMLElement).dataset.cp;
-            if (value) setCursor(Number(value));
-          }}
-          onKeyDown={(event) => {
-            const steps: Record<string, number> = {
-              ArrowLeft: -1,
-              ArrowRight: 1,
-              ArrowUp: -COLUMNS,
-              ArrowDown: COLUMNS,
-            };
-            const step = steps[event.key];
-            if (step === undefined) return;
-            event.preventDefault();
-            move(step);
-          }}
-        >
-          {cells.map((codePoint) => (
-            <span
-              key={codePoint}
-              class="ff-map__cell"
-              data-cp={codePoint}
-              data-covered={covered.has(codePoint)}
-              data-cursor={codePoint === cursor}
+      {view === 'chars' ? (
+        <>
+          <div class="ff-map__layout">
+            {/* biome-ignore-start lint/a11y/noNoninteractiveElementInteractions: the grid is a pointer and arrow-key readout */}
+            {/* biome-ignore-start lint/a11y/noNoninteractiveTabindex: arrow keys move through the cells */}
+            {/* biome-ignore-start lint/a11y/useSemanticElements: a grid of cells has no native element */}
+            <div
+              class="ff-map__grid"
+              role="group"
+              aria-label={t.coverage_map_label({ block: block.name })}
+              tabIndex={0}
+              onPointerOver={(event) => {
+                const value = (event.target as HTMLElement).dataset.cp;
+                if (value) setCursor(Number(value));
+              }}
+              onClick={(event) => {
+                const value = (event.target as HTMLElement).dataset.cp;
+                if (value) setCursor(Number(value));
+              }}
+              onKeyDown={(event) => {
+                const steps: Record<string, number> = {
+                  ArrowLeft: -1,
+                  ArrowRight: 1,
+                  ArrowUp: -COLUMNS,
+                  ArrowDown: COLUMNS,
+                };
+                const step = steps[event.key];
+                if (step === undefined) return;
+                event.preventDefault();
+                move(step);
+              }}
             >
-              {covered.has(codePoint) ? glyphOf(codePoint) : ''}
-            </span>
-          ))}
-        </div>
-        {/* biome-ignore-end lint/a11y/useSemanticElements: a grid of cells has no native element */}
-        {/* biome-ignore-end lint/a11y/noNoninteractiveTabindex: arrow keys move through the cells */}
-        {/* biome-ignore-end lint/a11y/noNoninteractiveElementInteractions: the grid is a pointer and arrow-key readout */}
-        <div class="ff-map__slot">
-          {Detail && (
-            <Detail
-              locale={locale}
-              metrics={metrics}
-              codePoint={shown}
-              covered={covered.has(shown)}
-              ready={fontReady}
-            />
-          )}
-        </div>
-      </div>
-      <p class="ff-map__text ff-map__readout" role="status">
-        {readout}
-      </p>
+              {cells.map((codePoint) => (
+                <span
+                  key={codePoint}
+                  class="ff-map__cell"
+                  data-cp={codePoint}
+                  data-covered={covered.has(codePoint)}
+                  data-cursor={codePoint === cursor}
+                >
+                  {covered.has(codePoint) ? glyphOf(codePoint) : ''}
+                </span>
+              ))}
+            </div>
+            {/* biome-ignore-end lint/a11y/useSemanticElements: a grid of cells has no native element */}
+            {/* biome-ignore-end lint/a11y/noNoninteractiveTabindex: arrow keys move through the cells */}
+            {/* biome-ignore-end lint/a11y/noNoninteractiveElementInteractions: the grid is a pointer and arrow-key readout */}
+            <div class="ff-map__slot">
+              {Detail && (
+                <Detail
+                  locale={locale}
+                  metrics={metrics}
+                  codePoint={shown}
+                  covered={covered.has(shown)}
+                  ready={fontReady}
+                />
+              )}
+            </div>
+          </div>
+          <p class="ff-map__text ff-map__readout" role="status">
+            {readout}
+          </p>
+        </>
+      ) : (
+        IdPanel && <IdPanel locale={locale} metrics={metrics} bytes={bytes} mode={idsMode} />
+      )}
       <table class="ff-map__table">
         <caption class="ff-map__caption">{t.coverage_table_caption()}</caption>
         <thead>

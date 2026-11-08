@@ -90,7 +90,7 @@ class Reader {
   }
 }
 
-function tableBytes(font: RawFont, tag: string): Uint8Array | null {
+export function tableBytes(font: RawFont, tag: string): Uint8Array | null {
   const entry = font.directory.tables[tag];
   if (!entry) return null;
   const stream = font._getTableStream(tag);
