@@ -3,5 +3,8 @@ allowBuilds:
   lefthook: false
 saveExact: true
 minimumReleaseAge: 1440
+overrides:
+  # Keep Astro check's native bridge compatible until #496 is resolved.
+  '@emnapi/runtime': 1.11.3
 patchedDependencies:
   fontkitten: patches/fontkitten.patch
