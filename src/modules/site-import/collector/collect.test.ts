@@ -198,6 +198,38 @@ describe('fontstayCollect', () => {
     expect((result.faces as { family: string }[]).map((face) => face.family)).toEqual(['A', 'B']);
   });
 
+  it('reports the fonts used by the body, headings and the first button', async () => {
+    const { win, doc } = page([]);
+    const present = new Set(['body', 'h1', 'button']);
+    doc.querySelector = ((selector: string) =>
+      present.has(selector) ? { selector } : null) as never;
+    win.getComputedStyle = ((element: { selector: string }) => ({
+      fontFamily: element.selector === 'button' ? '"Btn Sans", sans-serif' : 'Inter, sans-serif',
+      fontSize: '16px',
+      lineHeight: '24px',
+      fontWeight: element.selector === 'h1' ? '700' : '400',
+    })) as never;
+    const result = await fontstayCollect(win, doc);
+    expect(result.used).toEqual([
+      { role: 'body', family: 'Inter, sans-serif', size: 16, weight: 400, lineHeight: 1.5 },
+      { role: 'h1', family: 'Inter, sans-serif', size: 16, weight: 700, lineHeight: 1.5 },
+      { role: 'button', family: '"Btn Sans", sans-serif', size: 16, weight: 400, lineHeight: 1.5 },
+    ]);
+  });
+
+  it('omits the line height when the page reports "normal"', async () => {
+    const { win, doc } = page([]);
+    doc.querySelector = ((selector: string) => (selector === 'body' ? {} : null)) as never;
+    win.getComputedStyle = (() => ({
+      fontFamily: 'Inter',
+      fontSize: '16px',
+      lineHeight: 'normal',
+      fontWeight: '400',
+    })) as never;
+    const result = await fontstayCollect(win, doc);
+    expect(result.used).toEqual([{ role: 'body', family: 'Inter', size: 16, weight: 400 }]);
+  });
+
   it('keeps the Latin subset of a family split by unicode-range', async () => {
     const face = (range: string, file: string) => ({
       type: 5,

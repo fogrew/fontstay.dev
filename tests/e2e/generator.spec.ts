@@ -3245,6 +3245,23 @@ test.describe('the single input field', () => {
     await expect(field).toHaveValue('');
   });
 
+  test('accepting or discarding the pasted site data closes the confirmation', async ({ page }) => {
+    const field = await open(page);
+    const data = JSON.stringify({
+      v: 1,
+      origin: 'https://site.test',
+      faces: [{ family: 'Inter' }],
+    });
+    const confirm = page.getByRole('region', { name: 'Import from https://site.test?' });
+    await field.fill(data);
+    await confirm.getByRole('button', { name: 'Discard' }).click();
+    await expect(confirm).toHaveCount(0);
+    await field.fill(data);
+    await confirm.getByRole('button', { name: 'Import', exact: true }).click();
+    await expect(confirm).toHaveCount(0);
+    await expect(page.getByRole('region', { name: 'Fonts to adapt' })).toHaveCount(0);
+  });
+
   test('broken site data is rejected', async ({ page }) => {
     const field = await open(page);
     await field.fill('{"v":1');
