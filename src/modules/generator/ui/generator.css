@@ -1106,8 +1106,11 @@ html[data-transition] .ff-export[data-expanded] .ff-export__fullscreen[open] .ff
   inline-size: 100%;
   text-align: start;
 }
-.ff-article-view .ff-toolbar .ff-settings__toggle {
+.ff-settings__toggle-label {
+  flex: 1 1 0;
   white-space: normal;
+  min-inline-size: 0;
+  overflow-wrap: anywhere;
 }
 .ff-settings__toggle .ff-tool-icon {
   flex: none;

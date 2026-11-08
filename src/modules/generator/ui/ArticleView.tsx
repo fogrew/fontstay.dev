@@ -1043,7 +1043,7 @@ export function ArticleView({
             onClick={() => setGuideOn((all) => ({ ...all, [id]: !all[id] }))}
           >
             <ToolIcon name={id} />
-            {guideLabel(id)}
+            <span class="ff-settings__toggle-label">{guideLabel(id)}</span>
           </button>
         ))}
         <button
@@ -1053,7 +1053,7 @@ export function ArticleView({
           onClick={() => setBoxes((on) => !on)}
         >
           <ToolIcon name="boxes" />
-          {t.boxes_enable()}
+          <span class="ff-settings__toggle-label">{t.boxes_enable()}</span>
         </button>
       </fieldset>
     </>
