@@ -164,6 +164,7 @@ settings:
 
 overrides:
   '@emnapi/runtime': 1.11.3
+  undici: 8.12.4
 
 patchedDependencies:
   fontkitten: 7a87e20ce00e78307cfa7c8db9ed10bd15b6deddd078e438b885ab6f7932edb7
@@ -2913,8 +2914,8 @@ packages:
   undici-types@8.9.0:
     resolution: {integrity: sha512-KTDyRTYX8sWmKXAikPHHSyc63CRPETMctyjKFupcC6OBLXT3xsN0e9aF7m+mIXutFWpUXuedtowG7iLOzp0kQg==}
 
-  undici@8.11.2:
-    resolution: {integrity: sha512-u4UB2/IrKdU6lFxumHmmo1a3fCQO5tzQllRorfoRS63txhrB7xTpSn1PftwC4qEHkOaqP95fCWW4lJzwErwzhQ==}
+  undici@8.12.4:
+    resolution: {integrity: sha512-8Mx+uNKKER2bA4AdtedkqRbwUCIJFr2nJckXRe5yrDqzePqwLP7VNcctN8/XdmDSbF7mS+jJKIszlL+vbam1VA==}
     engines: {node: '>=22.19.0'}
 
   unicorn-magic@0.3.0:
@@ -5809,7 +5810,7 @@ snapshots:
   undici-types@8.9.0:
     optional: true
 
-  undici@8.11.2: {}
+  undici@8.12.4: {}
 
   unicorn-magic@0.3.0: {}
 
@@ -5828,7 +5829,7 @@ snapshots:
       css-tree: 3.2.1
       fnv1a-64: 0.1.2
       std-env: 4.3.0
-      undici: 8.11.2
+      undici: 8.12.4
 
   unist-util-is@6.0.1:
     dependencies:

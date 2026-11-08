@@ -6,5 +6,7 @@ minimumReleaseAge: 1440
 overrides:
   # Keep Astro check's native bridge compatible until #496 is resolved.
   '@emnapi/runtime': 1.11.3
+  # unifont (via astro) accepts undici ^8.0.0; force the patched 8.12.x.
+  undici: 8.12.4
 patchedDependencies:
   fontkitten: patches/fontkitten.patch
