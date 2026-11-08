@@ -67,7 +67,7 @@ async function openControls(page: Page, file: string) {
   await page.goto('/en/');
   await waitForGenerator(page);
   await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(file);
-  await openPopover(page, 'Content');
+  await openPopover(page, 'Settings');
   return page.getByRole('group', { name: 'Font features and axes' });
 }
 
