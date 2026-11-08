@@ -572,6 +572,7 @@
   "webmcp_announce_fallbacks": "غيّر المساعد الخطوط الاحتياطية لنظام {system} للخط {font}.",
   "webmcp_announce_kind": "ضبط المساعد نوع الخط {font} على {kind}.",
   "details_heading": "تفاصيل الخط",
+  "details_remove": "إزالة من الخطوط: {name}",
   "details_tabs_label": "أقسام تفاصيل الخط",
   "details_tab_overview": "نظرة عامة",
   "details_tab_features": "الميزات",
