@@ -400,6 +400,8 @@
   "preset_applied_heading": "Predefinição de pilha",
   "preset_applied": "Predefinição de pilha aplicada: {name}",
   "preset_clear": "Limpar a predefinição",
+  "preset_unfitted": "{fonts} não têm métricas para os sistemas selecionados e não são usadas nas alternativas.",
+  "preset_no_fit": "Nenhuma fonte desta pilha tem métricas para os sistemas selecionados, então as alternativas continuam automáticas; só o tipo de fonte é aplicado.",
   "article_wrap_label": "Quebra de texto",
   "article_wrap_wrap": "Normal (wrap)",
   "article_wrap_balance": "Equilibrada (balance)",

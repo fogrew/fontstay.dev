@@ -112,16 +112,39 @@ export function presetPicks(
   return picks;
 }
 
+const GENERIC_NAMES = new Set([
+  'serif',
+  'sans-serif',
+  'monospace',
+  'system-ui',
+  'ui-monospace',
+  '-apple-system',
+]);
+
+export interface PresetCoverage {
+  applied: boolean;
+  unfitted: string[];
+}
+
+export function presetCoverage(
+  preset: Preset,
+  dataset: OsFontsDataset,
+  systems: readonly OsId[],
+): PresetCoverage {
+  const picks = presetPicks(preset, dataset, systems);
+  const used = new Set(
+    systems.flatMap((os) => picks[os] ?? []).map((id) => dataset.fonts.find((f) => f.id === id)),
+  );
+  const unfitted = preset.stack.filter((name) => {
+    if (GENERIC_NAMES.has(name)) return false;
+    const font = dataset.fonts.find((item) => item.family.toLowerCase() === name.toLowerCase());
+    return !font || !used.has(font);
+  });
+  return { applied: used.size > 0, unfitted };
+}
+
 export function cssStack(preset: Preset): string {
-  const generic = new Set([
-    'serif',
-    'sans-serif',
-    'monospace',
-    'system-ui',
-    'ui-monospace',
-    '-apple-system',
-  ]);
   return preset.stack
-    .map((name) => (generic.has(name) || /^[a-z-]+$/i.test(name) ? name : `"${name}"`))
+    .map((name) => (GENERIC_NAMES.has(name) || /^[a-z-]+$/i.test(name) ? name : `"${name}"`))
     .join(', ');
 }

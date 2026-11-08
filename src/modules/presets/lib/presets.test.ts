@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { osFontsDataset } from '@/modules/os-fonts';
-import { cssStack, PRESET_IDS, PRESETS, presetPicks } from './presets';
+import { cssStack, PRESET_IDS, PRESETS, presetCoverage, presetPicks } from './presets';
 
 const SYSTEMS = ['windows', 'macos', 'ios', 'android', 'linux', 'chromeos'] as const;
 
@@ -40,5 +40,27 @@ describe('presets', () => {
     expect(preset && cssStack(preset)).toBe(
       'Seravek, "Gill Sans Nova", Ubuntu, Calibri, "DejaVu Sans", sans-serif',
     );
+  });
+
+  it('reports the stack fonts that no selected system can fit', () => {
+    const slab = PRESETS.find((item) => item.id === 'slab-serif');
+    if (!slab) throw new Error('missing preset');
+    expect(presetCoverage(slab, osFontsDataset, ['windows', 'android'])).toEqual({
+      applied: false,
+      unfitted: ['Rockwell', 'Rockwell Nova', 'Roboto Slab', 'DejaVu Serif'],
+    });
+    expect(presetCoverage(slab, osFontsDataset, ['linux'])).toEqual({
+      applied: true,
+      unfitted: ['Rockwell', 'Rockwell Nova', 'Roboto Slab'],
+    });
+  });
+
+  it('does not report generic keywords or fitted fonts', () => {
+    const classic = PRESETS.find((item) => item.id === 'classic-serif');
+    if (!classic) throw new Error('missing preset');
+    expect(presetCoverage(classic, osFontsDataset, ['windows'])).toEqual({
+      applied: true,
+      unfitted: ['Liberation Serif', 'Noto Serif'],
+    });
   });
 });

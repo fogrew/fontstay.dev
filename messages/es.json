@@ -400,6 +400,8 @@
   "preset_applied_heading": "Preajuste de pila",
   "preset_applied": "Preajuste de pila aplicado: {name}",
   "preset_clear": "Quitar el preajuste",
+  "preset_unfitted": "{fonts} no tienen métricas para los sistemas seleccionados y no se usan en las alternativas.",
+  "preset_no_fit": "Ninguna fuente de esta pila tiene métricas para los sistemas seleccionados, así que las alternativas siguen siendo automáticas; solo se aplica el tipo de fuente.",
   "article_wrap_label": "Ajuste de línea del texto",
   "article_wrap_wrap": "Normal (wrap)",
   "article_wrap_balance": "Equilibrado (balance)",

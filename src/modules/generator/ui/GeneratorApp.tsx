@@ -70,7 +70,14 @@ import {
   type OsId,
   osFontsDataset,
 } from '@/modules/os-fonts';
-import { cssStack, PRESETS, type PresetId, presetName, presetPicks } from '@/modules/presets';
+import {
+  cssStack,
+  PRESETS,
+  type PresetId,
+  presetCoverage,
+  presetName,
+  presetPicks,
+} from '@/modules/presets';
 import {
   clearPendingStore,
   discardPending,
@@ -1826,6 +1833,17 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
         ]
       : [],
   );
+  const presetCover =
+    preset && systems.length > 0
+      ? presetCoverage(preset, osFontsDataset, systems.filter(isEnabled))
+      : undefined;
+  const presetNote = presetCover
+    ? !presetCover.applied
+      ? t.preset_no_fit()
+      : presetCover.unfitted.length > 0
+        ? t.preset_unfitted({ fonts: presetCover.unfitted.join(', ') })
+        : ''
+    : '';
   const warnings = (
     <>
       {!allMode && output && selected && coverage < LOW_COVERAGE && (
@@ -2053,6 +2071,7 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
                       {t.preset_applied({ name: presetName(t, preset.id) })}
                     </p>
                     <p class="ff-generator__text ff-muted">{cssStack(preset)}</p>
+                    {presetNote && <p class="ff-generator__text ff-muted">{presetNote}</p>}
                     <Button
                       onClick={() => {
                         setPresetId(undefined);

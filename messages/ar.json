@@ -400,6 +400,8 @@
   "preset_applied_heading": "قالب مجموعة الخطوط",
   "preset_applied": "تم تطبيق قالب مجموعة الخطوط: {name}",
   "preset_clear": "مسح القالب",
+  "preset_unfitted": "لا تتوفر مقاييس للخطوط {fonts} في الأنظمة المحددة، لذا لا تُستخدم في الخطوط الاحتياطية.",
+  "preset_no_fit": "لا يتوفر لأي خط في هذه المجموعة مقاييس للأنظمة المحددة، لذا تبقى الخطوط الاحتياطية تلقائية؛ يُطبَّق نوع الخط فقط.",
   "article_wrap_label": "التفاف النص",
   "article_wrap_wrap": "عادي (wrap)",
   "article_wrap_balance": "متوازن (balance)",
