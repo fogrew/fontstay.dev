@@ -1,5 +1,6 @@
 ---
 import { type Locale, localizeHref, messagesFor } from '@/common/i18n';
+import { catalogFontState, encodeShareState } from '@/modules/generator';
 import { osAvailability, osFontMetrics, osFontsDataset } from '@/modules/os-fonts';
 
 interface Props {
@@ -12,6 +13,10 @@ const t = messagesFor(locale);
 const font = osFontsDataset.fonts.find((item) => item.id === id);
 if (!font) throw new Error(`Unknown font ${id}`);
 const metrics = osFontMetrics().find((item) => item.id === id);
+const generatorState = catalogFontState(id);
+const generatorHref = generatorState
+  ? `${localizeHref('/', { locale })}#s=${await encodeShareState(generatorState)}`
+  : undefined;
 const systems = ['windows', 'macos', 'linux', 'chromeos', 'android', 'ios'] as const;
 const percent = (value: number) =>
   new Intl.NumberFormat(locale, { maximumFractionDigits: 1 }).format(value * 100);
@@ -39,6 +44,14 @@ const vertical = metrics
   </nav>
   <h1 class="ff-heading ff-page__heading">{font.family}</h1>
   <p class="ff-page__text">{font.category === 'serif' ? t.type_serif() : font.category === 'monospace' ? t.type_mono() : font.category === 'cursive' ? t.type_cursive() : t.type_sans()}</p>
+  {generatorHref ? (
+    <>
+      <p class="ff-page__text"><a class="ff-link ff-link--tap" href={generatorHref}>{t.catalog_generator_open({ name: font.family })}</a></p>
+      <p class="ff-page__text ff-muted">{t.catalog_generator_note({ name: font.family })}</p>
+    </>
+  ) : (
+    <p class="ff-page__text ff-muted">{t.catalog_generator_unavailable()}</p>
+  )}
 
   <h2 class="ff-heading ff-page__heading">{t.font_specimen_heading()}</h2>
   <link rel="stylesheet" href="/specimens/fonts.css" />

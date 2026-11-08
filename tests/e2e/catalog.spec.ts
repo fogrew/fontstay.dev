@@ -192,3 +192,101 @@ test('a preset stays applied to every uploaded font until it is cleared', async 
   await page.getByRole('button', { name: 'Clear the preset' }).click();
   await expect(page.getByText('Stack preset applied: Classic serif')).toHaveCount(0);
 });
+
+for (const locale of ['en', 'ru'] as const) {
+  test(`${locale}: a catalog font opens as a fallback after choosing a web font`, async ({
+    page,
+  }) => {
+    await page.goto(`/${locale}/fonts/georgia/`);
+    const label =
+      locale === 'en' ? 'Use Georgia as a fallback' : 'Использовать Georgia как запасной шрифт';
+    await page.getByRole('link', { name: label, exact: true }).click();
+    await waitForGenerator(page);
+    const font = new URL('../fixtures/fonts/SourceSansPro-Regular.woff2', import.meta.url).pathname;
+    await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(font);
+    await openStep(page, 'tuning');
+    const windows = page.getByRole('button', { name: /^Windows/ });
+    if ((await windows.getAttribute('aria-expanded')) === 'false') await windows.click();
+    const fallback = locale === 'en' ? 'Fallback font 1' : 'Запасной шрифт 1';
+    await expect(page.getByLabel(fallback, { exact: true })).toHaveAttribute(
+      'data-value',
+      'georgia',
+    );
+    await expect(
+      page.getByRole('region', {
+        name: locale === 'en' ? 'Generated CSS' : 'Сгенерированный CSS',
+        includeHidden: true,
+      }),
+    ).toContainText('Georgia');
+  });
+}
+
+test('a catalog fallback targets the first of multiple saved web fonts', async ({ page }) => {
+  await page.goto('/en/');
+  await waitForGenerator(page);
+  const fonts = new URL('../fixtures/fonts/', import.meta.url).pathname;
+  await page
+    .locator('input[type="file"][accept*="woff2"]')
+    .setInputFiles([`${fonts}SourceSansPro-Regular.woff2`, `${fonts}FiraSans-Regular.ttf`]);
+  await expect
+    .poll(() =>
+      page.evaluate(async () => {
+        const request = indexedDB.open('fontstay', 1);
+        return new Promise<number>((resolve, reject) => {
+          request.onsuccess = () => {
+            const db = request.result;
+            const count = db.transaction('fonts').objectStore('fonts').count();
+            count.onsuccess = () => {
+              resolve(count.result);
+              db.close();
+            };
+            count.onerror = () => reject(count.error);
+          };
+          request.onerror = () => reject(request.error);
+        });
+      }),
+    )
+    .toBe(2);
+  await page.goto('/en/fonts/georgia/');
+  await page.getByRole('link', { name: 'Use Georgia as a fallback', exact: true }).click();
+  await waitForGenerator(page);
+  await expect
+    .poll(() =>
+      page.evaluate(() => {
+        const settings = JSON.parse(localStorage.getItem('fontstay:settings') ?? '{}');
+        return settings.fontName;
+      }),
+    )
+    .toBe('FiraSans-Regular.ttf');
+  await openStep(page, 'tuning');
+  const tuning = page.locator('.ff-dock__column[data-id="tuning"]');
+  const first = tuning.getByRole('button', { name: 'Fira Sans Regular', exact: true });
+  await expect(first).toHaveAttribute('aria-expanded', 'true');
+  const windows = page.getByRole('button', { name: /^Windows/ });
+  if ((await windows.getAttribute('aria-expanded')) === 'false') await windows.click();
+  await expect(page.getByLabel('Fallback font 1', { exact: true })).toHaveAttribute(
+    'data-value',
+    'georgia',
+  );
+  await expect(
+    tuning.getByRole('button', { name: 'Source Sans Pro', exact: true }),
+  ).toHaveAttribute('aria-expanded', 'false');
+  await tuning.getByRole('button', { name: 'Source Sans Pro', exact: true }).click();
+  if ((await windows.getAttribute('aria-expanded')) === 'false') await windows.click();
+  await expect(page.getByLabel('Fallback font 1', { exact: true })).not.toHaveAttribute(
+    'data-value',
+    'georgia',
+  );
+});
+
+test('a catalog font without measured metrics explains why it cannot be preselected', async ({
+  page,
+}) => {
+  await page.goto('/en/fonts/helvetica/');
+  await expect(
+    page.getByText('This font cannot be preselected yet:', { exact: false }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole('link', { name: 'Use Helvetica as a fallback', exact: true }),
+  ).toHaveCount(0);
+});

@@ -29,6 +29,7 @@ import {
 } from '@/modules/os-fonts';
 import { articleBlocks, BUILT_IN } from './articles';
 import { fallbackPredictFont, webPredictFont } from './predict-input';
+import { SHARE_VERSION, type ShareState } from './share';
 
 export type Language = 'en' | 'ru';
 export type FontStyleKey = 'regular' | StyleVariant;
@@ -152,6 +153,21 @@ function fonts(): PoolFont[] {
 
 function preinstalledOn(font: OsFont, os: OsId): boolean {
   return osAvailability(font, os, osFontsDataset).level === 'preinstalled';
+}
+
+export function catalogFontState(id: string): ShareState | null {
+  const font = fonts().find((item) => item.id === id);
+  if (!font?.fit) return null;
+  const systems = systemsWithFonts().filter((os) => preinstalledOn(font.dataset, os));
+  const os = systems[0];
+  if (!os) return null;
+  return {
+    v: SHARE_VERSION,
+    kind: font.category,
+    picks: Object.fromEntries(systems.map((os) => [os, [id]])),
+    os,
+    panel: 'inputs',
+  };
 }
 
 function presentOn(font: OsFont, os: OsId): boolean {
