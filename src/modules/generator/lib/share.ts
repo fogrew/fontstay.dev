@@ -76,8 +76,8 @@ function migrate(
   return current.v === SHARE_VERSION ? current : null;
 }
 
-const MAX_OTHER_FONTS = 32;
-const MAX_SOURCES = 8;
+const MAX_OTHER_FONTS = 128;
+const MAX_SOURCES = 128;
 const FAMILY = /^[\p{L}\p{N} ._'-]{1,80}$/u;
 const ORIGIN_STYLE = /^\d{3}i?$/;
 const SUBSET = /^[a-z0-9-]{1,40}$/;

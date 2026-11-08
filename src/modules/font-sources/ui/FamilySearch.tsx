@@ -1,6 +1,6 @@
 import { useEffect, useId, useMemo, useState } from 'preact/hooks';
 import { type Locale, messagesFor } from '@/common/i18n';
-import { Button, ScrollShadow, ToggleGroup } from '@/common/ui';
+import { Button, Popover, ScrollShadow, ToggleGroup } from '@/common/ui';
 import { FontSourceError } from '../lib/download';
 import {
   downloadOrigin,
@@ -47,6 +47,8 @@ const defaultFontsource = (families: readonly FontFamily[]) => {
   const rest = families.filter((family) => !examples.includes(family));
   return [...examples, ...rest].slice(0, DEFAULT_FONTSOURCE_HITS);
 };
+const SOFT_LIMIT = 12;
+const GUESS_BYTES = 20_000;
 const scriptsOf = (family: FontFamily) => family.subsets.filter((name) => !CJK_SUBSETS.has(name));
 
 export function useFamilySearch({
@@ -56,6 +58,10 @@ export function useFamilySearch({
   enabled,
   onAccepted,
   slots,
+  limit,
+  loaded,
+  averageBytes,
+  onLimitChange,
   onFiles,
 }: {
   locale: Locale;
@@ -64,6 +70,10 @@ export function useFamilySearch({
   enabled: boolean;
   onAccepted: (name: string) => void;
   slots: number;
+  limit: { value: number; min: number; max: number };
+  loaded: number;
+  averageBytes: number;
+  onLimitChange: (value: number) => void;
   onFiles: (files: File[], origins: ReadonlyMap<File, FontOrigin>) => void;
 }) {
   const t = messagesFor(locale);
@@ -316,7 +326,14 @@ export function useFamilySearch({
                   const label = ext ? t.source_subset_ext() : t.source_subset_base();
                   return names.length === 0 ? null : (
                     <div class="ff-toggle-group" key={String(ext)}>
-                      <span class="ff-muted ff-toggle-group__label">{label}</span>
+                      <span class="ff-muted ff-toggle-group__label">
+                        {label}
+                        {ext && (
+                          <Popover label={t.source_subset_ext_info()} info>
+                            {t.source_subset_ext_hint()}
+                          </Popover>
+                        )}
+                      </span>
                       <ToggleGroup
                         key={`${chosen.family.id}-${ext}`}
                         label={label}
@@ -327,7 +344,6 @@ export function useFamilySearch({
                     </div>
                   );
                 })}
-                <p class="ff-source__text ff-muted">{t.source_subset_ext_hint()}</p>
               </fieldset>
             </div>
             <div class="ff-source__add">
@@ -338,8 +354,33 @@ export function useFamilySearch({
               >
                 {count > 1 ? `${t.source_add()} (${count})` : t.source_add()}
               </Button>
-              {count > slots && <span class="ff-error">{t.source_too_many({ max: slots })}</span>}
+              {count > slots && (
+                <span class="ff-error">{t.source_too_many({ limit: limit.value, loaded })}</span>
+              )}
             </div>
+            {count > slots && (
+              <label class="ff-source__limit">
+                <span class="ff-muted">{t.font_limit_label()}</span>
+                <input
+                  class="ff-control ff-source__limit-input"
+                  type="number"
+                  inputMode="numeric"
+                  min={limit.min}
+                  max={limit.max}
+                  value={limit.value}
+                  onChange={(event) => onLimitChange(event.currentTarget.valueAsNumber)}
+                />
+                <span class="ff-muted">{t.font_limit_hint()}</span>
+              </label>
+            )}
+            {count > 0 && loaded + count > SOFT_LIMIT && count <= slots && (
+              <p class="ff-source__text ff-muted" role="status">
+                {t.source_many_warning({
+                  total: loaded + count,
+                  size: `${Math.round(((averageBytes || GUESS_BYTES) * count) / 1000)} kB`,
+                })}
+              </p>
+            )}
           </div>
         )}
         <p role="status" class="ff-source__text ff-muted">

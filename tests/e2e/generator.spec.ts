@@ -1566,6 +1566,86 @@ test('several styles of a catalog family are added with one click', async ({ pag
   }
 });
 
+const mockMontserrat = async (page: Page) => {
+  const cors = { 'access-control-allow-origin': '*' };
+  await page.route('https://fonts.googleapis.com/**', (route) =>
+    route.fulfill({
+      status: 200,
+      headers: { ...cors, 'content-type': 'text/css' },
+      body: [
+        '/* cyrillic */\n@font-face { font-family: "Montserrat"; src: url(https://fonts.gstatic.com/s/montserrat/cyrillic.woff2) format("woff2"); }',
+        '/* latin */\n@font-face { font-family: "Montserrat"; src: url(https://fonts.gstatic.com/s/montserrat/latin.woff2) format("woff2"); }',
+      ].join('\n'),
+    }),
+  );
+  await page.route('https://fonts.gstatic.com/**', (route) =>
+    route.fulfill({
+      status: 200,
+      headers: { ...cors, 'content-type': 'font/woff2' },
+      body: readFileSync(sourceSans),
+    }),
+  );
+};
+
+const chooseMontserrat = async (page: Page) => {
+  await page.goto('/en/');
+  await waitForGenerator(page);
+  await openStep(page, 'inputs');
+  await page.getByLabel('Font name, CSS or copied site data').fill('montserrat');
+  await page
+    .getByRole('listbox', { name: 'Matching families' })
+    .getByRole('option', { name: /^Montserrat.*Google Fonts/ })
+    .first()
+    .click();
+};
+
+test('weights 200-600 in Cyrillic and Latin are added together by dragging across the buttons', async ({
+  page,
+}) => {
+  await mockMontserrat(page);
+  await chooseMontserrat(page);
+  const upright = page.locator('.ff-source__chosen').getByRole('group', { name: 'Upright' });
+  await upright.scrollIntoViewIfNeeded();
+  const from = await upright.getByRole('button', { name: '200', exact: true }).boundingBox();
+  const to = await upright.getByRole('button', { name: '600', exact: true }).boundingBox();
+  if (!from || !to) throw new Error('missing buttons');
+  await page.mouse.move(from.x + from.width / 2, from.y + from.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(to.x + to.width / 2, to.y + to.height / 2, { steps: 10 });
+  await page.mouse.up();
+  for (const weight of ['200', '300', '400', '500', '600']) {
+    await expect(upright.getByRole('button', { name: weight, exact: true })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    );
+  }
+  await expect(upright.getByRole('button', { name: '700', exact: true })).toHaveAttribute(
+    'aria-pressed',
+    'false',
+  );
+  await page.getByRole('button', { name: 'cyrillic', exact: true }).click();
+  await page.getByRole('button', { name: 'Add to the fonts (10)' }).click();
+  await expect(page.getByText('Downloaded Montserrat.')).toBeVisible();
+  await openStep(page, 'tuning');
+  await expect(page.getByRole('button', { name: /^Remove: Montserrat-/ })).toHaveCount(10);
+});
+
+test('the font limit explains itself and can be raised', async ({ page }) => {
+  await page.addInitScript(() => localStorage.setItem('fontstay:font-limit', '3'));
+  await mockMontserrat(page);
+  await chooseMontserrat(page);
+  const chosen = page.locator('.ff-source__chosen');
+  await chosen.getByRole('button', { name: '300', exact: true }).click();
+  await chosen.getByRole('button', { name: '500', exact: true }).click();
+  await chosen.getByRole('button', { name: '600', exact: true }).click();
+  await expect(chosen).toContainText('The limit is 3 fonts and 0 are loaded.');
+  await expect(page.getByRole('button', { name: /^Add to the fonts/ })).toBeDisabled();
+  await page.getByLabel('Font limit').fill('8');
+  await page.getByLabel('Font limit').blur();
+  await expect(page.getByRole('button', { name: 'Add to the fonts (4)' })).toBeEnabled();
+  expect(await page.evaluate(() => localStorage.getItem('fontstay:font-limit'))).toBe('8');
+});
+
 test('a share link carries Google Fonts choices and downloads them again', async ({
   page,
   context,
@@ -2776,7 +2856,8 @@ test.describe('the single input field', () => {
     await expect(chosen).toBeVisible();
     const subsets = chosen.getByRole('group', { name: 'Script subsets' });
     await expect(subsets.getByRole('group', { name: 'Base' })).toBeVisible();
-    await expect(subsets.getByRole('group', { name: 'Extended (ext)' })).toBeVisible();
+    await expect(subsets.getByRole('group', { name: 'Ext' })).toBeVisible();
+    await chosen.getByRole('button', { name: 'About ext subsets' }).click();
     await expect(chosen).toContainText('extra letters for the same script');
     const overflow = await chosen.evaluate((root) => {
       const limit = root.getBoundingClientRect().right;
@@ -2788,6 +2869,33 @@ test.describe('the single input field', () => {
     expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(
       320,
     );
+  });
+
+  test('button groups are joined, aligned in two columns and the ext hint sits behind an info button', async ({
+    page,
+  }) => {
+    const field = await open(page);
+    await field.fill('Open S');
+    await field.press('Tab');
+    const chosen = page.locator('.ff-source__chosen');
+    const subsets = chosen.getByRole('group', { name: 'Script subsets' });
+    const base = subsets.getByRole('group', { name: 'Base' }).getByRole('button').first();
+    const ext = subsets.getByRole('group', { name: 'Ext' }).getByRole('button').first();
+    const [baseBox, extBox] = [await base.boundingBox(), await ext.boundingBox()];
+    expect(Math.abs((baseBox?.x ?? 0) - (extBox?.x ?? 1))).toBeLessThanOrEqual(1);
+    const group = chosen.getByRole('group', { name: 'Upright' });
+    const [first, second] = [
+      await group.getByRole('button').nth(0).boundingBox(),
+      await group.getByRole('button').nth(1).boundingBox(),
+    ];
+    expect((second?.x ?? 0) - ((first?.x ?? 0) + (first?.width ?? 0))).toBeLessThanOrEqual(0);
+    await expect(chosen.getByText('extra letters for the same script')).toBeHidden();
+    const info = chosen.getByRole('button', { name: 'About ext subsets' });
+    await info.focus();
+    await page.keyboard.press('Enter');
+    await expect(chosen.getByText('extra letters for the same script')).toBeVisible();
+    await page.keyboard.press('Escape');
+    await expect(chosen.getByText('extra letters for the same script')).toBeHidden();
   });
 
   test('the source label is vertically centred against the family name', async ({ page }) => {

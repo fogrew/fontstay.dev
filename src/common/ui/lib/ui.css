@@ -714,6 +714,22 @@ html[data-transition] .ff-dock__panel[data-id="export"] {
   }
 }
 
+.ff-popover--info {
+  display: inline-block;
+  margin-inline-start: var(--ff-space-1);
+}
+.ff-popover--info .ff-popover__button {
+  min-block-size: 1.5rem;
+  min-inline-size: 1.5rem;
+  padding: 0;
+  border-radius: 50%;
+  font-size: 0.75rem;
+  font-style: italic;
+  font-weight: 700;
+}
+.ff-popover--info .ff-popover__button::after {
+  content: none;
+}
 .ff-shadow {
   --ff-shadow-size: 1.75rem;
   position: relative;
@@ -804,32 +820,6 @@ html[data-transition] .ff-dock__panel[data-id="export"] {
 .ff-dock__toggle[aria-expanded="true"]:dir(rtl)::before {
   content: "▾" / "";
 }
-.ff-toggle-buttons {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--ff-space-1);
-  min-inline-size: 0;
-  margin: 0;
-  padding: 0;
-  border: 0;
-}
-.ff-toggle-buttons > .ff-button {
-  min-inline-size: 2.75rem;
-  min-block-size: 2rem;
-  padding: 0 var(--ff-space-2);
-  user-select: none;
-}
-.ff-toggle-buttons > [aria-pressed="true"] {
-  border-color: var(--ff-accent);
-  background: var(--ff-accent);
-  color: var(--ff-on-accent, #fff);
-}
-@media (forced-colors: active) {
-  .ff-toggle-buttons > [aria-pressed="true"] {
-    outline: 2px solid Highlight;
-    outline-offset: -2px;
-  }
-}
 .ff-button-group {
   display: inline-flex;
   flex-wrap: nowrap;
@@ -839,6 +829,15 @@ html[data-transition] .ff-dock__panel[data-id="export"] {
   margin: 0;
   padding: 0;
   border: 0;
+}
+.ff-button-group--wrap {
+  flex-wrap: wrap;
+}
+.ff-button-group--wrap > .ff-button {
+  margin-block-end: -1px;
+}
+.ff-button-group__toggle {
+  user-select: none;
 }
 .ff-button-group--compact > .ff-button {
   min-inline-size: 2.75rem;

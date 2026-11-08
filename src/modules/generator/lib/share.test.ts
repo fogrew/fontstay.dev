@@ -147,8 +147,23 @@ describe('font origins', () => {
       { ...origin, subset: 'Latin Ext' },
       'text',
     ];
-    const many = Array.from({ length: 20 }, () => origin);
+    const many = Array.from({ length: 200 }, () => origin);
     expect(parseShareState({ v: 1, sources: bad })?.sources).toEqual([]);
-    expect(parseShareState({ v: 1, sources: many })?.sources).toHaveLength(8);
+    expect(parseShareState({ v: 1, sources: many })?.sources).toHaveLength(128);
+  });
+
+  it('round-trips Montserrat 200-600 in Cyrillic and Latin (12 faces) within the link budget', async () => {
+    const sources = [200, 300, 400, 500, 600].flatMap((weight) =>
+      ['latin', 'cyrillic'].map((subset) => ({
+        source: 'google' as const,
+        family: 'montserrat',
+        style: String(weight),
+        subset,
+      })),
+    );
+    const state: ShareState = { v: 1, query: 'montserrat', sources };
+    const payload = await encodeShareState(state);
+    expect(payload.length).toBeLessThan(MAX_HASH_CHARS / 4);
+    expect((await decodeShareState(payload))?.sources).toEqual(sources);
   });
 });

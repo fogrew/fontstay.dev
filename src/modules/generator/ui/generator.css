@@ -446,24 +446,32 @@
 }
 .ff-toggle-set {
   display: grid;
-  gap: var(--ff-space-1);
+  grid-template-columns: max-content minmax(0, 1fr);
+  align-items: center;
+  gap: var(--ff-space-1) var(--ff-space-2);
   margin: 0;
   padding: 0;
   border: 0;
   min-inline-size: 0;
 }
 .ff-toggle-set__legend {
+  grid-column: 1 / -1;
   padding: 0;
   margin-block-end: var(--ff-space-1);
 }
 .ff-toggle-group {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--ff-space-1);
+  display: contents;
 }
 .ff-toggle-group__label {
-  min-inline-size: 4.5rem;
+  display: flex;
+  align-items: center;
+}
+.ff-source__limit {
+  display: grid;
+  gap: var(--ff-space-1);
+}
+.ff-source__limit-input {
+  inline-size: 6rem;
 }
 .ff-source__add {
   display: flex;
