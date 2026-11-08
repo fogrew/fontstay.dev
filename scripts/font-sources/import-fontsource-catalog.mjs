@@ -17,11 +17,11 @@ const SUBSET = /^[a-z0-9-]{1,40}$/;
 const VERSION = /^\d{1,4}\.\d{1,4}\.\d{1,4}$/;
 const CATEGORIES = ['Sans Serif', 'Serif', 'Monospace', 'Display', 'Handwriting', 'Other'];
 const LICENSES = ['OFL-1.1', 'Apache-2.0', 'CC0-1.0', 'MIT', 'Unlicense'];
-const licenseIndex = (value) =>
-  Math.max(
-    0,
-    LICENSES.findIndex((name) => name.toLowerCase() === String(value).toLowerCase()),
-  );
+const licenseIndex = (value) => {
+  const index = LICENSES.findIndex((name) => name.toLowerCase() === String(value).toLowerCase());
+  if (index < 0) throw new Error(`Fontsource: unknown license ${value}`);
+  return index;
+};
 const NAMES = { 'sans-serif': 0, serif: 1, monospace: 2, display: 3, handwriting: 4 };
 const families = [];
 for (const item of list.sort((a, b) => a.family.localeCompare(b.family))) {

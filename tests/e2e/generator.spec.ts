@@ -2968,6 +2968,7 @@ test.describe('the single input field', () => {
     const list = page.getByRole('listbox', { name: 'Matching families' });
     const options = list.getByRole('option');
     await expect(options.first()).toBeVisible();
+    await expect(list.locator('[role=option][tabindex="0"]')).toHaveCount(1);
     await options.first().focus();
     const scrollY = await page.evaluate(() => window.scrollY);
     await page.keyboard.press('ArrowDown');

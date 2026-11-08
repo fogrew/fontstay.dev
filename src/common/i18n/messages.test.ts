@@ -15,6 +15,17 @@ describe('messagesFor', () => {
     );
   });
 
+  it('keeps both service tokens in every locale of the input hint', () => {
+    for (const locale of ['en', 'ru', 'es', 'pt', 'ar'] as const) {
+      const hint = messagesFor(locale).input_hint_link({
+        google: '{google}',
+        fontsource: '{fontsource}',
+      });
+      expect(hint).toContain('{google}');
+      expect(hint).toContain('{fontsource}');
+    }
+  });
+
   it('throws for a key that does not exist', () => {
     const messages = messagesFor('en') as unknown as Record<string, () => string>;
     expect(() => messages.no_such_key?.()).toThrow('Unknown message key');

@@ -92,6 +92,13 @@ export function useFamilySearch({
   const [tip, setTip] = useState<{ text: string; left: number; top: number }>();
 
   useEffect(() => {
+    if (!tip) return;
+    const hide = () => setTip(undefined);
+    window.addEventListener('scroll', hide, { capture: true, passive: true });
+    return () => window.removeEventListener('scroll', hide, { capture: true });
+  }, [tip]);
+
+  useEffect(() => {
     for (const id of Object.keys(SOURCES) as SourceId[]) {
       SOURCES[id].loadCatalog().then(
         (families) =>

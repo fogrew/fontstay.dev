@@ -30,6 +30,10 @@ for (const [index, directory] of ['ofl', 'apache', 'ufl'].entries()) {
   if (!entry) throw new Error(`google/fonts: no ${directory} directory`);
   for (const item of await githubTree(entry.sha)) licenseOf.set(item.path, index);
 }
+const defaultLicense = (name) => {
+  console.warn(`google/fonts: no license folder for ${name}, assuming OFL-1.1`);
+  return 0;
+};
 const folder = (name) => name.toLowerCase().replace(/[^a-z0-9]/g, '');
 
 const CATEGORIES = ['Sans Serif', 'Serif', 'Monospace', 'Display', 'Handwriting'];
@@ -42,7 +46,7 @@ const families = list
     item.subsets.filter((subset) => subset !== 'menu'),
     Object.keys(item.fonts),
     (item.axes ?? []).map((axis) => axis.tag),
-    licenseOf.get(folder(item.family)) ?? 0,
+    licenseOf.get(folder(item.family)) ?? defaultLicense(item.family),
   ]);
 
 writeFileSync(
