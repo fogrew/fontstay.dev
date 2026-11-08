@@ -8,6 +8,7 @@ export { Disclosure } from './lib/Disclosure';
 export { DOCK_OPEN_EVENT, Dock, type DockOpenDetail, type DockProps } from './lib/Dock';
 export { FitField, type FitFieldProps } from './lib/FitField';
 export { displayedFitValue, type FitValue, pinFitValue } from './lib/fit-value';
+export { focusToggle, neighbourAfterRemoval } from './lib/focus-after-remove';
 export type { CodeLanguage } from './lib/highlight';
 export { Icon, type IconName } from './lib/Icon';
 export { LiveRegion } from './lib/LiveRegion';

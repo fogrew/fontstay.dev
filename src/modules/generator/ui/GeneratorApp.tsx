@@ -11,8 +11,10 @@ import {
   Dock,
   FitField,
   type FitValue,
+  focusToggle,
   Icon,
   LiveRegion,
+  neighbourAfterRemoval,
   Select,
 } from '@/common/ui';
 import {
@@ -44,7 +46,7 @@ import {
   selfHostFontFaces,
 } from '@/modules/export';
 import { compactRanges, formatUnicodeRange, StackResolveError } from '@/modules/fallback-fit';
-import { LazyFontDetails } from '@/modules/font-details';
+import { detailsToggleId, LazyFontDetails } from '@/modules/font-details';
 import {
   collectionMemberIndices,
   createFontParser,
@@ -204,6 +206,8 @@ const AUTO: Values = {
   lineGapOverride: { mode: 'auto' },
 };
 
+const fitToggleId = (id: number) => `fit-${id}`;
+
 export function GeneratorApp({ locale }: { locale: Locale }) {
   const t = messagesFor(locale);
   const kindLabels: Record<Category, string> = {
@@ -317,7 +321,19 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
     setFocusSlot(undefined);
   }, [focusSlot]);
 
-  const removeFont = (font: LoadedFont) => {
+  const [removedFocus, setRemovedFocus] = useState<string>();
+  useEffect(() => {
+    if (removedFocus === undefined) return;
+    if (!focusToggle(removedFocus)) document.getElementById('ff-input-text')?.focus();
+    setRemovedFocus(undefined);
+  }, [removedFocus]);
+
+  const removeFont = (font: LoadedFont, toggleOf: (id: number) => string) => {
+    const next = neighbourAfterRemoval(
+      fonts.map((item) => item.id),
+      font.id,
+    );
+    setRemovedFocus(next === undefined ? '' : toggleOf(next));
     void removeStoredFont(font.fileName);
     setFonts((current) => current.filter((item) => item.id !== font.id));
     setSelectedId((id) => (id === font.id ? undefined : id));
@@ -1875,6 +1891,7 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
       <Collapsible
         key={font.id}
         title={displayName(font.metrics.names.fullName ?? font.fileName)}
+        toggleId={fitToggleId(font.id)}
         open={isOpen}
         onToggle={(next) => {
           if (fonts.length === 1) setFontOpen(next);
@@ -1906,7 +1923,7 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
               type="button"
               class="ff-control ff-icon-button"
               aria-label={`${t.upload_remove()}: ${font.fileName}`}
-              onClick={() => removeFont(font)}
+              onClick={() => removeFont(font, fitToggleId)}
             >
               <span aria-hidden="true">×</span>
             </button>
@@ -2015,7 +2032,7 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
                     }))}
                     onRemove={(id) => {
                       const font = fonts.find((item) => item.id === id);
-                      if (font) removeFont(font);
+                      if (font) removeFont(font, detailsToggleId);
                     }}
                   />
                 )}
