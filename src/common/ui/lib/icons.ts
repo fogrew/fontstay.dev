@@ -43,6 +43,7 @@ export const ICON_NAMES = [
   'browserslist',
   'baseline-widely',
   'baseline-newly',
+  'license',
 ] as const;
 
 export type IconName = (typeof ICON_NAMES)[number];

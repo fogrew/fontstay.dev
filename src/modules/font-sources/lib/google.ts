@@ -13,19 +13,21 @@ import { type FontFamily, parseStyle } from './types';
 
 interface RawCatalog {
   categories: string[];
-  families: [string, number, string[], string[], string[]][];
+  licenses: string[];
+  families: [string, number, string[], string[], string[], number][];
 }
 
 const CSS_HOST = 'fonts.googleapis.com';
 const FILE_HOST = 'fonts.gstatic.com';
 
 export function decodeCatalog(raw: RawCatalog): FontFamily[] {
-  return raw.families.map(([name, category, subsets, styles]) => ({
+  return raw.families.map(([name, category, subsets, styles, , license]) => ({
     id: name,
     name,
     category: raw.categories[category] ?? 'Sans Serif',
     subsets,
     styles,
+    license: raw.licenses[license] ?? raw.licenses[0] ?? 'OFL-1.1',
   }));
 }
 

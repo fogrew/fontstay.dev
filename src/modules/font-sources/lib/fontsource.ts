@@ -11,7 +11,8 @@ import { type FontFamily, parseStyle } from './types';
 
 interface RawCatalog {
   categories: string[];
-  families: [string, string, number, string[], string[], string][];
+  licenses: string[];
+  families: [string, string, number, string[], string[], string, number][];
 }
 
 const FILE_HOST = 'cdn.jsdelivr.net';
@@ -21,13 +22,14 @@ const SUBSET = /^[a-z0-9-]{1,40}$/;
 const VERSION = /^\d{1,4}\.\d{1,4}\.\d{1,4}$/;
 
 export function decodeCatalog(raw: RawCatalog): FontFamily[] {
-  return raw.families.map(([id, name, category, subsets, styles, version]) => ({
+  return raw.families.map(([id, name, category, subsets, styles, version, license]) => ({
     id,
     version,
     name,
     category: raw.categories[category] ?? 'Sans Serif',
     subsets,
     styles,
+    license: raw.licenses[license] ?? raw.licenses[0] ?? 'OFL-1.1',
   }));
 }
 

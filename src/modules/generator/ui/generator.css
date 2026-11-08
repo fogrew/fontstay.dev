@@ -433,6 +433,40 @@
   text-align: start;
   cursor: pointer;
 }
+.ff-source__item:focus-visible {
+  outline: 2px solid var(--ff-accent);
+  outline-offset: 1px;
+}
+.ff-source__badges {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: var(--ff-space-2);
+}
+.ff-source__icon {
+  inline-size: 1rem;
+  block-size: 1rem;
+  flex: none;
+  vertical-align: text-bottom;
+}
+.ff-source__service {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ff-space-1);
+  vertical-align: bottom;
+}
+.ff-source__tip {
+  position: fixed;
+  z-index: 10;
+  padding: var(--ff-space-1) var(--ff-space-2);
+  border: 1px solid var(--ff-border);
+  border-radius: var(--ff-radius);
+  background: var(--ff-surface);
+  color: var(--ff-text);
+  pointer-events: none;
+  transform: translate(-100%, calc(-100% - 4px));
+  white-space: nowrap;
+}
 .ff-source__item--active {
   background: var(--ff-state-full);
 }

@@ -2,7 +2,7 @@
   "source": "https://api.fontsource.org/v1/fonts",
   "categories": ["Sans Serif", "Serif", "Monospace", "Display", "Handwriting", "Other"],
   "families": [
-    ["adwaita-mono", "Adwaita Mono", 2, ["latin"], ["400", "400i", "700", "700i"], "5.3.0"],
+    ["adwaita-mono", "Adwaita Mono", 2, ["latin"], ["400", "400i", "700", "700i"], "5.3.0", 0],
     [
       "adwaita-sans",
       "Adwaita Sans",
@@ -28,7 +28,8 @@
         "900",
         "900i"
       ],
-      "5.3.0"
+      "5.3.0",
+      0
     ],
     [
       "aileron",
@@ -36,9 +37,10 @@
       0,
       ["latin"],
       ["100", "100i", "300", "300i", "400", "400i", "600", "600i", "700", "700i", "800", "800i"],
-      "5.3.0"
+      "5.3.0",
+      2
     ],
-    ["apfel-grotezk", "Apfel Grotezk", 0, ["latin"], ["400", "700"], "5.3.0"],
+    ["apfel-grotezk", "Apfel Grotezk", 0, ["latin"], ["400", "700"], "5.3.0", 0],
     [
       "argentum-sans",
       "Argentum Sans",
@@ -64,33 +66,36 @@
         "900",
         "900i"
       ],
-      "5.3.0"
+      "5.3.0",
+      0
     ],
-    ["bagnard", "Bagnard", 1, ["latin"], ["400"], "5.3.0"],
-    ["bagnard-sans", "Bagnard Sans", 0, ["latin"], ["400"], "5.3.0"],
-    ["blackout-midnight", "Blackout Midnight", 3, ["latin"], ["400"], "5.3.0"],
-    ["blackout-sunrise", "Blackout Sunrise", 3, ["latin"], ["400"], "5.3.0"],
-    ["blackout-two-am", "Blackout Two AM", 3, ["latin"], ["400"], "5.3.0"],
-    ["bluu-next", "Bluu Next", 0, ["latin"], ["700", "700i"], "5.3.0"],
-    ["bravura", "Bravura", 0, ["latin"], ["400"], "5.3.0"],
-    ["bravura-text", "Bravura Text", 0, ["latin"], ["400"], "5.3.0"],
-    ["chunk-five", "Chunk Five", 1, ["latin"], ["800"], "5.3.0"],
+    ["bagnard", "Bagnard", 1, ["latin"], ["400"], "5.3.0", 0],
+    ["bagnard-sans", "Bagnard Sans", 0, ["latin"], ["400"], "5.3.0", 0],
+    ["blackout-midnight", "Blackout Midnight", 3, ["latin"], ["400"], "5.3.0", 0],
+    ["blackout-sunrise", "Blackout Sunrise", 3, ["latin"], ["400"], "5.3.0", 0],
+    ["blackout-two-am", "Blackout Two AM", 3, ["latin"], ["400"], "5.3.0", 0],
+    ["bluu-next", "Bluu Next", 0, ["latin"], ["700", "700i"], "5.3.0", 0],
+    ["bravura", "Bravura", 0, ["latin"], ["400"], "5.3.0", 0],
+    ["bravura-text", "Bravura Text", 0, ["latin"], ["400"], "5.3.0", 0],
+    ["chunk-five", "Chunk Five", 1, ["latin"], ["800"], "5.3.0", 0],
     [
       "clear-sans",
       "Clear Sans",
       0,
       ["latin"],
       ["100", "100i", "300", "300i", "400", "400i", "500", "500i", "700", "700i"],
-      "5.3.0"
+      "5.3.0",
+      1
     ],
-    ["comic-mono", "Comic Mono", 2, ["latin"], ["400", "700"], "5.3.0"],
+    ["comic-mono", "Comic Mono", 2, ["latin"], ["400", "700"], "5.3.0", 3],
     [
       "commit-mono",
       "Commit Mono",
       2,
       ["latin"],
       ["200", "200i", "300", "300i", "400", "400i", "500", "500i", "600", "600i", "700", "700i"],
-      "5.3.0"
+      "5.3.0",
+      0
     ],
     [
       "cooper-hewitt",
@@ -115,20 +120,22 @@
         "800",
         "800i"
       ],
-      "5.3.0"
+      "5.3.0",
+      0
     ],
-    ["dejavu-math", "DejaVu Math", 3, ["latin"], ["400"], "5.3.0"],
-    ["dejavu-mono", "DejaVu Mono", 2, ["latin"], ["400", "400i", "700", "700i"], "5.3.0"],
-    ["dejavu-sans", "DejaVu Sans", 0, ["latin"], ["400", "400i", "700", "700i"], "5.3.0"],
-    ["dejavu-serif", "DejaVu Serif", 1, ["latin"], ["400", "400i", "700", "700i"], "5.3.0"],
-    ["dseg-weather", "DSEG Weather", 5, ["latin"], ["400"], "5.3.0"],
+    ["dejavu-math", "DejaVu Math", 3, ["latin"], ["400"], "5.3.0", 0],
+    ["dejavu-mono", "DejaVu Mono", 2, ["latin"], ["400", "400i", "700", "700i"], "5.3.0", 0],
+    ["dejavu-sans", "DejaVu Sans", 0, ["latin"], ["400", "400i", "700", "700i"], "5.3.0", 0],
+    ["dejavu-serif", "DejaVu Serif", 1, ["latin"], ["400", "400i", "700", "700i"], "5.3.0", 0],
+    ["dseg-weather", "DSEG Weather", 5, ["latin"], ["400"], "5.3.0", 0],
     [
       "dseg14-classic",
       "DSEG14 Classic",
       5,
       ["latin"],
       ["300", "300i", "400", "400i", "700", "700i"],
-      "5.3.0"
+      "5.3.0",
+      0
     ],
     [
       "dseg14-classic-mini",
@@ -136,7 +143,8 @@
       5,
       ["latin"],
       ["300", "300i", "400", "400i", "700", "700i"],
-      "5.3.0"
+      "5.3.0",
+      0
     ],
     [
       "dseg14-modern",
@@ -144,7 +152,8 @@
       5,
       ["latin"],
       ["300", "300i", "400", "400i", "700", "700i"],
-      "5.3.0"
+      "5.3.0",
+      0
     ],
     [
       "dseg14-modern-mini",
@@ -152,7 +161,8 @@
       5,
       ["latin"],
       ["300", "300i", "400", "400i", "700", "700i"],
-      "5.3.0"
+      "5.3.0",
+      0
     ],
     [
       "dseg7-classic",
@@ -160,7 +170,8 @@
       5,
       ["latin"],
       ["300", "300i", "400", "400i", "700", "700i"],
-      "5.3.0"
+      "5.3.0",
+      0
     ],
     [
       "dseg7-classic-mini",
@@ -168,7 +179,8 @@
       5,
       ["latin"],
       ["300", "300i", "400", "400i", "700", "700i"],
-      "5.3.0"
+      "5.3.0",
+      0
     ],
     [
       "dseg7-modern",
@@ -176,7 +188,8 @@
       5,
       ["latin"],
       ["300", "300i", "400", "400i", "700", "700i"],
-      "5.3.0"
+      "5.3.0",
+      0
     ],
     [
       "dseg7-modern-mini",
@@ -184,10 +197,11 @@
       5,
       ["latin"],
       ["300", "300i", "400", "400i", "700", "700i"],
-      "5.3.0"
+      "5.3.0",
+      0
     ],
-    ["dseg7-segg-chan", "DSEG7 SEGG CHAN", 5, ["latin"], ["400"], "5.3.0"],
-    ["dseg7-segg-chan-mini", "DSEG7 SEGG CHAN Mini", 5, ["latin"], ["400"], "5.3.0"],
+    ["dseg7-segg-chan", "DSEG7 SEGG CHAN", 5, ["latin"], ["400"], "5.3.0", 0],
+    ["dseg7-segg-chan-mini", "DSEG7 SEGG CHAN Mini", 5, ["latin"], ["400"], "5.3.0", 0],
     [
       "firago",
       "FiraGO",
@@ -213,18 +227,20 @@
         "900",
         "900i"
       ],
-      "5.3.0"
+      "5.3.0",
+      0
     ],
-    ["fusion-kai-g", "Fusion Kai G", 4, ["latin"], ["400"], "5.3.0"],
-    ["fusion-kai-j", "Fusion Kai J", 4, ["latin"], ["400"], "5.3.0"],
-    ["fusion-kai-t", "Fusion Kai T", 4, ["latin"], ["400"], "5.3.0"],
+    ["fusion-kai-g", "Fusion Kai G", 4, ["latin"], ["400"], "5.3.0", 0],
+    ["fusion-kai-j", "Fusion Kai J", 4, ["latin"], ["400"], "5.3.0", 0],
+    ["fusion-kai-t", "Fusion Kai T", 4, ["latin"], ["400"], "5.3.0", 0],
     [
       "fusion-pixel-10px-monospaced-jp",
       "Fusion Pixel 10px Monospaced JP",
       0,
       ["latin"],
       ["400"],
-      "5.3.0"
+      "5.3.0",
+      0
     ],
     [
       "fusion-pixel-10px-monospaced-kr",
@@ -232,7 +248,8 @@
       0,
       ["latin"],
       ["400"],
-      "5.3.0"
+      "5.3.0",
+      0
     ],
     [
       "fusion-pixel-10px-monospaced-sc",
@@ -240,7 +257,8 @@
       0,
       ["latin"],
       ["400"],
-      "5.3.0"
+      "5.3.0",
+      0
     ],
     [
       "fusion-pixel-10px-monospaced-tc",
@@ -248,7 +266,8 @@
       0,
       ["latin"],
       ["400"],
-      "5.3.0"
+      "5.3.0",
+      0
     ],
     [
       "fusion-pixel-10px-proportional-jp",
@@ -256,7 +275,8 @@
       0,
       ["latin"],
       ["400"],
-      "5.3.0"
+      "5.3.0",
+      0
     ],
     [
       "fusion-pixel-10px-proportional-kr",
@@ -264,7 +284,8 @@
       0,
       ["latin"],
       ["400"],
-      "5.3.0"
+      "5.3.0",
+      0
     ],
     [
       "fusion-pixel-10px-proportional-sc",
@@ -272,7 +293,8 @@
       0,
       ["latin"],
       ["400"],
-      "5.3.0"
+      "5.3.0",
+      0
     ],
     [
       "fusion-pixel-10px-proportional-tc",
@@ -280,7 +302,8 @@
       0,
       ["latin"],
       ["400"],
-      "5.3.0"
+      "5.3.0",
+      0
     ],
     [
       "fusion-pixel-12px-monospaced-jp",
@@ -288,7 +311,8 @@
       0,
       ["latin"],
       ["400"],
-      "5.3.0"
+      "5.3.0",
+      0
     ],
     [
       "fusion-pixel-12px-monospaced-kr",
@@ -296,7 +320,8 @@
       0,
       ["latin"],
       ["400"],
-      "5.3.0"
+      "5.3.0",
+      0
     ],
     [
       "fusion-pixel-12px-monospaced-sc",
@@ -304,7 +329,8 @@
       0,
       ["latin"],
       ["400"],
-      "5.3.0"
+      "5.3.0",
+      0
     ],
     [
       "fusion-pixel-12px-monospaced-tc",
@@ -312,7 +338,8 @@
       0,
       ["latin"],
       ["400"],
-      "5.3.0"
+      "5.3.0",
+      0
     ],
     [
       "fusion-pixel-12px-proportional-jp",
@@ -320,7 +347,8 @@
       0,
       ["latin"],
       ["400"],
-      "5.3.0"
+      "5.3.0",
+      0
     ],
     [
       "fusion-pixel-12px-proportional-kr",
@@ -328,7 +356,8 @@
       0,
       ["latin"],
       ["400"],
-      "5.3.0"
+      "5.3.0",
+      0
     ],
     [
       "fusion-pixel-12px-proportional-sc",
@@ -336,7 +365,8 @@
       0,
       ["latin"],
       ["400"],
-      "5.3.0"
+      "5.3.0",
+      0
     ],
     [
       "fusion-pixel-12px-proportional-tc",
@@ -344,7 +374,8 @@
       0,
       ["latin"],
       ["400"],
-      "5.3.0"
+      "5.3.0",
+      0
     ],
     [
       "fusion-pixel-8px-monospaced-jp",
@@ -352,7 +383,8 @@
       0,
       ["latin"],
       ["400"],
-      "5.3.0"
+      "5.3.0",
+      0
     ],
     [
       "fusion-pixel-8px-monospaced-kr",
@@ -360,7 +392,8 @@
       0,
       ["latin"],
       ["400"],
-      "5.3.0"
+      "5.3.0",
+      0
     ],
     [
       "fusion-pixel-8px-monospaced-sc",
@@ -368,7 +401,8 @@
       0,
       ["latin"],
       ["400"],
-      "5.3.0"
+      "5.3.0",
+      0
     ],
     [
       "fusion-pixel-8px-monospaced-tc",
@@ -376,7 +410,8 @@
       0,
       ["latin"],
       ["400"],
-      "5.3.0"
+      "5.3.0",
+      0
     ],
     [
       "fusion-pixel-8px-proportional-jp",
@@ -384,7 +419,8 @@
       0,
       ["latin"],
       ["400"],
-      "5.3.0"
+      "5.3.0",
+      0
     ],
     [
       "fusion-pixel-8px-proportional-kr",
@@ -392,7 +428,8 @@
       0,
       ["latin"],
       ["400"],
-      "5.3.0"
+      "5.3.0",
+      0
     ],
     [
       "fusion-pixel-8px-proportional-sc",
@@ -400,7 +437,8 @@
       0,
       ["latin"],
       ["400"],
-      "5.3.0"
+      "5.3.0",
+      0
     ],
     [
       "fusion-pixel-8px-proportional-tc",
@@ -408,7 +446,8 @@
       0,
       ["latin"],
       ["400"],
-      "5.3.0"
+      "5.3.0",
+      0
     ],
     [
       "geist-sans",
@@ -416,7 +455,8 @@
       0,
       ["latin"],
       ["100", "200", "300", "400", "500", "600", "700", "800", "900"],
-      "5.3.0"
+      "5.3.0",
+      0
     ],
     [
       "genjyuu-gothic",
@@ -424,7 +464,8 @@
       0,
       ["latin"],
       ["100", "200", "300", "400", "500", "700", "900"],
-      "5.3.0"
+      "5.3.0",
+      0
     ],
     [
       "hauora-sans",
@@ -432,17 +473,19 @@
       0,
       ["latin"],
       ["200", "300", "400", "500", "600", "700", "800"],
-      "5.3.0"
+      "5.3.0",
+      0
     ],
-    ["ia-writer-duo", "iA Writer Duo", 2, ["latin"], ["400", "400i", "700", "700i"], "5.3.0"],
-    ["ia-writer-mono", "iA Writer Mono", 2, ["latin"], ["400", "400i", "700", "700i"], "5.3.0"],
+    ["ia-writer-duo", "iA Writer Duo", 2, ["latin"], ["400", "400i", "700", "700i"], "5.3.0", 0],
+    ["ia-writer-mono", "iA Writer Mono", 2, ["latin"], ["400", "400i", "700", "700i"], "5.3.0", 0],
     [
       "ia-writer-quattro",
       "iA Writer Quattro",
       0,
       ["latin"],
       ["400", "400i", "700", "700i"],
-      "5.3.0"
+      "5.3.0",
+      0
     ],
     [
       "iosevka",
@@ -469,7 +512,8 @@
         "900",
         "900i"
       ],
-      "5.3.0"
+      "5.3.0",
+      0
     ],
     [
       "iosevka-aile",
@@ -496,7 +540,8 @@
         "900",
         "900i"
       ],
-      "5.3.0"
+      "5.3.0",
+      0
     ],
     [
       "iosevka-curly",
@@ -523,7 +568,8 @@
         "900",
         "900i"
       ],
-      "5.3.0"
+      "5.3.0",
+      0
     ],
     [
       "iosevka-curly-slab",
@@ -550,7 +596,8 @@
         "900",
         "900i"
       ],
-      "5.3.0"
+      "5.3.0",
+      0
     ],
     [
       "iosevka-etoile",
@@ -577,17 +624,19 @@
         "900",
         "900i"
       ],
-      "5.3.0"
+      "5.3.0",
+      0
     ],
-    ["junction", "Junction", 0, ["latin"], ["300", "400", "700"], "5.3.0"],
-    ["karmilla", "Karmilla", 0, ["latin"], ["400", "700"], "5.3.0"],
+    ["junction", "Junction", 0, ["latin"], ["300", "400", "700"], "5.3.0", 0],
+    ["karmilla", "Karmilla", 0, ["latin"], ["400", "700"], "5.3.0", 0],
     [
       "league-mono",
       "League Mono",
       2,
       ["latin"],
       ["100", "200", "300", "400", "500", "600", "700", "800"],
-      "5.3.0"
+      "5.3.0",
+      0
     ],
     [
       "lextrall",
@@ -595,9 +644,10 @@
       0,
       ["latin"],
       ["100", "200", "300", "400", "500", "600", "700", "800", "900"],
-      "5.3.0"
+      "5.3.0",
+      0
     ],
-    ["lxgw-wenkai", "LXGW WenKai", 0, ["latin"], ["300", "500", "700"], "5.3.0"],
+    ["lxgw-wenkai", "LXGW WenKai", 0, ["latin"], ["300", "500", "700"], "5.3.0", 0],
     [
       "maple-mono",
       "Maple Mono",
@@ -621,7 +671,8 @@
         "800",
         "800i"
       ],
-      "5.3.0"
+      "5.3.0",
+      0
     ],
     [
       "metropolis",
@@ -648,7 +699,8 @@
         "900",
         "900i"
       ],
-      "5.3.0"
+      "5.3.0",
+      4
     ],
     [
       "monaspace-argon",
@@ -671,7 +723,8 @@
         "800",
         "800i"
       ],
-      "5.3.0"
+      "5.3.0",
+      0
     ],
     [
       "monaspace-krypton",
@@ -694,7 +747,8 @@
         "800",
         "800i"
       ],
-      "5.3.0"
+      "5.3.0",
+      0
     ],
     [
       "monaspace-neon",
@@ -717,7 +771,8 @@
         "800",
         "800i"
       ],
-      "5.3.0"
+      "5.3.0",
+      0
     ],
     [
       "monaspace-radon",
@@ -740,7 +795,8 @@
         "800",
         "800i"
       ],
-      "5.3.0"
+      "5.3.0",
+      0
     ],
     [
       "monaspace-xenon",
@@ -763,20 +819,22 @@
         "800",
         "800i"
       ],
-      "5.3.0"
+      "5.3.0",
+      0
     ],
-    ["mononoki", "Mononoki", 2, ["latin"], ["400", "400i", "700", "700i"], "5.3.0"],
+    ["mononoki", "Mononoki", 2, ["latin"], ["400", "400i", "700", "700i"], "5.3.0", 0],
     [
       "nebula-sans",
       "Nebula Sans",
       0,
       ["latin"],
       ["300", "300i", "400", "400i", "500", "500i", "600", "600i", "700", "700i", "900", "900i"],
-      "5.3.0"
+      "5.3.0",
+      0
     ],
-    ["norwester", "Norwester", 0, ["latin"], ["400"], "5.3.0"],
-    ["noto-mono", "Noto Mono", 2, ["latin"], ["400"], "5.3.0"],
-    ["open-runde", "Open Runde", 0, ["latin"], ["400", "500", "600", "700"], "5.3.0"],
+    ["norwester", "Norwester", 0, ["latin"], ["400"], "5.3.0", 0],
+    ["noto-mono", "Noto Mono", 2, ["latin"], ["400"], "5.3.0", 0],
+    ["open-runde", "Open Runde", 0, ["latin"], ["400", "500", "600", "700"], "5.3.0", 0],
     [
       "open-sauce-one",
       "Open Sauce One",
@@ -798,7 +856,8 @@
         "900",
         "900i"
       ],
-      "5.3.0"
+      "5.3.0",
+      0
     ],
     [
       "open-sauce-sans",
@@ -821,7 +880,8 @@
         "900",
         "900i"
       ],
-      "5.3.0"
+      "5.3.0",
+      0
     ],
     [
       "open-sauce-two",
@@ -844,18 +904,20 @@
         "900",
         "900i"
       ],
-      "5.3.0"
+      "5.3.0",
+      0
     ],
-    ["opendyslexic", "OpenDyslexic", 0, ["latin"], ["400", "400i", "700", "700i"], "5.3.0"],
-    ["ostrich-sans", "Ostrich Sans", 0, ["latin"], ["300", "400", "700", "900"], "5.3.0"],
-    ["peace-sans", "Peace Sans", 0, ["latin"], ["400"], "5.3.0"],
+    ["opendyslexic", "OpenDyslexic", 0, ["latin"], ["400", "400i", "700", "700i"], "5.3.0", 0],
+    ["ostrich-sans", "Ostrich Sans", 0, ["latin"], ["300", "400", "700", "900"], "5.3.0", 0],
+    ["peace-sans", "Peace Sans", 0, ["latin"], ["400"], "5.3.0", 0],
     [
       "pitagon-sans",
       "Pitagon Sans",
       0,
       ["latin"],
       ["400", "500", "600", "700", "800", "900"],
-      "5.3.0"
+      "5.3.0",
+      0
     ],
     [
       "pitagon-sans-mono",
@@ -880,7 +942,8 @@
         "800",
         "800i"
       ],
-      "5.3.0"
+      "5.3.0",
+      0
     ],
     [
       "pitagon-sans-text",
@@ -903,7 +966,8 @@
         "800",
         "800i"
       ],
-      "5.3.0"
+      "5.3.0",
+      0
     ],
     [
       "pitagon-serif",
@@ -930,7 +994,8 @@
         "900",
         "900i"
       ],
-      "5.3.0"
+      "5.3.0",
+      0
     ],
     [
       "pretendard",
@@ -938,35 +1003,38 @@
       0,
       ["latin"],
       ["100", "200", "300", "400", "500", "600", "700", "800", "900"],
-      "5.3.0"
+      "5.3.0",
+      0
     ],
-    ["redaction", "Redaction", 1, ["latin"], ["400", "400i", "700", "700i"], "5.3.0"],
-    ["redaction-10", "Redaction 10", 1, ["latin"], ["400", "400i", "700", "700i"], "5.3.0"],
-    ["redaction-100", "Redaction 100", 1, ["latin"], ["400", "400i", "700", "700i"], "5.3.0"],
-    ["redaction-20", "Redaction 20", 1, ["latin"], ["400", "400i", "700", "700i"], "5.3.0"],
-    ["redaction-35", "Redaction 35", 1, ["latin"], ["400", "400i", "700", "700i"], "5.3.0"],
-    ["redaction-50", "Redaction 50", 1, ["latin"], ["400", "400i", "700", "700i"], "5.3.0"],
-    ["redaction-70", "Redaction 70", 1, ["latin"], ["400", "400i", "700", "700i"], "5.3.0"],
-    ["rubik-one", "Rubik One", 0, ["latin"], ["400"], "5.3.0"],
-    ["syne-italic", "Syne Italic", 0, ["latin"], ["400i"], "5.3.0"],
+    ["redaction", "Redaction", 1, ["latin"], ["400", "400i", "700", "700i"], "5.3.0", 0],
+    ["redaction-10", "Redaction 10", 1, ["latin"], ["400", "400i", "700", "700i"], "5.3.0", 0],
+    ["redaction-100", "Redaction 100", 1, ["latin"], ["400", "400i", "700", "700i"], "5.3.0", 0],
+    ["redaction-20", "Redaction 20", 1, ["latin"], ["400", "400i", "700", "700i"], "5.3.0", 0],
+    ["redaction-35", "Redaction 35", 1, ["latin"], ["400", "400i", "700", "700i"], "5.3.0", 0],
+    ["redaction-50", "Redaction 50", 1, ["latin"], ["400", "400i", "700", "700i"], "5.3.0", 0],
+    ["redaction-70", "Redaction 70", 1, ["latin"], ["400", "400i", "700", "700i"], "5.3.0", 0],
+    ["rubik-one", "Rubik One", 0, ["latin"], ["400"], "5.3.0", 0],
+    ["syne-italic", "Syne Italic", 0, ["latin"], ["400i"], "5.3.0", 0],
     [
       "uncut-sans",
       "Uncut Sans",
       0,
       ["latin"],
       ["300", "300i", "400", "400i", "500", "500i", "600", "600i", "700", "700i"],
-      "5.3.0"
+      "5.3.0",
+      0
     ],
-    ["unifont", "Unifont", 0, ["latin"], ["400"], "5.3.0"],
-    ["unifontex", "UnifontEX", 2, ["latin"], ["400"], "5.3.0"],
-    ["win95fa", "WIN95FA", 0, ["latin"], ["400"], "5.3.0"],
+    ["unifont", "Unifont", 0, ["latin"], ["400"], "5.3.0", 0],
+    ["unifontex", "UnifontEX", 2, ["latin"], ["400"], "5.3.0", 0],
+    ["win95fa", "WIN95FA", 0, ["latin"], ["400"], "5.3.0", 0],
     [
       "yakuhanjp",
       "YakuHanJP",
       5,
       ["latin"],
       ["100", "200", "300", "400", "500", "700", "900"],
-      "5.3.0"
+      "5.3.0",
+      0
     ],
     [
       "yakuhanjps",
@@ -974,7 +1042,8 @@
       5,
       ["latin"],
       ["100", "200", "300", "400", "500", "700", "900"],
-      "5.3.0"
+      "5.3.0",
+      0
     ],
     [
       "yakuhanmp",
@@ -982,7 +1051,8 @@
       5,
       ["latin"],
       ["100", "200", "300", "400", "500", "700", "900"],
-      "5.3.0"
+      "5.3.0",
+      0
     ],
     [
       "yakuhanmps",
@@ -990,7 +1060,8 @@
       5,
       ["latin"],
       ["100", "200", "300", "400", "500", "700", "900"],
-      "5.3.0"
+      "5.3.0",
+      0
     ],
     [
       "yakuhanrp",
@@ -998,7 +1069,8 @@
       5,
       ["latin"],
       ["100", "300", "400", "500", "700", "800", "900"],
-      "5.3.0"
+      "5.3.0",
+      0
     ],
     [
       "yakuhanrps",
@@ -1006,7 +1078,9 @@
       5,
       ["latin"],
       ["100", "300", "400", "500", "700", "800", "900"],
-      "5.3.0"
+      "5.3.0",
+      0
     ]
-  ]
+  ],
+  "licenses": ["OFL-1.1", "Apache-2.0", "CC0-1.0", "MIT", "Unlicense"]
 }

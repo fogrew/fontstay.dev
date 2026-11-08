@@ -12,6 +12,7 @@ describe('font origins', () => {
       category: '',
       subsets: [],
       styles: [],
+      license: 'OFL-1.1',
     };
     expect(familyPageUrl('google', family)).toBe(
       'https://fonts.google.com/specimen/Open+Sans+%26+Co',
