@@ -518,6 +518,50 @@
 .ff-export {
   display: grid;
   gap: var(--ff-space-2);
+  min-inline-size: 0;
+}
+.ff-export__inline {
+  min-inline-size: 0;
+}
+.ff-export[data-expanded] .ff-export__inline {
+  visibility: hidden;
+}
+.ff-export__expand {
+  min-inline-size: 2rem;
+  min-block-size: 2rem;
+  padding: 0;
+}
+.ff-export__fullscreen[open] {
+  inset: 0;
+  box-sizing: border-box;
+  display: flex;
+  inline-size: 100vw;
+  block-size: 100dvh;
+  max-inline-size: none;
+  max-block-size: none;
+  margin: 0;
+  padding: var(--ff-space-3);
+  border: 0;
+  background: var(--ff-surface);
+}
+.ff-export__fullscreen .ff-code {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-block-size: 0;
+}
+.ff-export__fullscreen .ff-code__body {
+  flex: 1;
+  min-block-size: 0;
+  max-block-size: none;
+}
+html:has(.ff-export__fullscreen[open]) {
+  overflow: hidden;
+  scrollbar-gutter: stable;
+}
+html[data-transition] .ff-export:not([data-expanded]) .ff-export__inline .ff-code,
+html[data-transition] .ff-export[data-expanded] .ff-export__fullscreen[open] .ff-code {
+  view-transition-name: ff-export-code;
 }
 .ff-export__self-host {
   display: flex;

@@ -55,6 +55,8 @@
   "fit_descent_label": "Descent override",
   "fit_line_gap_label": "Line gap override",
   "css_code_label": "CSS generado",
+  "css_expand": "Ampliar el CSS generado",
+  "css_collapse": "Cerrar el CSS a pantalla completa",
   "css_error": "No se pudo generar el CSS para esta fuente.",
   "preview_web_label": "Fuente web",
   "preview_fallback_label": "Respaldo ajustado",

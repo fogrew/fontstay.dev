@@ -55,6 +55,8 @@
   "fit_descent_label": "تجاوز descent",
   "fit_line_gap_label": "تجاوز line gap",
   "css_code_label": "شيفرة CSS المولَّدة",
+  "css_expand": "توسيع شيفرة CSS المولَّدة",
+  "css_collapse": "إغلاق شيفرة CSS بملء الشاشة",
   "css_error": "تعذّر توليد CSS لهذا الخط.",
   "preview_web_label": "خط الويب",
   "preview_fallback_label": "الخط الاحتياطي المضبوط",

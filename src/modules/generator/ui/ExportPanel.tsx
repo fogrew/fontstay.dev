@@ -1,6 +1,6 @@
-import { useRef } from 'preact/hooks';
+import { useEffect, useLayoutEffect, useRef, useState } from 'preact/hooks';
 import { type Locale, localizeHref, messagesFor } from '@/common/i18n';
-import { CodeBlock, type CodeLanguage, Icon, type IconName, Select } from '@/common/ui';
+import { CodeBlock, type CodeLanguage, Icon, type IconName, Select, transition } from '@/common/ui';
 import { buildExport, EXPORT_FORMATS, type ExportFormat, type ExportInput } from '@/modules/export';
 
 export type ExportChoice = ExportFormat | 'report';
@@ -72,6 +72,27 @@ export function ExportPanel({
   const hideHelp = () => {
     if (helpTooltip.current?.matches(':popover-open')) helpTooltip.current.hidePopover();
   };
+  const [expanded, setExpanded] = useState(false);
+  const inlineButton = useRef<HTMLButtonElement>(null);
+  const closeButton = useRef<HTMLButtonElement>(null);
+  const fullscreen = useRef<HTMLDialogElement>(null);
+  const opened = useRef(false);
+  const toggleFullscreen = (next: boolean) => transition(() => setExpanded(next));
+  useLayoutEffect(() => {
+    const panel = fullscreen.current;
+    if (!panel) return;
+    if (expanded && !panel.open) panel.showModal();
+    if (!expanded && panel.open) panel.close();
+  }, [expanded]);
+  useEffect(() => {
+    if (expanded) {
+      opened.current = true;
+      closeButton.current?.focus();
+    } else if (opened.current) {
+      opened.current = false;
+      inlineButton.current?.focus();
+    }
+  }, [expanded]);
   const format = effectiveFormat(chosen, multi);
   const labels: Record<ExportChoice, string> = {
     report: t.export_report(),
@@ -87,7 +108,7 @@ export function ExportPanel({
     loading: t.export_loading(),
   };
   return (
-    <div class="ff-export">
+    <div class="ff-export" data-expanded={expanded || undefined}>
       <Select
         label={t.export_format_label()}
         value={format}
@@ -153,14 +174,62 @@ export function ExportPanel({
           )}
         </>
       )}
-      <CodeBlock
-        locale={locale}
-        label={label}
-        code={file.text}
-        fileName={file.fileName}
-        language={file.language}
-        controls={false}
-      />
+      <div class="ff-export__inline" inert={expanded} aria-hidden={expanded || undefined}>
+        <CodeBlock
+          locale={locale}
+          label={label}
+          code={file.text}
+          fileName={file.fileName}
+          language={file.language}
+          controls={false}
+          headerAction={
+            format === 'css' ? (
+              <button
+                ref={inlineButton}
+                class="ff-control ff-button ff-export__expand"
+                type="button"
+                aria-label={t.css_expand()}
+                aria-expanded={expanded}
+                aria-controls="ff-export-fullscreen"
+                onClick={() => toggleFullscreen(true)}
+              >
+                <span aria-hidden="true">⛶</span>
+              </button>
+            ) : undefined
+          }
+        />
+      </div>
+      <dialog
+        ref={fullscreen}
+        id="ff-export-fullscreen"
+        class="ff-export__fullscreen"
+        aria-label={t.css_code_label()}
+        onCancel={(event) => {
+          event.preventDefault();
+          toggleFullscreen(false);
+        }}
+      >
+        {expanded && (
+          <CodeBlock
+            locale={locale}
+            label={label}
+            code={file.text}
+            language={file.language}
+            controls={false}
+            headerAction={
+              <button
+                ref={closeButton}
+                class="ff-control ff-button"
+                type="button"
+                aria-label={t.css_collapse()}
+                onClick={() => toggleFullscreen(false)}
+              >
+                <span aria-hidden="true">×</span>
+              </button>
+            }
+          />
+        )}
+      </dialog>
       {format !== 'report' && (
         <p class="ff-muted">
           <a class="ff-link" href={localizeHref('/cli/', { locale })}>

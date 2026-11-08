@@ -1819,6 +1819,120 @@ test('every export format can be shown, copied and downloaded', async ({ page })
   expect((await download).suggestedFilename()).toBe('font-loading.js');
 });
 
+test('generated CSS expands to the viewport and restores focus and scroll on close', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 320, height: 640 });
+  await page.goto('/en/');
+  await waitForGenerator(page);
+  await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(sourceSans);
+  await openExport(page);
+  const expand = page.getByRole('button', { name: 'Expand generated CSS' });
+  await expect(expand).toHaveAttribute('aria-expanded', 'false');
+  const dock = page.locator('.ff-dock__column[data-id="export"]');
+  const before = await dock.boundingBox();
+  await page.emulateMedia({ reducedMotion: 'no-preference' });
+  await page.evaluate(() => {
+    type Frame = { name: string; width: number; height: number };
+    type Record = { before: Frame; after: Frame };
+    type Doc = Document & {
+      startViewTransition: (update: () => Promise<void>) => { finished: Promise<unknown> };
+    };
+    const doc = document as Doc;
+    const original = doc.startViewTransition.bind(doc);
+    const records: Record[] = [];
+    (window as Window & { cssFlipRecords?: Record[] }).cssFlipRecords = records;
+    const frame = (): Frame => {
+      const code = document.querySelector<HTMLElement>(
+        '.ff-export[data-expanded] .ff-export__fullscreen .ff-code, .ff-export:not([data-expanded]) .ff-export__inline .ff-code',
+      );
+      const bounds = code?.getBoundingClientRect();
+      return {
+        name: code ? getComputedStyle(code).viewTransitionName : '',
+        width: bounds?.width ?? 0,
+        height: bounds?.height ?? 0,
+      };
+    };
+    doc.startViewTransition = (update) => {
+      const prior = frame();
+      return original(async () => {
+        await (update as () => Promise<void>)();
+        records.push({ before: prior, after: frame() });
+      });
+    };
+  });
+  await expand.click();
+  const dialog = page.getByRole('dialog', { name: 'Generated CSS' });
+  await expect(dialog).toBeVisible();
+  await expect(dialog.getByRole('button', { name: 'Close full-screen CSS' })).toBeFocused();
+  const bounds = await dialog.boundingBox();
+  expect(bounds?.width).toBe(320);
+  expect(bounds?.height).toBe(640);
+  expect(await page.evaluate(() => getComputedStyle(document.documentElement).overflow)).toBe(
+    'hidden',
+  );
+  expect((await dock.boundingBox())?.height).toBe(before?.height);
+  await expect
+    .poll(() =>
+      page.evaluate(
+        () => (window as Window & { cssFlipRecords?: unknown[] }).cssFlipRecords?.length,
+      ),
+    )
+    .toBe(1);
+  const [opening] = await page.evaluate(
+    () =>
+      (
+        window as Window & {
+          cssFlipRecords?: {
+            before: { name: string; width: number; height: number };
+            after: { name: string; width: number; height: number };
+          }[];
+        }
+      ).cssFlipRecords ?? [],
+  );
+  expect(opening?.before.name).toBe('ff-export-code');
+  expect(opening?.after.name).toBe('ff-export-code');
+  expect(opening?.after.width).toBeGreaterThan(opening?.before.width ?? 0);
+  expect(opening?.after.height).toBeGreaterThan(opening?.before.height ?? 0);
+  await page.keyboard.press('Escape');
+  await expect(dialog).toBeHidden();
+  await expect(expand).toBeFocused();
+  await expect(expand).toHaveAttribute('aria-expanded', 'false');
+  expect(await page.evaluate(() => getComputedStyle(document.documentElement).overflow)).not.toBe(
+    'hidden',
+  );
+  const restored = await dock.boundingBox();
+  expect(restored?.height).toBe(before?.height);
+  await expect
+    .poll(() =>
+      page.evaluate(
+        () => (window as Window & { cssFlipRecords?: unknown[] }).cssFlipRecords?.length,
+      ),
+    )
+    .toBe(2);
+  const closing = await page.evaluate(
+    () =>
+      (
+        window as Window & {
+          cssFlipRecords?: {
+            before: { name: string; width: number; height: number };
+            after: { name: string; width: number; height: number };
+          }[];
+        }
+      ).cssFlipRecords?.[1],
+  );
+  expect(closing?.before.name).toBe('ff-export-code');
+  expect(closing?.after.name).toBe('ff-export-code');
+  expect(closing?.after.width).toBeLessThan(closing?.before.width ?? 0);
+  expect(closing?.after.height).toBeLessThan(closing?.before.height ?? 0);
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await expand.click();
+  await expect(dialog).toBeVisible();
+  await expect(page.locator('html')).not.toHaveAttribute('data-transition');
+  await dialog.getByRole('button', { name: 'Close full-screen CSS' }).click();
+  await expect(expand).toBeFocused();
+});
+
 test('the impact report is built from the same state as the matrix and can be downloaded', async ({
   page,
 }) => {
@@ -2688,7 +2802,12 @@ test('the last step puts download and copy in the dock footer without share, and
   );
   await expect(footer.getByRole('button', { name: 'Next', exact: false })).toHaveCount(0);
   await expect(panel.getByRole('button', { name: 'Share', exact: true })).toHaveCount(0);
-  await expect(panel.locator('.ff-code__header').getByRole('button')).toHaveCount(0);
+  await expect(
+    panel.locator('.ff-code__header').getByRole('button', { name: 'Expand generated CSS' }),
+  ).toHaveCount(1);
+  await expect(
+    panel.locator('.ff-code__header').getByRole('button', { name: /Copy|Download/ }),
+  ).toHaveCount(0);
   await expect(page.getByRole('button', { name: 'Copy share link' })).toHaveCount(0);
 
   await openStep(page, 'tuning');

@@ -1,4 +1,4 @@
-import { Fragment } from 'preact';
+import { type ComponentChildren, Fragment } from 'preact';
 import { useEffect, useState } from 'preact/hooks';
 import { type Locale, messagesFor } from '@/common/i18n';
 import { Button } from './Button';
@@ -84,6 +84,7 @@ export function CodeBlock({
   onDownload,
   language,
   controls = true,
+  headerAction,
 }: {
   locale: Locale;
   code: string;
@@ -92,6 +93,7 @@ export function CodeBlock({
   onDownload?: (() => void) | undefined;
   language?: CodeLanguage | undefined;
   controls?: boolean;
+  headerAction?: ComponentChildren;
 }) {
   const [tokens, setTokens] = useState<{ code: string; lines: Token[][] }>();
   useEffect(() => {
@@ -111,6 +113,7 @@ export function CodeBlock({
     <div class="ff-code">
       <div class="ff-code__header">
         <span>{label}</span>
+        {headerAction}
         {controls && (
           <div class="ff-code__actions">
             <CodeActions

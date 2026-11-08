@@ -55,6 +55,8 @@
   "fit_descent_label": "Descent override",
   "fit_line_gap_label": "Line gap override",
   "css_code_label": "Generated CSS",
+  "css_expand": "Expand generated CSS",
+  "css_collapse": "Close full-screen CSS",
   "css_error": "CSS could not be generated for this font.",
   "preview_web_label": "Web font",
   "preview_fallback_label": "Adjusted fallback",
