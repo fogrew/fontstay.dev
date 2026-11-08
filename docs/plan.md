@@ -76,6 +76,7 @@ Both modes:
 ### 1.8 Other pages
 - **Font catalog** (cssfontstack analog): table of system fonts × OS/versions with availability and estimated audience coverage; static page per font with metrics and specimen.
 - **Presets** (abacktools analog): curated stacks per category (sans, serif, mono, display, handwriting, system-ui, modern-font-stacks families), each openable in the generator.
+  - Model (#510): a preset is not a CSS stack that is copied into the output. It sets the font type and preselects, per system, the stack fonts that the OS fonts dataset lists as preinstalled and that have metrics; the fitted `@font-face` fallbacks (`size-adjust`, overrides) are then computed for those picks like for any other pick, and flow into every export format, the preview and the share link. Stack fonts without dataset entries or metrics (for example Rockwell, Charter, Menlo) cannot be fitted and are skipped (as is any stack font beyond two per system); the Fine-tuning panel lists them, or says that the preset only sets the font type when none of the selected systems has a usable pick.
 - **Guide**: how descriptors, `unicode-range` and CLS interact.
 - Footer links: Credits page, source repository ([fogrew/fontstay.dev](https://github.com/fogrew/fontstay.dev)).
 

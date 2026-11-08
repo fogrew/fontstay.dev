@@ -400,6 +400,8 @@
   "preset_applied_heading": "Stack preset",
   "preset_applied": "Stack preset applied: {name}",
   "preset_clear": "Clear the preset",
+  "preset_unfitted": "{fonts} are not used in the fallbacks: not preinstalled on the selected systems, without metrics, or beyond the two-font limit per system.",
+  "preset_no_fit": "No font of this stack is usable as a fitted fallback on the selected systems (not preinstalled there, or without metrics), so the fallbacks stay automatic; only the font type is applied.",
   "article_wrap_label": "Text wrapping",
   "article_wrap_wrap": "Normal (wrap)",
   "article_wrap_balance": "Balanced (balance)",
