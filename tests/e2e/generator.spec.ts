@@ -3597,14 +3597,25 @@ for (const locale of LOCALES) {
       const panel = popover.locator('.ff-popover__panel');
       await expect(panel).toBeVisible();
       const fit = await panel.evaluate((node) => ({
-        clipped: node.scrollWidth > node.clientWidth,
+        clipped: [
+          ...(node.scrollWidth > node.clientWidth
+            ? [`panel ${node.scrollWidth}>${node.clientWidth}`]
+            : []),
+          ...[...node.querySelectorAll('*')]
+            .filter((element) => element.scrollWidth > element.clientWidth + 1)
+            .map((element) => `${element.tagName}.${element.className}`),
+        ],
         list: [...node.querySelectorAll('.ff-details__checklist')].some(
           (list) => list.scrollHeight > list.clientHeight,
         ),
         sections: node.querySelectorAll('.ff-settings__section').length,
       }));
       expect(fit.sections).toBeGreaterThanOrEqual(4);
-      expect(fit.clipped).toBe(false);
+      expect(
+        fit.clipped.filter(
+          (entry) => !entry.includes('sr-only') && !entry.includes('select__value'),
+        ),
+      ).toEqual([]);
       expect(fit.list).toBe(false);
       const overlap = await panel.evaluate((node) => {
         const boxes = [...node.querySelectorAll('.ff-preview__label')].map((label) => {
