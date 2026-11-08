@@ -16,7 +16,7 @@ describe('messagesFor', () => {
   });
 
   it('keeps both service tokens in every locale of the input hint', () => {
-    for (const locale of ['en', 'ru', 'es', 'pt', 'ar', 'vi'] as const) {
+    for (const locale of ['en', 'ru', 'es', 'pt', 'ar', 'vi', 'th'] as const) {
       const hint = messagesFor(locale).input_hint_link({
         google: '{google}',
         fontsource: '{fontsource}',

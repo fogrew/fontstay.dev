@@ -426,6 +426,9 @@
   text-transform: uppercase;
   letter-spacing: 0.04em;
 }
+.ff-select__group:lang(th) {
+  letter-spacing: normal;
+}
 .ff-select__list [role="option"][aria-selected="true"] {
   font-weight: 700;
 }

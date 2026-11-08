@@ -17,7 +17,15 @@ for (const locale of LOCALES) {
       );
       await expect(page.locator('meta[property="og:locale"]')).toHaveAttribute(
         'content',
-        { en: 'en_US', ru: 'ru_RU', ar: 'ar_AR', es: 'es_ES', pt: 'pt_BR', vi: 'vi_VN' }[locale],
+        {
+          en: 'en_US',
+          ru: 'ru_RU',
+          ar: 'ar_AR',
+          es: 'es_ES',
+          pt: 'pt_BR',
+          vi: 'vi_VN',
+          th: 'th_TH',
+        }[locale],
       );
       await expect(page.locator('link[rel="canonical"]')).toHaveAttribute(
         'href',
