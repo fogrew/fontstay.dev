@@ -358,21 +358,34 @@ export function useFamilySearch({
                 <span class="ff-error">{t.source_too_many({ limit: limit.value, loaded })}</span>
               )}
             </div>
-            {count > slots && (
-              <label class="ff-source__limit">
-                <span class="ff-muted">{t.font_limit_label()}</span>
-                <input
-                  class="ff-control ff-source__limit-input"
-                  type="number"
-                  inputMode="numeric"
-                  min={limit.min}
-                  max={limit.max}
-                  value={limit.value}
-                  onChange={(event) => onLimitChange(event.currentTarget.valueAsNumber)}
-                />
-                <span class="ff-muted">{t.font_limit_hint()}</span>
+            <div class="ff-source__limit">
+              <label class="ff-muted" for={`${listId}-limit`}>
+                {t.font_limit_label()}
               </label>
-            )}
+              <input
+                id={`${listId}-limit`}
+                class="ff-control ff-source__limit-input"
+                type="number"
+                inputMode="numeric"
+                min={limit.min}
+                max={limit.max}
+                defaultValue={limit.value}
+                aria-describedby={count > slots ? `${listId}-limit-hint` : undefined}
+                onChange={(event) => {
+                  const next = event.currentTarget.valueAsNumber;
+                  if (Number.isNaN(next)) return;
+                  event.currentTarget.value = String(
+                    Math.min(limit.max, Math.max(limit.min, Math.round(next))),
+                  );
+                  onLimitChange(next);
+                }}
+              />
+              {count > slots && (
+                <span class="ff-muted" id={`${listId}-limit-hint`}>
+                  {t.font_limit_hint()}
+                </span>
+              )}
+            </div>
             {count > 0 && loaded + count > SOFT_LIMIT && count <= slots && (
               <p class="ff-source__text ff-muted" role="status">
                 {t.source_many_warning({

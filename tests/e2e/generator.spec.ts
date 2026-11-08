@@ -1640,8 +1640,12 @@ test('the font limit explains itself and can be raised', async ({ page }) => {
   await chosen.getByRole('button', { name: '600', exact: true }).click();
   await expect(chosen).toContainText('The limit is 3 fonts and 0 are loaded.');
   await expect(page.getByRole('button', { name: /^Add to the fonts/ })).toBeDisabled();
+  await page.getByLabel('Font limit').fill('500');
+  await page.getByLabel('Font limit').press('Enter');
+  await expect(page.getByLabel('Font limit')).toHaveValue('128');
   await page.getByLabel('Font limit').fill('8');
-  await page.getByLabel('Font limit').blur();
+  await page.getByLabel('Font limit').press('Enter');
+  await expect(page.getByLabel('Font limit')).toBeFocused();
   await expect(page.getByRole('button', { name: 'Add to the fonts (4)' })).toBeEnabled();
   expect(await page.evaluate(() => localStorage.getItem('fontstay:font-limit'))).toBe('8');
 });
