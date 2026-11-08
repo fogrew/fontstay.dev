@@ -1211,6 +1211,91 @@ test('the coverage section shows a Unicode map and a per-block table', async ({ 
   await expect(status).toContainText('U+0032');
 });
 
+test('the coverage section shows the advance, bounds and guides of the pointed glyph', async ({
+  page,
+}) => {
+  await page.goto('/en/');
+  await waitForGenerator(page);
+  await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(sourceSans);
+  await closePanels(page);
+  await page.getByRole('button', { name: 'Glyph coverage', exact: true }).click();
+  const section = page.locator('.ff-map');
+  const diagram = section.getByRole('img', { name: /Metrics diagram for/ });
+  await expect(diagram).toBeVisible();
+  const before = await diagram.boundingBox();
+  await section
+    .getByRole('group', { name: 'Unicode map of Basic Latin' })
+    .locator('[data-cp="65"]')
+    .hover();
+  await expect(section.getByRole('img', { name: 'Metrics diagram for A' })).toBeVisible();
+  await expect(section.getByText('Advance', { exact: true })).toBeVisible();
+  await expect(section.getByText('Ascender', { exact: true })).toBeVisible();
+  await expect(section.getByText('Descender', { exact: true })).toBeVisible();
+  await expect(section.locator('.ff-map__metric-value').first()).not.toHaveText(/^0 \//);
+  await section.getByRole('group', { name: 'Unicode map of Basic Latin' }).focus();
+  await page.keyboard.press('ArrowRight');
+  await expect(section.getByRole('img', { name: 'Metrics diagram for B' })).toBeVisible();
+  const after = await diagram.boundingBox();
+  expect([after?.width, after?.height]).toEqual([before?.width, before?.height]);
+  expect((await new AxeBuilder({ page }).include('.ff-map').analyze()).violations).toEqual([]);
+});
+
+for (const [name, width] of [
+  ['desktop', 1500],
+  ['phone', 320],
+] as const) {
+  test(`${name}: the size cascade ends the article and adds no layout shift`, async ({ page }) => {
+    await page.setViewportSize({ width, height: 900 });
+    await page.addInitScript(() => {
+      const state = window as unknown as { shifts: number };
+      state.shifts = 0;
+      new PerformanceObserver((list) => {
+        for (const entry of list.getEntries() as unknown as {
+          value: number;
+          hadRecentInput: boolean;
+        }[]) {
+          if (!entry.hadRecentInput) state.shifts += entry.value;
+        }
+      }).observe({ type: 'layout-shift', buffered: true });
+    });
+    await page.goto('/en/');
+    await waitForGenerator(page);
+    await closePanels(page);
+    const view = page.getByRole('region', { name: 'Article' });
+    await expect(view.getByRole('button', { name: 'Specimen' })).toHaveCount(0);
+    const shifts = () => page.evaluate(() => (window as unknown as { shifts: number }).shifts);
+    await page.waitForTimeout(1000);
+    expect(await shifts()).toBeLessThan(0.001);
+    const above = () =>
+      view.evaluate((root) =>
+        ['.ff-toolbar', '.ff-article-view__frame'].map((selector) =>
+          Math.round(root.querySelector(selector)?.getBoundingClientRect().top ?? -1),
+        ),
+      );
+    const before = await above();
+    await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(sourceSans);
+    await expect(
+      view.getByRole('status').filter({ hasText: 'Your web font is loaded' }),
+    ).toBeVisible();
+    await page.evaluate(() => document.fonts.ready);
+    const page0 = view.locator('.ff-article-view__slider .ff-article:not([data-probe])').first();
+    const rows = page0.locator('.ff-article__cascade-row');
+    await expect(rows).toHaveCount(8);
+    const order = await page0.evaluate((root) => {
+      const code = root.querySelector('.ff-article__code')?.getBoundingClientRect().bottom ?? 0;
+      const cascade = root.querySelector('.ff-article__cascade')?.getBoundingClientRect().top ?? 0;
+      return cascade >= code;
+    });
+    expect(order).toBe(true);
+    await expect(page0.getByRole('heading', { name: 'Size cascade' })).toBeAttached();
+    await page.waitForTimeout(1500);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(
+      width,
+    );
+    expect(await above()).toEqual(before);
+  });
+}
+
 test('the style select switches a system to the bold face and adds the descriptors', async ({
   page,
 }) => {

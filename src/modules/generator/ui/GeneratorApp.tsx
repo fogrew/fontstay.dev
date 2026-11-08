@@ -2141,7 +2141,11 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
                   <p class="ff-muted">{t.results_pick_font()}</p>
                 ) : (
                   selected && (
-                    <CoverageMap locale={locale} codePoints={selected.metrics.codePoints} />
+                    <CoverageMap
+                      locale={locale}
+                      metrics={selected.metrics}
+                      bytes={selected.bytes}
+                    />
                   )
                 ),
               },

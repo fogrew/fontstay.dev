@@ -1,7 +1,7 @@
-import { type ComponentChildren, type ComponentType, Fragment } from 'preact';
+import { type ComponentChildren, Fragment } from 'preact';
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'preact/hooks';
 import { type Locale, messagesFor } from '@/common/i18n';
-import { Icon, Popover, ScrollShadow, Select, transition } from '@/common/ui';
+import { Icon, Popover, ScrollShadow, Select } from '@/common/ui';
 import { type Device, DevicePicker, loadDevices } from '@/modules/devices';
 import { type FontTuning, LazyFontFeatures } from '@/modules/font-details';
 import { isProbeWidth, measureShift, shiftWidths, type WidthShift } from '../lib/article-shift';
@@ -56,7 +56,6 @@ import {
 } from '../lib/view-state';
 import { DeviceShift, ShiftBadge } from './DeviceShift';
 import { IntroGuide } from './IntroGuide';
-import type { SpecimenPanelProps } from './SpecimenPanel';
 import { ToolIcon } from './ToolIcons';
 
 type Layer = LayerKind;
@@ -86,6 +85,7 @@ const LENS_STEP = 24;
 const MIN_FRAME = 320;
 const FRAME_STEP = 16;
 const FRAME_BIG_STEP = 64;
+const CASCADE_SIZES = [12, 16, 20, 28, 36, 48, 64, 80] as const;
 const SAMPLE_CODE = `@font-face {
   font-family: "Brand Fallback";
   src: local("Arial");
@@ -165,14 +165,17 @@ function Runs({ runs, coverage }: { runs: readonly Run[]; coverage: Coverage }) 
 }
 
 function ArticleBody({
+  locale,
   article,
   coverage,
   focusable = false,
 }: {
+  locale: Locale;
   article: Article;
   coverage: Coverage;
   focusable?: boolean;
 }) {
+  const t = messagesFor(locale);
   const body = (value: string) => (
     <Marked text={value} points={coverage.body} coverage={coverage} />
   );
@@ -262,6 +265,19 @@ function ArticleBody({
         </pre>
       </ScrollShadow>
       <footer class="ff-article__footer">{body(article.footer)}</footer>
+      <section>
+        <h4 class="ff-article__head ff-article__heading">{t.article_cascade_heading()}</h4>
+        <ul class="ff-article__cascade">
+          {CASCADE_SIZES.map((size) => (
+            <li class="ff-article__cascade-row" key={size}>
+              <span class="ff-article__cascade-size">{t.article_cascade_size({ size })}</span>
+              <span class="ff-article__text ff-article__cascade-sample" data-size={size}>
+                {body(article.title)}
+              </span>
+            </li>
+          ))}
+        </ul>
+      </section>
     </>
   );
 }
@@ -323,18 +339,6 @@ export function ArticleView({
     descender: false,
   });
   const [boxes, setBoxes] = useState(false);
-  const [specimenOpen, setSpecimenOpen] = useState(false);
-  const [Specimen, setSpecimen] = useState<ComponentType<SpecimenPanelProps>>();
-  useEffect(() => {
-    if (items.length === 0 || Specimen) return;
-    let cancelled = false;
-    void import('./SpecimenPanel').then((module) => {
-      if (!cancelled) setSpecimen(() => module.SpecimenPanel);
-    });
-    return () => {
-      cancelled = true;
-    };
-  }, [items.length, Specimen]);
   const [guideMetrics, setGuideMetrics] = useState<Partial<Record<Layer, GuideOffsets>>>({});
   const activeGuides = GUIDES.filter((id) => guideOn[id]);
   const guides = activeGuides.length > 0;
@@ -721,6 +725,7 @@ export function ArticleView({
         interactive={kind === 'web' && !ghost && !copy}
       />
       <ArticleBody
+        locale={locale}
         article={article}
         coverage={coverageFor(ghost || copy || kind !== 'web' || empty)}
         focusable={kind === 'web' && !ghost && !copy}
@@ -1049,7 +1054,7 @@ export function ArticleView({
               loaded={!empty}
               interactive={false}
             />
-            <ArticleBody article={article} coverage={coverageFor(true)} />
+            <ArticleBody locale={locale} article={article} coverage={coverageFor(true)} />
           </article>
         ))}
       </div>
@@ -1140,16 +1145,6 @@ export function ArticleView({
         <Popover label={t.article_group_inspect()} disabled={empty}>
           {inspectContent}
         </Popover>
-        <button
-          class="ff-control ff-button ff-button--secondary"
-          type="button"
-          aria-expanded={specimenOpen}
-          aria-controls="ff-specimen-panel"
-          disabled={empty || !Specimen || !fontsReady}
-          onClick={() => transition(() => setSpecimenOpen((open) => !open))}
-        >
-          {t.specimen_heading()}
-        </button>
         <DeviceShift
           locale={locale}
           results={shiftResults?.adjusted}
@@ -1169,13 +1164,6 @@ export function ArticleView({
           <span class="ff-error">{t.preview_not_installed({ font: notInstalled.join(', ') })}</span>{' '}
           <span class="ff-muted">{t.preview_not_installed_note()}</span>
         </p>
-      )}
-      {specimenOpen && (
-        <div id="ff-specimen-panel">
-          {Specimen && (
-            <Specimen locale={locale} items={items} fontKey={keyOf} fontsReady={fontsReady} />
-          )}
-        </div>
       )}
       <div
         ref={frame}
