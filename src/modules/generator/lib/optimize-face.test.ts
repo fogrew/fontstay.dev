@@ -37,4 +37,31 @@ describe('optimizeFace', () => {
     });
     expect(result?.spacing).toEqual(start);
   });
+
+  it('lets the free face move the spacing', async () => {
+    if (!arial) throw new Error('Arial is missing');
+    const result = await optimizeFace({
+      candidate: { ...arial, adjustment: { ...arial.adjustment, sizeAdjust: 1.4 } },
+      widthK: 1,
+      model,
+      spacing: { letter: 0, word: 0 },
+      free: true,
+    });
+    expect(result?.spacing).not.toEqual({ letter: 0, word: 0 });
+  });
+
+  it('returns null when aborted', async () => {
+    if (!arial) throw new Error('Arial is missing');
+    const controller = new AbortController();
+    controller.abort();
+    const result = await optimizeFace({
+      candidate: arial,
+      widthK: 1,
+      model,
+      spacing: start,
+      free: true,
+      signal: controller.signal,
+    });
+    expect(result).toBeNull();
+  });
 });
