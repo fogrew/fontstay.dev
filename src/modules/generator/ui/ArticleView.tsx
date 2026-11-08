@@ -15,6 +15,15 @@ import {
   loadArticle,
   type Run,
 } from '../lib/articles';
+import {
+  BACKGROUND_FITS,
+  BACKGROUND_TYPES,
+  type BackgroundFit,
+  type BackgroundRejection,
+  MAX_BACKGROUND_BYTES,
+  MAX_BACKGROUND_PIXELS,
+  MAX_BACKGROUND_SIDE,
+} from '../lib/background-options';
 import { buildCss } from '../lib/css';
 import { drawGlyphBoxes } from '../lib/glyph-boxes';
 import { GUIDES, type GuideId, type GuideOffsets, guideImage, guideOffsets } from '../lib/guides';
@@ -323,6 +332,52 @@ export function ArticleView({
   const [lensShows, setLensShows] = useState<LensShows>();
   const [lensSize, setLensSize] = useState(200);
   const [split, setSplit] = useState(50);
+  const [background, setBackground] = useState<string>();
+  const [backgroundError, setBackgroundError] = useState<BackgroundRejection>();
+  const [backgroundFit, setBackgroundFit] = useState<BackgroundFit>('cover');
+  const [backgroundX, setBackgroundX] = useState(50);
+  const [backgroundY, setBackgroundY] = useState(50);
+  const [backgroundFade, setBackgroundFade] = useState(50);
+  const backgroundInput = useRef<HTMLInputElement>(null);
+  const backgroundPick = useRef(0);
+
+  useEffect(
+    () => () => {
+      if (background) URL.revokeObjectURL(background);
+    },
+    [background],
+  );
+  useEffect(
+    () => () => {
+      backgroundPick.current++;
+    },
+    [],
+  );
+
+  const chooseBackground = async (file: File | undefined) => {
+    const pick = ++backgroundPick.current;
+    setBackgroundError(undefined);
+    if (!file) return;
+    const { loadBackground } = await import('../lib/background-image');
+    const result = await loadBackground(file);
+    if (pick !== backgroundPick.current) {
+      if (result.ok) URL.revokeObjectURL(result.url);
+      return;
+    }
+    if (result.ok) {
+      setBackgroundError(undefined);
+      setBackground(result.url);
+    } else {
+      setBackgroundError(result.reason);
+      if (backgroundInput.current) backgroundInput.current.value = '';
+    }
+  };
+  const removeBackground = () => {
+    backgroundPick.current++;
+    setBackground(undefined);
+    setBackgroundError(undefined);
+    if (backgroundInput.current) backgroundInput.current.value = '';
+  };
   const slider = useRef<HTMLDivElement>(null);
   const loupe = useRef<HTMLDivElement>(null);
   const arrangement = arrangementOf(positions);
@@ -675,6 +730,30 @@ export function ArticleView({
     if (value === 'web') return t.preview_web_label();
     return value === 'fallback' ? t.preview_fallback_label() : t.article_view_plain();
   };
+  const backgroundFitLabel = (value: BackgroundFit) => {
+    if (value === 'cover') return t.bg_fit_cover();
+    return value === 'contain' ? t.bg_fit_contain() : t.bg_fit_actual();
+  };
+  const backgroundErrorText = (reason: BackgroundRejection) => {
+    if (reason === 'type') return t.bg_error_type();
+    if (reason === 'size') return t.bg_error_size({ size: MAX_BACKGROUND_BYTES / 1048576 });
+    if (reason === 'dimensions') {
+      return t.bg_error_dimensions({
+        side: MAX_BACKGROUND_SIDE,
+        pixels: MAX_BACKGROUND_PIXELS / 1_000_000,
+      });
+    }
+    return t.bg_error_unreadable();
+  };
+  const backgroundStyle = background
+    ? {
+        '--ff-bg-image': `url("${background}")`,
+        '--ff-bg-size': backgroundFit === 'actual' ? 'auto' : backgroundFit,
+        '--ff-bg-x': `${backgroundX}%`,
+        '--ff-bg-y': `${backgroundY}%`,
+        '--ff-bg-fade': backgroundFade,
+      }
+    : undefined;
   const wrapLabel = (value: Wrap) => {
     if (value === 'wrap') return t.article_wrap_wrap();
     if (value === 'balance') return t.article_wrap_balance();
@@ -941,6 +1020,105 @@ export function ArticleView({
           onChange={(value) => setArticleId(value as ArticleId)}
         />
       </fieldset>
+      <fieldset class="ff-settings__section">
+        <legend class="ff-settings__legend">{t.bg_group()}</legend>
+        <div class="ff-field">
+          <label class="ff-preview__caption" for="ff-bg-file">
+            {t.bg_file()}
+          </label>
+          <input
+            ref={backgroundInput}
+            class="ff-control ff-article-view__file"
+            id="ff-bg-file"
+            type="file"
+            accept={BACKGROUND_TYPES.join(',')}
+            aria-invalid={backgroundError ? true : undefined}
+            aria-describedby={backgroundError ? 'ff-bg-note ff-bg-error' : 'ff-bg-note'}
+            onChange={(event) => void chooseBackground(event.currentTarget.files?.[0])}
+          />
+        </div>
+        <p class="ff-muted ff-article-view__note" id="ff-bg-note">
+          {t.bg_note({ size: MAX_BACKGROUND_BYTES / 1048576 })}
+        </p>
+        {backgroundError && (
+          <p class="ff-error" id="ff-bg-error" role="alert">
+            {backgroundErrorText(backgroundError)}
+          </p>
+        )}
+        <Select
+          compact
+          label={t.bg_fit()}
+          value={backgroundFit}
+          disabled={!background}
+          options={BACKGROUND_FITS.map((value) => ({ value, label: backgroundFitLabel(value) }))}
+          onChange={(value) => setBackgroundFit(value as BackgroundFit)}
+        />
+        <div class="ff-field ff-preview__slider">
+          <div class="ff-preview__label">
+            <label class="ff-preview__caption" for="ff-bg-x">
+              {t.bg_x()}
+            </label>
+            <output for="ff-bg-x">{backgroundX}%</output>
+          </div>
+          <input
+            class="ff-article-view__range ff-control"
+            id="ff-bg-x"
+            type="range"
+            min={0}
+            max={100}
+            step={5}
+            value={backgroundX}
+            disabled={!background}
+            onInput={(event) => setBackgroundX(event.currentTarget.valueAsNumber)}
+          />
+        </div>
+        <div class="ff-field ff-preview__slider">
+          <div class="ff-preview__label">
+            <label class="ff-preview__caption" for="ff-bg-y">
+              {t.bg_y()}
+            </label>
+            <output for="ff-bg-y">{backgroundY}%</output>
+          </div>
+          <input
+            class="ff-article-view__range ff-control"
+            id="ff-bg-y"
+            type="range"
+            min={0}
+            max={100}
+            step={5}
+            value={backgroundY}
+            disabled={!background}
+            onInput={(event) => setBackgroundY(event.currentTarget.valueAsNumber)}
+          />
+        </div>
+        <div class="ff-field ff-preview__slider">
+          <div class="ff-preview__label">
+            <label class="ff-preview__caption" for="ff-bg-fade">
+              {t.bg_fade()}
+            </label>
+            <output for="ff-bg-fade">{backgroundFade}%</output>
+          </div>
+          <input
+            class="ff-article-view__range ff-control"
+            id="ff-bg-fade"
+            type="range"
+            min={0}
+            max={90}
+            step={5}
+            value={backgroundFade}
+            disabled={!background}
+            onInput={(event) => setBackgroundFade(event.currentTarget.valueAsNumber)}
+          />
+        </div>
+        <button
+          type="button"
+          class="ff-control ff-button ff-button--secondary"
+          disabled={!background}
+          onClick={removeBackground}
+        >
+          {t.bg_remove()}
+        </button>
+      </fieldset>
       {bodyItem && (
         <LazyFontFeatures
           locale={locale}
@@ -1060,7 +1238,13 @@ export function ArticleView({
   );
 
   return (
-    <section class="ff-article-view" aria-label={t.article_heading()} ref={view}>
+    <section
+      class="ff-article-view"
+      aria-label={t.article_heading()}
+      ref={view}
+      data-background={background ? '' : undefined}
+      style={backgroundStyle}
+    >
       <div class="ff-article-probe" ref={probe} aria-hidden="true" {...{ inert: true }}>
         {(['web', 'fallback', 'plain'] as const).map((kind) => (
           <article

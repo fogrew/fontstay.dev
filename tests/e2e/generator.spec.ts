@@ -41,6 +41,10 @@ const fonts = new URL('../fixtures/fonts/', import.meta.url).pathname.replace(
   '$1',
 );
 const sourceSans = `${fonts}SourceSansPro-Regular.woff2`;
+const TINY_PNG = Buffer.from(
+  'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==',
+  'base64',
+);
 
 test('uploading a font produces per-system fallbacks, editable values and CSS', async ({
   page,
@@ -249,6 +253,52 @@ test('the article opens on the slider and switches between comparison and single
   await expect(view.locator('.ff-article:not([data-probe])')).toHaveCSS('font-size', '24px');
   await view.getByLabel(/Line height/).fill('2');
   await expect(view.locator('.ff-article:not([data-probe])')).toHaveCSS('line-height', '48px');
+});
+
+test('a background image sits behind the preview text and is validated', async ({ page }) => {
+  await page.goto('/en/');
+  await waitForGenerator(page);
+  await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(sourceSans);
+  await closePanels(page);
+  const view = page.getByRole('region', { name: 'Article' });
+  await openPopover(view, 'Settings');
+  const input = view.getByLabel('Choose an image');
+  const article = view.locator('.ff-article:not([data-probe])').first();
+  await expect(article).toHaveCSS('background-image', 'none');
+  await expect(view.getByLabel('Horizontal position')).toBeDisabled();
+
+  await input.setInputFiles({
+    name: 'note.png',
+    mimeType: 'image/png',
+    buffer: Buffer.from('hello'),
+  });
+  await expect(
+    view.getByRole('alert').filter({ hasText: 'Use a PNG, JPEG, WebP or GIF' }),
+  ).toBeVisible();
+  await input.setInputFiles({
+    name: 'big.png',
+    mimeType: 'image/png',
+    buffer: Buffer.concat([TINY_PNG, Buffer.alloc(9 * 1024 * 1024)]),
+  });
+  await expect(view.getByRole('alert')).toContainText('larger than 8 MB');
+  await expect(article).toHaveCSS('background-image', 'none');
+
+  await input.setInputFiles({ name: 'tiny.png', mimeType: 'image/png', buffer: TINY_PNG });
+  await expect(view.getByRole('alert')).toHaveCount(0);
+  await expect(article).toHaveCSS('background-image', /url\("blob:/);
+  await view.getByLabel('Horizontal position').fill('25');
+  await expect(article).toHaveCSS('background-position', /25%/);
+  await view.getByLabel('Fade').fill('80');
+  await expect(view.locator('output[for="ff-bg-fade"]')).toHaveText('80%');
+  await view.getByRole('combobox', { name: 'Fit' }).click();
+  await page.getByRole('option', { name: 'Contain' }).click();
+  await expect(article).toHaveCSS('background-size', /auto, contain/);
+  expect((await new AxeBuilder({ page }).include('.ff-article-view').analyze()).violations).toEqual(
+    [],
+  );
+
+  await view.getByRole('button', { name: 'Remove image' }).click();
+  await expect(article).toHaveCSS('background-image', 'none');
 });
 
 test('the inspect tools draw, fade and compare the web font and the fallback', async ({ page }) => {
