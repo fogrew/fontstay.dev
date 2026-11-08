@@ -1,4 +1,4 @@
-import { useRef } from 'preact/hooks';
+import { useEffect, useRef } from 'preact/hooks';
 
 export interface ToggleGroupItem {
   key: string;
@@ -15,6 +15,11 @@ export interface ToggleGroupProps {
 
 export function ToggleGroup({ items, selected, label, onChange }: ToggleGroupProps) {
   const anchor = useRef<string>();
+  const drag = useRef<{ on: boolean; working: Set<string> }>();
+  const swallowClick = useRef(false);
+  const stop = useRef<() => void>();
+
+  useEffect(() => () => stop.current?.(), []);
 
   const click = (key: string, shift: boolean) => {
     const next = new Set(selected);
@@ -31,16 +36,55 @@ export function ToggleGroup({ items, selected, label, onChange }: ToggleGroupPro
     onChange(next);
   };
 
+  const apply = (key: string) => {
+    const state = drag.current;
+    if (!state || state.working.has(key) === state.on) return;
+    if (state.on) state.working.add(key);
+    else state.working.delete(key);
+    onChange(new Set(state.working));
+  };
+
+  const start = (event: MouseEvent, key: string) => {
+    if (event.button !== 0 || event.shiftKey) return;
+    event.preventDefault();
+    (event.currentTarget as HTMLElement).focus();
+    const working = new Set(selected);
+    drag.current = { on: !working.has(key), working };
+    swallowClick.current = true;
+    anchor.current = key;
+    apply(key);
+    const end = () => {
+      removeEventListener('mouseup', end);
+      stop.current = undefined;
+      drag.current = undefined;
+      setTimeout(() => {
+        swallowClick.current = false;
+      });
+    };
+    stop.current = end;
+    addEventListener('mouseup', end);
+  };
+
   return (
-    <fieldset class="ff-toggle-buttons" aria-label={label}>
+    <fieldset
+      class="ff-button-group ff-button-group--compact ff-button-group--wrap"
+      aria-label={label}
+    >
       {items.map((item) => (
         <button
           key={item.key}
           type="button"
-          class="ff-control ff-button ff-button--secondary"
+          class="ff-control ff-button ff-button--secondary ff-button-group__toggle"
           aria-pressed={selected.has(item.key)}
           aria-label={item.ariaLabel}
-          onClick={(event) => click(item.key, event.shiftKey)}
+          onMouseDown={(event) => start(event, item.key)}
+          onMouseEnter={(event) => {
+            if (drag.current && event.buttons & 1) apply(item.key);
+          }}
+          onClick={(event) => {
+            if (swallowClick.current) return;
+            click(item.key, event.shiftKey);
+          }}
         >
           {item.label}
         </button>

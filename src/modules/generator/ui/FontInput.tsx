@@ -47,6 +47,10 @@ export function FontInput({
   busy,
   compact,
   slots,
+  limit,
+  loaded,
+  averageBytes,
+  onLimitChange,
   dragging,
   dropped,
   onFiles,
@@ -56,6 +60,10 @@ export function FontInput({
   busy: boolean;
   compact: boolean;
   slots: number;
+  limit: { value: number; min: number; max: number };
+  loaded: number;
+  averageBytes: number;
+  onLimitChange: (value: number) => void;
   dragging: boolean;
   dropped?: { id: number; files: File[] } | undefined;
   onFiles: (files: File[], origins?: ReadonlyMap<File, FontOrigin>) => void;
@@ -76,6 +84,10 @@ export function FontInput({
     enabled: searching,
     onAccepted: setText,
     slots,
+    limit,
+    loaded,
+    averageBytes,
+    onLimitChange,
     onFiles,
   });
 

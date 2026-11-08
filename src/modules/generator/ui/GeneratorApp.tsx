@@ -83,6 +83,13 @@ import { autoFit } from '../lib/auto-fit';
 import { fallbackRatio, webRatio } from '../lib/calibration';
 import { displayName, fitLanguage, isNoCoverage, LOW_COVERAGE } from '../lib/compute';
 import { adjustmentOf, buildCss, fallbackFamilyName, type Overrides } from '../lib/css';
+import {
+  clampFontLimit,
+  loadFontLimit,
+  MAX_FONT_LIMIT,
+  MIN_FONT_LIMIT,
+  saveFontLimit,
+} from '../lib/font-limit';
 import { hasSpacing, loadingCss, loadingScript, type SpacingEm } from '../lib/loading';
 import { currentFallback, type FontOutput, groupFonts, mergeOutputs } from '../lib/overview';
 import { ownOs } from '../lib/own-os';
@@ -155,7 +162,6 @@ const FONT_EXTENSIONS = /\.(woff2|woff|ttf|otf|ttc|otc)$/i;
 const isFontFile = (file: File) => FONT_EXTENSIONS.test(file.name) || file.type.startsWith('font/');
 const isStyleFile = (file: File) => /\.css$/i.test(file.name) || file.type === 'text/css';
 
-const MAX_FONTS = 8;
 const MIN_SHARE = 1;
 const MAX_FACES = 16;
 const ALL_SYSTEMS = ['windows', 'macos', 'ios', 'android', 'linux', 'chromeos'] as const;
@@ -212,6 +218,12 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
   const parser = useRef<FontParser>();
   const nextId = useRef(1);
   const [fonts, setFonts] = useState<LoadedFont[]>([]);
+  const [fontLimit, setFontLimitState] = useState(loadFontLimit);
+  const changeFontLimit = (value: number) => {
+    const next = clampFontLimit(value);
+    setFontLimitState(next);
+    saveFontLimit(next);
+  };
   const [selectedId, setSelectedId] = useState<number | 'all'>();
   const [fontOpen, setFontOpen] = useState(true);
   const [kindChoices, setKindChoices] = useState<Record<number, Category>>({});
@@ -324,7 +336,7 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
     try {
       for (const file of files) {
         const fileName = displayName(file.name);
-        if (fonts.length + added.length >= MAX_FONTS) {
+        if (fonts.length + added.length >= fontLimit) {
           failures.push(`${fileName}: ${t.error_too_many()}`);
           continue;
         }
@@ -348,7 +360,7 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
           continue;
         }
         for (const index of indices) {
-          if (fonts.length + added.length >= MAX_FONTS) {
+          if (fonts.length + added.length >= fontLimit) {
             failures.push(`${fileName}: ${t.error_too_many()}`);
             break;
           }
@@ -449,7 +461,7 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
       );
       const missing = wanted
         .filter((origin) => !stored.some((item) => item.origin && sameOrigin(item.origin, origin)))
-        .slice(0, Math.max(0, MAX_FONTS - persisted));
+        .slice(0, Math.max(0, fontLimit - persisted));
       if (files.length > 0 && current) await addFiles(files, false, origins);
       if (missing.length > 0 && current) {
         setOffer(missing);
@@ -476,7 +488,7 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
     );
   };
   const acceptOffer = async () => {
-    const wanted = offer.slice(0, Math.max(0, MAX_FONTS - fonts.length));
+    const wanted = offer.slice(0, Math.max(0, fontLimit - fonts.length));
     setOffer([]);
     const results = await Promise.allSettled(wanted.map((origin) => downloadOrigin(origin)));
     const origins = new Map<File, FontOrigin>();
@@ -1929,7 +1941,15 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
                   locale={locale}
                   busy={busy}
                   compact={fonts.length > 0}
-                  slots={MAX_FONTS - fonts.length}
+                  slots={fontLimit - fonts.length}
+                  limit={{ value: fontLimit, min: MIN_FONT_LIMIT, max: MAX_FONT_LIMIT }}
+                  loaded={fonts.length}
+                  averageBytes={
+                    fonts.length === 0
+                      ? 0
+                      : fonts.reduce((sum, font) => sum + font.bytes.byteLength, 0) / fonts.length
+                  }
+                  onLimitChange={changeFontLimit}
                   dragging={dragging}
                   dropped={cssDrop}
                   onFiles={(files, origins) => addFiles(files, true, origins)}
