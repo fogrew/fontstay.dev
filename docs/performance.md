@@ -6,7 +6,7 @@
 
 | Page | Measured | Budget |
 |---|---|---|
-| `/en/` (generator) | 139.0 kB | 200 kB |
+| `/en/` (generator) | 139.2 kB | 200 kB |
 | `/en/fonts/` (catalog) | 41.0 kB | 42 kB |
 | `/en/presets/` | 28.4 kB | 29 kB |
 | `/en/import/` (site import receiver) | 2.4 kB | 4 kB |
