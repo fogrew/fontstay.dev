@@ -1232,6 +1232,9 @@ test('the coverage section shows the advance, bounds and guides of the pointed g
   await expect(section.getByText('Ascender', { exact: true })).toBeVisible();
   await expect(section.getByText('Descender', { exact: true })).toBeVisible();
   await expect(section.locator('.ff-map__metric-value').first()).not.toHaveText(/^0 \//);
+  await section.getByRole('group', { name: 'Unicode map of Basic Latin' }).focus();
+  await page.keyboard.press('ArrowRight');
+  await expect(section.getByRole('img', { name: 'Metrics diagram for B' })).toBeVisible();
   const after = await diagram.boundingBox();
   expect([after?.width, after?.height]).toEqual([before?.width, before?.height]);
   expect((await new AxeBuilder({ page }).include('.ff-map').analyze()).violations).toEqual([]);
