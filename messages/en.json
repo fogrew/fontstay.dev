@@ -76,6 +76,7 @@
   "results_empty": "Load a font to see the fallback fit, the CSS and the preview here.",
   "preview_load_failed": "The browser could not load this font file, so the preview cannot show it. The generated CSS still applies to the font on your site.",
   "fit_low_coverage": "This font has glyphs for only part of the sample letters, so the fit is unreliable. Covered share:",
+  "fit_ratio_failed": "The width of this web font could not be measured, so the fit assumes it matches the fallback's text width. Results may be off.",
   "audience_heading": "Audience (browsers)",
   "audience_preset_widely": "Baseline widely available",
   "audience_preset_newly": "Baseline newly available",
