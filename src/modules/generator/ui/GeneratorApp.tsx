@@ -123,6 +123,12 @@ import {
 import type { PreviewItem } from '../lib/preview-item';
 import { buildReport } from '../lib/report';
 import { aspectOf, safariStrategyCss } from '../lib/safari';
+import {
+  STACK_SCRIPTS,
+  type StackScript,
+  scriptStackRules,
+  uncoveredScripts,
+} from '../lib/script-stacks';
 import { detectScripts, type ScriptId, scriptFaces } from '../lib/scripts';
 import {
   DEFAULT_PANEL,
@@ -255,6 +261,7 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
   const [spacingOn, setSpacingOn] = useState(true);
   const [rangeOn, setRangeOn] = useState(false);
   const [perScript, setPerScript] = useState(true);
+  const [stackScripts, setStackScripts] = useState<StackScript[]>([]);
   const [openSystem, setOpenSystem] = useState<OsId | null | undefined>();
   const [fitting, setFitting] = useState(false);
   const [spacingValues, setSpacingValues] = useState<{ letter: FitValue; word: FitValue }>({
@@ -804,6 +811,11 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
     () => (selected ? detectScripts(selected.metrics.codePoints) : []),
     [selected],
   );
+  const stackCandidates = useMemo(
+    () => (selected ? uncoveredScripts(selected.metrics.codePoints) : []),
+    [selected],
+  );
+  const stackLabel = (script: StackScript) => t[`stack_${script}`]();
   const scriptLabel = (script: ScriptId) => {
     if (script === 'cyrillic') return t.script_cyrillic();
     return script === 'greek' ? t.script_greek() : t.script_latin();
@@ -1032,6 +1044,13 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
     }
   }
   const withSelfHost = (css: string) => prependSelfHost(selfHostCss, css);
+  const scriptRules = scriptStackRules(
+    stackScripts.filter((script) => stackCandidates.includes(script)),
+    systems.filter(isEnabled),
+    new Set(exportFamilies.map((family) => family.generic)).size === 1
+      ? (exportFamilies[0]?.generic ?? 'sans-serif')
+      : 'sans-serif',
+  );
   const exportInput: ExportInput = {
     families: exportFamilies,
     fontFaces: withSelfHost(
@@ -1040,7 +1059,13 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
       ].join('\n\n'),
     ),
     strategy: exportEntries[0]?.strategy ?? '',
-    css: withSelfHost(mergeOutputs(exportOutputs, loadingCss(spacingEm))),
+    css: withSelfHost(
+      mergeOutputs(
+        exportOutputs,
+        [loadingCss(spacingEm), scriptRules].filter(Boolean).join('\n\n'),
+      ),
+    ),
+    scriptRules,
     loadingScript: loadingScript(exportFamilies.map((family) => family.targetFamily)),
   };
   const anyRanking = Object.values(rankings.result).find(Boolean);
@@ -1615,6 +1640,29 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
               {t.script_note({ scripts: detectedScripts.map(scriptLabel).join(', ') })}
             </p>
           </>
+        )}
+        {stackCandidates.length > 0 && (
+          <fieldset class="ff-generator__stacks">
+            <legend>{t.stack_legend()}</legend>
+            <p class="ff-muted">{t.stack_note()}</p>
+            {STACK_SCRIPTS.filter((script) => stackCandidates.includes(script)).map((script) => (
+              <label key={script}>
+                <input
+                  class="ff-control"
+                  type="checkbox"
+                  checked={stackScripts.includes(script)}
+                  onChange={(event) =>
+                    setStackScripts((current) =>
+                      event.currentTarget.checked
+                        ? [...current, script]
+                        : current.filter((item) => item !== script),
+                    )
+                  }
+                />{' '}
+                {stackLabel(script)}
+              </label>
+            ))}
+          </fieldset>
         )}
         {styleKey !== 'regular' && unmatchedFonts.length > 0 && (
           <p class="ff-muted">{t.style_unmatched({ fonts: unmatchedFonts.join(', ') })}</p>

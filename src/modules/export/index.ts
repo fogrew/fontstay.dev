@@ -1,4 +1,4 @@
-export { generateFallbackCss } from './lib/css';
+export { generateFallbackCss, quoteName } from './lib/css';
 export {
   buildExport,
   EXPORT_FORMATS,

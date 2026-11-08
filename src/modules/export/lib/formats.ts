@@ -18,6 +18,7 @@ export interface ExportInput {
   strategy: string;
   css: string;
   loadingScript: string;
+  scriptRules?: string | undefined;
 }
 
 export const EXPORT_FORMATS = [
@@ -239,6 +240,7 @@ export function buildExport(format: ExportFormat, input: ExportInput): ExportFil
           first
             ? `body {\n  font-family: var(${variableOf(input, first)});${input.strategy ? `\n${indent(input.strategy)}` : ''}\n}`
             : '',
+          input.scriptRules ?? '',
         ]
           .filter(Boolean)
           .join('\n\n'),
