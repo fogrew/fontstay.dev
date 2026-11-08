@@ -1096,7 +1096,10 @@ html[data-transition] .ff-export[data-expanded] .ff-export__fullscreen[open] .ff
   overflow: visible;
 }
 .ff-settings__toggle {
+  box-sizing: border-box;
   display: flex;
+  min-inline-size: 0;
+  overflow-wrap: anywhere;
   gap: var(--ff-space-2);
   align-items: center;
   justify-content: flex-start;
