@@ -211,7 +211,14 @@ test('removing a font moves focus to the next font toggle', async ({ page }) => 
   await openStep(page, 'tuning');
   const fitRemove = page.getByRole('button', { name: /^Remove: .+\.(ttf|woff2)$/ });
   await expect(fitRemove).toHaveCount(2);
+  const fitToggles = page.locator('.ff-collapsible__toggle[data-toggle-id^="fit-"]');
+  const remaining = await fitToggles.nth(1).textContent();
   await fitRemove.first().press('Enter');
   await expect(fitRemove).toHaveCount(1);
-  await expect(page.locator('.ff-collapsible__toggle[data-toggle-id^="fit-"]')).toBeFocused();
+  await expect(fitToggles).toBeFocused();
+  await expect(fitToggles).toHaveText(remaining ?? '');
+  await fitRemove.press('Enter');
+  await expect(
+    page.locator('.ff-dock__column[data-id="inputs"] .ff-dock__heading button'),
+  ).toBeFocused();
 });

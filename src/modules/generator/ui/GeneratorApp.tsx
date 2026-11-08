@@ -321,10 +321,17 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
     setFocusSlot(undefined);
   }, [focusSlot]);
 
-  const [removedFocus, setRemovedFocus] = useState<string>();
+  const [removedFocus, setRemovedFocus] = useState<{ toggleId: string | undefined }>();
   useEffect(() => {
     if (removedFocus === undefined) return;
-    if (!focusToggle(removedFocus)) document.getElementById('ff-input-text')?.focus();
+    if (!removedFocus.toggleId || !focusToggle(removedFocus.toggleId)) {
+      const input = document.getElementById('ff-input-text');
+      if (input?.offsetParent) input.focus();
+      else
+        window.dispatchEvent(
+          new CustomEvent(DOCK_OPEN_EVENT, { detail: { id: 'inputs', focus: true } }),
+        );
+    }
     setRemovedFocus(undefined);
   }, [removedFocus]);
 
@@ -333,7 +340,7 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
       fonts.map((item) => item.id),
       font.id,
     );
-    setRemovedFocus(next === undefined ? '' : toggleOf(next));
+    setRemovedFocus({ toggleId: next === undefined ? undefined : toggleOf(next) });
     void removeStoredFont(font.fileName);
     setFonts((current) => current.filter((item) => item.id !== font.id));
     setSelectedId((id) => (id === font.id ? undefined : id));
