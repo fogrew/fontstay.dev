@@ -815,5 +815,20 @@
   "ext_extension_step_developer": "Abra chrome://extensions (edge://extensions no Edge) e ative o modo de programador.",
   "ext_extension_step_load": "Escolha «Carregar sem compactação» e selecione a pasta «extension» do repositório.",
   "ext_extension_step_use": "Abra um site e clique no botão do fontstay na barra de ferramentas (fixe-o no menu da peça de puzzle se estiver oculto).",
-  "ext_extension_source": "Código-fonte da extensão e instruções"
+  "ext_extension_source": "Código-fonte da extensão e instruções",
+  "share_dialog_title": "Compartilhar configurações",
+  "share_dialog_close": "Fechar",
+  "share_dialog_include": "Incluir no link",
+  "share_dialog_empty": "O link guardaria apenas os valores padrão.",
+  "share_dialog_link": "Link",
+  "share_dialog_length": "{count} caracteres no link",
+  "share_dialog_too_long": "O link é muito longo e pode não abrir em todos os navegadores ou mensageiros.",
+  "share_dialog_copy": "Copiar link",
+  "share_part_fonts": "Fontes e texto de busca",
+  "share_part_style": "Tipo e estilo da fonte",
+  "share_part_systems": "Fontes de reserva por sistema",
+  "share_part_tuning": "Valores de ajuste e espaçamento",
+  "share_part_panel": "Painel aberto, sistema e variante da fonte",
+  "share_part_preview": "Configurações de pré-visualização, modo e largura do dispositivo",
+  "share_part_site_fonts": "Fontes de título e de texto do site importado"
 }

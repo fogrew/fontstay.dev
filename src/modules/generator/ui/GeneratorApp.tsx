@@ -125,10 +125,7 @@ import { detectScripts, type ScriptId, scriptFaces } from '../lib/scripts';
 import {
   DEFAULT_PANEL,
   decodeShareState,
-  encodeShareState,
   type FontState,
-  HASH_KEY,
-  MAX_HASH_CHARS,
   NO_PANEL,
   type PanelId,
   payloadFromHash,
@@ -156,6 +153,7 @@ import { ArticleView } from './ArticleView';
 import { CoverageMap } from './CoverageMap';
 import { type ExportChoice, ExportPanel, effectiveFormat, exportFileFor } from './ExportPanel';
 import { FontInput } from './FontInput';
+import { ShareDialog } from './ShareDialog';
 import './generator.css';
 
 interface LoadedFont {
@@ -268,7 +266,6 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
   const panel = useRef<PanelId | typeof NO_PANEL>(DEFAULT_PANEL);
   const [viewRestore, setViewRestore] = useState<ViewDiff>();
   const viewDiff = useRef<ViewDiff>({});
-  const [shareMessage, setShareMessage] = useState('');
   const handleShares = useCallback((next: OsShares) => setShares(next), []);
   const resetOptimization = () => {
     setOptimized({});
@@ -313,7 +310,6 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
   };
   const [offer, setOffer] = useState<FontOrigin[]>([]);
   const [staleLink, setStaleLink] = useState(false);
-  const [pinFit, setPinFit] = useState(false);
   useEffect(() => () => parser.current?.dispose(), []);
   useEffect(() => {
     if (focusSlot === undefined) return;
@@ -1208,7 +1204,7 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
     };
   };
   const currentShareState = () => buildShareState(shareInput());
-  const linkShareState = (pin: boolean) => {
+  const linkShareState = (pin: boolean): ShareState => {
     const input = shareInput();
     const pinned = pin
       ? pinFitValues(
@@ -1303,30 +1299,9 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
       window.removeEventListener('drop', drop);
     };
   }, []);
-  useEffect(() => {
-    if (!shareMessage) return;
-    const timer = setTimeout(() => setShareMessage(''), 10_000);
-    return () => clearTimeout(timer);
-  }, [shareMessage]);
   const uploaded = fonts.filter((font) => !font.origin).map((font) => displayName(font.fileName));
   const shareNote =
     uploaded.length > 0 || fonts.length === 0 ? t.share_note() : t.share_note_catalog();
-  const copyLink = async () => {
-    try {
-      let payload = await encodeShareState(linkShareState(pinFit));
-      const tooLong = pinFit && payload.length > MAX_HASH_CHARS;
-      if (tooLong) payload = await encodeShareState(linkShareState(false));
-      const link = `${location.origin}${location.pathname}#${HASH_KEY}${payload}`;
-      await navigator.clipboard.writeText(link);
-      const copied =
-        uploaded.length === 0
-          ? t.share_copied()
-          : t.share_copied_files({ files: uploaded.join(', ') });
-      setShareMessage(tooLong ? `${t.share_pin_too_long()} ${copied}` : copied);
-    } catch {
-      setShareMessage(t.share_failed());
-    }
-  };
   const forget = async () => {
     setForgotten(stateKey);
     await clearStorage();
@@ -1334,8 +1309,6 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
     clearLayouts();
     location.assign(location.pathname + location.search);
   };
-  const actions = useRef({ copyLink, forget });
-  actions.current = { copyLink, forget };
   const winnerOf = (os: OsId) => {
     const winner = plan?.resolution.platforms.find((item) => item.platform === os)?.winner;
     return (
@@ -2158,30 +2131,17 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
           }}
           actions={
             <div class="ff-share">
-              <Button onClick={() => void copyLink()} title={shareNote}>
-                <Icon name="share" />
-                {t.share_copy_short()}
-              </Button>
+              <ShareDialog
+                locale={locale}
+                build={linkShareState}
+                canPin={chosen.length > 0 && selected !== undefined}
+                files={uploaded}
+                note={shareNote}
+              />
               <Button onClick={() => void forget()}>
                 <Icon name="forget" />
                 {t.share_forget_short()}
               </Button>
-              <label>
-                <input
-                  class="ff-control"
-                  type="checkbox"
-                  aria-describedby="ff-share-pin-note"
-                  checked={pinFit}
-                  onChange={(event) => setPinFit(event.currentTarget.checked)}
-                />{' '}
-                {t.share_pin()}
-              </label>
-              <p class="ff-muted" id="ff-share-pin-note">
-                {t.share_pin_note()}
-              </p>
-              <span class="ff-muted" role="status">
-                {shareMessage}
-              </span>
             </div>
           }
           onShift={(report) => {

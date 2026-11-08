@@ -815,5 +815,20 @@
   "ext_extension_step_developer": "Open chrome://extensions (edge://extensions in Edge) and turn on Developer mode.",
   "ext_extension_step_load": "Choose Load unpacked and select the \"extension\" folder of the repository.",
   "ext_extension_step_use": "Open a website and click the fontstay button in the toolbar (pin it from the puzzle-piece menu if it is hidden).",
-  "ext_extension_source": "Extension source and instructions"
+  "ext_extension_source": "Extension source and instructions",
+  "share_dialog_title": "Share settings",
+  "share_dialog_close": "Close",
+  "share_dialog_include": "Include in the link",
+  "share_dialog_empty": "Nothing but the defaults would be stored in the link.",
+  "share_dialog_link": "Link",
+  "share_dialog_length": "{count} characters in the link",
+  "share_dialog_too_long": "The link is very long and may not open in every browser or messenger.",
+  "share_dialog_copy": "Copy link",
+  "share_part_fonts": "Fonts and search text",
+  "share_part_style": "Font kind and style",
+  "share_part_systems": "Fallback picks per system",
+  "share_part_tuning": "Tuning values and spacing",
+  "share_part_panel": "Open panel, system and font face",
+  "share_part_preview": "Preview settings, mode and device width",
+  "share_part_site_fonts": "Heading and body fonts of the imported site"
 }

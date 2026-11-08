@@ -815,5 +815,20 @@
   "ext_extension_step_developer": "Откройте chrome://extensions (в Edge — edge://extensions) и включите режим разработчика.",
   "ext_extension_step_load": "Нажмите «Загрузить распакованное расширение» и выберите папку «extension» из репозитория.",
   "ext_extension_step_use": "Откройте сайт и нажмите кнопку fontstay на панели инструментов (если её не видно, закрепите её в меню с пазлом).",
-  "ext_extension_source": "Исходники расширения и инструкция"
+  "ext_extension_source": "Исходники расширения и инструкция",
+  "share_dialog_title": "Поделиться настройками",
+  "share_dialog_close": "Закрыть",
+  "share_dialog_include": "Что включить в ссылку",
+  "share_dialog_empty": "В ссылку попадут только значения по умолчанию.",
+  "share_dialog_link": "Ссылка",
+  "share_dialog_length": "Символов в ссылке: {count}",
+  "share_dialog_too_long": "Ссылка очень длинная и может не открыться в некоторых браузерах и мессенджерах.",
+  "share_dialog_copy": "Скопировать ссылку",
+  "share_part_fonts": "Шрифты и текст поиска",
+  "share_part_style": "Тип и начертание шрифта",
+  "share_part_systems": "Выбор запасных шрифтов по системам",
+  "share_part_tuning": "Значения подгонки и интервалы",
+  "share_part_panel": "Открытая панель, система и начертание",
+  "share_part_preview": "Настройки предпросмотра, режим и ширина устройства",
+  "share_part_site_fonts": "Шрифты заголовков и текста импортированного сайта"
 }
