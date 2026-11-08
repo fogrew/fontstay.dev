@@ -87,7 +87,6 @@ import {
   takePending,
 } from '@/modules/site-import';
 import type { ShiftReport, ToolHost } from '@/modules/webmcp';
-import { autoFit } from '../lib/auto-fit';
 import { fallbackRatio, webRatio } from '../lib/calibration';
 import { displayName, fitLanguage, isNoCoverage, LOW_COVERAGE } from '../lib/compute';
 import { adjustmentOf, buildCss, fallbackFamilyName, type Overrides } from '../lib/css';
@@ -99,6 +98,7 @@ import {
   saveFontLimit,
 } from '../lib/font-limit';
 import { hasSpacing, loadingCss, loadingScript, type SpacingEm } from '../lib/loading';
+import { optimizeFace } from '../lib/optimize-fit';
 import { currentFallback, type FontOutput, groupFonts, mergeOutputs } from '../lib/overview';
 import { ownOs } from '../lib/own-os';
 import {
@@ -1452,13 +1452,14 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
         };
         for (const [index, candidate] of job.faces.entries()) {
           const free = spacingOn && jobIndex === 0 && index === 0;
-          const result = await autoFit({
+          const result = await optimizeFace({
             candidate,
             manual: manualFor(job.font.id, candidate.id),
             widthK: fallbackFactor(candidate, job.font),
-            spacing,
-            pinSpacing: { letter: !free || letterManual, word: !free || wordManual },
             model,
+            spacing,
+            free,
+            manualSpacing: { letter: letterManual, word: wordManual },
             signal: controller.signal,
           });
           if (controller.signal.aborted) return;
