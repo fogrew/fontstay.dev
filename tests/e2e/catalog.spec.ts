@@ -193,7 +193,7 @@ test('a preset stays applied to every uploaded font until it is cleared', async 
   await expect(page.getByText('Stack preset applied: Classic serif')).toHaveCount(0);
 });
 
-test('a preset says which of its fonts the fallbacks cannot use', async ({ page }) => {
+test('a preset lists the stack fonts the fallbacks cannot use', async ({ page }) => {
   await page.goto('/en/presets/');
   await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
   const item = page.locator('li', { has: page.getByRole('heading', { name: 'Slab serif' }) });
@@ -207,6 +207,6 @@ test('a preset says which of its fonts the fallbacks cannot use', async ({ page 
   await openStep(page, 'tuning');
   await expect(page.getByText('Stack preset applied: Slab serif')).toBeVisible();
   await expect(
-    page.getByText('No font of this stack has metrics for the selected systems'),
+    page.getByText('Rockwell, Rockwell Nova, Roboto Slab have no metrics for the selected systems'),
   ).toBeVisible({ timeout: 15_000 });
 });
