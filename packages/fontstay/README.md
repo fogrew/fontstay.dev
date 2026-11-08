@@ -12,17 +12,17 @@ fontstay fit Inter.woff2 -o fallbacks.css
 fontstay fit regular.woff2 bold.woff2 --format tailwind
 ```
 
-| Option | Meaning |
-|---|---|
-| `-s, --systems <list>` | Systems to fit: `windows`, `macos`, `ios`, `android`, `linux`, `chromeos`. Default: every system with a share of at least 1% in the audience. Shares stay those of the whole audience, as when a system is switched off in the app. |
-| `-a, --audience <query>` | [Browserslist](https://browsersl.ist) query, including `baseline widely available`. `os <system>` and `not os <system>` parts select systems like the app. Overrides the project config. |
-| `-f, --format <format>` | `css` (default), `variables`, `tailwind`, `next`, `nuxt`, `astro`, `wordpress`, `fontaine`, `preload`, `loading`. |
-| `-k, --kind <kind>` | Generic family of the fallbacks: `sans-serif`, `serif`, `monospace`, `cursive`. Default: detected from the font. |
-| `--locale <en\|ru>` | Frequency profile of the fit. `ru` applies to fonts that cover Cyrillic. Default: `en`. |
-| `--unicode-range` | Add `unicode-range` with the glyphs each font covers. |
-| `--no-scripts` | Do not emit separate faces for Cyrillic and Greek. |
-| `-o, --out <file>` | Write to a file instead of stdout. |
-| `--json` | Print a JSON report: the output file, the fallbacks chosen per system, the audience shares. |
+| Option                   | Meaning                                                                                                                                                                                                                             |
+| ------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `-s, --systems <list>`   | Systems to fit: `windows`, `macos`, `ios`, `android`, `linux`, `chromeos`. Default: every system with a share of at least 1% in the audience. Shares stay those of the whole audience, as when a system is switched off in the app. |
+| `-a, --audience <query>` | [Browserslist](https://browsersl.ist) query, including `baseline widely available`. `os <system>` and `not os <system>` parts select systems like the app. Overrides the project config.                                            |
+| `-f, --format <format>`  | `css` (default), `variables`, `tailwind`, `next`, `nuxt`, `astro`, `wordpress`, `fontaine`, `preload`, `loading`.                                                                                                                   |
+| `-k, --kind <kind>`      | Generic family of the fallbacks: `sans-serif`, `serif`, `monospace`, `cursive`. Default: detected from the font.                                                                                                                    |
+| `--locale <en\|ru>`      | Frequency profile of the fit. `ru` applies to fonts that cover Cyrillic. Default: `en`.                                                                                                                                             |
+| `--unicode-range`        | Add `unicode-range` with the glyphs each font covers.                                                                                                                                                                               |
+| `--no-scripts`           | Do not emit separate faces for Cyrillic and Greek.                                                                                                                                                                                  |
+| `-o, --out <file>`       | Write to a file instead of stdout.                                                                                                                                                                                                  |
+| `--json`                 | Print a JSON report: the output file, the fallbacks chosen per system, the audience shares.                                                                                                                                         |
 
 Several font files are merged into one stylesheet, as in the app. Warnings (low glyph overlap, systems without fallback fonts) go to stderr. Exit codes: `0` success, `1` failure (unreadable or invalid font, invalid audience), `2` usage error.
 
@@ -54,13 +54,13 @@ Once the package is published to npm, add it to an editor with:
 
 Claude Code: `claude mcp add fontstay -- npx -y fontstay mcp`. Before that, or from a checkout, use `node /path/to/packages/fontstay/dist/bin.js mcp` after `pnpm cli:build`. Relative paths resolve against the directory the editor starts the server in.
 
-| Tool | Input | Result |
-|---|---|---|
-| `analyze_font` | `path` | Names, weight and style, detected type, vertical metrics, scripts, glyph count, variable axes, OpenType feature tags, license. |
-| `suggest_fallbacks` | `paths`, fit options | JSON: the fallback family chosen per system, the audience share of each system, glyph-weight coverage per font, systems without fallbacks. |
-| `audit_font_faces` | `paths` (CSS files) | The split-font warnings of `fontstay audit`, one line each, or a note that there are none. |
-| `get_css` | `paths`, fit options | The `@font-face` and `font-family` CSS, as in `fontstay fit`. |
-| `get_export` | `paths`, `format`, fit options | The same fit as `css`, `variables`, `tailwind`, `next`, `nuxt`, `astro`, `wordpress`, `fontaine`, `preload` or `loading`, then the suggested file name. |
+| Tool                | Input                          | Result                                                                                                                                                  |
+| ------------------- | ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `analyze_font`      | `path`                         | Names, weight and style, detected type, vertical metrics, scripts, glyph count, variable axes, OpenType feature tags, license.                          |
+| `suggest_fallbacks` | `paths`, fit options           | JSON: the fallback family chosen per system, the audience share of each system, glyph-weight coverage per font, systems without fallbacks.              |
+| `audit_font_faces`  | `paths` (CSS files)            | The split-font warnings of `fontstay audit`, one line each, or a note that there are none.                                                              |
+| `get_css`           | `paths`, fit options           | The `@font-face` and `font-family` CSS, as in `fontstay fit`.                                                                                           |
+| `get_export`        | `paths`, `format`, fit options | The same fit as `css`, `variables`, `tailwind`, `next`, `nuxt`, `astro`, `wordpress`, `fontaine`, `preload` or `loading`, then the suggested file name. |
 
 Audience queries that load a shared config or stats file (`extends ...`, `in <package>`) are rejected, and Windows network paths (`\\host\share`) are not read. `paths` takes 1 to 16 files of up to 10 MB (WOFF2, WOFF, TTF, OTF); several files are merged into one result. Fit options mirror the CLI: `audience` (Browserslist query), `systems`, `locale`, `kind`, `unicode_range`, `scripts`. Low glyph overlap and systems without fallback fonts are reported as warnings after the result. Bad input (missing file, invalid font, invalid audience) comes back as a tool error that the agent can read and correct.
 

@@ -95,17 +95,16 @@ Study for #412, input to #411. Fifteen Google Fonts families (Open Sans, Roboto,
 
 Consequence for the UI (#411): the list order is by predicted layout shift first and then by closeness of size-adjust to 100% and width, so the number shown next to a font is not the sort key and values above 100% are normal.
 
-
 ## `unicode-range` and split shaping
 
 Spike for #419. Chromium 156 (Windows), 40 paragraphs of about 270 characters, 4x CPU throttling, median of 180 forced relayouts per cell. The web font (Fira Sans) is limited to `U+20-7E` and the fallback is `local(Arial)` with and without `unicode-range: U+20-7E`.
 
-| Text | Without range | With range | Fonts used (with range) |
-|---|---|---|---|
-| Latin | 5.6-6.2 ms | 5.6-5.7 ms | web font only |
-| Latin + Cyrillic | 11.7-12.0 ms | 11.1-11.9 ms | web font, Arial |
-| Digits, currency, quotes, symbols | 11.2-17.6 ms | 10.5-12.5 ms | web font, Arial, Times New Roman |
-| One accented letter per word | 8.5-10.5 ms | 8.4-9.2 ms | web font, Arial |
+| Text                              | Without range | With range   | Fonts used (with range)          |
+| --------------------------------- | ------------- | ------------ | -------------------------------- |
+| Latin                             | 5.6-6.2 ms    | 5.6-5.7 ms   | web font only                    |
+| Latin + Cyrillic                  | 11.7-12.0 ms  | 11.1-11.9 ms | web font, Arial                  |
+| Digits, currency, quotes, symbols | 11.2-17.6 ms  | 10.5-12.5 ms | web font, Arial, Times New Roman |
+| One accented letter per word      | 8.5-10.5 ms   | 8.4-9.2 ms   | web font, Arial                  |
 
 Runs vary by about 10% and the order of the two variants is not stable, so the option has no measurable layout-time cost. The set of fonts that draw a page is decided by the web font's coverage, not by the option: characters the web font lacks need another font either way, so a word with one such character is split in both variants. The option only changes which font draws them: the adjusted fallback without it, the generic family with it (with `local("Times New Roman")` as the fallback, the uncovered Cyrillic went to the adjusted Times New Roman without the range and to Arial with it). The only extra font seen was when the generic family lacked a symbol that the system fallback supplied, one more run for 3 of 287 glyphs.
 

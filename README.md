@@ -6,17 +6,18 @@ Generator of metric-adjusted fallback font stacks with live preview and layout-s
 
 Source is organized by [FEOD](https://fractal-oriented.tech/en/) levels under `src/`:
 
-| Level | Path | Role |
-|---|---|---|
-| `app` | `src/app` | Astro `srcDir`: routes (`src/app/pages`), layouts, styles, i18n wiring. Composes everything below. |
-| `pages` | `src/pages` | Page entities, each with a root `index.ts`. Routes in `src/app/pages` render them. |
-| `modules` | `src/modules` | Product modules with a root `index.ts` public API. |
-| `common` | `src/common` | Reusable entities not tied to a product scenario. |
-| `global` | `src/global` | Environment declarations and shims. Never imported by application code. |
+| Level     | Path          | Role                                                                                               |
+| --------- | ------------- | -------------------------------------------------------------------------------------------------- |
+| `app`     | `src/app`     | Astro `srcDir`: routes (`src/app/pages`), layouts, styles, i18n wiring. Composes everything below. |
+| `pages`   | `src/pages`   | Page entities, each with a root `index.ts`. Routes in `src/app/pages` render them.                 |
+| `modules` | `src/modules` | Product modules with a root `index.ts` public API.                                                 |
+| `common`  | `src/common`  | Reusable entities not tied to a product scenario.                                                  |
+| `global`  | `src/global`  | Environment declarations and shims. Never imported by application code.                            |
 
 Rules: imports follow the [import matrix](https://fractal-oriented.tech/en/reference/import-matrix) and go through an entity's root `index.ts`. Enforced by `pnpm lint:arch` ([`@feod/analyzer`](https://fractal-oriented.tech/en/tools/feod-analyzer)) and by Biome `noRestrictedImports` overrides in `biome.json`.
 
 Known limits of the checks:
+
 - `@feod/analyzer` does not parse `.astro` files. Biome matches `@/` alias imports there, and `pnpm lint:arch` additionally rejects relative path literals in `.astro` files that leave their entity (`scripts/lint-arch.ts`). Keep logic in `.ts`/`.tsx` and use `@/` imports in `.astro` files.
 - The Biome rules ban alias imports of an entity's internals, including your own (`@/common/ui/x` from inside `src/common/ui`); inside an entity use relative imports.
 
@@ -62,16 +63,16 @@ pnpm perf      # initial JavaScript budget (after a build)
 
 Generated data is committed; the scripts need network access (and, for Windows metrics, a Windows machine):
 
-| Script | Output |
-|---|---|
-| `pnpm devices:import` | `src/modules/devices/data/devices.json` (emulated devices from Chrome DevTools) |
-| `pnpm os-fonts:import` | `src/modules/os-fonts/data/os-fonts.json` (availability per OS from vendor sources) |
-| `pnpm os-fonts:metrics` | `metrics.json` and `variants.json` (glyph advances and vertical metrics) |
-| `pnpm compat:build` | `src/modules/audience/data/descriptor-support.json` (MDN browser-compat-data) |
-| `pnpm google-fonts:catalog` | `src/modules/font-sources/data/google-catalog.json` |
-| `pnpm fontsource:catalog` | `src/modules/font-sources/data/fontsource-catalog.json` |
-| `pnpm unicode:blocks` | `src/modules/font-metrics/data/blocks.json` |
-| `pnpm og:build` | `public/og.png` (needs Playwright Chromium) |
+| Script                      | Output                                                                              |
+| --------------------------- | ----------------------------------------------------------------------------------- |
+| `pnpm devices:import`       | `src/modules/devices/data/devices.json` (emulated devices from Chrome DevTools)     |
+| `pnpm os-fonts:import`      | `src/modules/os-fonts/data/os-fonts.json` (availability per OS from vendor sources) |
+| `pnpm os-fonts:metrics`     | `metrics.json` and `variants.json` (glyph advances and vertical metrics)            |
+| `pnpm compat:build`         | `src/modules/audience/data/descriptor-support.json` (MDN browser-compat-data)       |
+| `pnpm google-fonts:catalog` | `src/modules/font-sources/data/google-catalog.json`                                 |
+| `pnpm fontsource:catalog`   | `src/modules/font-sources/data/fontsource-catalog.json`                             |
+| `pnpm unicode:blocks`       | `src/modules/font-metrics/data/blocks.json`                                         |
+| `pnpm og:build`             | `public/og.png` (needs Playwright Chromium)                                         |
 
 Every source is listed in [`CREDITS.md`](CREDITS.md), which is also rendered as the Credits page.
 

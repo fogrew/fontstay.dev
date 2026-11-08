@@ -100,7 +100,7 @@ interface Parsed {
   size: number;
 }
 
-function describe(ranges: readonly CodePointRange[]) {
+function describeRanges(ranges: readonly CodePointRange[]) {
   return { characters: formatUnicodeRange(ranges), count: countCodePoints(ranges) };
 }
 
@@ -145,7 +145,7 @@ export function auditSplitFaces(rules: readonly FaceRule[]): SplitIssue[] {
           kind: 'latin-split',
           ...label,
           rules: latin.map((item) => item.member.index),
-          ...describe(union),
+          ...describeRanges(union),
         });
       }
     }

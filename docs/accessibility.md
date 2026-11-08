@@ -4,15 +4,15 @@ Audit of 2026-10-12 against the `develop` branch. Scope: all pages in English an
 
 ## Automated checks (run on every `pnpm test:e2e`)
 
-| Check | Where |
-|---|---|
-| axe-core, tags `wcag2a`, `wcag2aa`, `wcag21a`, `wcag21aa`, `wcag22aa`, on every page, both locales, light and dark colour scheme | `tests/e2e/a11y.spec.ts` |
-| axe on the generator with a font loaded and every collapsible section open (spacing, CSS import, Google Fonts, share, coverage, export) | `tests/e2e/a11y.spec.ts` |
-| Reflow at 320 px (WCAG 1.4.10): no horizontal page scroll on any page and in the generator with a font | `tests/e2e/a11y.spec.ts` |
-| Keyboard path: skip link, section toggles with Enter and Space | `tests/e2e/a11y.spec.ts` |
-| Forced colours: support states remain distinguishable by text | `tests/e2e/a11y.spec.ts` |
-| Reduced motion: no transitions on the preview | `tests/e2e/generator.spec.ts` |
-| CSP violations fail every test | `tests/e2e/fixtures.ts` |
+| Check                                                                                                                                   | Where                         |
+| --------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------- |
+| axe-core, tags `wcag2a`, `wcag2aa`, `wcag21a`, `wcag21aa`, `wcag22aa`, on every page, both locales, light and dark colour scheme        | `tests/e2e/a11y.spec.ts`      |
+| axe on the generator with a font loaded and every collapsible section open (spacing, CSS import, Google Fonts, share, coverage, export) | `tests/e2e/a11y.spec.ts`      |
+| Reflow at 320 px (WCAG 1.4.10): no horizontal page scroll on any page and in the generator with a font                                  | `tests/e2e/a11y.spec.ts`      |
+| Keyboard path: skip link, section toggles with Enter and Space                                                                          | `tests/e2e/a11y.spec.ts`      |
+| Forced colours: support states remain distinguishable by text                                                                           | `tests/e2e/a11y.spec.ts`      |
+| Reduced motion: no transitions on the preview                                                                                           | `tests/e2e/generator.spec.ts` |
+| CSP violations fail every test                                                                                                          | `tests/e2e/fixtures.ts`       |
 
 ## What the interface does
 
