@@ -1,13 +1,11 @@
 import { execFileSync } from 'node:child_process';
-import { mkdirSync, mkdtempSync, readFileSync, rmSync } from 'node:fs';
+import { mkdtempSync, readFileSync, rmSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { afterAll, expect, it } from 'vitest';
 import { buildCli } from './build.mjs';
 
-const dist = fileURLToPath(new URL('../../packages/fontstay/dist/', import.meta.url));
-mkdirSync(dist, { recursive: true });
-const scratch = mkdtempSync(join(dist, 'test-'));
+const scratch = mkdtempSync(join(fileURLToPath(new URL('../../', import.meta.url)), '.cli-test-'));
 afterAll(() => rmSync(scratch, { recursive: true, force: true }));
 
 const fixture = (path: string) =>

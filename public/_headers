@@ -18,6 +18,9 @@
 /sw.js
   Cache-Control: no-cache
 
+/appearance-init.js
+  Cache-Control: no-cache
+
 /version.json
   Cache-Control: no-cache
 
