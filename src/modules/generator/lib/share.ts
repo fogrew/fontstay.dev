@@ -52,7 +52,7 @@ const KINDS: readonly Category[] = ['sans-serif', 'serif', 'monospace', 'cursive
 const STYLES: readonly FontStyleKey[] = ['regular', 'bold', 'italic', 'bold-italic'];
 const ID = /^[a-z0-9-]{1,40}$/;
 const DATA_VERSION_PATTERN = /^[0-9a-f]{8}$/;
-const LIMITS: Record<ManualKey, [number, number]> = {
+export const LIMITS: Record<ManualKey, [number, number]> = {
   sizeAdjust: [25, 400],
   ascentOverride: [0, 400],
   descentOverride: [0, 400],

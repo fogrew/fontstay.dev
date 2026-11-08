@@ -113,6 +113,7 @@ import {
   encodeShareState,
   type FontState,
   HASH_KEY,
+  MAX_HASH_CHARS,
   NO_PANEL,
   type PanelId,
   payloadFromHash,
@@ -124,6 +125,7 @@ import {
   isStaleLink,
   keepKnownPicks,
   mergePicks,
+  pinFitValues,
   type ShareInput,
 } from '../lib/share-build';
 import {
@@ -291,6 +293,7 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
   };
   const [offer, setOffer] = useState<FontOrigin[]>([]);
   const [staleLink, setStaleLink] = useState(false);
+  const [pinFit, setPinFit] = useState(false);
   useEffect(() => () => parser.current?.dispose(), []);
   useEffect(() => {
     if (focusSlot === undefined) return;
@@ -1195,15 +1198,30 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
     };
   };
   const currentShareState = () => buildShareState(shareInput());
-  const linkShareState = () =>
-    buildShareState({
-      ...shareInput(),
+  const linkShareState = (pin: boolean) => {
+    const input = shareInput();
+    const pinned = pin
+      ? pinFitValues(
+          Object.fromEntries(
+            chosen.map((item) => [
+              item.faceId,
+              adjustmentOf(baseOf(item.candidate), manualOf(item.faceId)),
+            ]),
+          ),
+        )
+      : undefined;
+    return buildShareState({
+      ...input,
+      ...(pinned && input.selected
+        ? { selected: { ...input.selected, manual: { ...input.selected.manual, ...pinned } } }
+        : {}),
       panel: panel.current,
       os: activeOs,
       face: editId,
       view: viewDiff.current,
       data: DATA_VERSION,
     });
+  };
   const stateKey = restored ? JSON.stringify(currentShareState()) : '';
   useEffect(() => {
     if (!restored || stateKey === '' || pending.current || stateKey === forgotten) return;
@@ -1285,14 +1303,16 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
     uploaded.length > 0 || fonts.length === 0 ? t.share_note() : t.share_note_catalog();
   const copyLink = async () => {
     try {
-      const payload = await encodeShareState(linkShareState());
+      let payload = await encodeShareState(linkShareState(pinFit));
+      const tooLong = pinFit && payload.length > MAX_HASH_CHARS;
+      if (tooLong) payload = await encodeShareState(linkShareState(false));
       const link = `${location.origin}${location.pathname}#${HASH_KEY}${payload}`;
       await navigator.clipboard.writeText(link);
-      setShareMessage(
+      const copied =
         uploaded.length === 0
           ? t.share_copied()
-          : t.share_copied_files({ files: uploaded.join(', ') }),
-      );
+          : t.share_copied_files({ files: uploaded.join(', ') });
+      setShareMessage(tooLong ? `${t.share_pin_too_long()} ${copied}` : copied);
     } catch {
       setShareMessage(t.share_failed());
     }
@@ -2085,6 +2105,19 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
                 <Icon name="forget" />
                 {t.share_forget_short()}
               </Button>
+              <label>
+                <input
+                  class="ff-control"
+                  type="checkbox"
+                  aria-describedby="ff-share-pin-note"
+                  checked={pinFit}
+                  onChange={(event) => setPinFit(event.currentTarget.checked)}
+                />{' '}
+                {t.share_pin()}
+              </label>
+              <p class="ff-muted" id="ff-share-pin-note">
+                {t.share_pin_note()}
+              </p>
               <span class="ff-muted" role="status">
                 {shareMessage}
               </span>
