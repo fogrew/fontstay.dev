@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { CssExportError } from './model';
-import { prependSelfHost, selfHostFontFaces } from './self-host';
+import { archiveFontFileName, prependSelfHost, selfHostFontFaces } from './self-host';
 import { buildSelfHostArchive, licenseFile, licenseKind } from './self-host-archive';
 
 const roboto = {
@@ -59,6 +59,13 @@ describe('selfHostFontFaces', () => {
     );
     expect(() => selfHostFontFaces([roboto], '/x");}body{')).toThrow(CssExportError);
   });
+});
+
+it('bounds archive filenames in UTF-8 while retaining the extension', () => {
+  const name = archiveFontFileName('local', 2, `${'漢'.repeat(300)}/font.woff2`);
+  expect(new TextEncoder().encode(name).length).toBeLessThanOrEqual(120);
+  expect(name).toMatch(/^local-2-.*\.woff2$/);
+  expect(name).not.toContain('/');
 });
 
 describe('prependSelfHost', () => {

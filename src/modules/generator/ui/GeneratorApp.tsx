@@ -32,6 +32,7 @@ import {
   type SystemInfo,
 } from '@/modules/audience';
 import {
+  archiveFontFileName,
   buildExport,
   CssExportError,
   EXPORT_FORMATS,
@@ -963,8 +964,7 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
   const exportFontName = (font: LoadedFont) => {
     const name = displayName(font.fileName);
     if (!archiveEnabled) return name;
-    const safe = name.replace(/[^\p{L}\p{N}_.-]/gu, '-').replace(/^\.+|\.+$/g, '');
-    return `${font.origin?.source ?? 'local'}-${font.id}-${safe || 'font'}`;
+    return archiveFontFileName(font.origin?.source ?? 'local', font.id, name);
   };
   const exportOutputs: FontOutput[] = exportEntries.map((entry) => ({
     targetFamily: entry.family,

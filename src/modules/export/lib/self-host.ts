@@ -22,6 +22,21 @@ const isControl = (char: string) => {
 
 export const SELF_HOST_BASE = '/fonts/';
 
+export function archiveFontFileName(
+  source: 'google' | 'fontsource' | 'local',
+  id: number,
+  name: string,
+): string {
+  const extension = name.match(/\.[a-z0-9]{1,8}$/i)?.[0] ?? '';
+  const raw = name.slice(0, name.length - extension.length);
+  const chars = [...raw.replace(/[^\p{L}\p{N}_.-]/gu, '-').replace(/^\.+|\.+$/g, '')].slice(0, 120);
+  const prefix = `${source}-${id}-`;
+  const encoder = new TextEncoder();
+  while (chars.length && encoder.encode(`${prefix}${chars.join('')}${extension}`).length > 120)
+    chars.pop();
+  return `${prefix}${chars.join('') || 'font'}${extension}`;
+}
+
 export const prependSelfHost = (faces: string, css: string) => (faces ? `${faces}\n\n${css}` : css);
 
 export function selfHostFontFaces(
