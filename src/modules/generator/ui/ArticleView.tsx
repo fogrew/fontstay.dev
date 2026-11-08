@@ -347,9 +347,16 @@ export function ArticleView({
     },
     [background],
   );
+  useEffect(
+    () => () => {
+      backgroundPick.current++;
+    },
+    [],
+  );
 
   const chooseBackground = async (file: File | undefined) => {
     const pick = ++backgroundPick.current;
+    setBackgroundError(undefined);
     if (!file) return;
     const { loadBackground } = await import('../lib/background-image');
     const result = await loadBackground(file);
@@ -362,6 +369,7 @@ export function ArticleView({
       setBackground(result.url);
     } else {
       setBackgroundError(result.reason);
+      if (backgroundInput.current) backgroundInput.current.value = '';
     }
   };
   const removeBackground = () => {
@@ -1024,7 +1032,8 @@ export function ArticleView({
             id="ff-bg-file"
             type="file"
             accept={BACKGROUND_TYPES.join(',')}
-            aria-describedby="ff-bg-note"
+            aria-invalid={backgroundError ? true : undefined}
+            aria-describedby={backgroundError ? 'ff-bg-note ff-bg-error' : 'ff-bg-note'}
             onChange={(event) => void chooseBackground(event.currentTarget.files?.[0])}
           />
         </div>
@@ -1032,7 +1041,7 @@ export function ArticleView({
           {t.bg_note({ size: MAX_BACKGROUND_BYTES / 1048576 })}
         </p>
         {backgroundError && (
-          <p class="ff-error" role="alert">
+          <p class="ff-error" id="ff-bg-error" role="alert">
             {backgroundErrorText(backgroundError)}
           </p>
         )}

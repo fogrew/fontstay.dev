@@ -289,9 +289,10 @@ test('a background image sits behind the preview text and is validated', async (
   await view.getByLabel('Horizontal position').fill('25');
   await expect(article).toHaveCSS('background-position', /25%/);
   await view.getByLabel('Fade').fill('80');
+  await expect(view.locator('output[for="ff-bg-fade"]')).toHaveText('80%');
   await view.getByRole('combobox', { name: 'Fit' }).click();
   await page.getByRole('option', { name: 'Contain' }).click();
-  await expect(article).toHaveCSS('background-size', /contain|auto/);
+  await expect(article).toHaveCSS('background-size', /auto, contain/);
   expect((await new AxeBuilder({ page }).include('.ff-article-view').analyze()).violations).toEqual(
     [],
   );

@@ -727,7 +727,7 @@ html[data-transition] .ff-export[data-expanded] .ff-export__fullscreen[open] .ff
 .ff-article-view .ff-article--ghost[data-idle] {
   visibility: hidden;
 }
-.ff-article-view[data-background] .ff-article:not(.ff-article--ghost) {
+.ff-article-view[data-background] .ff-article:not(.ff-article--ghost, [data-probe]) {
   background-image:
     linear-gradient(
       color-mix(in srgb, var(--ff-surface) calc(var(--ff-bg-fade) * 1%), transparent),
@@ -748,7 +748,7 @@ html[data-transition] .ff-export[data-expanded] .ff-export__fullscreen[open] .ff
   font-size: 0.8125rem;
 }
 @media (forced-colors: active) {
-  .ff-article-view[data-background] .ff-article:not(.ff-article--ghost) {
+  .ff-article-view[data-background] .ff-article:not(.ff-article--ghost, [data-probe]) {
     background-image: none;
   }
 }

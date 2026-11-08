@@ -48,7 +48,7 @@ function jpegSize(bytes: Uint8Array, view: DataView): BackgroundInfo | null {
 function webpSize(bytes: Uint8Array, view: DataView): BackgroundInfo | null {
   if (bytes.length < 30) return null;
   const type = 'image/webp';
-  if (ascii(bytes, 12, 'VP8 ')) {
+  if (ascii(bytes, 12, 'VP8 ') && bytes[23] === 0x9d && bytes[24] === 0x01 && bytes[25] === 0x2a) {
     return {
       type,
       width: view.getUint16(26, true) & 0x3fff,
@@ -93,7 +93,8 @@ export function checkBackground(
 ): { ok: true; info: BackgroundInfo } | { ok: false; reason: BackgroundRejection } {
   if (size > MAX_BACKGROUND_BYTES) return { ok: false, reason: 'size' };
   const info = sniffImage(head);
-  if (!info) return { ok: false, reason: 'type' };
+  if (!info)
+    return { ok: false, reason: head[0] === 0xff && head[1] === 0xd8 ? 'unreadable' : 'type' };
   const { width, height } = info;
   if (width < 1 || height < 1) return { ok: false, reason: 'unreadable' };
   if (

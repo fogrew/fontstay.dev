@@ -154,6 +154,11 @@ describe('background image limits', () => {
     expect(checkBackground(10, png(8000, 8000))).toEqual({ ok: false, reason: 'dimensions' });
   });
 
+  it('reports a JPEG whose frame header lies past the sniffed window as unreadable', () => {
+    const head = Uint8Array.from([0xff, 0xd8, 0xff, 0xe0, 0xff, 0xff, ...new Array(40).fill(0)]);
+    expect(checkBackground(10, head)).toEqual({ ok: false, reason: 'unreadable' });
+  });
+
   it('rejects zero dimensions', () => {
     expect(checkBackground(10, png(0, 10))).toEqual({ ok: false, reason: 'unreadable' });
   });
