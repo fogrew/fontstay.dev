@@ -86,7 +86,7 @@ test('the layout model agrees with the browser measurement', async ({ page }) =>
     await page.getByRole('button', { name: 'Verify on this device' }).click();
     const message = page.getByText(/Measured in the browser/);
     await expect(message).toBeVisible({ timeout: 25_000 });
-    const text = await message.innerText();
+    const text = (await message.textContent()) ?? '';
     return [...text.matchAll(/(\d+)px: (\d+(?:\.\d+)?)/g)].map((match) => Number(match[2]));
   };
 

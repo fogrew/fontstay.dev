@@ -10,14 +10,14 @@ Only two subsets exist across the whole collection: `latin` and `thai`. Each fon
 
 ## System fonts
 
-| OS | Present (of the examples checked) | Missing (examples) |
-|---|---|---|
-| Windows | arial, courierNew, georgia, segoeUI, tahoma, timesNewRoman, trebuchetMS, verdana | Calibri, Cambria, Consolas, Segoe UI Variable, Arial Black/Narrow, Impact, Lucida Console, Palatino Linotype, Microsoft YaHei, Yu Gothic, Malgun Gothic |
-| macOS / iOS | helvetica, helveticaNeue, appleSystem, lucidaGrande | SF Pro/Mono, New York, Avenir, Menlo, Monaco, Palatino, Baskerville, Futura, PingFang, Hiragino |
-| Android | roboto, robotoFlex, robotoMono, notoSans, notoSerif, notoSansMono | Droid family |
-| ChromeOS | not checked in this spike | to be covered by the extraction script (#31) |
-| Linux | ubuntu, ubuntuMono, cantarell, notoSans, notoSerif, carlito, caladea, openSans | DejaVu, Liberation, FreeFont, Nimbus |
-| Generic | none | `system-ui`, `sans-serif`, `serif`, `monospace` (resolve to different fonts per OS) |
+| OS          | Present (of the examples checked)                                                | Missing (examples)                                                                                                                                      |
+| ----------- | -------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Windows     | arial, courierNew, georgia, segoeUI, tahoma, timesNewRoman, trebuchetMS, verdana | Calibri, Cambria, Consolas, Segoe UI Variable, Arial Black/Narrow, Impact, Lucida Console, Palatino Linotype, Microsoft YaHei, Yu Gothic, Malgun Gothic |
+| macOS / iOS | helvetica, helveticaNeue, appleSystem, lucidaGrande                              | SF Pro/Mono, New York, Avenir, Menlo, Monaco, Palatino, Baskerville, Futura, PingFang, Hiragino                                                         |
+| Android     | roboto, robotoFlex, robotoMono, notoSans, notoSerif, notoSansMono                | Droid family                                                                                                                                            |
+| ChromeOS    | not checked in this spike                                                        | to be covered by the extraction script (#31)                                                                                                            |
+| Linux       | ubuntu, ubuntuMono, cantarell, notoSans, notoSerif, carlito, caladea, openSans   | DejaVu, Liberation, FreeFont, Nimbus                                                                                                                    |
+| Generic     | none                                                                             | `system-ui`, `sans-serif`, `serif`, `monospace` (resolve to different fonts per OS)                                                                     |
 
 ## Conclusions
 

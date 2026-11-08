@@ -4,14 +4,14 @@ Goal: pick a parser for woff2/woff/ttf/otf that runs in a worker and exposes `OS
 
 ## Candidates
 
-| | fontkit 2.0.4 | `@capsizecss/unpack` 4.0.1 | fontkitten 1.0.3 | opentype.js 2.0.0 |
-|---|---|---|---|---|
-| License | MIT | MIT | MIT | MIT |
-| Browser bundle (min / gzip) | 357 / 145 KB | 244 / 95 KB | 241 / 93 KB | 240 / 66 KB |
-| woff2 | yes | yes | yes | no, needs an external decompressor (wawoff2's decompress-only binding is ~323 KB) |
-| woff / ttf / otf | yes | yes | yes | yes |
-| cmap + per-glyph advances | yes | no (aggregated metrics only) | yes (fontkit-compatible API) | yes |
-| `OS/2`, `hhea`, names | yes | yes | yes | yes |
+|                             | fontkit 2.0.4 | `@capsizecss/unpack` 4.0.1   | fontkitten 1.0.3             | opentype.js 2.0.0                                                                 |
+| --------------------------- | ------------- | ---------------------------- | ---------------------------- | --------------------------------------------------------------------------------- |
+| License                     | MIT           | MIT                          | MIT                          | MIT                                                                               |
+| Browser bundle (min / gzip) | 357 / 145 KB  | 244 / 95 KB                  | 241 / 93 KB                  | 240 / 66 KB                                                                       |
+| woff2                       | yes           | yes                          | yes                          | no, needs an external decompressor (wawoff2's decompress-only binding is ~323 KB) |
+| woff / ttf / otf            | yes           | yes                          | yes                          | yes                                                                               |
+| cmap + per-glyph advances   | yes           | no (aggregated metrics only) | yes (fontkit-compatible API) | yes                                                                               |
+| `OS/2`, `hhea`, names       | yes           | yes                          | yes                          | yes                                                                               |
 
 Measured on Inter (latin 23 KB, cyrillic 7.5 KB) and Noto Sans JP variable (CJK subset, 81 KB), Node 26: parse + average advance over the whole cmap takes 3–36 ms (first call includes woff2 decompression).
 
@@ -33,17 +33,29 @@ Superseded by the implementation in `modules/font-metrics` (#11, PR #56). The re
 ```ts
 type FontParseResult =
   | { ok: true; font: FontMetrics }
-  | { ok: false; error: { code: 'too-large' | 'invalid-font' | 'unsupported-format' | 'timeout' | 'worker-error' | 'busy' | 'disposed' } };
+  | {
+      ok: false;
+      error: {
+        code:
+          | 'too-large'
+          | 'invalid-font'
+          | 'unsupported-format'
+          | 'timeout'
+          | 'worker-error'
+          | 'busy'
+          | 'disposed';
+      };
+    };
 
 interface FontMetrics {
   names: { family: string | null; fullName: string | null; postscript: string | null };
   unitsPerEm: number;
-  hhea: { ascent: number; descent: number; lineGap: number };   // descents keep the font's sign
+  hhea: { ascent: number; descent: number; lineGap: number }; // descents keep the font's sign
   typo: { ascent: number; descent: number; lineGap: number; useTypoMetrics: boolean } | null;
-  win: { ascent: number; descent: number } | null;              // positive descent
-  capHeight: number | null;                                     // absent in old OS/2 versions
+  win: { ascent: number; descent: number } | null; // positive descent
+  capHeight: number | null; // absent in old OS/2 versions
   xHeight: number | null;
-  codePoints: Uint32Array;      // sorted cmap, for unicode-range
+  codePoints: Uint32Array; // sorted cmap, for unicode-range
   advances: Float64Array;
   isVariable: boolean;
 }

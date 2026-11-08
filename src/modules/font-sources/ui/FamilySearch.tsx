@@ -172,7 +172,7 @@ export function useFamilySearch({
   };
   const handleListKeyDown = (event: KeyboardEvent) => {
     if (event.isComposing || event.altKey || event.ctrlKey || event.metaKey) return;
-    const current = activeIndex < 0 ? 0 : activeIndex;
+    const current = Math.max(activeIndex, 0);
     let index: number | undefined;
     if (event.key === 'ArrowDown') index = Math.min(current + 1, hits.length - 1);
     else if (event.key === 'ArrowUp') index = Math.max(current - 1, 0);
@@ -202,7 +202,7 @@ export function useFamilySearch({
       const index =
         event.key === 'ArrowDown'
           ? Math.min(activeIndex + 1, hits.length - 1)
-          : Math.max(activeIndex < 0 ? 0 : activeIndex - 1, 0);
+          : Math.max(activeIndex - 1, 0);
       setNavigation({ query, index });
       document.getElementById(`${listId}-option-${index}`)?.scrollIntoView({ block: 'nearest' });
     } else if ((event.key === 'Tab' || event.key === 'Enter') && activeIndex >= 0) {
@@ -306,7 +306,7 @@ export function useFamilySearch({
                 <div
                   id={`${listId}-option-${index}`}
                   role="option"
-                  tabIndex={index === (activeIndex < 0 ? 0 : activeIndex) ? 0 : -1}
+                  tabIndex={index === Math.max(activeIndex, 0) ? 0 : -1}
                   aria-selected={isChosen(hit)}
                   aria-label={t.source_option_label({
                     name: hit.family.name,

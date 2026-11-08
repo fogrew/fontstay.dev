@@ -12,11 +12,11 @@ Spike for #413. Question: should `system-ui`, `ui-sans-serif`, `-apple-system` a
 
 Method: 15 sans-serif fonts of the OS fonts dataset stood in for web fonts (the repository holds no web-font metrics beyond the test fixtures). For each, the unadjusted group resolved to the worst case over Windows (Segoe UI), Android (Roboto) and Linux (Ubuntu, DejaVu Sans, Noto Sans), without `size-adjust` or vertical overrides: width error is `|1 - sizeAdjust|` from the English-weighted fit, line-height error is the difference of the hhea line heights after scaling. The fitted pick is the best of the other 14 fonts after `size-adjust`, measured as the mean relative error of the width of 22 sample words. macOS `system-ui` (San Francisco) has no metrics in the dataset and is not included.
 
-| | Mean error |
-|---|---|
-| System group, width | 13.8% (7-19%) |
-| System group, line height | 20.3% (14-31%) |
-| Best fitted pick, word width | 1.0% (0-2%) |
+|                              | Mean error     |
+| ---------------------------- | -------------- |
+| System group, width          | 13.8% (7-19%)  |
+| System group, line height    | 20.3% (14-31%) |
+| Best fitted pick, word width | 1.0% (0-2%)    |
 
 A group cannot carry per-font overrides and resolves to a different font per system, so the shift it causes is an order of magnitude above a fitted pick.
 
