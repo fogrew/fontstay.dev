@@ -23,10 +23,11 @@ descriptors and hostile-name containment, alongside unit snapshots.
 This first export covers normal-style, normal-weight faces. Weight/style ranges,
 unicode ranges and framework formats belong to subsequent export tasks.
 
-## Self-hosted Google Fonts
+## Self-hosted fonts
 
 `selfHostFontFaces` emits `@font-face` rules (`font-display: swap`) whose `src` points at `/fonts/<file>`; the
-generator prepends them to the CSS export when the checkbox is on. `buildSelfHostArchive` (loaded on demand)
-returns a zip with `fonts/`, `fonts.css`, a README and one `licenses/<family>.txt` per family: the copyright,
-license description and URL from the font's name table plus the full text of OFL-1.1, Apache-2.0 or the Ubuntu
-Font Licence when recognised. Everything runs in the browser from the font bytes already loaded.
+generator prepends them for Google Fonts and Fontsource when self-hosting is on (the default). The existing
+Download action then returns a zip with the selected export format, `fonts/`, `fonts.css`, a README and one
+`licenses/<font-file>.txt` per font file. Uploaded font files are included too. The license entries use the font's
+name table and the license API for full OFL-1.1, Apache-2.0, MIT, Ubuntu Font Licence or CC0 text when
+recognised. Everything runs in the browser from the already loaded bytes; archive code loads on demand.

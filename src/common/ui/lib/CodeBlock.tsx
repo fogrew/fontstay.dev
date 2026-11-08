@@ -12,11 +12,13 @@ export function CodeActions({
   code,
   label,
   fileName,
+  onDownload,
 }: {
   locale: Locale;
   code: string;
   label: string;
   fileName?: string | undefined;
+  onDownload?: (() => void) | undefined;
 }) {
   const t = messagesFor(locale);
   const [status, setStatus] = useState<'idle' | 'copied' | 'failed'>('idle');
@@ -47,14 +49,17 @@ export function CodeActions({
       {fileName && (
         <Button
           variant="primary"
-          onClick={() => {
-            const url = URL.createObjectURL(new Blob([code], { type: 'text/plain' }));
-            const link = document.createElement('a');
-            link.href = url;
-            link.download = fileName;
-            link.click();
-            URL.revokeObjectURL(url);
-          }}
+          onClick={
+            onDownload ??
+            (() => {
+              const url = URL.createObjectURL(new Blob([code], { type: 'text/plain' }));
+              const link = document.createElement('a');
+              link.href = url;
+              link.download = fileName;
+              link.click();
+              URL.revokeObjectURL(url);
+            })
+          }
           aria-label={`${t.ui_download()}: ${label}`}
         >
           <Icon name="download" />
@@ -76,6 +81,7 @@ export function CodeBlock({
   code,
   label,
   fileName,
+  onDownload,
   language,
   controls = true,
 }: {
@@ -83,6 +89,7 @@ export function CodeBlock({
   code: string;
   label: string;
   fileName?: string | undefined;
+  onDownload?: (() => void) | undefined;
   language?: CodeLanguage | undefined;
   controls?: boolean;
 }) {
@@ -106,7 +113,13 @@ export function CodeBlock({
         <span>{label}</span>
         {controls && (
           <div class="ff-code__actions">
-            <CodeActions locale={locale} code={code} label={label} fileName={fileName} />
+            <CodeActions
+              locale={locale}
+              code={code}
+              label={label}
+              fileName={fileName}
+              onDownload={onDownload}
+            />
           </div>
         )}
       </div>

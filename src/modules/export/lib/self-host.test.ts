@@ -118,7 +118,7 @@ describe('license files', () => {
 });
 
 describe('buildSelfHostArchive', () => {
-  it('contains font files, one license per family, css and readme', () => {
+  it('contains font files, one license per file, css and readme', () => {
     const zip = buildSelfHostArchive([
       {
         ...roboto,
@@ -152,12 +152,59 @@ describe('buildSelfHostArchive', () => {
       'fonts/Roboto-400-latin.woff2',
       'fonts/Roboto-700-latin.woff2',
       'fonts/Lora-400-latin.woff2',
-      'licenses/roboto.txt',
-      'licenses/lora.txt',
+      'licenses/roboto-400-latin-woff2.txt',
+      'licenses/roboto-700-latin-woff2.txt',
+      'licenses/lora-400-latin-woff2.txt',
       'fonts.css',
       'README.txt',
     ])
       expect(text).toContain(name);
+  });
+
+  it('stores the generated CSS and carries the license API reserved-name notice', () => {
+    const zip = buildSelfHostArchive(
+      [
+        {
+          ...roboto,
+          bytes: new Uint8Array([1]),
+          copyright: 'Reserved Font Name "Roboto"',
+          license: 'SIL Open Font License 1.1',
+          licenseUrl: null,
+          fsType: 0x0100,
+        },
+      ],
+      '@font-face { src: url("/fonts/Roboto-400-latin.woff2"); }',
+    );
+    const text = new TextDecoder('latin1').decode(zip);
+    expect(text).toContain('Reserved Font Name: Roboto');
+    expect(text).toContain('SIL OPEN FONT LICENSE');
+    expect(text).toContain('url("/fonts/Roboto-400-latin.woff2")');
+  });
+
+  it('keeps different licenses for fonts in the same family', () => {
+    const text = new TextDecoder('latin1').decode(
+      buildSelfHostArchive([
+        {
+          ...roboto,
+          bytes: new Uint8Array([1]),
+          copyright: null,
+          license: 'SIL Open Font License 1.1',
+          licenseUrl: null,
+        },
+        {
+          ...roboto,
+          fileName: 'Roboto-700.woff2',
+          bytes: new Uint8Array([2]),
+          copyright: null,
+          license: 'MIT License',
+          licenseUrl: null,
+        },
+      ]),
+    );
+    expect(text).toContain('licenses/roboto-400-latin-woff2.txt');
+    expect(text).toContain('licenses/roboto-700-woff2.txt');
+    expect(text).toContain('SIL OPEN FONT LICENSE');
+    expect(text).toContain('Permission is hereby granted');
   });
 });
 
@@ -171,5 +218,11 @@ describe('buildSelfHostArchive duplicates', () => {
       licenseUrl: null,
     };
     expect(() => buildSelfHostArchive([font, { ...font, weight: 500 }])).not.toThrow();
+    expect(() =>
+      buildSelfHostArchive([
+        { ...font, bytes: new Uint8Array([1]) },
+        { ...font, bytes: new Uint8Array([2]) },
+      ]),
+    ).toThrow();
   });
 });

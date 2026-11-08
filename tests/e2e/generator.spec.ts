@@ -2,6 +2,23 @@ import { readFileSync } from 'node:fs';
 import AxeBuilder from '@axe-core/playwright';
 import type { Browser, BrowserContext, Page } from '@playwright/test';
 import { buildCollection, buildFont } from '../../src/modules/font-metrics/lib/forged.test-util';
+
+function storedZipEntries(bytes: Buffer): Map<string, Buffer> {
+  const entries = new Map<string, Buffer>();
+  let offset = 0;
+  while (bytes.readUInt32LE(offset) === 0x04034b50) {
+    const size = bytes.readUInt32LE(offset + 18);
+    const nameLength = bytes.readUInt16LE(offset + 26);
+    const extraLength = bytes.readUInt16LE(offset + 28);
+    const start = offset + 30;
+    const name = bytes.toString('utf8', start, start + nameLength);
+    const dataStart = start + nameLength + extraLength;
+    entries.set(name, bytes.subarray(dataStart, dataStart + size));
+    offset = dataStart + size;
+  }
+  return entries;
+}
+
 import {
   choose,
   closePanels,
@@ -1722,6 +1739,46 @@ test('a Fontsource family is downloaded from jsDelivr', async ({ page }) => {
   await expect(page.getByText('Downloaded Aileron.')).toBeVisible();
   await openStep(page, 'tuning');
   await expect(page.getByRole('button', { name: /^Remove: Aileron-400-latin/ })).toBeVisible();
+  await openExport(page);
+  await expect(page.getByRole('checkbox', { name: 'Self-host fonts' })).toBeChecked();
+  await page.setViewportSize({ width: 320, height: 640 });
+  const codeTop = (await page.getByRole('region', { name: 'Generated CSS' }).boundingBox())?.y;
+  await page.getByRole('button', { name: 'About self-hosting' }).focus();
+  const tooltip = page.getByRole('tooltip');
+  await expect(tooltip).toBeVisible();
+  await expect(tooltip).toContainText('Fontsource');
+  expect((await page.getByRole('region', { name: 'Generated CSS' }).boundingBox())?.y).toBe(
+    codeTop,
+  );
+  const tooltipBox = await tooltip.boundingBox();
+  expect(
+    tooltipBox && tooltipBox.x >= 0 && tooltipBox.x + tooltipBox.width <= 320,
+    JSON.stringify(tooltipBox),
+  ).toBe(true);
+  await expect(page.getByRole('region', { name: 'Generated CSS' })).toContainText(
+    '/fonts/fontsource-1-Aileron-400-latin.woff2',
+  );
+  const download = page.waitForEvent('download');
+  await page.getByRole('button', { name: 'Download: Generated CSS' }).click();
+  const archive = await download;
+  expect(archive.suggestedFilename()).toBe('fallback-fonts.zip');
+  const files = storedZipEntries(readFileSync(await archive.path()));
+  expect(files.get('fonts/fontsource-1-Aileron-400-latin.woff2')).toEqual(readFileSync(sourceSans));
+  expect(files.get('licenses/fontsource-1-aileron-400-latin-woff2.txt')?.toString()).toContain(
+    'SIL OPEN FONT LICENSE',
+  );
+  expect(files.get('fonts.css')?.toString()).toContain(
+    '/fonts/fontsource-1-Aileron-400-latin.woff2',
+  );
+  expect(files.get('fonts.css')?.toString()).toContain('Fallback');
+  await choose(page.getByLabel('Format'), { label: 'Next.js (next/font/local)' });
+  const nextDownload = page.waitForEvent('download');
+  await page.getByRole('button', { name: 'Download: font.ts' }).click();
+  const nextArchive = await nextDownload;
+  expect(nextArchive.suggestedFilename()).toBe('fallback-fonts.zip');
+  const nextFiles = storedZipEntries(readFileSync(await nextArchive.path()));
+  expect(nextFiles.get('font.ts')?.toString()).toContain('localFont');
+  expect(nextFiles.has('fonts/fontsource-1-Aileron-400-latin.woff2')).toBe(true);
 });
 
 test('a failed Google Fonts download is explained', async ({ page }) => {

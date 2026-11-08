@@ -236,7 +236,7 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
   const [kindChoices, setKindChoices] = useState<Record<number, Category>>({});
   const [presetId, setPresetId] = useState<PresetId>();
   const [exportChoice, setExportChoice] = useState<ExportChoice>('css');
-  const [selfHost, setSelfHost] = useState(false);
+  const [selfHost, setSelfHost] = useState(true);
   const [selfHostFailed, setSelfHostFailed] = useState(false);
   const [styleChoices, setStyleChoices] = useState<Record<number, FontStyleKey>>({});
   const [shares, setShares] = useState<OsShares>();
@@ -959,6 +959,13 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
   const exportEntries = allMode
     ? overviewReady
     : overviewReady.filter((entry) => entry.font.id === selected?.id);
+  const archiveEnabled = selfHost && exportEntries.some((entry) => Boolean(entry.font.origin));
+  const exportFontName = (font: LoadedFont) => {
+    const name = displayName(font.fileName);
+    if (!archiveEnabled) return name;
+    const safe = name.replace(/[^\p{L}\p{N}_.-]/gu, '-').replace(/^\.+|\.+$/g, '');
+    return `${font.origin?.source ?? 'local'}-${font.id}-${safe || 'font'}`;
+  };
   const exportOutputs: FontOutput[] = exportEntries.map((entry) => ({
     targetFamily: entry.family,
     generic: entry.kind,
@@ -966,31 +973,32 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
     families: entry.css.families,
     systemFonts: entry.systemFonts,
     strategy: entry.strategy,
-    fileName: entry.font.fileName,
+    fileName: exportFontName(entry.font),
     weight: styleOf(entry.font).includes('bold') ? 700 : 400,
     style: styleOf(entry.font).includes('italic') ? 'italic' : 'normal',
   }));
   const exportFamilies = groupFonts(exportOutputs);
-  const googleFonts = [
-    ...new Map(
-      exportEntries.flatMap((entry) =>
-        entry.font.origin?.source === 'google' ? [[entry.font.id, entry.font] as const] : [],
-      ),
-    ).values(),
+  const archiveEntries = [
+    ...new Map(exportEntries.map((entry) => [entry.font.id, entry] as const)).values(),
   ];
-  const selfHostFonts: (SelfHostFont & { font: LoadedFont })[] = googleFonts.flatMap((font) => {
-    if (!font.origin) return [];
-    const { weight, italic } = parseStyle(font.origin.style);
-    return [
-      {
-        family: font.origin.family,
-        fileName: displayName(font.fileName),
-        weight,
-        style: italic ? ('italic' as const) : ('normal' as const),
-        font,
-      },
-    ];
+  const archiveFonts: (SelfHostFont & { font: LoadedFont })[] = archiveEntries.map((entry) => {
+    const font = entry.font;
+    const originStyle = font.origin ? parseStyle(font.origin.style) : null;
+    return {
+      family: font.origin?.family ?? entry.family,
+      fileName: exportFontName(font),
+      weight: originStyle?.weight ?? (styleOf(font).includes('bold') ? 700 : 400),
+      style: originStyle
+        ? originStyle.italic
+          ? 'italic'
+          : 'normal'
+        : styleOf(font).includes('italic')
+          ? 'italic'
+          : 'normal',
+      font,
+    };
   });
+  const selfHostFonts = archiveFonts.filter(({ font }) => Boolean(font.origin));
   let selfHostCss = '';
   let selfHostCssFailed = false;
   if (selfHost && selfHostFonts.length > 0) {
@@ -1001,31 +1009,6 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
     }
   }
   const withSelfHost = (css: string) => prependSelfHost(selfHostCss, css);
-  const downloadSelfHost = async () => {
-    setSelfHostFailed(false);
-    try {
-      const { buildSelfHostArchive } = await loadSelfHostArchive();
-      const zip = buildSelfHostArchive(
-        selfHostFonts.map(({ font, ...face }) => ({
-          ...face,
-          bytes: new Uint8Array(font.bytes),
-          copyright: font.metrics.details.names.copyright,
-          license: font.metrics.details.names.license,
-          licenseUrl: font.metrics.details.names.licenseUrl,
-        })),
-      );
-      const url = URL.createObjectURL(new Blob([new Uint8Array(zip)], { type: 'application/zip' }));
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = 'self-hosted-fonts.zip';
-      document.body.append(link);
-      link.click();
-      link.remove();
-      setTimeout(() => URL.revokeObjectURL(url), 1000);
-    } catch {
-      setSelfHostFailed(true);
-    }
-  };
   const exportInput: ExportInput = {
     families: exportFamilies,
     fontFaces: withSelfHost(
@@ -1884,6 +1867,35 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
   const exportFormat = effectiveFormat(exportChoice, allMode);
   const exportFile = showResults ? exportFileFor(exportFormat, exportInput, reportText) : undefined;
   const exportLabel = exportFormat === 'css' ? t.css_code_label() : (exportFile?.fileName ?? '');
+  const archiveDownload = async () => {
+    setSelfHostFailed(false);
+    try {
+      const { buildSelfHostArchive } = await loadSelfHostArchive();
+      const zip = buildSelfHostArchive(
+        archiveFonts.map(({ font, ...face }) => ({
+          ...face,
+          bytes: new Uint8Array(font.bytes),
+          copyright: font.metrics.details.names.copyright,
+          trademark: font.metrics.details.names.trademark,
+          license: font.metrics.details.names.license,
+          licenseUrl: font.metrics.details.names.licenseUrl,
+          fsType: font.metrics.details.fsType,
+        })),
+        exportInput.css,
+        exportFile ? { fileName: exportFile.fileName, text: exportFile.text } : undefined,
+      );
+      const url = URL.createObjectURL(new Blob([new Uint8Array(zip)], { type: 'application/zip' }));
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = 'fallback-fonts.zip';
+      document.body.append(link);
+      link.click();
+      link.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    } catch {
+      setSelfHostFailed(true);
+    }
+  };
   const fontDetails = fonts.map((font) => {
     const isOpen = fonts.length === 1 ? fontOpen : !allMode && font.id === selected?.id;
     return (
@@ -2101,7 +2113,12 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
                 locale={locale}
                 code={exportFile.text}
                 label={exportLabel}
-                fileName={exportFile.fileName}
+                fileName={
+                  selfHost && selfHostFonts.length > 0 ? 'fallback-fonts.zip' : exportFile.fileName
+                }
+                onDownload={
+                  selfHost && selfHostFonts.length > 0 ? () => void archiveDownload() : undefined
+                }
               />
             ),
             content: exportFile ? (
@@ -2118,7 +2135,6 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
                     ? {
                         checked: selfHost,
                         onChange: setSelfHost,
-                        onDownload: () => void downloadSelfHost(),
                         failed: selfHostFailed || selfHostCssFailed,
                       }
                     : undefined

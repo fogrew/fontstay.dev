@@ -519,8 +519,39 @@
   display: grid;
   gap: var(--ff-space-2);
 }
-.ff-export__download {
-  justify-self: start;
+.ff-export__self-host {
+  display: flex;
+  align-items: start;
+  flex-wrap: wrap;
+  gap: var(--ff-space-2);
+}
+.ff-export__help {
+  display: inline-flex;
+}
+.ff-export__question {
+  anchor-name: --ff-self-host-help;
+  display: inline-grid;
+  place-items: center;
+  inline-size: 1.25rem;
+  block-size: 1.25rem;
+  border: 1px solid currentColor;
+  border-radius: 50%;
+  cursor: help;
+}
+.ff-export__tooltip {
+  position: fixed;
+  position-anchor: --ff-self-host-help;
+  inset: auto;
+  position-area: top;
+  position-try-fallbacks: flip-block, flip-inline;
+  margin: 0 0 var(--ff-space-2);
+  inline-size: min(18rem, 75vw);
+  padding: var(--ff-space-3);
+  border: 1px solid var(--ff-border);
+  border-radius: var(--ff-radius);
+  background: var(--ff-surface);
+  color: var(--ff-text);
+  pointer-events: none;
 }
 .ff-share {
   display: grid;
