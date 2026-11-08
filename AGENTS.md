@@ -20,7 +20,7 @@ Static Astro site that generates metric-adjusted fallback font stacks. Full scop
 | `pnpm test` / `pnpm test:watch` | Vitest unit and property tests (`src/**/*.test.ts`) |
 | `pnpm test:e2e` | Build, then Playwright e2e + axe against `astro preview`, then the worker suite in `tests/worker` (real Chromium worker) (first run: `pnpm exec playwright install chromium`) |
 | `pnpm perf` | Initial JavaScript budget per page (gzip), read from `dist/` after a build; see [`docs/performance.md`](docs/performance.md) |
-| `pnpm verify` | Gate: lint, CSS lint, architecture, typecheck, unit tests, build, performance budget. E2E is added once the Cloudflare spike (#7) settles |
+| `pnpm verify` | Gate: lint, CSS lint, architecture, typecheck, unit tests, build, performance budget. E2E runs in a separate GitHub Actions job |
 
 Git hooks (lefthook, installed by `pnpm install`; reinstall with `pnpm exec lefthook install`): `pre-commit` runs Biome on staged files (fixes re-staged), Stylelint on staged CSS and Astro files, then the FEOD check and `astro check` on the whole working tree (~6 s); `commit-msg` runs commitlint (~1 s).
 

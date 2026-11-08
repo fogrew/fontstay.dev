@@ -56,6 +56,8 @@
 
 ## Methodology
 
+- [Playwright emulation](https://playwright.dev/docs/emulation), [visual comparisons](https://playwright.dev/docs/test-snapshots) and [CI](https://playwright.dev/docs/ci) documentation (Apache-2.0 project), plus the [Cloudflare Workers build image reference](https://developers.cloudflare.com/workers/ci-cd/builds/build-image/) — scope and reproduction guidance for the cross-OS font rendering spike (#7).
+
 - [FEOD — Fractal Entity Oriented Design](https://fractal-oriented.tech/) — project architecture.
 - [Vite Web Workers](https://vite.dev/guide/features.html#web-workers) — bundling dedicated module workers.
 - [MDN Worker.terminate](https://developer.mozilla.org/en-US/docs/Web/API/Worker/terminate) — watchdog cancellation of parsing.

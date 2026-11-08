@@ -177,9 +177,10 @@ Pure logic (`fallback-fit`, `font-metrics`, `audience`, `layout-shift` scoring, 
 - **Vitest** (unit + `fast-check` property tests for the solver and range compaction).
 - **Playwright** e2e against `astro preview` (Chromium; WebKit/Firefox if available in CI image).
 - lefthook `commit-msg`: commitlint (Conventional Commits). Changelog generated from commits by git-cliff into Keep a Changelog format.
-- **Cloudflare Workers Builds** (no GitHub Actions): the build command runs everything, so every PR gets a check run + preview URL, and a failing check fails the deployment:
+- **Cloudflare Workers Builds** produces the static build and preview URL. GitHub Actions separately runs `verify`, commit/branch checks and Chromium e2e (`.github/workflows/ci.yml`):
   ```
-  pnpm run verify   # biome ci → astro check → feod-analyzer → vitest run → astro build → playwright test
+  pnpm run verify   # lint → CSS/architecture → typecheck → unit tests → build → budget
+  pnpm test:e2e     # separate GitHub Actions job: browser, worker and UI suites
   ```
   Deploy: `wrangler deploy` on `main`, `wrangler versions upload` (preview URL) on other branches. `wrangler.jsonc` serves `dist/` as static assets. Node pinned via `.node-version`, pnpm via the `PNPM_VERSION` build variable (the build image default may be older than `packageManager`).
 
@@ -225,7 +226,7 @@ Each phase ends deployable with a green PR check.
 **Phase 9 — Polish**
 - Full a11y audit, performance (lazy chunks, worker), SEO/meta/OG, guide page, Credits page, README. The guide also covers `@font-face` syntax, descriptor and format support, font licenses and specification links (#102).
 - Split web font audit of imported and pasted `@font-face` rules in the generator, CLI and MCP server (#418).
-- Spike: Playwright in the Cloudflare build container (gVisor, Ubuntu 22.04, no root for `apt` deps), to decide whether e2e can run in the build (#7).
+- Spike: Playwright on real target operating systems for font metrics and fallback-difference screenshots (#7, postponed until after 1.0.0). [Local emulation control and remaining host matrix](spikes/playwright-os.md); the historical Cloudflare e2e question is separate.
 - More UI languages (the set is chosen after researching the target markets) and a language dropdown instead of the link list in the header (#126).
 
 **Backlog**
@@ -237,7 +238,7 @@ Each phase ends deployable with a green PR check.
 
 | Risk | Mitigation |
 |---|---|
-| Playwright browsers may not run in Cloudflare's build container (Workers Builds) | Spike in Phase 0; options: headless shell only, Chromium-only e2e, or a separate e2e check (needs a decision). |
+| Cross-OS font rendering needs real target hosts and licensed font access | Device presets do not replace the host font stack; #7 records the local control and outstanding host matrix. E2E already runs in a separate GitHub Actions job. |
 | Build time limit / monthly build quota | Cache `node_modules` and Playwright browsers; keep e2e suite focused. |
 | `@feod/analyzer` is early (0.1.x), single maintainer, prebuilt binaries without provenance, no `.astro` parsing | Kept with mitigations (#50): exact version pin, sha256 verification of the platform binary against `scripts/feod-analyzer.sha256.json`, execution with a scrubbed environment (it keeps secrets from the analyzer binary, not from the rest of the build command), own relative-path-literal check for `.astro`, Biome import restrictions as a second line. Revisit if upstream adds provenance or `.astro` support. |
 | System font metrics vary by OS version | Store metrics per OS version where they differ; show "measured on" source. |
@@ -248,4 +249,4 @@ Each phase ends deployable with a green PR check.
 Every external source (data, libraries with notable data, inspiration sites, specs) is listed in [`CREDITS.md`](../CREDITS.md) with its license, and rendered on a Credits page of the site (linked from the footer).
 
 ## 8. Open questions
-1. If Playwright cannot run in the Cloudflare build: allow a single GitHub Actions job for e2e only, or run e2e Chromium-only / locally? (decided by the spike in Phase 9, #7)
+1. For cross-OS metrics and fallback screenshots, collect offline reference artifacts on real hosts or introduce a live rendering service? The latter requires a separate backend, privacy and licensing decision; #7 remains an investigation. E2E uses GitHub Actions already.
