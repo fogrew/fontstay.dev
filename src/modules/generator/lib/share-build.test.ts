@@ -5,8 +5,8 @@ import {
   dataVersionOf,
   diffPicks,
   isStaleLink,
+  keepKnownPicks,
   mergePicks,
-  withoutPicks,
 } from './share-build';
 
 const preset = { windows: ['arial', 'segoe-ui'], macos: ['helvetica'] };
@@ -148,19 +148,21 @@ describe('data version', () => {
     expect(isStaleLink({ v: 1, data: '00000000' }, 'deadbeef')).toBe(true);
   });
 
-  it('removes picks but keeps the other choices', () => {
+  it('keeps the picks the recipient knows and the other choices', () => {
+    const known = (os: string, id: string) => `${os}:${id}` !== 'windows:gone' && id !== 'menlo';
     const state = {
       v: 1,
       data: '00000000',
       preset: 'system-ui',
-      picks: { windows: ['arial'] },
+      picks: { windows: ['arial', 'gone'], macos: ['gone'] },
       manual: { arial: { sizeAdjust: 100 } },
       others: { 'a.woff2': { picks: { macos: ['menlo'] }, style: 'bold' as const } },
     };
-    expect(withoutPicks(state)).toEqual({
+    expect(keepKnownPicks(state, known)).toEqual({
       v: 1,
       data: '00000000',
       preset: 'system-ui',
+      picks: { windows: ['arial'], macos: ['gone'] },
       manual: { arial: { sizeAdjust: 100 } },
       others: { 'a.woff2': { style: 'bold' } },
     });

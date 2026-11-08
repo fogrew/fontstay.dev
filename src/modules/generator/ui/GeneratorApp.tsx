@@ -122,9 +122,9 @@ import {
   buildShareState,
   dataVersionOf,
   isStaleLink,
+  keepKnownPicks,
   mergePicks,
   type ShareInput,
-  withoutPicks,
 } from '../lib/share-build';
 import {
   clearStorage,
@@ -162,6 +162,13 @@ const DATA_VERSION = dataVersionOf(
     PRESETS.map((item) => [item.id, presetPicks(item, osFontsDataset, ALL_SYSTEMS)]),
   ),
 );
+
+const KNOWN_PICKS = new Set(
+  osFontsDataset.fonts.flatMap((font) =>
+    font.availability.map((entry) => `${entry.os}:${font.id}`),
+  ),
+);
+const isKnownPick = (os: OsId, id: string) => KNOWN_PICKS.has(`${os}:${id}`);
 
 type Picks = Partial<Record<OsId, string[]>>;
 const NO_PICKS: Picks = {};
@@ -388,9 +395,10 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
     void (async () => {
       const payload = payloadFromHash(location.hash);
       const decoded = payload ? await decodeShareState(payload) : null;
-      const stale = decoded ? isStaleLink(decoded, DATA_VERSION) : false;
-      const linked = decoded && stale ? withoutPicks(decoded) : decoded;
-      const state = linked ?? loadSettings();
+      const source = decoded ?? loadSettings();
+      const stale = source ? isStaleLink(source, DATA_VERSION) : false;
+      const state = source && stale ? keepKnownPicks(source, isKnownPick) : source;
+      const linked = decoded ? state : null;
       if (payload && state) history.replaceState(null, '', location.pathname + location.search);
       if (state && current) {
         setInitialQuery(state.query);
@@ -408,9 +416,10 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
           });
         }
         pending.current = state;
+        setStaleLink(stale);
+        if (stale) linkPanel.current = 'inputs';
         if (linked) {
-          linkPanel.current = stale ? 'inputs' : (state.panel ?? DEFAULT_PANEL);
-          setStaleLink(stale);
+          if (!stale) linkPanel.current = state.panel ?? DEFAULT_PANEL;
           setViewRestore(state.view ?? {});
           if (state.os) setActiveOs(state.os);
           if (state.face) setEditId(state.face);
@@ -1198,7 +1207,10 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
   const stateKey = restored ? JSON.stringify(currentShareState()) : '';
   useEffect(() => {
     if (!restored || stateKey === '' || pending.current || stateKey === forgotten) return;
-    const timer = setTimeout(() => saveSettings(JSON.parse(stateKey) as ShareState), 400);
+    const timer = setTimeout(
+      () => saveSettings({ ...(JSON.parse(stateKey) as ShareState), data: DATA_VERSION }),
+      400,
+    );
     return () => clearTimeout(timer);
   }, [stateKey, restored, forgotten]);
   const [dragging, setDragging] = useState(false);
@@ -1913,9 +1925,10 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
                   />
                 )}
                 {staleLink && (
-                  <p class="ff-generator__text ff-error" role="status">
-                    {t.share_stale()}
-                  </p>
+                  <div class="ff-offer" role="status">
+                    <p class="ff-generator__text ff-error">{t.share_stale()}</p>
+                    <Button onClick={() => setStaleLink(false)}>{t.share_stale_dismiss()}</Button>
+                  </div>
                 )}
                 {offer.length > 0 && (
                   <section class="ff-offer" aria-label={t.share_offer_label()}>
