@@ -127,13 +127,24 @@ export function isStaleLink(state: ShareState, current: string): boolean {
   return state.data !== undefined && state.data !== current;
 }
 
-export function withoutPicks(state: ShareState): ShareState {
-  const strip = ({ picks: _picks, ...rest }: FontState): FontState => rest;
-  const { picks: _picks, others, ...rest } = state;
+export function keepKnownPicks(
+  state: ShareState,
+  isKnown: (os: OsId, id: string) => boolean,
+): ShareState {
+  const prune = ({ picks, ...rest }: FontState): FontState => {
+    const kept: Picks = {};
+    for (const os of OS_ORDER) {
+      const ids = (picks?.[os] ?? []).filter((id) => isKnown(os, id));
+      if (ids.length > 0) kept[os] = ids;
+    }
+    return Object.keys(kept).length > 0 ? { ...rest, picks: kept } : rest;
+  };
+  const { others, picks, ...rest } = state;
   return {
     ...rest,
+    ...prune(picks ? { picks } : {}),
     ...(others
-      ? { others: Object.fromEntries(Object.entries(others).map(([k, v]) => [k, strip(v)])) }
+      ? { others: Object.fromEntries(Object.entries(others).map(([k, v]) => [k, prune(v)])) }
       : {}),
   };
 }

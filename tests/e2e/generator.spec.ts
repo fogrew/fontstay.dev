@@ -1732,12 +1732,28 @@ test('a link made with other font data is flagged and does not restore its picks
   await page.goto(`/en/#s=${payload}`);
   await page.reload();
   await waitForGenerator(page);
-  await expect(
-    page.getByRole('status').filter({ hasText: /older version of the font data/ }),
-  ).toBeVisible();
+  await expect(page.getByRole('status').filter({ hasText: /font data changed/ })).toBeVisible();
   await expect(
     page.locator('.ff-dock__column[data-id="inputs"] .ff-dock__heading button'),
   ).toHaveAttribute('aria-expanded', 'true');
+  const notice = page.getByRole('status').filter({ hasText: /font data changed/ });
+  await notice.getByRole('button', { name: 'Dismiss' }).click();
+  await expect(notice).toHaveCount(0);
+});
+
+test('settings saved with other font data raise the same notice', async ({ page }) => {
+  await page.goto('/en/');
+  await waitForGenerator(page);
+  await page.waitForTimeout(600);
+  await page.evaluate(() =>
+    localStorage.setItem(
+      'fontstay:settings',
+      JSON.stringify({ v: 1, data: '00000000', picks: { windows: ['arial'] } }),
+    ),
+  );
+  await page.reload();
+  await waitForGenerator(page);
+  await expect(page.getByRole('status').filter({ hasText: /font data changed/ })).toBeVisible();
 });
 
 test('a link does not overwrite the saved dock layout', async ({ page }) => {
