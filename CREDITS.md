@@ -56,6 +56,8 @@
 
 ## Methodology
 
+- [Machado, Oliveira and Fernandes (2009), colour vision deficiency simulation](https://www.inf.ufrgs.br/~oliveira/pubs_files/CVD_Simulation/CVD_Simulation.html) — severity 1 matrices for protanopia, deuteranopia and tritanopia in the site appearance preview; the simulation is an approximate design check, not a vision correction.
+
 - [FEOD — Fractal Entity Oriented Design](https://fractal-oriented.tech/) — project architecture.
 - [Vite Web Workers](https://vite.dev/guide/features.html#web-workers) — bundling dedicated module workers.
 - [MDN Worker.terminate](https://developer.mozilla.org/en-US/docs/Web/API/Worker/terminate) — watchdog cancellation of parsing.

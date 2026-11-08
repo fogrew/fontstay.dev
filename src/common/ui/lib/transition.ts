@@ -3,7 +3,9 @@ type Transitioning = Document & {
   startViewTransition?: (update: () => Promise<void>) => Transition;
 };
 
-const reduced = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
+const reduced = () =>
+  matchMedia('(prefers-reduced-motion: reduce)').matches ||
+  document.documentElement.hasAttribute('data-motion');
 
 export function transition(update: () => void): void {
   const doc = document as Transitioning;

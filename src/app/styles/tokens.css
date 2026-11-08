@@ -39,6 +39,28 @@
 :root[data-theme="dark"] {
   color-scheme: dark;
 }
+@media (prefers-contrast: more) {
+  :root {
+    --ff-bg: light-dark(#fff, #000);
+    --ff-surface: light-dark(#fff, #000);
+    --ff-surface-2: light-dark(#fff, #000);
+    --ff-text: light-dark(#000, #fff);
+    --ff-muted: light-dark(#292929, #e8e8e8);
+    --ff-border: light-dark(#000, #fff);
+    --ff-accent: light-dark(#064c29, #b6ffcf);
+    --ff-focus: light-dark(#003fa7, #fff06a);
+  }
+}
+:root[data-contrast] {
+  --ff-bg: light-dark(#fff, #000);
+  --ff-surface: light-dark(#fff, #000);
+  --ff-surface-2: light-dark(#fff, #000);
+  --ff-text: light-dark(#000, #fff);
+  --ff-muted: light-dark(#292929, #e8e8e8);
+  --ff-border: light-dark(#000, #fff);
+  --ff-accent: light-dark(#064c29, #b6ffcf);
+  --ff-focus: light-dark(#003fa7, #fff06a);
+}
 * {
   box-sizing: border-box;
 }
@@ -83,7 +105,7 @@ body {
 }
 .ff-header {
   position: relative;
-  z-index: 40;
+  z-index: 1000;
   min-block-size: 2.5rem;
   view-transition-name: ff-header;
 }
@@ -108,6 +130,80 @@ body {
 .ff-header__group + .ff-header__group {
   padding-inline-start: var(--ff-space-3);
   border-inline-start: 1px solid var(--ff-border);
+}
+.ff-vision-defs {
+  position: absolute;
+  overflow: hidden;
+}
+.ff-appearance {
+  position: relative;
+}
+.ff-appearance__summary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-inline-size: 2rem;
+  min-block-size: 2rem;
+  padding: 0.25rem;
+  border: 1px solid transparent;
+  border-radius: var(--ff-radius);
+  list-style: none;
+  cursor: pointer;
+}
+.ff-appearance__summary::-webkit-details-marker {
+  display: none;
+}
+.ff-appearance__summary:hover {
+  background: color-mix(in srgb, var(--ff-accent) 12%, transparent);
+}
+.ff-appearance[open] > .ff-appearance__summary {
+  border-color: var(--ff-accent);
+  background: color-mix(in srgb, var(--ff-accent) 18%, transparent);
+  color: var(--ff-accent);
+}
+.ff-appearance__panel {
+  position: absolute;
+  inset-block-start: 100%;
+  inset-inline-end: 0;
+  z-index: 41;
+  display: grid;
+  gap: var(--ff-space-2);
+  inline-size: min(19rem, calc(100vw - 1rem));
+  max-block-size: 70dvh;
+  margin-block-start: 0.25rem;
+  padding: var(--ff-space-3);
+  overflow-y: auto;
+  border: 1px solid var(--ff-border);
+  border-radius: var(--ff-radius);
+  background: var(--ff-surface);
+  box-shadow: 0 8px 24px rgb(0 0 0 / 20%);
+}
+.ff-appearance__group {
+  display: grid;
+  gap: 0.125rem;
+  min-inline-size: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+.ff-appearance__legend {
+  font-weight: 700;
+}
+.ff-appearance__option {
+  display: flex;
+  align-items: center;
+  gap: var(--ff-space-2);
+  min-block-size: 2rem;
+  cursor: pointer;
+}
+.ff-appearance__input {
+  flex: none;
+  accent-color: var(--ff-accent);
+}
+.ff-appearance__note {
+  margin: 0;
+  font-size: 0.875rem;
+  color: var(--ff-muted);
 }
 .ff-breadcrumbs {
   display: flex;
@@ -473,4 +569,56 @@ body {
 .ff-page__list {
   margin-block: 0.25rem;
   padding-block: 0.25rem;
+}
+:root[data-large-text] {
+  font-size: 125%;
+}
+:root[data-spacing] .ff-main,
+:root[data-spacing] .ff-footer {
+  line-height: 1.5;
+  letter-spacing: 0.12em;
+  word-spacing: 0.16em;
+}
+.ff-appearance-surface::after {
+  position: fixed;
+  inset: 0;
+  z-index: 999;
+  pointer-events: none;
+}
+:root[data-vision="protanopia"] .ff-appearance-surface::after {
+  content: "";
+  backdrop-filter: url("#ff-protanopia");
+}
+:root[data-vision="deuteranopia"] .ff-appearance-surface::after {
+  content: "";
+  backdrop-filter: url("#ff-deuteranopia");
+}
+:root[data-vision="tritanopia"] .ff-appearance-surface::after {
+  content: "";
+  backdrop-filter: url("#ff-tritanopia");
+}
+:root[data-vision="achromatopsia"] .ff-appearance-surface::after {
+  content: "";
+  backdrop-filter: url("#ff-achromatopsia");
+}
+:root[data-vision="blur"] .ff-appearance-surface::after {
+  content: "";
+  backdrop-filter: blur(1.5px);
+}
+@media (forced-colors: active) {
+  :root[data-vision] .ff-appearance-surface::after {
+    content: none;
+  }
+}
+:root[data-motion] *,
+:root[data-motion] *::before,
+:root[data-motion] *::after {
+  animation-duration: 0.01ms;
+  scroll-behavior: auto;
+  transition-duration: 0.01ms;
+}
+:root[data-motion]::view-transition-group(*),
+:root[data-motion]::view-transition-old(*),
+:root[data-motion]::view-transition-new(*) {
+  animation: none;
 }

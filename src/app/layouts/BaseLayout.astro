@@ -64,6 +64,7 @@ const indexable = !process.env.WORKERS_CI_BRANCH || process.env.WORKERS_CI_BRANC
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <script is:inline src="/appearance-init.js"></script>
     <title>{title}</title>
     <meta name="description" content={description} />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
@@ -95,7 +96,15 @@ const indexable = !process.env.WORKERS_CI_BRANCH || process.env.WORKERS_CI_BRANC
     {!indexable && <meta name="robots" content="noindex" />}
     <slot name="head" />
   </head>
-  <body>
+  <body class="ff-appearance-surface">
+    <svg class="ff-vision-defs" width="0" height="0" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <filter id="ff-protanopia" color-interpolation-filters="linearRGB"><feColorMatrix type="matrix" values="0.152286 1.052583 -0.204868 0 0 0.114503 0.786281 0.099216 0 0 -0.003882 -0.048116 1.051998 0 0 0 0 0 1 0" /></filter>
+        <filter id="ff-deuteranopia" color-interpolation-filters="linearRGB"><feColorMatrix type="matrix" values="0.367322 0.860646 -0.227968 0 0 0.280085 0.672501 0.047413 0 0 -0.011820 0.042940 0.968881 0 0 0 0 0 1 0" /></filter>
+        <filter id="ff-tritanopia" color-interpolation-filters="linearRGB"><feColorMatrix type="matrix" values="1.255528 -0.076749 -0.178779 0 0 -0.078411 0.930809 0.147602 0 0 0.004733 0.691367 0.303900 0 0 0 0 0 1 0" /></filter>
+        <filter id="ff-achromatopsia" color-interpolation-filters="sRGB"><feColorMatrix type="saturate" values="0" /></filter>
+      </defs>
+    </svg>
     <a class="ff-link ff-skip-link" href="#main-content">{t.ui_skip_content()}</a>
     <header class="ff-header" data-header>
       <a class="ff-link ff-link--tap ff-brand" href={localizeHref('/', { locale })}><img class="ff-brand__logo" src="/favicon.svg" alt="" width="24" height="24" />{t.app_title()}</a>
@@ -116,6 +125,36 @@ const indexable = !process.env.WORKERS_CI_BRANCH || process.env.WORKERS_CI_BRANC
       </nav>
       <div class="ff-header__end">
         <a class="ff-link ff-link--tap ff-header__link" href="https://github.com/fogrew/fontstay.dev" title={t.header_github()}><Icon name="github" /><span class="ff-sr-only">{t.header_github()}</span></a>
+        <details class="ff-appearance" data-appearance-menu>
+          <summary class="ff-appearance__summary" title={t.appearance_label()} aria-label={t.appearance_label()}>
+            <svg class="ff-appearance__icon" width="20" height="20" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 2a10 10 0 1 0 0 20 8 8 0 0 0 8-8 2 2 0 0 0-2-2h-1.5a1.5 1.5 0 0 1-1.5-1.5V8a6 6 0 0 0-3-6Z" fill="none" stroke="currentColor" stroke-width="1.8" /><circle cx="7" cy="11" r="1" fill="currentColor" /><circle cx="10" cy="6" r="1" fill="currentColor" /><circle cx="17" cy="16" r="1" fill="currentColor" /></svg>
+          </summary>
+          <div class="ff-appearance__panel">
+            <fieldset class="ff-appearance__group">
+              <legend class="ff-appearance__legend">{t.appearance_theme()}</legend>
+              <label class="ff-appearance__option"><input class="ff-appearance__input" type="radio" name="theme" value="system" data-appearance-theme />{t.appearance_system()}</label>
+              <label class="ff-appearance__option"><input class="ff-appearance__input" type="radio" name="theme" value="light" data-appearance-theme />{t.appearance_light()}</label>
+              <label class="ff-appearance__option"><input class="ff-appearance__input" type="radio" name="theme" value="dark" data-appearance-theme />{t.appearance_dark()}</label>
+            </fieldset>
+            <fieldset class="ff-appearance__group">
+              <legend class="ff-appearance__legend">{t.appearance_vision()}</legend>
+              <p class="ff-appearance__note">{t.appearance_simulation_note()}</p>
+              <label class="ff-appearance__option"><input class="ff-appearance__input" type="radio" name="vision" value="none" data-appearance-vision />{t.appearance_none()}</label>
+              <label class="ff-appearance__option"><input class="ff-appearance__input" type="radio" name="vision" value="protanopia" data-appearance-vision />{t.appearance_protanopia()}</label>
+              <label class="ff-appearance__option"><input class="ff-appearance__input" type="radio" name="vision" value="deuteranopia" data-appearance-vision />{t.appearance_deuteranopia()}</label>
+              <label class="ff-appearance__option"><input class="ff-appearance__input" type="radio" name="vision" value="tritanopia" data-appearance-vision />{t.appearance_tritanopia()}</label>
+              <label class="ff-appearance__option"><input class="ff-appearance__input" type="radio" name="vision" value="achromatopsia" data-appearance-vision />{t.appearance_achromatopsia()}</label>
+              <label class="ff-appearance__option"><input class="ff-appearance__input" type="radio" name="vision" value="blur" data-appearance-vision />{t.appearance_blur()}</label>
+            </fieldset>
+            <fieldset class="ff-appearance__group">
+              <legend class="ff-appearance__legend">{t.appearance_aids()}</legend>
+              <label class="ff-appearance__option"><input class="ff-appearance__input" type="checkbox" data-appearance-aid="contrast" />{t.appearance_contrast()}</label>
+              <label class="ff-appearance__option"><input class="ff-appearance__input" type="checkbox" data-appearance-aid="motion" />{t.appearance_motion()}</label>
+              <label class="ff-appearance__option"><input class="ff-appearance__input" type="checkbox" data-appearance-aid="spacing" />{t.appearance_spacing()}</label>
+              <label class="ff-appearance__option"><input class="ff-appearance__input" type="checkbox" data-appearance-aid="largeText" />{t.appearance_large_text()}</label>
+            </fieldset>
+          </div>
+        </details>
         <div class="ff-header__group"><LocaleSwitcher current={locale} {path} /></div>
         <button class="ff-control ff-header__toggle" type="button" hidden aria-expanded="false" aria-controls="ff-nav" aria-label={t.nav_menu()} data-nav-toggle>
           <svg class="ff-icon" width="1em" height="1em" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M4 7h16M4 12h16M4 17h16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" /></svg>
@@ -124,6 +163,43 @@ const indexable = !process.env.WORKERS_CI_BRANCH || process.env.WORKERS_CI_BRANC
     </header>
     <main class="ff-main" id="main-content" tabindex="-1"><slot /></main>
     <script>
+      import { transition } from '@/common/ui';
+      import { type Aid, appearanceKey, applyAppearance, parseAppearance, type Theme, type Vision } from '../lib/appearance';
+
+      const appearance = document.querySelector<HTMLDetailsElement>('[data-appearance-menu]');
+      if (appearance) {
+        let settings: ReturnType<typeof parseAppearance>;
+        try { settings = parseAppearance(localStorage.getItem(appearanceKey)); }
+        catch { settings = parseAppearance(null); }
+        const sync = () => {
+          for (const radio of appearance.querySelectorAll<HTMLInputElement>('[data-appearance-theme]')) radio.checked = radio.value === settings.theme;
+          for (const radio of appearance.querySelectorAll<HTMLInputElement>('[data-appearance-vision]')) radio.checked = radio.value === settings.vision;
+          for (const input of appearance.querySelectorAll<HTMLInputElement>('[data-appearance-aid]')) input.checked = settings[input.dataset.appearanceAid as Aid];
+        };
+        sync();
+        appearance.addEventListener('change', (event) => {
+          const input = event.target;
+          if (!(input instanceof HTMLInputElement)) return;
+          if (input.matches('[data-appearance-theme]')) settings.theme = input.value as Theme;
+          if (input.matches('[data-appearance-vision]')) settings.vision = input.value as Vision;
+          if (input.dataset.appearanceAid) settings[input.dataset.appearanceAid as Aid] = input.checked;
+          if (input.dataset.appearanceAid === 'motion') applyAppearance(document.documentElement, settings);
+          else transition(() => applyAppearance(document.documentElement, settings));
+          try { localStorage.setItem(appearanceKey, JSON.stringify(settings)); } catch { /* Storage may be unavailable. */ }
+        });
+        appearance.addEventListener('keydown', (event) => {
+          if (event.key !== 'Escape' || !appearance.open) return;
+          appearance.open = false;
+          appearance.querySelector('summary')?.focus();
+        });
+        appearance.addEventListener('focusout', (event) => {
+          const next = event.relatedTarget as Node | null;
+          if (next && !appearance.contains(next)) appearance.open = false;
+        });
+        document.addEventListener('click', (event) => {
+          if (appearance.open && !appearance.contains(event.target as Node)) appearance.open = false;
+        });
+      }
       const header = document.querySelector<HTMLElement>('[data-header]');
       const toggle = header?.querySelector<HTMLButtonElement>('[data-nav-toggle]');
       const nav = header?.querySelector<HTMLElement>('#ff-nav');
@@ -165,6 +241,7 @@ const indexable = !process.env.WORKERS_CI_BRANCH || process.env.WORKERS_CI_BRANC
         toggle.addEventListener('click', (event) => {
           const open = toggle.getAttribute('aria-expanded') !== 'true';
           if (open && locale) locale.open = false;
+          if (open && appearance) appearance.open = false;
           setOpen(open);
           if (open && event.detail === 0) nav.querySelector<HTMLElement>('a')?.focus();
         });
@@ -174,10 +251,18 @@ const indexable = !process.env.WORKERS_CI_BRANCH || process.env.WORKERS_CI_BRANC
         locale?.addEventListener('toggle', () => {
           if (!locale.open) return;
           setOpen(false);
+          if (appearance) appearance.open = false;
           if (more && wide.matches) more.open = false;
+        });
+        appearance?.addEventListener('toggle', () => {
+          if (!appearance.open) return;
+          setOpen(false);
+          if (locale) locale.open = false;
+          if (more) more.open = false;
         });
         more?.addEventListener('toggle', () => {
           if (more.open && wide.matches && locale) locale.open = false;
+          if (more?.open && appearance) appearance.open = false;
         });
         document.addEventListener('click', (event) => {
           if (more && wide.matches && more.open && !more.contains(event.target as Node)) more.open = false;
