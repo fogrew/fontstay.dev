@@ -21,6 +21,7 @@ interface Internal {
 const OUTLINE_TABLES = new Set(['glyf', 'loca']);
 const HEAD_LOCA_FORMAT_AT = 50;
 const MAX_TABLE = 64 * 1024 * 1024;
+const MAX_DECLARED = 256 * 1024 * 1024;
 
 interface TransformedEntry extends TableEntry {
   transformLength?: number;
@@ -74,6 +75,11 @@ export function sfntOf(data: ArrayBuffer | Uint8Array): Uint8Array | null {
   if (container !== 'wOFF' && container !== 'wOF2') return bytes;
   const font = create(bytes as Parameters<typeof create>[0]) as unknown as Internal;
   const entries = Object.values(font.directory.tables);
+  const declared = entries.reduce(
+    (sum, entry) => sum + ((entry as TransformedEntry).transformLength ?? entry.length),
+    0,
+  );
+  if (declared > MAX_DECLARED) return null;
   const head = font.directory.tables.head;
   if (!head) return null;
   try {
@@ -104,6 +110,15 @@ export function sfntOf(data: ArrayBuffer | Uint8Array): Uint8Array | null {
     } catch {
       return null;
     }
+    const maxp = present.maxp && rawOf(present.maxp);
+    if (
+      maxp &&
+      (maxp.length < 6 ||
+        new DataView(maxp.buffer, maxp.byteOffset, maxp.byteLength).getUint16(4) !==
+          rebuilt.xMin.length)
+    ) {
+      return null;
+    }
   }
   for (const entry of entries) {
     if (OUTLINE_TABLES.has(entry.tag)) {
@@ -132,7 +147,11 @@ export function sfntOf(data: ArrayBuffer | Uint8Array): Uint8Array | null {
     const headTable = tables.find((table) => table.tag === 'head');
     if (!headTable || headTable.data.length < HEAD_LOCA_FORMAT_AT + 2) return null;
     headTable.data = headTable.data.slice();
-    new DataView(headTable.data.buffer).setInt16(HEAD_LOCA_FORMAT_AT, 1);
+    new DataView(
+      headTable.data.buffer,
+      headTable.data.byteOffset,
+      headTable.data.byteLength,
+    ).setInt16(HEAD_LOCA_FORMAT_AT, 1);
   }
   tables.sort((a, b) => (a.tag < b.tag ? -1 : 1));
   const headerSize = 12 + 16 * tables.length;

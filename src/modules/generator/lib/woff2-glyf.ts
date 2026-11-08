@@ -97,7 +97,24 @@ function readPoints(flags: Reader, glyphs: Reader, count: number): Point[] {
   return points;
 }
 
-const clampInt16 = (value: number) => Math.max(-32768, Math.min(32767, value));
+const int16 = (value: number) => {
+  if (value < -32768 || value > 32767) throw new Woff2GlyfError('Coordinate out of range');
+  return value;
+};
+
+function boxOf(points: Point[]): [number, number, number, number] {
+  let xMin = Infinity;
+  let yMin = Infinity;
+  let xMax = -Infinity;
+  let yMax = -Infinity;
+  for (const { x, y } of points) {
+    xMin = Math.min(xMin, x);
+    yMin = Math.min(yMin, y);
+    xMax = Math.max(xMax, x);
+    yMax = Math.max(yMax, y);
+  }
+  return [xMin, yMin, xMax, yMax];
+}
 
 function writeSimple(
   numberOfContours: number,
@@ -111,7 +128,7 @@ function writeSimple(
   const out = new Uint8Array(size);
   const view = new DataView(out.buffer);
   view.setInt16(0, numberOfContours);
-  for (const [index, value] of box.entries()) view.setInt16(2 + 2 * index, clampInt16(value));
+  for (const [index, value] of box.entries()) view.setInt16(2 + 2 * index, int16(value));
   let at = 10;
   for (const end of ends) {
     view.setUint16(at, end);
@@ -127,13 +144,13 @@ function writeSimple(
   at += points.length;
   let previous = 0;
   for (const point of points) {
-    view.setInt16(at, clampInt16(point.x - previous));
+    view.setInt16(at, int16(point.x - previous));
     previous = point.x;
     at += 2;
   }
   previous = 0;
   for (const point of points) {
-    view.setInt16(at, clampInt16(point.y - previous));
+    view.setInt16(at, int16(point.y - previous));
     previous = point.y;
     at += 2;
   }
@@ -187,7 +204,9 @@ export function rebuildGlyf(table: Uint8Array): RebuiltGlyf {
       const ends: number[] = [];
       let count = 0;
       for (let contour = 0; contour < numberOfContours; contour++) {
-        count += pointCounts.u255();
+        const added = pointCounts.u255();
+        if (added === 0) throw new Woff2GlyfError('Contour without points');
+        count += added;
         if (count > 0xffff) throw new Woff2GlyfError('Too many points in a glyph');
         ends.push(count - 1);
       }
@@ -200,13 +219,13 @@ export function rebuildGlyf(table: Uint8Array): RebuiltGlyf {
       if (hasBit(bitmap, glyph)) {
         box = [boxStream.i16(), boxStream.i16(), boxStream.i16(), boxStream.i16()];
       } else {
-        const xs = points.map((point) => point.x);
-        const ys = points.map((point) => point.y);
-        box = [Math.min(...xs), Math.min(...ys), Math.max(...xs), Math.max(...ys)];
+        box = boxOf(points);
       }
-      xMin[glyph] = clampInt16(box[0]);
+      xMin[glyph] = int16(box[0]);
       bytes = writeSimple(numberOfContours, ends, points, box, code, hasBit(overlapBitmap, glyph));
-    } else if (numberOfContours < 0) {
+    } else if (numberOfContours === 0) {
+      if (hasBit(bitmap, glyph)) throw new Woff2GlyfError('Empty glyph with a box');
+    } else {
       if (!hasBit(bitmap, glyph)) throw new Woff2GlyfError('Composite glyph without a box');
       const box = [boxStream.i16(), boxStream.i16(), boxStream.i16(), boxStream.i16()] as const;
       const start = composites.pos;

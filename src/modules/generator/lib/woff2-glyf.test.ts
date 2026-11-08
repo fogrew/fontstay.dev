@@ -23,6 +23,16 @@ describe('rebuildGlyf', () => {
     expect(() => rebuildGlyf(header(1, [0, 0, 0, 0, 0, 0, 0xffffffff]))).toThrow(Woff2GlyfError);
   });
 
+  it('rejects a contour without points', () => {
+    const table = new Uint8Array([...header(1, [2, 1, 0, 0, 0, 4, 0]), 0, 1, 0, 0, 0, 0, 0]);
+    expect(() => rebuildGlyf(table)).toThrow('Contour without points');
+  });
+
+  it('rejects an empty glyph that has a box', () => {
+    const table = new Uint8Array([...header(1, [2, 0, 0, 0, 0, 4, 0]), 0, 0, 0x80, 0, 0, 0]);
+    expect(() => rebuildGlyf(table)).toThrow('Empty glyph with a box');
+  });
+
   it('only throws Woff2GlyfError on arbitrary bytes', () => {
     fc.assert(
       fc.property(fc.uint8Array({ maxLength: 300 }), (bytes) => {
