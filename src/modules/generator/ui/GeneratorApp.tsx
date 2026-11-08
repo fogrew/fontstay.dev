@@ -478,10 +478,6 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
     const state = pending.current;
     if (!state || fonts.length === 0) return;
     if (state.all && fonts.length < 2 && !(restored && offer.length === 0)) return;
-    if (state.fontName === undefined && !state.all && fonts.length > 1) {
-      pending.current = null;
-      return;
-    }
     const target =
       state.fontName === undefined
         ? fonts[0]
