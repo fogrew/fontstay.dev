@@ -57,3 +57,12 @@ The bookmarklet and the browser extension (`extension/`) send the fonts and size
 ## Testing
 
 `tests/e2e/serve.mjs` serves `dist/` with `public/_headers` applied the way Cloudflare does, and every e2e test fails if the page reports a CSP violation (`securitypolicyviolation`). `tests/e2e/security-headers.spec.ts` checks the headers and the policy's shape.
+
+## Background image
+
+The preview settings accept an image that sits behind the preview text. The file is untrusted input and never leaves the tab.
+
+- **Allowlist by content.** Only PNG, JPEG, WebP and GIF are accepted, decided by the file's magic bytes (`src/modules/generator/lib/background-image.ts`), not by its name or declared type. SVG is refused.
+- **Bounds.** At most 8 MiB, 8192 px on a side and 24 megapixels; the dimensions come from the header before the browser decodes anything. Only the first 256 KiB is read to sniff the header.
+- **Re-typed object URL.** The accepted bytes get a `Blob` typed with the sniffed type, shown through a `blob:` URL (covered by `img-src`) and revoked when the image is replaced or removed and when the panel unmounts. A decode failure revokes the URL and reports an error.
+- **CSP.** The URL and the position, fit and fade values reach the page as CSS custom properties set through the CSSOM; no inline `<style>` and no `'unsafe-*'` source is added.

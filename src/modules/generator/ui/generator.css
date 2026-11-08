@@ -727,6 +727,31 @@ html[data-transition] .ff-export[data-expanded] .ff-export__fullscreen[open] .ff
 .ff-article-view .ff-article--ghost[data-idle] {
   visibility: hidden;
 }
+.ff-article-view[data-background] .ff-article:not(.ff-article--ghost) {
+  background-image:
+    linear-gradient(
+      color-mix(in srgb, var(--ff-surface) calc(var(--ff-bg-fade) * 1%), transparent),
+      color-mix(in srgb, var(--ff-surface) calc(var(--ff-bg-fade) * 1%), transparent)
+    ),
+    var(--ff-bg-image);
+  background-size: auto, var(--ff-bg-size);
+  background-position:
+    0 0,
+    var(--ff-bg-x) var(--ff-bg-y);
+  background-repeat: no-repeat;
+}
+.ff-article-view__file {
+  max-inline-size: 100%;
+}
+.ff-article-view__note {
+  margin: 0;
+  font-size: 0.8125rem;
+}
+@media (forced-colors: active) {
+  .ff-article-view[data-background] .ff-article:not(.ff-article--ghost) {
+    background-image: none;
+  }
+}
 .ff-article-view .ff-article[data-render="fill"] {
   color: var(--ff-layer-color);
 }
