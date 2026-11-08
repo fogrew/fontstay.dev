@@ -741,7 +741,9 @@ html[data-transition] .ff-export[data-expanded] .ff-export__fullscreen[open] .ff
   background-repeat: no-repeat;
 }
 .ff-article-view__file {
-  max-inline-size: 100%;
+  box-sizing: border-box;
+  inline-size: 100%;
+  min-inline-size: 0;
 }
 .ff-article-view__note {
   margin: 0;
