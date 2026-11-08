@@ -808,27 +808,16 @@
 }
 .ff-shift__score {
   inline-size: fit-content;
-  padding: 0 var(--ff-space-2);
-  border: 1px solid transparent;
-  border-radius: 0.75rem;
   font-size: 1rem;
 }
 .ff-shift__score[data-rating="good"] {
-  background: var(--ff-rating-good);
-  color: var(--ff-rating-good-text);
+  color: var(--ff-rating-good);
 }
 .ff-shift__score[data-rating="needs-improvement"] {
-  background: var(--ff-rating-needs);
-  color: var(--ff-rating-needs-text);
+  color: var(--ff-rating-needs);
 }
 .ff-shift__score[data-rating="poor"] {
-  background: var(--ff-rating-poor);
-  color: var(--ff-rating-poor-text);
-}
-@media (forced-colors: active) {
-  .ff-shift__score {
-    border-color: CanvasText;
-  }
+  color: var(--ff-rating-poor);
 }
 .ff-article-view
   .ff-article--nowrap

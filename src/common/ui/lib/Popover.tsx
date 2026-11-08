@@ -61,7 +61,11 @@ export function Popover({
       <button
         ref={button}
         type="button"
-        class="ff-control ff-button ff-button--secondary ff-popover__button"
+        class={
+          compact
+            ? 'ff-control ff-button ff-button--secondary ff-popover__button ff-popover__button--compact'
+            : 'ff-control ff-button ff-button--secondary ff-popover__button'
+        }
         aria-expanded={open}
         aria-label={badge ? `${label} (${badge})` : label}
         title={compact || info ? label : undefined}
