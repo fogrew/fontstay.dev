@@ -1129,6 +1129,22 @@ test('spacing adds the fonts-loading CSS and script', async ({ page }) => {
   await expect(script).toContainText(`'1em "Source Sans Pro"'`);
 });
 
+test('script stacks add :lang() rules for scripts the web font cannot draw', async ({ page }) => {
+  await page.goto('/en/');
+  await waitForGenerator(page);
+  await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(sourceSans);
+  const code = page.getByRole('region', { name: 'Generated CSS', includeHidden: true });
+  await expect(code).toContainText('size-adjust');
+  await expect(code).not.toContainText(':lang(');
+  const group = page.getByRole('group', { name: 'Stacks for text the font cannot draw' });
+  await expect(group.getByRole('checkbox', { name: /Latin|Cyrillic/ })).toHaveCount(0);
+  await group.getByRole('checkbox', { name: /Arabic/ }).check();
+  await expect(code).toContainText(':lang(ar), :lang(fa), :lang(ur) {');
+  await expect(code).toContainText('"Geeza Pro"');
+  await group.getByRole('checkbox', { name: /Arabic/ }).uncheck();
+  await expect(code).not.toContainText(':lang(');
+});
+
 test('values are optimized automatically and pinned values stay', async ({ page }) => {
   await page.goto('/en/');
   await waitForGenerator(page);
