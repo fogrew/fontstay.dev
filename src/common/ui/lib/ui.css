@@ -644,6 +644,12 @@ html[data-transition] .ff-dock__panel[data-id="export"] {
   content: "▾" / "";
   margin-inline-start: 0.35em;
 }
+.ff-popover__button--compact {
+  padding-inline: var(--ff-space-2);
+}
+.ff-popover__button--compact::after {
+  margin-inline-start: 0;
+}
 .ff-popover__badge {
   margin-inline-start: 0.35em;
   padding: 0 0.4em;
