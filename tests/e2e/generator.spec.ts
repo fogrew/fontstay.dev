@@ -1700,9 +1700,7 @@ test('a share link carries Google Fonts choices and downloads them again', async
   await expect(page.getByText('Downloaded Open Sans.')).toBeVisible();
   await expect(page.getByRole('status').filter({ hasText: 'Font added: 1' })).toBeVisible();
   await closePanels(page);
-  await page.getByRole('button', { name: 'Share', exact: true }).click();
-  await expect(page.getByRole('status').filter({ hasText: 'The link was copied.' })).toBeVisible();
-  const link = await page.evaluate(() => navigator.clipboard.readText());
+  const link = await copyShareLink(page, 'The link was copied.');
 
   const fresh = await context.browser()?.newContext();
   if (!fresh) throw new Error('no browser');
@@ -1862,13 +1860,10 @@ test('fonts and settings survive a reload and the share link restores the settin
   ).not.toBeChecked();
 
   await closePanels(page);
-  await page.getByRole('button', { name: 'Share', exact: true }).click();
-  await expect(
-    page.getByRole('status').filter({
-      hasText: /The link was copied, but it does not include these files: SourceSansPro-Regular/,
-    }),
-  ).toBeVisible();
-  const link = await page.evaluate(() => navigator.clipboard.readText());
+  const link = await copyShareLink(
+    page,
+    /The link was copied, but it does not include these files: SourceSansPro-Regular/,
+  );
   expect(link).toMatch(/#s=[A-Za-z0-9_-]+$/);
 
   const fresh = await context.browser()?.newContext();
@@ -1911,9 +1906,7 @@ test('a share link reproduces the open panel and the preview modes with a compac
   await pressed(page, 'Top and bottom').click();
   await pressed(page, 'X-ray').click();
   await openStep(page, 'export');
-  await page.getByRole('button', { name: 'Share', exact: true }).click();
-  await expect(page.getByRole('status').filter({ hasText: /link was copied/ })).toBeVisible();
-  const link = await page.evaluate(() => navigator.clipboard.readText());
+  const link = await copyShareLink(page);
   expect(link.split('#s=')[1]?.length).toBeLessThan(220);
 
   const fresh = await context.browser()?.newContext();
@@ -1941,9 +1934,7 @@ test('pinning the auto-fit values puts the fit numbers in a compact link', async
   await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(sourceSans);
   await expect(page.getByRole('button', { name: /^Remove: SourceSansPro-Regular/ })).toBeVisible();
   const share = async () => {
-    await page.getByRole('button', { name: 'Share', exact: true }).click();
-    await expect(page.getByRole('status').filter({ hasText: /link was copied/ })).toBeVisible();
-    const payload = (await page.evaluate(() => navigator.clipboard.readText())).split('#s=')[1];
+    const payload = (await copyShareLink(page)).split('#s=')[1];
     return page.evaluate(async (value) => {
       const text = value.replace(/-/g, '+').replace(/_/g, '/');
       const bytes = Uint8Array.from(atob(text), (char) => char.charCodeAt(0));
@@ -1953,8 +1944,17 @@ test('pinning the auto-fit values puts the fit numbers in a compact link', async
   };
   const plain = await share();
   expect(plain.state.manual).toBeUndefined();
-  await page.getByLabel('Pin auto-fit values').check();
-  await page.waitForTimeout(500);
+  await page.getByRole('button', { name: 'Share', exact: true }).click();
+  const dialog = page.getByRole('dialog', { name: 'Share settings' });
+  await dialog.getByLabel('Pin auto-fit values').check();
+  const tuning = dialog.getByRole('checkbox', { name: 'Tuning values and spacing' });
+  await tuning.uncheck();
+  await expect(tuning).toBeVisible();
+  await expect(dialog.getByLabel('Pin auto-fit values')).toBeDisabled();
+  await tuning.check();
+  await expect(dialog.getByLabel('Pin auto-fit values')).toBeEnabled();
+  await expect(dialog.getByLabel('Pin auto-fit values')).toBeChecked();
+  await dialog.getByRole('button', { name: 'Close', exact: true }).click();
   const pinned = await share();
   const entries = Object.values(pinned.state.manual ?? {}) as Record<string, number>[];
   expect(entries.length).toBeGreaterThan(0);
@@ -3477,3 +3477,117 @@ test('fallback options show the predicted shift and a labelled scale, with a hin
   await expect(first).toContainText(/Shift: (Good|Needs improvement|Poor) · scale \d+\.\d%/);
   await expect(first).not.toContainText('(');
 });
+
+async function copyShareLink(page: Page, copied: string | RegExp = /link was copied/) {
+  await page.getByRole('button', { name: 'Share', exact: true }).click();
+  const dialog = page.getByRole('dialog', { name: 'Share settings' });
+  await dialog.getByRole('button', { name: 'Copy link' }).click();
+  await expect(dialog.getByRole('status').filter({ hasText: copied })).toBeVisible();
+  const link = await page.evaluate(() => navigator.clipboard.readText());
+  await dialog.getByRole('button', { name: 'Close', exact: true }).click();
+  await expect(dialog).toBeHidden();
+  return link;
+}
+
+const decodeLinkState = (page: Page, link: string) =>
+  page.evaluate(async (value) => {
+    const text = (value.split('#s=')[1] ?? '').replace(/-/g, '+').replace(/_/g, '/');
+    const bytes = Uint8Array.from(atob(text), (char) => char.charCodeAt(0));
+    const stream = new Blob([bytes]).stream().pipeThrough(new DecompressionStream('deflate-raw'));
+    return JSON.parse(await new Response(stream).text()) as Record<string, unknown>;
+  }, link);
+
+test('Share opens a centered modal dialog that closes on Escape and the backdrop', async ({
+  page,
+}) => {
+  await page.goto('/en/');
+  await waitForGenerator(page);
+  await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(sourceSans);
+  await expect(page.getByRole('button', { name: /^Remove: SourceSansPro-Regular/ })).toBeVisible();
+  const trigger = page.getByRole('button', { name: 'Share', exact: true });
+  const dialog = page.getByRole('dialog', { name: 'Share settings' });
+  await expect(page.getByLabel('Pin auto-fit values')).toHaveCount(0);
+
+  await trigger.click();
+  await expect(dialog).toBeVisible();
+  await expect(dialog.getByLabel('Pin auto-fit values')).toBeVisible();
+  const box = await dialog.boundingBox();
+  const viewport = page.viewportSize();
+  if (!box || !viewport) throw new Error('no layout');
+  expect(Math.abs(box.x + box.width / 2 - viewport.width / 2)).toBeLessThan(2);
+  expect(Math.abs(box.y + box.height / 2 - viewport.height / 2)).toBeLessThan(2);
+  expect(await page.evaluate(() => getComputedStyle(document.documentElement).overflow)).toBe(
+    'hidden',
+  );
+
+  await page.keyboard.press('Escape');
+  await expect(dialog).toBeHidden();
+  await expect(trigger).toBeFocused();
+  expect(await page.evaluate(() => getComputedStyle(document.documentElement).overflow)).not.toBe(
+    'hidden',
+  );
+
+  await trigger.click();
+  await expect(dialog).toBeVisible();
+  await page.mouse.click(2, 2);
+  await expect(dialog).toBeHidden();
+  await expect(trigger).toBeFocused();
+});
+
+test('the Share dialog stays inside a 320 px screen and has no accessibility violations', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 320, height: 640 });
+  await page.goto('/en/');
+  await waitForGenerator(page);
+  await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(sourceSans);
+  await page.getByRole('button', { name: 'Share', exact: true }).click();
+  const dialog = page.getByRole('dialog', { name: 'Share settings' });
+  await expect(dialog).toBeVisible();
+  const box = await dialog.boundingBox();
+  expect(box?.x).toBeGreaterThanOrEqual(0);
+  expect((box?.x ?? 0) + (box?.width ?? 0)).toBeLessThanOrEqual(320);
+  expect((box?.y ?? 0) + (box?.height ?? 0)).toBeLessThanOrEqual(640);
+  const results = await new AxeBuilder({ page }).include('.ff-share-dialog').analyze();
+  expect(results.violations).toEqual([]);
+});
+
+test('unchecking an item leaves it out of the link and updates the length live', async ({
+  page,
+  context,
+}) => {
+  await context.grantPermissions(['clipboard-read', 'clipboard-write']);
+  await page.goto('/en/');
+  await waitForGenerator(page);
+  await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(sourceSans);
+  await expect(page.getByRole('button', { name: /^Remove: SourceSansPro-Regular/ })).toBeVisible();
+  await page.getByRole('checkbox', { name: 'Include Android in the stack' }).uncheck();
+  await pressedLayout(page);
+
+  await page.getByRole('button', { name: 'Share', exact: true }).click();
+  const dialog = page.getByRole('dialog', { name: 'Share settings' });
+  const field = dialog.getByTestId('share-link');
+  const systems = dialog.getByRole('checkbox', { name: 'Fallback picks per system' });
+  const layout = dialog.getByRole('checkbox', { name: /^Preview settings/ });
+  await expect(systems).toBeChecked();
+  await expect(layout).toBeChecked();
+  const full = await field.inputValue();
+  expect(await decodeLinkState(page, full)).toHaveProperty('disabled');
+
+  await systems.uncheck();
+  await expect.poll(async () => (await field.inputValue()).length).toBeLessThan(full.length);
+  await layout.uncheck();
+  await expect(dialog.getByTestId('share-length')).toContainText(/\d+ characters/);
+  const trimmed = await decodeLinkState(page, await field.inputValue());
+  expect(trimmed).not.toHaveProperty('disabled');
+  expect(trimmed).not.toHaveProperty('view');
+  expect(trimmed).toHaveProperty('v');
+
+  await dialog.getByRole('button', { name: 'Copy link' }).click();
+  await expect(dialog.getByRole('status')).toContainText(/link was copied/);
+  expect(await page.evaluate(() => navigator.clipboard.readText())).toBe(await field.inputValue());
+});
+
+async function pressedLayout(page: Page) {
+  await page.getByRole('button', { name: 'Top and bottom', exact: true }).first().click();
+}

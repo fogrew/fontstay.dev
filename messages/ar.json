@@ -815,5 +815,20 @@
   "ext_extension_step_developer": "افتح chrome://extensions (أو edge://extensions في Edge) وفعّل وضع المطوّر.",
   "ext_extension_step_load": "اختر «تحميل إضافة غير مضغوطة» وحدّد مجلد «extension» في المستودع.",
   "ext_extension_step_use": "افتح موقعًا وانقر زر fontstay في شريط الأدوات (ثبّته من قائمة قطعة الأحجية إن كان مخفيًا).",
-  "ext_extension_source": "شيفرة الإضافة المصدرية والتعليمات"
+  "ext_extension_source": "شيفرة الإضافة المصدرية والتعليمات",
+  "share_dialog_title": "مشاركة الإعدادات",
+  "share_dialog_close": "إغلاق",
+  "share_dialog_include": "ما يُضمَّن في الرابط",
+  "share_dialog_empty": "سيحفظ الرابط القيم الافتراضية فقط.",
+  "share_dialog_link": "الرابط",
+  "share_dialog_length": "عدد الأحرف في الرابط: {count}",
+  "share_dialog_too_long": "الرابط طويل جدًا وقد لا يُفتح في كل متصفح أو تطبيق مراسلة.",
+  "share_dialog_copy": "نسخ الرابط",
+  "share_part_fonts": "الخطوط ونص البحث",
+  "share_part_style": "نوع الخط ونمطه",
+  "share_part_systems": "الخطوط الاحتياطية لكل نظام",
+  "share_part_tuning": "قيم الضبط والتباعد",
+  "share_part_panel": "اللوحة المفتوحة والنظام ونمط الخط",
+  "share_part_preview": "إعدادات المعاينة والوضع وعرض الجهاز",
+  "share_part_site_fonts": "خطوط العناوين والنص للموقع المستورد"
 }

@@ -1448,3 +1448,68 @@
   font-size: 0.75rem;
   font-variant-numeric: tabular-nums;
 }
+html:has(.ff-share-dialog[open]) {
+  overflow: hidden;
+}
+html[data-transition] .ff-share__trigger:not([data-open]),
+html[data-transition] .ff-share-dialog[open] {
+  view-transition-name: ff-share-dialog;
+}
+.ff-share-dialog {
+  inline-size: min(36rem, calc(100vw - 2 * var(--ff-space-2)));
+  max-block-size: calc(100dvh - 2 * var(--ff-space-2));
+  margin: auto;
+  padding: 0;
+  overflow: auto;
+  overscroll-behavior: contain;
+  color: inherit;
+  background: var(--ff-surface);
+  border: 1px solid var(--ff-muted);
+  border-radius: 0.5rem;
+}
+.ff-share-dialog::backdrop {
+  background: rgb(0 0 0 / 0.5);
+}
+.ff-share-dialog__body {
+  display: grid;
+  gap: var(--ff-space-3);
+  padding: var(--ff-space-4);
+}
+.ff-share-dialog__header {
+  display: flex;
+  gap: var(--ff-space-2);
+  align-items: center;
+  justify-content: space-between;
+}
+.ff-share-dialog__title {
+  margin: 0;
+  font-size: 1.125rem;
+}
+.ff-share-dialog__group {
+  display: grid;
+  gap: var(--ff-space-2);
+  min-inline-size: 0;
+  padding: 0;
+  margin: 0;
+  border: 0;
+}
+.ff-share-dialog__legend {
+  padding: 0;
+  margin-block-end: var(--ff-space-2);
+  font-weight: 600;
+}
+.ff-share-dialog__option {
+  display: flex;
+  gap: var(--ff-space-2);
+  align-items: center;
+}
+.ff-share-dialog__link {
+  display: grid;
+  gap: var(--ff-space-1);
+}
+.ff-share-dialog__footer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--ff-space-2);
+  align-items: center;
+}
