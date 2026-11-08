@@ -112,10 +112,10 @@ export function sfntOf(data: ArrayBuffer | Uint8Array): Uint8Array | null {
     }
     const maxp = present.maxp && rawOf(present.maxp);
     if (
-      maxp &&
-      (maxp.length < 6 ||
-        new DataView(maxp.buffer, maxp.byteOffset, maxp.byteLength).getUint16(4) !==
-          rebuilt.xMin.length)
+      !maxp ||
+      maxp.length < 6 ||
+      new DataView(maxp.buffer, maxp.byteOffset, maxp.byteLength).getUint16(4) !==
+        rebuilt.xMin.length
     ) {
       return null;
     }
