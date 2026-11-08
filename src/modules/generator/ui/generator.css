@@ -301,6 +301,17 @@
   font-size: 1rem;
   overflow: hidden;
 }
+.ff-map__grid--ids {
+  grid-template-columns: repeat(8, minmax(0, 1fr));
+}
+.ff-map__cell--id {
+  padding-block: var(--ff-space-1);
+  font-family: inherit;
+  font-size: 0.75rem;
+  font-variant-numeric: tabular-nums;
+  aspect-ratio: auto;
+  cursor: pointer;
+}
 .ff-map__cell[data-covered="true"] {
   background: var(--ff-state-full);
 }

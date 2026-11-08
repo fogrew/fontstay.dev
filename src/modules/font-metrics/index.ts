@@ -8,6 +8,13 @@ export {
   MAX_COLLECTION_MEMBERS,
 } from './lib/collection';
 export { emptyFontDetails } from './lib/details';
+export { glyphOutline, inspectGlyphs } from './lib/glyph-client';
+export {
+  GLYPH_EMPTY,
+  GLYPH_ENCODED,
+  type GlyphAlternate,
+  type GlyphTable,
+} from './lib/glyph-model';
 export {
   FONT_PARSE_TIMEOUT_MS,
   type FontAxis,

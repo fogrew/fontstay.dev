@@ -1280,6 +1280,31 @@ test('the coverage section shows the advance, bounds and guides of the pointed g
   expect((await new AxeBuilder({ page }).include('.ff-map').analyze()).violations).toEqual([]);
 });
 
+test('the coverage section inspects unencoded and alternate glyph IDs', async ({ page }) => {
+  await page.goto('/en/');
+  await waitForGenerator(page);
+  await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(sourceSans);
+  await closePanels(page);
+  await page.getByRole('button', { name: 'Glyph coverage', exact: true }).click();
+  const section = page.locator('.ff-map');
+  await section.getByRole('combobox', { name: 'View' }).click();
+  await page.getByRole('option', { name: 'Unencoded glyph IDs' }).click();
+  await expect(section.getByText(/\d+ glyphs, \d+ without a character/)).toBeVisible();
+  const ids = section.getByRole('group', { name: /^Glyph IDs, page 1 of/ });
+  await expect(ids.locator('[data-gid]').first()).toBeVisible();
+  await expect(section.getByRole('img', { name: /Metrics diagram for #\d+/ })).toBeVisible();
+  await expect(section.getByText('Glyph ID', { exact: true })).toBeVisible();
+  await expect(section.getByText('Bounds', { exact: true })).toBeVisible();
+  await ids.focus();
+  await page.keyboard.press('ArrowRight');
+  await expect(section.locator('.ff-map__readout')).toContainText(/^Glyph ID \d+$/);
+  await section.getByRole('combobox', { name: 'View' }).click();
+  await page.getByRole('option', { name: 'Alternate glyphs' }).click();
+  await expect(section.getByText('Feature', { exact: true })).toBeVisible();
+  await expect(section.getByText('Replaces glyph', { exact: true })).toBeVisible();
+  expect((await new AxeBuilder({ page }).include('.ff-map').analyze()).violations).toEqual([]);
+});
+
 for (const [name, width] of [
   ['desktop', 1500],
   ['phone', 320],

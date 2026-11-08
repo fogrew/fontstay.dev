@@ -3,11 +3,34 @@ import { type Locale, messagesFor } from '@/common/i18n';
 import type { FontMetrics } from '@/modules/font-metrics';
 import { GLYPH_FAMILY, glyphAdvance, glyphVertical } from '../lib/glyph-detail';
 
-const WIDTH = 264;
-const HEIGHT = 188;
-const SIZE = 72;
-const X = 42;
-const BASELINE = 109;
+export const WIDTH = 264;
+export const HEIGHT = 188;
+export const SIZE = 72;
+export const X = 42;
+export const BASELINE = 109;
+
+export function drawGuides(
+  context: CanvasRenderingContext2D,
+  element: HTMLCanvasElement,
+  { em, ascent, descent }: { em: number; ascent: number; descent: number },
+) {
+  const ratio = window.devicePixelRatio || 1;
+  element.width = Math.round(WIDTH * ratio);
+  element.height = Math.round(HEIGHT * ratio);
+  context.scale(ratio, ratio);
+  const lines = [
+    { y: BASELINE - (ascent / em) * SIZE, color: '#21614b' },
+    { y: BASELINE, color: '#af3545' },
+    { y: BASELINE - (descent / em) * SIZE, color: '#5a4eb5' },
+  ];
+  for (const line of lines) {
+    context.strokeStyle = line.color;
+    context.beginPath();
+    context.moveTo(8, line.y);
+    context.lineTo(WIDTH - 8, line.y);
+    context.stroke();
+  }
+}
 
 export interface GlyphDetailProps {
   locale: Locale;
@@ -28,22 +51,7 @@ export function GlyphDetail({ locale, metrics, codePoint, covered, ready }: Glyp
     const element = canvas.current;
     const context = element?.getContext('2d');
     if (!element || !context) return;
-    const ratio = window.devicePixelRatio || 1;
-    element.width = Math.round(WIDTH * ratio);
-    element.height = Math.round(HEIGHT * ratio);
-    context.scale(ratio, ratio);
-    const lines = [
-      { y: BASELINE - (ascent / em) * SIZE, color: '#21614b' },
-      { y: BASELINE, color: '#af3545' },
-      { y: BASELINE - (descent / em) * SIZE, color: '#5a4eb5' },
-    ];
-    for (const line of lines) {
-      context.strokeStyle = line.color;
-      context.beginPath();
-      context.moveTo(8, line.y);
-      context.lineTo(WIDTH - 8, line.y);
-      context.stroke();
-    }
+    drawGuides(context, element, { em, ascent, descent });
     if (!covered || !ready) return;
     context.font = `${SIZE}px "${GLYPH_FAMILY}"`;
     const measured = context.measureText(char);
