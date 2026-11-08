@@ -89,7 +89,7 @@ import {
   takePending,
 } from '@/modules/site-import';
 import type { ShiftReport, ToolHost } from '@/modules/webmcp';
-import { fallbackRatio, webRatio } from '../lib/calibration';
+import { fallbackRatio, measureWebRatio } from '../lib/calibration';
 import { displayName, fitLanguage, isNoCoverage, LOW_COVERAGE } from '../lib/compute';
 import { adjustmentOf, buildCss, fallbackFamilyName, type Overrides } from '../lib/css';
 import {
@@ -589,6 +589,7 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
   const language: Language = fitLanguage(selected?.metrics, locale);
   const [variantsReady, setVariantsReady] = useState(false);
   const [webK, setWebK] = useState<Record<string, number>>({});
+  const [webKFailed, setWebKFailed] = useState<Record<string, boolean>>({});
   const [fallbackK, setFallbackK] = useState<Record<string, number | null>>({});
   const calibrationKey = (id: string | number, font: LoadedFont) =>
     `${id}:${fitLanguage(font.metrics, locale)}`;
@@ -596,8 +597,11 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
     for (const font of fonts) {
       const key = calibrationKey(font.id, font);
       if (webK[key] !== undefined) continue;
-      void webRatio(font.bytes, font.metrics, fitLanguage(font.metrics, locale)).then((value) =>
-        setWebK((current) => ({ ...current, [key]: value })),
+      void measureWebRatio(font.bytes, font.metrics, fitLanguage(font.metrics, locale)).then(
+        ({ ratio, failed }) => {
+          setWebK((current) => ({ ...current, [key]: ratio }));
+          setWebKFailed((current) => ({ ...current, [key]: failed }));
+        },
       );
     }
   }, [fonts, locale]);
@@ -1824,8 +1828,16 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
         ? t.preset_unfitted({ fonts: presetCover.unfitted.join(', ') })
         : ''
     : '';
+  const ratioFailed = allMode
+    ? fonts.some((font) => webKFailed[calibrationKey(font.id, font)])
+    : selected !== undefined && webKFailed[calibrationKey(selected.id, selected)];
   const warnings = (
     <>
+      {ratioFailed && (
+        <p class="ff-error" role="status">
+          {t.fit_ratio_failed()}
+        </p>
+      )}
       {!allMode && output && selected && coverage < LOW_COVERAGE && (
         <p class="ff-error" role="status">
           {t.fit_low_coverage()} {Math.round(coverage * 100)}%

@@ -75,6 +75,27 @@ test('uploading a font produces per-system fallbacks, editable values and CSS', 
   await expect(code).toContainText('size-adjust: 110%');
 });
 
+test.describe('web font ratio notice', () => {
+  test.use({ serviceWorkers: 'block' });
+
+  test('the web font ratio failing to measure is announced, and absent when it measures', async ({
+    page,
+  }) => {
+    const notice = page.getByRole('status').filter({ hasText: 'could not be measured' });
+    await page.goto('/en/');
+    await waitForGenerator(page);
+    await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(sourceSans);
+    await expect(page.getByLabel('Fallback font 1', { exact: true })).toBeVisible();
+    await expect(notice).toHaveCount(0);
+
+    await page.route('**/*.wasm', (route) => route.abort());
+    await page.goto('/en/');
+    await waitForGenerator(page);
+    await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(sourceSans);
+    await expect(notice).toBeVisible();
+  });
+});
+
 test('serif and monospace fallbacks are available by font type', async ({ page }) => {
   await page.goto('/en/');
   await waitForGenerator(page);

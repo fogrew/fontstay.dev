@@ -76,6 +76,7 @@
   "results_empty": "Carregue uma fonte para ver aqui o ajuste do fallback, o CSS e a prévia.",
   "preview_load_failed": "O navegador não conseguiu carregar este arquivo de fonte, então a prévia não pode exibi-la. O CSS gerado continua valendo para a fonte no seu site.",
   "fit_low_coverage": "Esta fonte tem glifos de apenas parte das letras de amostra, então o ajuste não é confiável. Parcela coberta:",
+  "fit_ratio_failed": "Não foi possível medir a largura de uma fonte web, então o ajuste presume que ela coincide com a do texto de reserva. Os resultados podem ser imprecisos.",
   "audience_heading": "Público (navegadores)",
   "audience_preset_widely": "Baseline amplamente disponível",
   "audience_preset_newly": "Baseline recém-disponível",
