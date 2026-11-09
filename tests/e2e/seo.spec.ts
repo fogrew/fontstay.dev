@@ -1,5 +1,7 @@
 import { expect, LOCALES, test } from './fixtures';
 
+const CJK_LOCALES: readonly string[] = ['zh'];
+
 for (const locale of LOCALES) {
   test(`${locale}: pages carry the title, description, Open Graph and structured data`, async ({
     page,
@@ -9,7 +11,7 @@ for (const locale of LOCALES) {
       const title = await page.title();
       expect(title.length).toBeGreaterThan(10);
       const description = await page.locator('meta[name="description"]').getAttribute('content');
-      expect((description ?? '').length).toBeGreaterThan(40);
+      expect((description ?? '').length).toBeGreaterThan(CJK_LOCALES.includes(locale) ? 20 : 40);
       await expect(page.locator('meta[property="og:title"]')).toHaveAttribute('content', title);
       await expect(page.locator('meta[property="og:image"]')).toHaveAttribute(
         'content',
@@ -26,6 +28,7 @@ for (const locale of LOCALES) {
           vi: 'vi_VN',
           el: 'el_GR',
           th: 'th_TH',
+          zh: 'zh_CN',
         }[locale],
       );
       await expect(page.locator('link[rel="canonical"]')).toHaveAttribute(

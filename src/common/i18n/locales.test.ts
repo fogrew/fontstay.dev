@@ -38,5 +38,6 @@ describe('localeName', () => {
     expect(localeName('vi')).toBe('Tiếng Việt');
     expect(localeName('el')).toBe('Ελληνικά');
     expect(localeName('th')).toBe('ไทย');
+    expect(localeName('zh')).toBe('中文');
   });
 });
