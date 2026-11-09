@@ -159,6 +159,8 @@ export function useFamilySearch({
     if (limitInput.current) limitInput.current.value = String(bounded);
     onLimitChange(bounded);
   };
+  const stepLimit = (delta: number) =>
+    commitLimit((limitInput.current?.valueAsNumber ?? limit.value) + delta);
   const handleListKeyDown = (event: KeyboardEvent) => {
     if (event.isComposing || event.altKey || event.ctrlKey || event.metaKey) return;
     const current = Math.max(activeIndex, 0);
@@ -311,6 +313,7 @@ export function useFamilySearch({
                     target="_blank"
                     rel="noopener noreferrer"
                     tabIndex={index === Math.max(activeIndex, 0) ? 0 : -1}
+                    onFocus={() => setNavigation({ query, index })}
                     aria-label={t.source_open({
                       name: hit.family.name,
                       service: sourceName(hit.source),
@@ -409,7 +412,7 @@ export function useFamilySearch({
                   type="button"
                   class="ff-control ff-button ff-button--secondary"
                   aria-label={t.font_limit_decrease()}
-                  onClick={() => commitLimit(limit.value - 1)}
+                  onClick={() => stepLimit(-1)}
                 >
                   −
                 </button>
@@ -428,7 +431,7 @@ export function useFamilySearch({
                   type="button"
                   class="ff-control ff-button ff-button--secondary"
                   aria-label={t.font_limit_increase()}
-                  onClick={() => commitLimit(limit.value + 1)}
+                  onClick={() => stepLimit(1)}
                 >
                   +
                 </button>
