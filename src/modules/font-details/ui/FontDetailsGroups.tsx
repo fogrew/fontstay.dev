@@ -1,6 +1,6 @@
 import { useState } from 'preact/hooks';
 import { type Locale, messagesFor } from '@/common/i18n';
-import { Collapsible } from '@/common/ui';
+import { Collapsible, Icon } from '@/common/ui';
 import type { FontMetrics } from '@/modules/font-metrics';
 import { detailsToggleId } from '../lib/toggle-id';
 import { FontDetailsPanel } from './FontDetailsPanel';
@@ -8,6 +8,7 @@ import { FontDetailsPanel } from './FontDetailsPanel';
 export interface FontDetailsEntry {
   id: number;
   title: string;
+  face?: string | undefined;
   metrics: FontMetrics;
 }
 
@@ -30,16 +31,19 @@ export function FontDetailsGroups({ locale, fonts, onRemove }: FontDetailsGroups
         <Collapsible
           key={font.id}
           title={font.title}
+          detail={font.face}
           toggleId={detailsToggleId(font.id)}
           open={open.has(font.id)}
           after={
             <button
               type="button"
               class="ff-control ff-icon-button"
-              aria-label={t.details_remove({ name: font.title })}
+              aria-label={t.details_remove({
+                name: font.face ? `${font.title} (${font.face})` : font.title,
+              })}
               onClick={() => onRemove(font.id)}
             >
-              <span aria-hidden="true">×</span>
+              <Icon name="forget" />
             </button>
           }
           onToggle={(next) =>

@@ -4,6 +4,7 @@ import { transition } from './transition';
 
 export interface CollapsibleProps {
   title: string;
+  detail?: string | undefined;
   icon?: ComponentChildren;
   open: boolean;
   toggleId?: string;
@@ -15,6 +16,7 @@ export interface CollapsibleProps {
 
 export function Collapsible({
   title,
+  detail,
   icon,
   open,
   toggleId,
@@ -38,6 +40,7 @@ export function Collapsible({
         >
           {icon}
           {title}
+          {detail && <span class="ff-collapsible__detail">{detail}</span>}
         </button>
         {after}
       </div>

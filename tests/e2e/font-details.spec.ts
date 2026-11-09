@@ -222,3 +222,27 @@ test('removing a font moves focus to the next font toggle', async ({ page }) => 
     page.locator('.ff-dock__column[data-id="inputs"] .ff-dock__heading button'),
   ).toBeFocused();
 });
+
+test('added faces are told apart by a face line and removed with a centred trash icon', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 320, height: 900 });
+  await openDetails(page, sourceSans);
+  await page.locator('input[type="file"][accept*="woff2"]').setInputFiles([fira]);
+  const details = page.locator('[aria-labelledby="ff-details-heading"] .ff-collapsible__toggle');
+  await expect(details).toHaveCount(2);
+  for (const toggle of await details.all()) {
+    await expect(toggle.locator('.ff-collapsible__detail')).toHaveText(/^\d{3} (Regular|Italic)/);
+  }
+  const remove = page.getByRole('button', { name: /^Remove from the fonts:/ }).first();
+  await expect(remove.locator('svg.ff-icon')).toBeVisible();
+  await expect(remove).not.toContainText('×');
+  const [button, icon] = await Promise.all([
+    remove.boundingBox(),
+    remove.locator('svg').boundingBox(),
+  ]);
+  if (!button || !icon) throw new Error('missing boxes');
+  expect(Math.abs(button.x + button.width / 2 - (icon.x + icon.width / 2))).toBeLessThan(1);
+  expect(Math.abs(button.y + button.height / 2 - (icon.y + icon.height / 2))).toBeLessThan(1);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(320);
+});
