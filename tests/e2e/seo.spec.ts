@@ -24,6 +24,7 @@ for (const locale of LOCALES) {
           es: 'es_ES',
           pt: 'pt_BR',
           vi: 'vi_VN',
+          el: 'el_GR',
           th: 'th_TH',
         }[locale],
       );
