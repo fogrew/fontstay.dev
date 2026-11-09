@@ -10,10 +10,11 @@ export interface ToggleGroupProps {
   items: readonly ToggleGroupItem[];
   selected: ReadonlySet<string>;
   label?: string;
+  fill?: boolean;
   onChange: (next: Set<string>) => void;
 }
 
-export function ToggleGroup({ items, selected, label, onChange }: ToggleGroupProps) {
+export function ToggleGroup({ items, selected, label, fill = false, onChange }: ToggleGroupProps) {
   const anchor = useRef<string>();
   const drag = useRef<{ on: boolean; working: Set<string> }>();
   const swallowClick = useRef(false);
@@ -67,7 +68,11 @@ export function ToggleGroup({ items, selected, label, onChange }: ToggleGroupPro
 
   return (
     <fieldset
-      class="ff-button-group ff-button-group--compact ff-button-group--wrap"
+      class={
+        fill
+          ? 'ff-button-group ff-button-group--compact ff-button-group--fill'
+          : 'ff-button-group ff-button-group--compact ff-button-group--wrap'
+      }
       aria-label={label}
     >
       {items.map((item) => (

@@ -153,12 +153,6 @@
   margin: 0;
   padding-inline-start: var(--ff-space-4);
 }
-.ff-drop__links {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--ff-space-2) var(--ff-space-4);
-  margin: 0;
-}
 .ff-link-button {
   min-block-size: 2rem;
   padding: 0;
@@ -168,6 +162,10 @@
   font: inherit;
   text-decoration: underline;
   cursor: pointer;
+}
+.ff-drop__hint-list .ff-link-button {
+  min-block-size: 1.5rem;
+  text-align: start;
 }
 .ff-link-button:disabled {
   opacity: 0.6;
@@ -420,14 +418,17 @@
   margin: 0;
 }
 .ff-source__scroll {
-  max-block-size: 14rem;
+  box-sizing: border-box;
+  max-block-size: max(14rem, calc(100dvh - 22rem));
+  padding: var(--ff-space-1);
+  scroll-padding: var(--ff-space-3);
 }
 .ff-source__placeholder {
-  block-size: 14rem;
+  block-size: max(14rem, calc(100dvh - 22rem));
 }
 .ff-source__list {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(13rem, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(18rem, 1fr));
   gap: var(--ff-space-1);
   margin: 0;
   padding: 0;
@@ -436,27 +437,31 @@
 .ff-source__item {
   display: flex;
   inline-size: 100%;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--ff-space-2);
-  min-block-size: 2rem;
-  padding: var(--ff-space-1) var(--ff-space-2);
-  border: 1px solid var(--ff-border);
-  border-radius: var(--ff-radius);
-  background: transparent;
-  color: inherit;
+  min-inline-size: 0;
+}
+.ff-source__name {
+  flex: 1 1 auto;
+  min-inline-size: 0;
   text-align: start;
-  cursor: pointer;
 }
-.ff-source__item:focus-visible {
-  outline: 2px solid var(--ff-accent);
-  outline-offset: 1px;
+.ff-source__name--active:not([aria-pressed="true"]) {
+  background: var(--ff-state-full);
 }
-.ff-source__badges {
+.ff-source__license,
+.ff-source__link {
   display: inline-flex;
   flex: none;
   align-items: center;
-  gap: var(--ff-space-2);
+  justify-content: center;
+  gap: var(--ff-space-1);
+}
+.ff-source__license {
+  color: var(--ff-muted);
+  cursor: default;
+  white-space: nowrap;
+}
+.ff-source__license:hover {
+  border-color: var(--ff-border);
 }
 .ff-source__icon {
   inline-size: 1rem;
@@ -470,50 +475,42 @@
   gap: var(--ff-space-1);
   vertical-align: bottom;
 }
-.ff-source__tip {
-  position: fixed;
-  z-index: 10;
-  padding: var(--ff-space-1) var(--ff-space-2);
-  border: 1px solid var(--ff-border);
-  border-radius: var(--ff-radius);
-  background: var(--ff-surface);
-  color: var(--ff-text);
-  pointer-events: none;
-  transform: translate(-100%, calc(-100% - 4px));
-  white-space: nowrap;
-}
-.ff-source__item--active {
-  background: var(--ff-state-full);
-}
-.ff-source__item--chosen {
-  border-color: var(--ff-accent);
-}
 .ff-source__groups {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--ff-space-3) var(--ff-space-4);
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--ff-space-3);
 }
 .ff-toggle-set {
   display: grid;
-  grid-template-columns: max-content minmax(0, 1fr);
-  align-items: center;
-  gap: var(--ff-space-1) var(--ff-space-2);
+  gap: var(--ff-space-1);
   margin: 0;
   padding: 0;
   border: 0;
   min-inline-size: 0;
 }
 .ff-toggle-set__legend {
-  grid-column: 1 / -1;
   padding: 0;
   margin-block-end: var(--ff-space-1);
 }
 .ff-toggle-group {
-  display: contents;
+  display: grid;
+  gap: var(--ff-space-1);
+  min-inline-size: 0;
 }
 .ff-toggle-group__label {
   display: flex;
   align-items: center;
+}
+.ff-generator .ff-popover--info .ff-popover__button {
+  min-inline-size: 1.5rem;
+  min-block-size: 1.5rem;
+  padding: 0;
+}
+.ff-source .ff-popover__panel {
+  inline-size: 18rem;
+  min-inline-size: 0;
+  max-inline-size: calc(100vw - var(--ff-space-4));
+  white-space: normal;
 }
 .ff-source__limit {
   display: flex;
@@ -521,8 +518,26 @@
   align-items: center;
   gap: var(--ff-space-1) var(--ff-space-2);
 }
+.ff-source__limit .ff-popover--info {
+  margin-inline-start: 0;
+}
+.ff-source__stepper {
+  margin-inline-start: auto;
+}
+.ff-generator .ff-source__stepper .ff-button {
+  min-inline-size: 2rem;
+  padding-inline: 0;
+}
 .ff-source__limit-input {
-  inline-size: 6rem;
+  inline-size: 3.5rem;
+  border-radius: 0;
+  text-align: center;
+  appearance: textfield;
+}
+.ff-source__limit-input::-webkit-inner-spin-button,
+.ff-source__limit-input::-webkit-outer-spin-button {
+  appearance: none;
+  margin: 0;
 }
 .ff-source__add {
   display: flex;

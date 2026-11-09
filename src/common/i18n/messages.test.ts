@@ -26,6 +26,16 @@ describe('messagesFor', () => {
     }
   });
 
+  it('keeps the placeholders of the family picker row labels in every locale', () => {
+    for (const locale of ['en', 'ru', 'es', 'pt', 'ar', 'vi', 'th'] as const) {
+      const t = messagesFor(locale);
+      expect(t.source_license({ license: 'L' })).toContain('L');
+      const open = t.source_open({ name: 'N', service: 'S' });
+      expect(open).toContain('N');
+      expect(open).toContain('S');
+    }
+  });
+
   it('throws for a key that does not exist', () => {
     const messages = messagesFor('en') as unknown as Record<string, () => string>;
     expect(() => messages.no_such_key?.()).toThrow('Unknown message key');
