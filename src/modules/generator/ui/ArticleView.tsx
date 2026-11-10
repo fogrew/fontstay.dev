@@ -90,6 +90,7 @@ const INITIAL_LAYERS: Record<LayerId, LayerStyle> = {
 
 const COMPARE_ORDER: readonly Preset[] = ['slider', 'overlay', 'side'];
 const VIEW_ORDER: readonly Preset[] = ['web', 'fallback', 'plain'];
+const COMPACT_BAR_PX = 840;
 const LENS_STEP = 24;
 const MIN_FRAME = 320;
 const FRAME_STEP = 16;
@@ -327,6 +328,9 @@ export function ArticleView({
   const [positions, setPositions] = useState(PRESETS.slider);
   const [xray, setXray] = useState(true);
   const [frameWidth, setFrameWidth] = useState<number>();
+  const [compactBar, setCompactBar] = useState<boolean>();
+  const [toolsOpen, setToolsOpen] = useState(false);
+  const tools = useRef<HTMLDivElement>(null);
   const [device, setDevice] = useState<Device>();
   const [pageWidth, setPageWidth] = useState(0);
   const frame = useRef<HTMLDivElement>(null);
@@ -904,6 +908,33 @@ export function ArticleView({
     ...families.map((family) => ({ value: family, label: family })),
     { value: SYSTEM, label: t.article_font_system() },
   ];
+  useEffect(() => {
+    if (!toolsOpen) return;
+    const close = (event: Event) => {
+      if (!tools.current?.contains(event.target as Node)) setToolsOpen(false);
+    };
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key !== 'Escape') return;
+      setToolsOpen(false);
+      tools.current?.querySelector<HTMLElement>('.ff-toolbar__more-toggle')?.focus();
+    };
+    document.addEventListener('pointerdown', close);
+    document.addEventListener('keydown', onKey);
+    return () => {
+      document.removeEventListener('pointerdown', close);
+      document.removeEventListener('keydown', onKey);
+    };
+  }, [toolsOpen]);
+  useLayoutEffect(() => {
+    const element = view.current;
+    if (!element) return;
+    const update = () => setCompactBar(element.clientWidth < COMPACT_BAR_PX);
+    update();
+    const observer = new ResizeObserver(update);
+    observer.observe(element);
+    return () => observer.disconnect();
+  }, []);
+
   const presetButton = (value: Preset) => (
     <button
       key={value}
@@ -1295,6 +1326,67 @@ export function ArticleView({
     },
   ];
 
+  const viewTools = (
+    <>
+      <fieldset class="ff-preview__modes ff-toolbar__modes ff-button-group">
+        <legend class="ff-button-group__legend ff-sr-only">{t.preview_compare_label()}</legend>
+        {COMPARE_ORDER.map(presetButton)}
+      </fieldset>
+      <fieldset class="ff-preview__modes ff-toolbar__modes ff-button-group">
+        <legend class="ff-button-group__legend ff-sr-only">{t.preview_mode_label()}</legend>
+        {VIEW_ORDER.map(presetButton)}
+      </fieldset>
+      <span
+        class="ff-preview__arrange ff-button-group"
+        data-active={arrangement === 'columns' || clipped}
+      >
+        {(['horizontal', 'stacked'] as const).map((kind) => (
+          <button
+            key={kind}
+            type="button"
+            class="ff-control ff-button ff-button--secondary ff-preview__arrange-button"
+            aria-pressed={stacked === (kind === 'stacked')}
+            aria-label={kind === 'stacked' ? t.side_stacked() : t.side_horizontal()}
+            title={kind === 'stacked' ? t.side_stacked() : t.side_horizontal()}
+            disabled={empty || (arrangement !== 'columns' && !clipped)}
+            onClick={() => setStacked(kind === 'stacked')}
+          >
+            <span class="ff-arrange-icon" data-kind={kind} aria-hidden="true" />
+          </button>
+        ))}
+      </span>
+      <div class="ff-button-group ff-toolbar__xray">
+        <button
+          type="button"
+          class="ff-control ff-button ff-button--secondary ff-tool-button"
+          aria-pressed={xray}
+          aria-label={t.mode_loupe()}
+          title={t.mode_loupe()}
+          disabled={empty}
+          onClick={() => setXray((on) => !on)}
+        >
+          <ToolIcon name="xray" />
+        </button>
+        <Popover label={t.loupe_settings()} compact disabled={empty}>
+          {xrayContent}
+        </Popover>
+      </div>
+      <DevicePicker
+        locale={locale}
+        glyph={<ToolIcon name="emulation" />}
+        value={device}
+        detail={(entry) => {
+          const score = deviceShifts?.get(entry.width);
+          return score === undefined ? undefined : <ShiftBadge locale={locale} score={score} />;
+        }}
+        onChange={(next) => {
+          setDevice(next);
+          sizeFrame(next?.width);
+        }}
+      />
+    </>
+  );
+
   return (
     <section
       class="ff-article-view"
@@ -1323,72 +1415,38 @@ export function ArticleView({
           </article>
         ))}
       </div>
-      <div class="ff-article-view__controls ff-toolbar">
+      <div
+        class="ff-article-view__controls ff-toolbar"
+        data-measured={compactBar === undefined ? undefined : ''}
+        data-compact={compactBar ? '' : undefined}
+      >
         {start}
-        <fieldset class="ff-preview__modes ff-toolbar__modes ff-button-group">
-          <legend class="ff-button-group__legend ff-sr-only">{t.preview_compare_label()}</legend>
-          {COMPARE_ORDER.map(presetButton)}
-        </fieldset>
-        <fieldset class="ff-preview__modes ff-toolbar__modes ff-button-group">
-          <legend class="ff-button-group__legend ff-sr-only">{t.preview_mode_label()}</legend>
-          {VIEW_ORDER.map(presetButton)}
-        </fieldset>
-        <span
-          class="ff-preview__arrange ff-button-group"
-          data-active={arrangement === 'columns' || clipped}
-        >
-          {(['horizontal', 'stacked'] as const).map((kind) => (
-            <button
-              key={kind}
-              type="button"
-              class="ff-control ff-button ff-button--secondary ff-preview__arrange-button"
-              aria-pressed={stacked === (kind === 'stacked')}
-              aria-label={kind === 'stacked' ? t.side_stacked() : t.side_horizontal()}
-              title={kind === 'stacked' ? t.side_stacked() : t.side_horizontal()}
-              disabled={empty || (arrangement !== 'columns' && !clipped)}
-              onClick={() => setStacked(kind === 'stacked')}
-            >
-              <span class="ff-arrange-icon" data-kind={kind} aria-hidden="true" />
-            </button>
-          ))}
-        </span>
-        <div class="ff-button-group ff-toolbar__xray">
+        <div class="ff-toolbar__tools" ref={tools} data-open={toolsOpen ? '' : undefined}>
           <button
             type="button"
-            class="ff-control ff-button ff-button--secondary ff-tool-button"
-            aria-pressed={xray}
-            aria-label={t.mode_loupe()}
-            title={t.mode_loupe()}
-            disabled={empty}
-            onClick={() => setXray((on) => !on)}
+            class="ff-control ff-button ff-button--secondary ff-tool-button ff-toolbar__more-toggle"
+            aria-expanded={toolsOpen}
+            aria-controls="ff-toolbar-tools"
+            aria-label={t.toolbar_more()}
+            title={t.toolbar_more()}
+            onClick={() => setToolsOpen((open) => !open)}
           >
-            <ToolIcon name="xray" />
+            <ToolIcon name="more" />
           </button>
-          <Popover label={t.loupe_settings()} compact disabled={empty}>
-            {xrayContent}
-          </Popover>
+          <div id="ff-toolbar-tools" class="ff-toolbar__tool-list">
+            {viewTools}
+          </div>
         </div>
-        <DevicePicker
-          locale={locale}
-          value={device}
-          detail={(entry) => {
-            const score = deviceShifts?.get(entry.width);
-            return score === undefined ? undefined : <ShiftBadge locale={locale} score={score} />;
-          }}
-          onChange={(next) => {
-            setDevice(next);
-            sizeFrame(next?.width);
-          }}
-        />
         <button
           type="button"
           class="ff-control ff-button ff-button--secondary ff-tool-button ff-toolbar__settings-toggle"
           aria-expanded={settings.open}
           aria-controls="ff-article-settings"
+          aria-label={t.article_group_settings()}
+          title={t.article_group_settings()}
           onClick={settings.toggle}
         >
           <ToolIcon name="panel-end" />
-          {t.article_group_settings()}
         </button>
         <DeviceShift
           locale={locale}

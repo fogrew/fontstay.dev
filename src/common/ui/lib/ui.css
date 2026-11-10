@@ -393,6 +393,15 @@
   content: "▾" / "";
   margin-inline-start: auto;
 }
+.ff-select[data-glyph] .ff-select__button {
+  justify-content: center;
+  inline-size: auto;
+  min-inline-size: 2rem;
+  padding-inline: 0.5rem;
+}
+.ff-select[data-glyph] .ff-select__button::after {
+  content: none;
+}
 .ff-select__value {
   min-inline-size: 0;
   overflow: hidden;

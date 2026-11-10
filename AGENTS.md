@@ -106,4 +106,5 @@ Release procedure:
 - Animate UI state changes with view transitions (FLIP-like): wrap panel and layout changes in `transition()` from `@/common/ui`, name the transitioned elements only while a transition runs (a permanent `view-transition-name` creates a stacking context), prefer panels over page navigation, and always respect `prefers-reduced-motion`.
 - CSS uses class selectors only, named with [BEM](https://getbem.com/) (`block`, `block__element`, `block--modifier`, prefixed `ff-`); no element (tag) selectors for styling, except global resets on `html`, `body` and `*`. Components own their block, and a block is styled only by its own rules.
 - Only one dropdown (menu, popover, details-based switcher) is open at a time; opening one closes the others.
+- The preview control toolbar is always one row, at every width: never let it wrap. Controls are icon buttons with an accessible name and a tooltip; below 840 px of toolbar width the view tools move into the "More tools" popover. A new toolbar control must keep the row single at 320 px in every locale; `tests/e2e/generator.spec.ts` checks it.
 - Accessibility target: WCAG 2.2 AA.

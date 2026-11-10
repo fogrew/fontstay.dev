@@ -1,7 +1,15 @@
 import type { GuideId } from '../lib/guides';
 import type { Preset } from '../lib/layers';
 
-export type ToolIconName = Preset | 'xray' | 'boxes' | 'panel-start' | 'panel-end' | GuideId;
+export type ToolIconName =
+  | Preset
+  | 'xray'
+  | 'emulation'
+  | 'more'
+  | 'boxes'
+  | 'panel-start'
+  | 'panel-end'
+  | GuideId;
 
 const GUIDE_LINE: Record<GuideId, number> = {
   ascender: 2.5,
@@ -58,6 +66,22 @@ function Shapes({ name }: { name: ToolIconName }) {
         <>
           <circle cx="6.8" cy="6.8" r="4.6" />
           <path d="M10.2 10.2L14 14" />
+        </>
+      );
+    case 'emulation':
+      return (
+        <>
+          <rect x="1.5" y="3" width="8" height="7" rx="1" />
+          <path d="M3.5 12.5h4" />
+          <rect x="11" y="6" width="3.5" height="8" rx="1" />
+        </>
+      );
+    case 'more':
+      return (
+        <>
+          <circle cx="3" cy="8" r="1.1" class="ff-tool-icon__fill" />
+          <circle cx="8" cy="8" r="1.1" class="ff-tool-icon__fill" />
+          <circle cx="13" cy="8" r="1.1" class="ff-tool-icon__fill" />
         </>
       );
     case 'panel-start':

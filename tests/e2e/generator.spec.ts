@@ -650,10 +650,10 @@ test('choosing a device sets the preview width and measures the layout shift at 
   await expect(status).toBeVisible({ timeout: 20_000 });
   await expect(status).not.toContainText('375px');
   await expect
-    .poll(() => listed(view.getByLabel('Device')), { timeout: 20_000 })
+    .poll(() => listed(view.getByLabel('Emulation')), { timeout: 20_000 })
     .toMatch(/iPhone SE \(375 × 667\)\s*🟢 \d\.\d{3}/);
 
-  await choose(view.getByLabel('Device'), 'iphone-se');
+  await choose(view.getByLabel('Emulation'), 'iphone-se');
   await expect(frame).toHaveAttribute('data-constrained', '');
   await expect(handle).toHaveAttribute('aria-valuenow', '375');
   await expect(status).toContainText('375px', { timeout: 20_000 });
@@ -661,10 +661,10 @@ test('choosing a device sets the preview width and measures the layout shift at 
 
   await handle.focus();
   await page.keyboard.press('ArrowRight');
-  await expect(view.getByLabel('Device')).toContainText('Responsive');
+  await expect(view.getByLabel('Emulation')).toContainText('Responsive');
   await expect(status).toContainText('391px', { timeout: 20_000 });
 
-  await choose(view.getByLabel('Device'), 'responsive');
+  await choose(view.getByLabel('Emulation'), 'responsive');
   await expect(frame).not.toHaveAttribute('data-constrained', '');
   await expect(status).not.toContainText('391px', { timeout: 20_000 });
 });

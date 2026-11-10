@@ -128,9 +128,14 @@ export function ShareDialog({ locale, build, canPin, files, note }: ShareDialogP
 
   return (
     <>
-      <Button class="ff-share__trigger" data-open={open ? '' : undefined} onClick={show}>
+      <Button
+        class="ff-share__trigger ff-tool-button"
+        data-open={open ? '' : undefined}
+        aria-label={t.share_copy_short()}
+        title={t.share_copy_short()}
+        onClick={show}
+      >
         <Icon name="share" />
-        {t.share_copy_short()}
       </Button>
       <dialog
         ref={dialog}
