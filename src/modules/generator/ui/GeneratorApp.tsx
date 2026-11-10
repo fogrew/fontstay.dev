@@ -242,7 +242,7 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
     busy: t.error_busy(),
     disposed: t.error_disposed(),
   };
-  const parser = useRef<FontParser>();
+  const parser = useRef<FontParser | undefined>(undefined);
   const nextId = useRef(1);
   const [fonts, setFonts] = useState<LoadedFont[]>([]);
   const [fontLimit, setFontLimitState] = useState(loadFontLimit);
@@ -285,7 +285,7 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
   const [query, setQuery] = useState<string>();
   const [restored, setRestored] = useState(false);
   const pending = useRef<ShareState | null>(null);
-  const linkPanel = useRef<PanelId | typeof NO_PANEL>();
+  const linkPanel = useRef<PanelId | typeof NO_PANEL | undefined>(undefined);
   const panel = useRef<PanelId | typeof NO_PANEL>(DEFAULT_PANEL);
   const [viewRestore, setViewRestore] = useState<ViewDiff>();
   const viewDiff = useRef<ViewDiff>({});
@@ -1105,8 +1105,8 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
     loadingScript: loadingScript(exportFamilies.map((family) => family.targetFamily)),
   };
   const anyRanking = Object.values(rankings.result).find(Boolean);
-  const shiftReport = useRef<ShiftReport>();
-  const toolHost = useRef<ToolHost>();
+  const shiftReport = useRef<ShiftReport | undefined>(undefined);
+  const toolHost = useRef<ToolHost | undefined>(undefined);
   toolHost.current = {
     listFonts: () =>
       fonts.map((font) => ({

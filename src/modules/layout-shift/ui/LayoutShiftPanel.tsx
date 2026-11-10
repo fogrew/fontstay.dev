@@ -28,7 +28,7 @@ export function LayoutShiftPanel({
 }) {
   const t = messagesFor(locale);
   const [verified, setVerified] = useState<VerifyState>({ state: 'idle' });
-  const verifying = useRef<AbortController>();
+  const verifying = useRef<AbortController | undefined>(undefined);
   useEffect(() => () => verifying.current?.abort(), []);
   useEffect(() => {
     verifying.current?.abort();

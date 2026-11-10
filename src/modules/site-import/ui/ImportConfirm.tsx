@@ -53,7 +53,7 @@ export function ImportConfirm({
                 key={`${face.family}-${face.weight}-${face.style}-${face.url}`}
               >
                 {face.family} {face.weight} {face.style}{' '}
-                <a class="ff-link" href={face.url} rel="noopener noreferrer" target="_blank">
+                <a class="ff-link" href={face.url ?? ''} rel="noopener noreferrer" target="_blank">
                   {t.cssimport_download()} ({hostOf(face.url)})
                 </a>
               </li>
