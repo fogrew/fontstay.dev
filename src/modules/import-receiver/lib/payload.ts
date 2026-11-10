@@ -66,6 +66,7 @@ export interface SiteImport {
   rules: ImportedRule[];
   used: ImportedUse[];
   blocks: ImportedBlock[];
+  viewport: number;
   files: ImportedFile[];
 }
 
@@ -108,6 +109,12 @@ function number(value: unknown, min: number, max: number): number | undefined {
   return typeof value === 'number' && Number.isFinite(value) && value >= min && value <= max
     ? value
     : undefined;
+}
+
+function clamped(value: unknown, min: number, max: number): number {
+  return typeof value === 'number' && Number.isFinite(value)
+    ? Math.min(max, Math.max(min, value))
+    : 0;
 }
 
 export function cleanOrigin(value: unknown): string {
@@ -196,11 +203,11 @@ function blocks(raw: unknown): ImportedBlock[] {
       text,
       fontPx,
       width,
-      indent: number(item.indent, 0, 5000) ?? 0,
-      marginTop: number(item.marginTop, 0, 1000) ?? 0,
-      marginBottom: number(item.marginBottom, 0, 1000) ?? 0,
-      padX: number(item.padX, 0, 500) ?? 0,
-      padY: number(item.padY, 0, 500) ?? 0,
+      indent: clamped(item.indent, 0, 5000),
+      marginTop: clamped(item.marginTop, 0, 1000),
+      marginBottom: clamped(item.marginBottom, 0, 1000),
+      padX: clamped(item.padX, 0, 500),
+      padY: clamped(item.padY, 0, 500),
       ...(lineHeight === undefined ? {} : { lineHeight }),
     });
   }
@@ -234,6 +241,7 @@ export function sanitizeImport(raw: unknown, origin: string, verified: boolean):
     rules: rules(raw.rules),
     used: used(raw.used),
     blocks: blocks(raw.blocks),
+    viewport: number(raw.viewport, 200, 10_000) ?? 0,
     files: files(raw.files),
   };
   const empty = result.faces.length + result.used.length + result.files.length === 0;

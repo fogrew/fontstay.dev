@@ -18,8 +18,8 @@ describe('layoutFromImport', () => {
     expect(layoutFromImport('https://a.test', [], 'k')).toBeUndefined();
   });
 
-  it('maps a box to block styling with the width as a cap', () => {
-    const layout = layoutFromImport('https://a.test', [{ ...block, lineHeight: 1.5 }], 'k');
+  it('maps a fixed-width box to block styling with the width as a cap', () => {
+    const layout = layoutFromImport('https://a.test', [{ ...block, lineHeight: 1.5 }], 'k', 1350);
     expect(layout?.blocks[0]).toEqual({
       tag: 'p',
       text: 'Hello',
@@ -34,6 +34,13 @@ describe('layoutFromImport', () => {
         lineHeightEm: 1.5,
       },
     });
+  });
+
+  it('does not cap a box that filled the capture viewport', () => {
+    const fluid = layoutFromImport('https://a.test', [{ ...block, width: 343 }], 'k', 375);
+    expect(fluid?.blocks[0]?.style).not.toHaveProperty('maxWidth');
+    const unknown = layoutFromImport('https://a.test', [block], 'k');
+    expect(unknown?.blocks[0]?.style).not.toHaveProperty('maxWidth');
   });
 
   it('leaves the line height out when the page had none', () => {

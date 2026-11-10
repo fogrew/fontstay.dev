@@ -17,6 +17,7 @@ async function fontstayCollect(win, doc, options = {}) {
   const MAX_BLOCKS = 60;
   const MAX_BLOCK_TEXT = 400;
   const BLOCKS = 'h1,h2,h3,p,li,blockquote,button';
+  const CHROME = 'nav,header,footer,aside,[aria-hidden="true"]';
   const MAX_CSS = 500000;
   const readBounded = async (response, limit, budget) => {
     if (!response.ok || Number(response.headers.get('content-length')) > limit) {
@@ -246,7 +247,7 @@ async function fontstayCollect(win, doc, options = {}) {
   const found = [];
   for (const element of Array.from(doc.querySelectorAll(BLOCKS))) {
     if (found.length >= MAX_BLOCKS) break;
-    if (element.querySelector(BLOCKS)) continue;
+    if (element.querySelector(BLOCKS) || element.closest(CHROME)) continue;
     const text = String(element.textContent ?? '')
       .replace(/\s+/g, ' ')
       .trim()
@@ -328,6 +329,7 @@ async function fontstayCollect(win, doc, options = {}) {
     rules: faceRules,
     used,
     blocks,
+    viewport: win.innerWidth,
     files,
   };
 }

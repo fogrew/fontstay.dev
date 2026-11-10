@@ -111,10 +111,11 @@ describe('sanitizeImport', () => {
       ).toEqual([]);
     });
 
-    it('replaces out-of-range spacing with zero and drops an out-of-range line height', () => {
+    it('clamps out-of-range spacing and drops an out-of-range line height', () => {
       const [kept] =
         run([{ ...block, marginTop: -5, padX: 1e9, indent: 1e9, lineHeight: 99 }]) ?? [];
-      expect(kept).toMatchObject({ marginTop: 0, padX: 0, indent: 0 });
+      expect(kept).toMatchObject({ marginTop: 0, padX: 500, indent: 5000 });
+      expect(run([{ ...block, padX: Number.NaN }])?.[0]?.padX).toBe(0);
       expect(kept).not.toHaveProperty('lineHeight');
     });
 
@@ -123,6 +124,19 @@ describe('sanitizeImport', () => {
       expect(run([{ ...block, text: 'x'.repeat(5000) }])?.[0]?.text).toHaveLength(400);
       expect(run({ length: 3 })).toEqual([]);
       expect(run(undefined)).toEqual([]);
+    });
+
+    it('does not make a payload with boxes alone importable', () => {
+      expect(sanitizeImport({ v: 1, blocks: [block] }, ORIGIN, true)).toBeNull();
+    });
+
+    it('keeps the capture viewport width within range', () => {
+      const viewport = (value: unknown) =>
+        sanitizeImport({ v: 1, faces: [{ family: 'A' }], viewport: value }, ORIGIN, true)?.viewport;
+      expect(viewport(1350)).toBe(1350);
+      expect(viewport(50)).toBe(0);
+      expect(viewport('1350')).toBe(0);
+      expect(viewport(Number.POSITIVE_INFINITY)).toBe(0);
     });
 
     it('does not copy unknown keys', () => {

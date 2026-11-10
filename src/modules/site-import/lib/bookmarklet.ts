@@ -16,7 +16,7 @@ const WRAPPER = `
   const data = fontstayCollect(window, document);
   if (!child) {
     (async () => {
-      const json = data.then((payload) => new Blob([JSON.stringify({ ...payload, files: [] })], { type: 'text/plain' }));
+      const json = data.then((payload) => new Blob([JSON.stringify({ ...payload, files: [], blocks: [] })], { type: 'text/plain' }));
       json.catch(() => {});
       if (window.ClipboardItem) await navigator.clipboard.write([new ClipboardItem({ 'text/plain': json })]);
       else await navigator.clipboard.writeText(await (await json).text());

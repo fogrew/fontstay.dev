@@ -322,7 +322,7 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
     const value = incoming;
     setIncoming(null);
     setImportedLayout(
-      layoutFromImport(value.origin, value.blocks, `${value.origin}:${Date.now()}`),
+      layoutFromImport(value.origin, value.blocks, `${value.origin}:${Date.now()}`, value.viewport),
     );
     if (value.files.length > 0) {
       void addFiles(value.files.map((file) => new File([file.bytes], file.name)));
@@ -2338,7 +2338,7 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
                       <LayoutShiftPanel
                         locale={locale}
                         verify={simulation}
-                        signature={`${output.fontFaces}${importedLayout?.key ?? ''}`}
+                        signature={`${importedLayout?.key ?? ''}|${output.fontFaces}`}
                         layoutOrigin={importedLayout?.origin}
                         onResetLayout={() => setImportedLayout(undefined)}
                       />

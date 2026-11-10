@@ -328,11 +328,13 @@ describe('fontstayCollect', () => {
       width?: number;
       style?: Record<string, string>;
       nested?: boolean;
+      chrome?: boolean;
     }
     const element = (init: Init) => ({
       tagName: init.tag.toUpperCase(),
       textContent: init.text,
       querySelector: () => (init.nested ? {} : null),
+      closest: () => (init.chrome ? {} : null),
       getBoundingClientRect: () => ({
         left: init.left ?? 0,
         width: init.width ?? 600,
@@ -394,13 +396,14 @@ describe('fontstayCollect', () => {
       expect(blocks[1]).toMatchObject({ tag: 'p', text: 'Body', indent: 20, padX: 7 });
     });
 
-    it('skips hidden, empty, fixed, invisible and container elements and caps the count', async () => {
+    it('skips hidden, empty, fixed, invisible, container and navigation elements and caps the count', async () => {
       const blocks = await blocksOf([
         element({ tag: 'p', text: 'hidden', width: 0 }),
         element({ tag: 'p', text: '   ' }),
         element({ tag: 'p', text: 'fixed', style: { position: 'fixed' } }),
         element({ tag: 'p', text: 'invisible', style: { visibility: 'hidden' } }),
         element({ tag: 'li', text: 'wrapper', nested: true }),
+        element({ tag: 'li', text: 'menu item', chrome: true }),
         ...Array.from({ length: 100 }, (_, index) => element({ tag: 'p', text: `line ${index}` })),
       ]);
       expect(blocks).toHaveLength(60);
