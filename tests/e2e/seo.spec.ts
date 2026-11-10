@@ -1,6 +1,6 @@
 import { expect, LOCALES, test } from './fixtures';
 
-const CJK_LOCALES: readonly string[] = ['zh'];
+const CJK_LOCALES: readonly string[] = ['zh', 'ja'];
 
 for (const locale of LOCALES) {
   test(`${locale}: pages carry the title, description, Open Graph and structured data`, async ({
@@ -29,6 +29,7 @@ for (const locale of LOCALES) {
           el: 'el_GR',
           th: 'th_TH',
           zh: 'zh_CN',
+          ja: 'ja_JP',
         }[locale],
       );
       await expect(page.locator('link[rel="canonical"]')).toHaveAttribute(
