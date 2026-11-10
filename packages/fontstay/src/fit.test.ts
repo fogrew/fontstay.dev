@@ -105,6 +105,22 @@ describe('fit', () => {
   });
 });
 
+describe('script-aware stacks', () => {
+  it('adds a :lang() rule for a ticked script the font cannot draw, in css and tailwind', async () => {
+    const result = await fit({
+      fonts: [sourceSans()],
+      audience: 'defaults',
+      systems: ['windows'],
+      stackScripts: ['arabic'],
+      format: 'tailwind',
+    });
+    expect(result.css).toContain(':lang(ar)');
+    expect(result.file.text).toContain(':lang(ar)');
+    const plain = await fit({ fonts: [sourceSans()], audience: 'defaults', systems: ['windows'] });
+    expect(plain.css).not.toContain(':lang(');
+  });
+});
+
 describe('font-face descriptors of bold and italic fonts', () => {
   it('are added to every face of a bold font with bold fallback faces', async () => {
     const parsed = parseFontBuffer(Uint8Array.from(fixture('fonts/FiraSans-Regular.ttf')).buffer);

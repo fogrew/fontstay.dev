@@ -36,6 +36,25 @@ async function inDirectory<T>(directory: string, action: () => Promise<T>): Prom
 }
 
 describe('fontstay fit', () => {
+  it('emits :lang() rules for --stack-scripts and rejects an unknown script', async () => {
+    const file = font('SourceSansPro-Regular.woff2');
+    const result = await cli(
+      'fit',
+      file,
+      '-a',
+      'defaults',
+      '-s',
+      'windows',
+      '--stack-scripts',
+      'thai,hebrew',
+    );
+    expect(result.code).toBe(0);
+    expect(result.stdout).toContain(':lang(th)');
+    expect(result.stdout).toContain(':lang(he)');
+    const bad = await cli('fit', file, '--stack-scripts', 'klingon');
+    expect(bad.code).not.toBe(0);
+  });
+
   it('uses a .browserslistrc found above the working directory', async () => {
     const project = join(scratch, 'rc-project');
     const nested = join(project, 'nested');

@@ -1,6 +1,7 @@
 import type { FontOrigin } from '@/modules/font-sources';
 import type { OsId } from '@/modules/os-fonts';
 import type { Overrides } from './css';
+import { STACK_SCRIPTS, type StackScript } from './script-stacks';
 import {
   DEFAULT_PANEL,
   type FontState,
@@ -36,6 +37,7 @@ export interface ShareInput {
   disabled?: readonly OsId[];
   range?: boolean;
   perScript?: boolean;
+  stackScripts?: readonly StackScript[];
   spacing?: { on: boolean; letter?: number | undefined; word?: number | undefined };
   panel?: PanelId | typeof NO_PANEL | undefined;
   os?: OsId | undefined;
@@ -96,6 +98,9 @@ export function buildShareState(input: ShareInput): ShareState {
     ...(input.sources && input.sources.length > 0 ? { sources: input.sources } : {}),
     ...(input.range ? { range: true } : {}),
     ...(input.perScript === false ? { scripts: false } : {}),
+    ...(input.stackScripts && input.stackScripts.length > 0
+      ? { stackScripts: STACK_SCRIPTS.filter((script) => input.stackScripts?.includes(script)) }
+      : {}),
     ...(spacingChanged
       ? {
           spacing: {

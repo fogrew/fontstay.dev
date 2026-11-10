@@ -13,6 +13,8 @@ import {
   fitFiles,
   OS_IDS,
   type OsId,
+  STACK_SCRIPTS,
+  type StackScript,
 } from './index';
 
 export const USAGE = `Usage: fontstay fit <font-file...> [options]
@@ -40,6 +42,8 @@ Options:
       --locale <en|ru>     Frequency profile for the fit (default: en)
       --unicode-range      Add unicode-range from the glyphs the font covers
       --no-scripts         Do not emit separate faces for other scripts
+      --stack-scripts <list>  Comma-separated scripts (${STACK_SCRIPTS.join(', ')}) that get a
+                           :lang() rule with system fonts only
   -o, --out <file>         Write the output to a file instead of stdout
       --json               Print a JSON report (output, picks, shares) instead of the file text
   -h, --help               Show this help
@@ -68,6 +72,16 @@ function systemsOf(value: string): OsId[] {
     .map((item) => item.trim().toLowerCase())
     .filter(Boolean)
     .map((item) => choice(item, OS_IDS, '--systems entry'));
+}
+
+function stackScriptsOf(value: string): StackScript[] {
+  const scripts = value
+    .split(',')
+    .map((item) => item.trim().toLowerCase())
+    .filter(Boolean)
+    .map((item) => choice(item, STACK_SCRIPTS, '--stack-scripts entry'));
+  if (scripts.length === 0) throw new UsageError('--stack-scripts needs at least one script.');
+  return scripts;
 }
 
 function reportOf({ css: _css, ...rest }: FitOutput) {
@@ -106,6 +120,7 @@ export async function run(argv: readonly string[], io: Io): Promise<number> {
         locale: { type: 'string' },
         'unicode-range': { type: 'boolean' },
         'no-scripts': { type: 'boolean' },
+        'stack-scripts': { type: 'string' },
         out: { type: 'string', short: 'o' },
         json: { type: 'boolean' },
         help: { type: 'boolean', short: 'h' },
@@ -157,6 +172,9 @@ export async function run(argv: readonly string[], io: Io): Promise<number> {
       locale,
       unicodeRange: values['unicode-range'] ?? false,
       scripts: !values['no-scripts'],
+      ...(values['stack-scripts'] !== undefined
+        ? { stackScripts: stackScriptsOf(values['stack-scripts']) }
+        : {}),
       format,
     });
     for (const font of result.fonts) {

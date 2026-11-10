@@ -15,6 +15,7 @@ import {
   FitRunError,
   fit,
   OS_IDS,
+  STACK_SCRIPTS,
 } from './index';
 import { arrayBufferOf, NetworkPathError, readFont } from './read-font';
 
@@ -94,6 +95,12 @@ const FIT_PROPERTIES = {
     type: 'boolean',
     description: 'Emit separate faces for other scripts than the primary one. Default true.',
   },
+  stack_scripts: {
+    type: 'array',
+    items: { type: 'string', enum: [...STACK_SCRIPTS] },
+    description:
+      'Scripts whose text (matched by :lang()) gets a font stack of system fonts only, so spaces and letters are not shaped from different fonts. Applies only to a script the fonts do not cover. Default: none.',
+  },
 };
 
 function stringOf(input: Json, key: string): string | undefined {
@@ -151,6 +158,18 @@ function systemsOf(input: Json): FitOptions['systems'] {
   return value as FitOptions['systems'];
 }
 
+function stackScriptsOf(input: Json): FitOptions['stackScripts'] {
+  const value = input.stack_scripts;
+  if (value === undefined) return undefined;
+  if (
+    !Array.isArray(value) ||
+    value.some((item) => !(STACK_SCRIPTS as readonly unknown[]).includes(item))
+  ) {
+    throw new InputError(`"stack_scripts" must be an array of: ${STACK_SCRIPTS.join(', ')}.`);
+  }
+  return value as FitOptions['stackScripts'];
+}
+
 function describeReadFailure(path: string, failure: unknown): string {
   if (failure instanceof NetworkPathError) return `${path}: network paths are not supported.`;
   if (failure instanceof FontParseError) {
@@ -197,6 +216,7 @@ async function fitOf(input: Json, format: ExportFormat): Promise<FitOutput> {
   }
   const systems = systemsOf(input);
   const kind = choiceOf(input, 'kind', CATEGORIES);
+  const stackScripts = stackScriptsOf(input);
   const options: Omit<FitOptions, 'fonts'> = {
     ...(audience !== undefined ? { audience } : {}),
     ...(systems ? { systems } : {}),
@@ -204,6 +224,7 @@ async function fitOf(input: Json, format: ExportFormat): Promise<FitOutput> {
     locale: choiceOf(input, 'locale', ['en', 'ru'] as const) ?? 'en',
     unicodeRange: booleanOf(input, 'unicode_range') ?? false,
     scripts: booleanOf(input, 'scripts') ?? true,
+    ...(stackScripts ? { stackScripts } : {}),
     format,
   };
   const fonts = await readFonts(paths);

@@ -2,6 +2,7 @@ import type { FontOrigin } from '@/modules/font-sources';
 import type { Category, OsId } from '@/modules/os-fonts';
 import { finite, isRecord, oneOf } from './guard';
 import type { FontStyleKey } from './per-os';
+import { STACK_SCRIPTS, type StackScript } from './script-stacks';
 import { parseViewDiff, type ViewDiff } from './view-state';
 
 export const SHARE_VERSION = 1;
@@ -40,6 +41,7 @@ export interface ShareState extends FontState {
   disabled?: OsId[];
   range?: boolean;
   scripts?: boolean;
+  stackScripts?: StackScript[];
   spacing?: { on: boolean; letter?: number; word?: number };
   panel?: PanelId | typeof NO_PANEL;
   os?: OsId;
@@ -161,6 +163,12 @@ export function parseShareState(
   }
   if (typeof input.range === 'boolean') state.range = input.range;
   if (typeof input.scripts === 'boolean') state.scripts = input.scripts;
+  if (Array.isArray(input.stackScripts)) {
+    const stackScripts = STACK_SCRIPTS.filter((script) =>
+      (input.stackScripts as unknown[]).includes(script),
+    );
+    if (stackScripts.length > 0) state.stackScripts = stackScripts;
+  }
   if (isRecord(input.spacing) && typeof input.spacing.on === 'boolean') {
     state.spacing = { on: input.spacing.on };
     if (finite(input.spacing.letter, -5, 5)) state.spacing.letter = input.spacing.letter;

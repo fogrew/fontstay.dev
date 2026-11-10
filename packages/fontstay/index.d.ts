@@ -1,4 +1,5 @@
 export type OsId = 'windows' | 'macos' | 'ios' | 'android' | 'linux' | 'chromeos';
+export type StackScript = 'arabic' | 'hebrew' | 'devanagari' | 'thai';
 export type Category = 'sans-serif' | 'serif' | 'monospace' | 'cursive';
 export type ExportFormat =
   | 'css'
@@ -22,6 +23,7 @@ export type FontParseErrorCode =
   | 'disposed';
 
 export declare const OS_IDS: readonly OsId[];
+export declare const STACK_SCRIPTS: readonly StackScript[];
 export declare const CATEGORIES: readonly Category[];
 export declare const EXPORT_FORMATS: readonly ExportFormat[];
 
@@ -46,6 +48,8 @@ export interface FitOptions {
   unicodeRange?: boolean;
   /** Emit separate faces for other scripts than the primary one. Default `true`. */
   scripts?: boolean;
+  /** Scripts whose text gets a `:lang()` rule with system fonts only; skipped for a script the fonts cover. Default none. */
+  stackScripts?: readonly StackScript[];
   /** Format of `file`. Default `css`. */
   format?: ExportFormat;
 }

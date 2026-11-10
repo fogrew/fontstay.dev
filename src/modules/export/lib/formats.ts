@@ -221,6 +221,11 @@ function wordpressFamilies(families: readonly ExportFamily[]) {
   });
 }
 
+const scriptNote = (input: ExportInput) =>
+  input.scriptRules
+    ? ['// Add the :lang() rules for the scripts the font cannot draw from the CSS export as well.']
+    : [];
+
 function fontaineEntry(family: ExportFamily): string {
   const fonts = family.systemFonts.length > 0 ? family.systemFonts : ['Arial'];
   return `        ${quoted(family.targetFamily)}: [${fonts.map(quoted).join(', ')}],`;
@@ -254,6 +259,7 @@ export function buildExport(format: ExportFormat, input: ExportInput): ExportFil
           '@import "tailwindcss";',
           input.fontFaces,
           `@theme {\n${families.map((family) => `  ${themeVariable(input, family)}: ${stackOf(family)};`).join('\n')}\n}`,
+          input.scriptRules ?? '',
         ]
           .filter(Boolean)
           .join('\n\n'),
@@ -264,6 +270,7 @@ export function buildExport(format: ExportFormat, input: ExportInput): ExportFil
       return {
         text: [
           `// Put ${singleLine(filesOf(input).join(', '))} into ./fonts/ and the @font-face rules from the CSS export into your global CSS.`,
+          ...scriptNote(input),
           "import localFont from 'next/font/local';",
           '',
           families.map((family) => nextBlock(input, family)).join('\n\n'),
@@ -275,6 +282,7 @@ export function buildExport(format: ExportFormat, input: ExportInput): ExportFil
       return {
         text: [
           '// Add the @font-face rules from the CSS export to a stylesheet listed in `css`.',
+          ...scriptNote(input),
           'export default defineNuxtConfig({',
           "  modules: ['@nuxt/fonts'],",
           '  fonts: {',
@@ -291,6 +299,7 @@ export function buildExport(format: ExportFormat, input: ExportInput): ExportFil
       return {
         text: [
           '// Add the @font-face rules from the CSS export to your global styles.',
+          ...scriptNote(input),
           "import { defineConfig } from 'astro/config';",
           '',
           'export default defineConfig({',
@@ -310,6 +319,7 @@ export function buildExport(format: ExportFormat, input: ExportInput): ExportFil
               $schema: 'https://schemas.wp.org/trunk/theme.json',
               version: 3,
               settings: { typography: { fontFamilies: wordpressFamilies(families) } },
+              ...(input.scriptRules ? { styles: { css: input.scriptRules } } : {}),
             },
             null,
             2,
@@ -322,6 +332,7 @@ export function buildExport(format: ExportFormat, input: ExportInput): ExportFil
       return {
         text: [
           `// Put ${singleLine(filesOf(input).join(', '))} into ./public/fonts/ and declare their @font-face rules in your CSS. In Nuxt, put the plugin under vite.plugins.`,
+          ...scriptNote(input),
           "import { FontaineTransform } from 'fontaine';",
           "import { defineConfig } from 'vite';",
           '',

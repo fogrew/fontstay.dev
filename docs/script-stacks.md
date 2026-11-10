@@ -4,7 +4,7 @@ When the web font has no glyphs for a script but does contain the space, the bro
 
 ## What is emitted
 
-For each script the web font cannot draw and the user ticks in the Tuning panel (opt-in, off by default), one rule is appended to the CSS and variables exports:
+For each script the web font cannot draw and the user ticks in the Tuning panel (opt-in, off by default), one rule is appended to the CSS, variables and Tailwind exports and to the WordPress `theme.json` (`styles.css`):
 
 ```css
 :lang(ar),
@@ -18,10 +18,14 @@ For each script the web font cannot draw and the user ticks in the Tuning panel 
 - Scripts: Arabic, Hebrew, Devanagari, Thai. A script is offered when the font has fewer than 20 letters of it. The font-to-script table is curated in `src/modules/generator/lib/script-stacks.ts` (system font names only, no metrics).
 - `:lang()` matches through the inherited `lang` attribute, so the rule applies to every element of a page declared in that language and overrides `font-family` there (including headings with a different family). Latin words inside those elements use the system font too.
 
+- Next, Nuxt, Astro and Fontaine configs cannot express a selector: their header comment points to the CSS export when a rule exists.
+- The ticked scripts are kept in the share link (with the Tuning part) and in the saved settings. A script the font covers is ignored.
+- CLI: `--stack-scripts arabic,thai`; library: `stackScripts`; MCP `fit_font` and `get_export`: `stack_scripts`. A script is skipped when any given font covers it.
+
 ## Effect on CLS
 
 The rule removes the web font from the stack for that script, so no swap happens for such text: the system font is final, and the web font load cannot shift it. Latin text on the same page keeps the adjusted fallback.
 
 ## Not covered yet
 
-Emoji and symbols (no language selector exists for them, they need a `unicode-range` face or an emoji font in the stack), the other export formats, the share link, the CLI and MCP, a per-font coverage dataset instead of the curated table, and a layout-time benchmark. These are tracked as follow-up issues.
+Emoji and symbols (no language selector exists for them, they need a `unicode-range` face or an emoji font in the stack), a per-font coverage dataset instead of the curated table, and a layout-time benchmark. These are tracked as follow-up issues.
