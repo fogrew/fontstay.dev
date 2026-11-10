@@ -42,6 +42,7 @@ import {
   type ExportInput,
   loadSelfHostArchive,
   prependSelfHost,
+  quoteName,
   type SelfHostFont,
   selfHostFontFaces,
 } from '@/modules/export';
@@ -125,6 +126,8 @@ import type { PreviewItem } from '../lib/preview-item';
 import { buildReport } from '../lib/report';
 import { aspectOf, safariStrategyCss } from '../lib/safari';
 import {
+  emojiFonts,
+  lacksEmoji,
   STACK_SCRIPTS,
   type StackScript,
   scriptStackRules,
@@ -263,6 +266,7 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
   const [rangeOn, setRangeOn] = useState(false);
   const [perScript, setPerScript] = useState(true);
   const [stackScripts, setStackScripts] = useState<StackScript[]>([]);
+  const [emojiStack, setEmojiStack] = useState(false);
   const [openSystem, setOpenSystem] = useState<OsId | null | undefined>();
   const [fitting, setFitting] = useState(false);
   const [spacingValues, setSpacingValues] = useState<{ letter: FitValue; word: FitValue }>({
@@ -826,6 +830,10 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
     () => (selected ? uncoveredScripts(selected.metrics.codePoints) : []),
     [selected],
   );
+  const emojiCandidate = useMemo(
+    () => (selected ? lacksEmoji(selected.metrics.codePoints) : false),
+    [selected],
+  );
   const stackLabel = (script: StackScript) => t[`stack_${script}`]();
   const scriptLabel = (script: ScriptId) => {
     if (script === 'cyrillic') return t.script_cyrillic();
@@ -1012,12 +1020,13 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
     if (!archiveEnabled) return name;
     return archiveFontFileName(font.origin?.source ?? 'local', font.id, name);
   };
+  const emojiNames = emojiStack && emojiCandidate ? emojiFonts(systems.filter(isEnabled)) : [];
   const exportOutputs: FontOutput[] = exportEntries.map((entry) => ({
     targetFamily: entry.family,
     generic: entry.kind,
     fontFaces: entry.css.fontFaces,
-    families: entry.css.families,
-    systemFonts: entry.systemFonts,
+    families: [...entry.css.families, ...emojiNames.map(quoteName)],
+    systemFonts: [...entry.systemFonts, ...emojiNames],
     strategy: entry.strategy,
     fileName: exportFontName(entry.font),
     weight: styleOf(entry.font).includes('bold') ? 700 : 400,
@@ -1653,7 +1662,7 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
             </p>
           </>
         )}
-        {stackCandidates.length > 0 && (
+        {(stackCandidates.length > 0 || emojiCandidate) && (
           <fieldset class="ff-generator__stacks">
             <legend>{t.stack_legend()}</legend>
             <p class="ff-muted">{t.stack_note()}</p>
@@ -1674,6 +1683,17 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
                 {stackLabel(script)}
               </label>
             ))}
+            {emojiCandidate && (
+              <label>
+                <input
+                  class="ff-control"
+                  type="checkbox"
+                  checked={emojiStack}
+                  onChange={(event) => setEmojiStack(event.currentTarget.checked)}
+                />{' '}
+                {t.stack_emoji()}
+              </label>
+            )}
           </fieldset>
         )}
         {styleKey !== 'regular' && unmatchedFonts.length > 0 && (

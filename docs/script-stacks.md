@@ -22,10 +22,14 @@ For each script the web font cannot draw and the user ticks in the Tuning panel 
 - The ticked scripts are kept in the share link (with the Tuning part) and in the saved settings. A script the font covers is ignored.
 - CLI: `--stack-scripts arabic,thai`; library: `stackScripts`; MCP `fit_font` and `get_export`: `stack_scripts`. A script is skipped when any given font covers it.
 
+## Emoji and symbols
+
+Emoji and symbols have no language selector, so `:lang()` cannot target them. The Tuning panel offers an opt-in "Emoji and symbols" option when the web font has fewer than 20 emoji. It appends the system emoji fonts of the enabled systems (Segoe UI Emoji, Apple Color Emoji, Noto Color Emoji) to the font stack of every output, before the generic family, in every export format. An emoji font in the stack was chosen over a `unicode-range` face: it needs no extra `@font-face`, works in all formats and keeps the web font and its adjusted fallbacks first. If the web font itself contains the zero width joiner or variation selectors, the browser still takes those from it.
+
 ## Effect on CLS
 
 The rule removes the web font from the stack for that script, so no swap happens for such text: the system font is final, and the web font load cannot shift it. Latin text on the same page keeps the adjusted fallback.
 
 ## Not covered yet
 
-Emoji and symbols (no language selector exists for them, they need a `unicode-range` face or an emoji font in the stack), a per-font coverage dataset instead of the curated table, and a layout-time benchmark. These are tracked as follow-up issues.
+The emoji option in the share link, the CLI and MCP, a per-font coverage dataset instead of the curated table, and a layout-time benchmark. These are tracked as follow-up issues.

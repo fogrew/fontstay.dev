@@ -500,6 +500,7 @@
   "stack_hebrew": "ヘブライ文字（he）",
   "stack_devanagari": "デーヴァナーガリー文字（hi、mr、ne）",
   "stack_thai": "タイ文字（th）",
+  "stack_emoji": "Emoji and symbols",
   "import_page_title": "サイトのデータを受信中",
   "import_receiving": "サイトからデータを受信中…",
   "import_nothing": "何も受信されませんでした。インポートしたいサイトで、ブックマークレットまたは拡張機能をもう一度実行してください。",

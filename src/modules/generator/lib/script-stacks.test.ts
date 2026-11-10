@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { scriptStackRules, uncoveredScripts } from './script-stacks';
+import { emojiFonts, lacksEmoji, scriptStackRules, uncoveredScripts } from './script-stacks';
 
 const range = (from: number, to: number) =>
   Uint32Array.from({ length: to - from + 1 }, (_, index) => from + index);
@@ -41,5 +41,23 @@ describe('scriptStackRules', () => {
     const css = scriptStackRules(['thai', 'hebrew'], ['windows'], 'sans-serif');
     expect(css.split('\n\n')).toHaveLength(2);
     expect(css.indexOf(':lang(he)')).toBeLessThan(css.indexOf(':lang(th)'));
+  });
+});
+
+describe('emoji fonts', () => {
+  it('lists the system emoji fonts of the chosen systems without repeats', () => {
+    expect(emojiFonts(['windows', 'macos', 'ios'])).toEqual([
+      'Segoe UI Emoji',
+      'Apple Color Emoji',
+    ]);
+  });
+
+  it('is empty without systems', () => {
+    expect(emojiFonts([])).toEqual([]);
+  });
+
+  it('flags a font with no emoji and accepts one that has them', () => {
+    expect(lacksEmoji(range(0x41, 0x7a))).toBe(true);
+    expect(lacksEmoji(range(0x1f300, 0x1f330))).toBe(false);
   });
 });

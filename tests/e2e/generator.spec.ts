@@ -1197,6 +1197,20 @@ test('script stacks add :lang() rules for scripts the web font cannot draw', asy
   await expect(code).not.toContainText(':lang(');
 });
 
+test('the emoji option adds system emoji fonts to the stack', async ({ page }) => {
+  await page.goto('/en/');
+  await waitForGenerator(page);
+  await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(sourceSans);
+  const code = page.getByRole('region', { name: 'Generated CSS', includeHidden: true });
+  await expect(code).toContainText('size-adjust');
+  await expect(code).not.toContainText('Emoji');
+  const group = page.getByRole('group', { name: 'Stacks for text the font cannot draw' });
+  await group.getByRole('checkbox', { name: 'Emoji and symbols' }).check();
+  await expect(code).toContainText('Emoji"');
+  await group.getByRole('checkbox', { name: 'Emoji and symbols' }).uncheck();
+  await expect(code).not.toContainText('Emoji');
+});
+
 test('values are optimized automatically and pinned values stay', async ({ page }) => {
   await page.goto('/en/');
   await waitForGenerator(page);

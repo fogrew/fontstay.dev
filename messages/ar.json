@@ -500,6 +500,7 @@
   "stack_hebrew": "العبرية (he)",
   "stack_devanagari": "الديفاناغارية (hi, mr, ne)",
   "stack_thai": "التايلاندية (th)",
+  "stack_emoji": "الرموز التعبيرية والرموز",
   "import_page_title": "جارٍ استلام بيانات الموقع",
   "import_receiving": "جارٍ استلام البيانات من الموقع…",
   "import_nothing": "لم يُستلم شيء. شغّل الإشارة المرجعية (bookmarklet) أو الإضافة مرة أخرى من الموقع الذي تريد استيراده.",

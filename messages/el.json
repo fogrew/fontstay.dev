@@ -500,6 +500,7 @@
   "stack_hebrew": "Εβραϊκά (he)",
   "stack_devanagari": "Ντεβαναγκάρι (hi, mr, ne)",
   "stack_thai": "Ταϊλανδικά (th)",
+  "stack_emoji": "Emoji and symbols",
   "import_page_title": "Λήψη δεδομένων ιστότοπου",
   "import_receiving": "Λήψη των δεδομένων από τον ιστότοπο…",
   "import_nothing": "Δεν ελήφθη τίποτα. Εκτελέστε ξανά το bookmarklet ή την επέκταση από τον ιστότοπο που θέλετε να εισαγάγετε.",
