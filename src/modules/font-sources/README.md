@@ -16,5 +16,5 @@ Both catalogs carry a license index per family (`licenses` list plus one number 
 
 Catalogs are loaded lazily when a picker is first opened. Downloads check the https host and
 path, are size bounded and time out after 15 s. The file then goes through the normal upload
-path, so it is validated like any file. These three origins are the only network access in the
-app and are listed in `connect-src` (see `docs/security.md`).
+path, so it is validated like any file. These three origins are the only network access of the
+pickers; the direct site import is the one other fetch, and `connect-src` allows `https:` for it (see `docs/security.md`).

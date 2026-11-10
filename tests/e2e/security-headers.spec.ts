@@ -41,6 +41,16 @@ test('the hashed CSP allows no unsafe sources', async ({ page }) => {
   expect(policy).not.toContain('unsafe-inline');
 });
 
+test('only the generator page may connect to any https origin', async ({ page }) => {
+  const connect = async () => ((await policyOf(page)) ?? '').match(/connect-src[^;]*/)?.[0] ?? '';
+  await page.goto('/en/');
+  expect(await connect()).toMatch(/\shttps:(\s|$)/);
+  for (const path of ['import/', 'fonts/', 'guide/']) {
+    await page.goto(`/en/${path}`);
+    expect(await connect(), path).not.toMatch(/\shttps:(\s|$)/);
+  }
+});
+
 for (const locale of ['en', 'ru']) {
   test(`only the ${locale} generator page may compile WebAssembly`, async ({ page }) => {
     await page.goto(`/${locale}/`);

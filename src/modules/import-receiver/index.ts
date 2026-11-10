@@ -6,6 +6,6 @@ export type {
   ImportedUse,
   SiteImport,
 } from './lib/payload';
-export { parseClipboardImport } from './lib/payload';
+export { parseClipboardImport, sanitizeImport } from './lib/payload';
 export { DATA_TYPE, importPath, PROTOCOL_VERSION, READY_TYPE } from './lib/protocol';
 export { runReceivePage } from './lib/receive-page';

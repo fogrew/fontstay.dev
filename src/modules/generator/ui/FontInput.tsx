@@ -228,7 +228,7 @@ export function FontInput({
           event.currentTarget.value = '';
         }}
       />
-      {site && <SiteImportPanel locale={locale} />}
+      {site && <SiteImportPanel locale={locale} onImport={onImport} />}
       {!compact && <p class="ff-drop__paragraph ff-muted">{t.upload_local()}</p>}
       <div role="status">
         {importError && <p class="ff-drop__paragraph ff-error">{t.import_paste_error()}</p>}

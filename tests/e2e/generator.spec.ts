@@ -2564,6 +2564,49 @@ test('the bookmarklet hands only the fonts of a page to the generator after a co
   expect(generator.url()).not.toContain('#');
 });
 
+test('the generator reads a site directly when it sends CORS headers', async ({ page }) => {
+  await page.route('https://open.test/**', (route) => {
+    const font = new URL(route.request().url()).pathname === '/font.woff2';
+    return route.fulfill({
+      status: 200,
+      headers: {
+        'content-type': font ? 'font/woff2' : 'text/html',
+        'access-control-allow-origin': '*',
+      },
+      body: font ? readFileSync(sourceSans) : DEMO_SITE,
+    });
+  });
+  await page.goto('/en/');
+  await waitForGenerator(page);
+  await openStep(page, 'inputs');
+  await page.getByRole('button', { name: 'import from a website…' }).click();
+  await page.getByLabel('Page or stylesheet address').fill('open.test');
+  await page.getByRole('button', { name: 'Fetch fonts' }).click();
+  const confirm = page.getByRole('region', { name: 'Import from https://open.test?' });
+  await expect(confirm).toBeVisible();
+  await expect(confirm).toContainText('1 font files');
+  await confirm.getByRole('button', { name: 'Import' }).click();
+  await openStep(page, 'tuning');
+  await expect(page.getByRole('button', { name: /^Remove: font\.woff2/ })).toBeVisible();
+});
+
+test('a site without CORS headers falls back to the bookmarklet with an explanation', async ({
+  page,
+}) => {
+  await page.route('https://closed.test/**', (route) => route.abort());
+  await page.goto('/en/');
+  await waitForGenerator(page);
+  await openStep(page, 'inputs');
+  await page.getByRole('button', { name: 'import from a website…' }).click();
+  await page.getByLabel('Page or stylesheet address').fill('https://closed.test/');
+  await page.getByRole('button', { name: 'Fetch fonts' }).click();
+  await expect(page.getByText(/Most sites do not let other sites read their pages/)).toBeVisible();
+  await page.getByLabel('Page or stylesheet address').fill('https://127.0.0.1/');
+  await page.getByRole('button', { name: 'Fetch fonts' }).click();
+  await expect(page.getByText(/Local, private and IP-address hosts are not fetched/)).toBeVisible();
+  await expect(page.getByRole('link', { name: 'Send to fontstay' })).toBeVisible();
+});
+
 test('an import page without a valid handshake explains that nothing was received', async ({
   page,
 }) => {
