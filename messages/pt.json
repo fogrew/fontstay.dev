@@ -154,6 +154,8 @@
   "self_host_error": "Não foi possível criar o arquivo.",
   "cls_verify": "Verificar neste dispositivo",
   "cls_verifying": "Medindo no navegador…",
+  "cls_imported_layout": "Layout obtido de {origin}.",
+  "cls_imported_reset": "Usar a página de exemplo",
   "cls_verified": "Medido no navegador com as fontes instaladas neste dispositivo: {results}.",
   "matrix_heading": "Compatibilidade de navegadores",
   "matrix_empty": "Carregue uma fonte e escolha uma consulta de navegadores para ver quais navegadores o trecho cobre.",

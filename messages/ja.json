@@ -154,6 +154,8 @@
   "self_host_error": "アーカイブを作成できませんでした。",
   "cls_verify": "この端末で検証",
   "cls_verifying": "ブラウザーで測定中…",
+  "cls_imported_layout": "{origin} のレイアウトを使用しています。",
+  "cls_imported_reset": "サンプルページを使う",
   "cls_verified": "この端末にインストールされているフォントを使い、ブラウザーで測定しました：{results}。",
   "matrix_heading": "ブラウザー対応状況",
   "matrix_empty": "フォントを読み込み、ブラウザーのクエリを選ぶと、スニペットがどのブラウザーをカバーするかが表示されます。",

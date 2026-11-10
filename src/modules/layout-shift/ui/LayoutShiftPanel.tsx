@@ -17,10 +17,14 @@ export function LayoutShiftPanel({
   locale,
   verify,
   signature,
+  layoutOrigin,
+  onResetLayout,
 }: {
   locale: Locale;
   verify: PanelInput;
   signature: string;
+  layoutOrigin?: string | undefined;
+  onResetLayout?: (() => void) | undefined;
 }) {
   const t = messagesFor(locale);
   const [verified, setVerified] = useState<VerifyState>({ state: 'idle' });
@@ -55,6 +59,14 @@ export function LayoutShiftPanel({
 
   return (
     <div class="ff-cls">
+      {layoutOrigin && (
+        <p class="ff-cls__text ff-muted">
+          {t.cls_imported_layout({ origin: layoutOrigin })}{' '}
+          <Button variant="secondary" onClick={onResetLayout}>
+            {t.cls_imported_reset()}
+          </Button>
+        </p>
+      )}
       <Button
         onClick={() => {
           if (verified.state !== 'running') void runVerify();

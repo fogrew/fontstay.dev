@@ -38,6 +38,7 @@ function page(rules: unknown[], fetchFile?: (url: string) => Promise<unknown>) {
     baseURI: 'https://site.test/',
     styleSheets: [{ href: 'https://site.test/a.css', cssRules: rules }],
     querySelector: () => null,
+    querySelectorAll: () => [],
     body: { querySelectorAll: () => [] },
   };
   const win = {
@@ -317,5 +318,101 @@ describe('fontstayCollect', () => {
       };
     });
     expect((result.files as unknown[]).length).toBeLessThan(8);
+  });
+
+  describe('page boxes', () => {
+    interface Init {
+      tag: string;
+      text: string;
+      left?: number;
+      width?: number;
+      style?: Record<string, string>;
+      nested?: boolean;
+    }
+    const element = (init: Init) => ({
+      tagName: init.tag.toUpperCase(),
+      textContent: init.text,
+      querySelector: () => (init.nested ? {} : null),
+      getBoundingClientRect: () => ({
+        left: init.left ?? 0,
+        width: init.width ?? 600,
+        height: 24,
+      }),
+      style: init.style ?? {},
+    });
+    const blocksOf = async (elements: ReturnType<typeof element>[]) => {
+      const { win, doc } = page([]);
+      Object.assign(doc, { querySelectorAll: () => elements });
+      const computed = (target: { style?: Record<string, string> }) =>
+        ({
+          fontSize: '16px',
+          lineHeight: '24px',
+          marginTop: '0px',
+          marginBottom: '12px',
+          paddingLeft: '0px',
+          paddingRight: '0px',
+          paddingTop: '0px',
+          paddingBottom: '0px',
+          ...target.style,
+        }) as never;
+      Object.assign(win, { getComputedStyle: computed });
+      const result = (await fontstayCollect(win, doc)) as { blocks: Record<string, unknown>[] };
+      return result.blocks;
+    };
+
+    it('reports tag, text, size, box width and spacing relative to the leftmost box', async () => {
+      const blocks = await blocksOf([
+        element({
+          tag: 'h1',
+          text: '  Big   title ',
+          left: 100,
+          width: 500,
+          style: { fontSize: '32px', lineHeight: '48px' },
+        }),
+        element({
+          tag: 'p',
+          text: 'Body',
+          left: 120,
+          width: 480,
+          style: {
+            paddingLeft: '4px',
+            paddingRight: '8px',
+            borderLeftWidth: '1px',
+            borderRightWidth: '1px',
+          },
+        }),
+      ]);
+      expect(blocks[0]).toMatchObject({
+        tag: 'h1',
+        text: 'Big title',
+        fontPx: 32,
+        width: 500,
+        indent: 0,
+        marginBottom: 12,
+        lineHeight: 1.5,
+      });
+      expect(blocks[1]).toMatchObject({ tag: 'p', text: 'Body', indent: 20, padX: 7 });
+    });
+
+    it('skips hidden, empty, fixed, invisible and container elements and caps the count', async () => {
+      const blocks = await blocksOf([
+        element({ tag: 'p', text: 'hidden', width: 0 }),
+        element({ tag: 'p', text: '   ' }),
+        element({ tag: 'p', text: 'fixed', style: { position: 'fixed' } }),
+        element({ tag: 'p', text: 'invisible', style: { visibility: 'hidden' } }),
+        element({ tag: 'li', text: 'wrapper', nested: true }),
+        ...Array.from({ length: 100 }, (_, index) => element({ tag: 'p', text: `line ${index}` })),
+      ]);
+      expect(blocks).toHaveLength(60);
+      expect(blocks[0]).toMatchObject({ text: 'line 0' });
+    });
+
+    it('truncates long text and omits a line height that is not a number', async () => {
+      const [block] = await blocksOf([
+        element({ tag: 'p', text: 'x'.repeat(2000), style: { lineHeight: 'normal' } }),
+      ]);
+      expect(String(block?.text)).toHaveLength(400);
+      expect(block).not.toHaveProperty('lineHeight');
+    });
   });
 });

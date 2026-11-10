@@ -154,6 +154,8 @@
   "self_host_error": "无法构建压缩包。",
   "cls_verify": "在此设备上验证",
   "cls_verifying": "正在浏览器中测量…",
+  "cls_imported_layout": "布局取自 {origin}。",
+  "cls_imported_reset": "使用示例页面",
   "cls_verified": "已使用此设备上安装的字体在浏览器中测量：{results}。",
   "matrix_heading": "浏览器支持",
   "matrix_empty": "加载字体并选择浏览器查询，即可查看代码片段覆盖哪些浏览器。",

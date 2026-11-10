@@ -77,6 +77,61 @@ describe('sanitizeImport', () => {
     expect(result).not.toHaveProperty('samples');
   });
 
+  describe('blocks', () => {
+    const block = {
+      tag: 'p',
+      text: ' Some\u202e  text ',
+      fontPx: 18,
+      width: 640,
+      indent: 12,
+      marginTop: 0,
+      marginBottom: 20,
+      padX: 4,
+      padY: 2,
+      lineHeight: 1.5,
+    };
+    const run = (blocks: unknown) =>
+      sanitizeImport({ v: 1, faces: [{ family: 'A' }], blocks }, ORIGIN, true)?.blocks;
+
+    it('keeps well-formed boxes and cleans their text', () => {
+      expect(run([block])).toEqual([{ ...block, text: 'Some text' }]);
+    });
+
+    it('drops unknown tags, bad numbers, empty text and non-objects', () => {
+      expect(
+        run([
+          { ...block, tag: 'script' },
+          { ...block, fontPx: 0 },
+          { ...block, width: Number.POSITIVE_INFINITY },
+          { ...block, width: '640' },
+          { ...block, text: '   ' },
+          null,
+          7,
+        ]),
+      ).toEqual([]);
+    });
+
+    it('replaces out-of-range spacing with zero and drops an out-of-range line height', () => {
+      const [kept] =
+        run([{ ...block, marginTop: -5, padX: 1e9, indent: 1e9, lineHeight: 99 }]) ?? [];
+      expect(kept).toMatchObject({ marginTop: 0, padX: 0, indent: 0 });
+      expect(kept).not.toHaveProperty('lineHeight');
+    });
+
+    it('caps the count and the text length and ignores a non-array', () => {
+      expect(run(Array.from({ length: 500 }, () => block))).toHaveLength(60);
+      expect(run([{ ...block, text: 'x'.repeat(5000) }])?.[0]?.text).toHaveLength(400);
+      expect(run({ length: 3 })).toEqual([]);
+      expect(run(undefined)).toEqual([]);
+    });
+
+    it('does not copy unknown keys', () => {
+      const [kept] = run([{ ...block, extra: 1, constructor: { polluted: true } }]) ?? [];
+      expect(kept).not.toHaveProperty('extra');
+      expect(Object.keys(kept ?? {})).not.toContain('constructor');
+    });
+  });
+
   it('rejects other versions, other shapes and unknown origins', () => {
     expect(sanitizeImport({ ...good, v: 2 }, ORIGIN, true)).toBeNull();
     expect(sanitizeImport([], ORIGIN, true)).toBeNull();

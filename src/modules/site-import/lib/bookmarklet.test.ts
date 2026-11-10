@@ -93,6 +93,7 @@ describe('bookmarklet handshake', () => {
       title: 'Site',
       body: { querySelectorAll: () => [] },
       querySelector: () => null,
+      querySelectorAll: () => [],
     };
     new Function('window', 'document', bookmarkletSource(options))(win, doc);
     const emit = (event: unknown) => {

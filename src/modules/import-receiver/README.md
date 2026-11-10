@@ -8,7 +8,7 @@ separate module so the import page (`/<locale>/import/`, the only page without
   opener (or from its own window for the extension relay) with the right token. The opener
   branch and the announcement are off when the URL carries `&via=ext` (`acceptOpener`), so a
   page opened by the extension accepts its own window alone.
-- `lib/payload.ts`: `sanitizeImport` rebuilds the payload field by field with limits.
+- `lib/payload.ts`: `sanitizeImport` rebuilds the payload field by field with limits (fonts, faces, `@font-face` rules, used sizes, element boxes).
 - `lib/handoff.ts`: hands the sanitized data to the generator through IndexedDB.
 - `lib/receive-page.ts`: the script of the import page.
 

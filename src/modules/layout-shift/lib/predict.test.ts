@@ -169,3 +169,46 @@ describe('textWidth and widthMismatch', () => {
     expect(widthMismatch(model, { ...font, scale: 1.1 })).toBeCloseTo(0.1, 3);
   });
 });
+
+describe('layoutDocument with imported styling', () => {
+  const plain: Block[] = [{ tag: 'p', text: 'aaaa aaaa aaaa' }];
+
+  it('caps the width of a block and wraps inside the cap', () => {
+    const capped: Block[] = [{ tag: 'p', text: 'aaaa aaaa aaaa', style: { maxWidth: 60 } }];
+    expect(layoutDocument(font(500), plain, 500).lines).toEqual([1]);
+    const layout = layoutDocument(font(500), capped, 500);
+    expect(layout.lines).toEqual([3]);
+    expect(layout.boxes[0]?.width).toBe(60);
+  });
+
+  it('never exceeds the viewport even when the cap is wider', () => {
+    const capped: Block[] = [{ tag: 'p', text: 'aaaa', style: { maxWidth: 5000 } }];
+    expect(layoutDocument(font(500), capped, 232).boxes[0]?.width).toBe(200);
+  });
+
+  it('uses an explicit line height for every font', () => {
+    const tall: Block[] = [{ tag: 'p', text: 'aaaa', style: { lineHeightEm: 2, fontPx: 10 } }];
+    const a = layoutDocument(font(500), tall, 300);
+    const b = layoutDocument(font(500, { ascent: 2, descent: 1 }), tall, 300);
+    expect(a.boxes[0]?.height).toBe(20);
+    expect(b.boxes[0]?.height).toBe(20);
+  });
+
+  it('applies margins, indent and padding from the block', () => {
+    const styled: Block[] = [
+      { tag: 'p', text: 'aa', style: { marginTop: 30, indent: 10, padX: 5, padY: 3, fontPx: 10 } },
+    ];
+    const box = layoutDocument(font(500), styled, 300).boxes[0];
+    expect(box?.x).toBe(26);
+    expect(box?.y).toBe(46);
+    expect(box?.height).toBe(16);
+  });
+
+  it('keeps the layout of different block lists apart in the web-font cache', () => {
+    const web = font(500);
+    const viewport = { width: 232, height: 800 };
+    const shorter = predictViewport(web, font(600), plain, viewport);
+    const longer = predictViewport(web, font(600), [...plain, ...plain], viewport);
+    expect(longer.heightAfter).toBeGreaterThan(shorter.heightAfter);
+  });
+});
