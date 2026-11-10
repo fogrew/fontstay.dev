@@ -337,7 +337,7 @@ test('the inspect tools draw, fade and compare the web font and the fallback', a
     2,
   );
 
-  await page.keyboard.press('Escape');
+  await inspect.click();
   await expect(inspect).toHaveAttribute('aria-expanded', 'false');
   await view.getByRole('button', { name: 'Side by side', exact: true }).click();
   const side = view.locator('.ff-article-view__side');
@@ -2895,7 +2895,8 @@ test('the preview toolbar stays above the article while scrolling and its popove
   await expect.poll(async () => (await toolbar.boundingBox())?.y ?? -1).toBeLessThan(2);
   await expect(toolbar).toBeInViewport();
   await openPopover(view, 'Settings');
-  const panel = view.locator('.ff-popover__panel:visible').first();
+  const panel = view.getByRole('complementary', { name: 'Settings' });
+  await expect(panel).toBeVisible();
   const box = await panel.boundingBox();
   expect(box?.y).toBeGreaterThanOrEqual(0);
   expect((box?.y ?? 0) + (box?.height ?? 0)).toBeLessThanOrEqual(800);
@@ -3833,7 +3834,7 @@ for (const width of [320, 768, 1280]) {
     await closePanels(page);
     const view = page.getByRole('region', { name: 'Article' });
     await openPopover(view, 'Settings');
-    const panel = view.locator('.ff-popover__panel:not([hidden])');
+    const panel = view.getByRole('complementary', { name: 'Settings' });
     await expect(panel).toBeVisible();
     const box = await panel.boundingBox();
     expect(box?.x).toBeGreaterThanOrEqual(-0.5);
@@ -3852,12 +3853,8 @@ for (const locale of LOCALES) {
       await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(sourceSans);
       await closePanels(page);
       const view = page.locator('.ff-article-view');
-      const toolbar = view.locator('.ff-toolbar');
-      const popover = toolbar.locator('.ff-popover', {
-        has: page.locator('.ff-settings__section'),
-      });
-      await popover.locator('.ff-popover__button').click();
-      const panel = popover.locator('.ff-popover__panel');
+      await view.getByRole('button', { name: 'Settings', exact: false }).first().click();
+      const panel = page.locator('#ff-article-settings');
       await expect(panel).toBeVisible();
       const fit = await panel.evaluate((node) => ({
         clipped: [
