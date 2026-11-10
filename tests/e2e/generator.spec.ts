@@ -3853,7 +3853,7 @@ for (const locale of LOCALES) {
       await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(sourceSans);
       await closePanels(page);
       const view = page.locator('.ff-article-view');
-      await view.getByRole('button', { name: 'Settings', exact: false }).first().click();
+      await view.getByRole('button', { name: 'Settings', exact: true }).click();
       const panel = page.locator('#ff-article-settings');
       await expect(panel).toBeVisible();
       const fit = await panel.evaluate((node) => ({
