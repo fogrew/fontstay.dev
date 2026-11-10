@@ -69,6 +69,9 @@ describe('emoji fonts', () => {
   it('flags a font with no emoji and accepts one that has them', () => {
     expect(lacksEmoji(range(0x41, 0x7a))).toBe(true);
     expect(lacksEmoji(range(0x1f300, 0x1f330))).toBe(false);
+  });
+});
+
 describe('script coverage dataset', () => {
   it('has an entry for every font the stacks name that ships with a source file', () => {
     for (const entry of scriptCoverageEntries) {
