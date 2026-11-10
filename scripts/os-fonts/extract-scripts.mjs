@@ -1,6 +1,6 @@
 import { createHash } from 'node:crypto';
-import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
-import { homedir, platform, tmpdir } from 'node:os';
+import { readdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { homedir, platform } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { create } from 'fontkitten';
@@ -8,8 +8,6 @@ import { createViteServer } from 'vitest/node';
 
 const root = fileURLToPath(new URL('../../', import.meta.url));
 const output = join(root, 'src/modules/os-fonts/data/script-coverage.json');
-const cache = join(tmpdir(), 'fontstay-os-fonts-cache');
-mkdirSync(cache, { recursive: true });
 
 const extraDirs = process.argv.slice(2).filter((arg) => !arg.startsWith('--'));
 const fontDirs = [
@@ -44,13 +42,21 @@ try {
     '/scripts/os-fonts/sfnt.ts',
   );
 
-  const existing = existsSync(output) ? JSON.parse(readFileSync(output, 'utf8')).fonts : [];
+  let existing = [];
+  try {
+    existing = JSON.parse(readFileSync(output, 'utf8')).fonts;
+  } catch {}
   const byId = new Map(existing.map((font) => [font.id, font]));
 
   const findLocal = (names) => {
     for (const dir of fontDirs) {
-      if (!existsSync(dir)) continue;
-      const entries = new Map(readdirSync(dir).map((name) => [name.toLowerCase(), name]));
+      let listing;
+      try {
+        listing = readdirSync(dir);
+      } catch {
+        continue;
+      }
+      const entries = new Map(listing.map((name) => [name.toLowerCase(), name]));
       for (const wanted of names) {
         const found = entries.get(wanted.toLowerCase());
         if (found) return { bytes: readFileSync(join(dir, found)), file: found };
@@ -60,17 +66,10 @@ try {
   };
 
   const download = async (spec) => {
-    const key = createHash('sha256').update(spec.url).digest('hex');
-    const cached = join(cache, key);
-    let raw;
-    if (existsSync(cached)) raw = readFileSync(cached);
-    else {
-      const response = await fetch(spec.url, { headers: { 'user-agent': 'fontstay-metrics/1.0' } });
-      if (!response.ok) throw new Error(`${spec.url}: HTTP ${response.status}`);
-      raw = Buffer.from(await response.arrayBuffer());
-      if (raw.length > 50 * 1024 * 1024) throw new Error(`${spec.url}: larger than 50 MB`);
-      writeFileSync(cached, raw);
-    }
+    const response = await fetch(spec.url, { headers: { 'user-agent': 'fontstay-metrics/1.0' } });
+    if (!response.ok) throw new Error(`${spec.url}: HTTP ${response.status}`);
+    const raw = Buffer.from(await response.arrayBuffer());
+    if (raw.length > 50 * 1024 * 1024) throw new Error(`${spec.url}: larger than 50 MB`);
     return { bytes: raw, file: decodeURIComponent(spec.url.split('/').pop().split('?')[0]) };
   };
 
