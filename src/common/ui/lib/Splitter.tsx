@@ -26,9 +26,9 @@ export interface Sidebar {
   toggle: () => void;
   setOpen: (open: boolean) => void;
   drag: (raw: number) => void;
+  nudge: (delta: number) => void;
   commit: () => void;
   reset: () => void;
-  expand: () => void;
 }
 
 const DESKTOP_LAYOUT = '(min-width: 64rem)';
@@ -45,7 +45,7 @@ export function useSidebar({
   const [max, setMax] = useState(limits.max);
   const latest = useRef(state);
   const anchor = useRef<number>();
-  latest.current = state;
+  const [loaded, setLoaded] = useState(false);
   const bounds = { min: limits.min, max, initial: limits.initial };
 
   useEffect(() => {
@@ -57,13 +57,18 @@ export function useSidebar({
   }, []);
   useEffect(() => {
     const saved = loadLayout(key, (value) => parseSidebar(value, limits, defaultOpen));
-    if (!saved) return;
-    setState({
-      open: saved.open && (!desktopOnly || matchMedia(DESKTOP_LAYOUT).matches),
-      width: saved.width,
-    });
+    if (saved) {
+      const next = {
+        open: saved.open && (!desktopOnly || matchMedia(DESKTOP_LAYOUT).matches),
+        width: saved.width,
+      };
+      latest.current = next;
+      setState(next);
+    }
+    setLoaded(true);
   }, []);
   useEffect(() => {
+    if (!loaded) return;
     const root = document.documentElement;
     root.style.setProperty(
       `--ff-${name}-width`,
@@ -72,7 +77,7 @@ export function useSidebar({
     root.dataset[`sidebar${name[0]?.toUpperCase()}${name.slice(1)}`] = state.open
       ? 'open'
       : 'closed';
-  }, [state, max]);
+  }, [loaded, state, max]);
 
   const apply = (next: SidebarState) => {
     anchor.current = undefined;
@@ -85,7 +90,21 @@ export function useSidebar({
     width: state.open ? clampWidth(state.width, bounds) : 0,
     max,
     min: limits.min,
-    toggle: () => transition(() => apply({ ...latest.current, open: !latest.current.open })),
+    toggle: () => {
+      const next = { ...latest.current, open: !latest.current.open };
+      anchor.current = undefined;
+      latest.current = next;
+      saveLayout(key, next);
+      transition(() => setState(next));
+    },
+    nudge: (delta) => {
+      if (latest.current.open) {
+        anchor.current ??= latest.current.width;
+        const next = dragState(latest.current.width + delta, bounds, anchor.current);
+        latest.current = next;
+        setState(next);
+      } else apply({ ...latest.current, open: true });
+    },
     setOpen: (open) => apply({ ...latest.current, open }),
     drag: (raw) => {
       anchor.current ??= latest.current.width;
@@ -98,7 +117,6 @@ export function useSidebar({
       saveLayout(key, latest.current);
     },
     reset: () => apply({ open: true, width: limits.initial }),
-    expand: () => apply({ ...latest.current, open: true }),
   };
 }
 
@@ -126,6 +144,7 @@ export function Splitter({
   onClick?: () => void;
 }) {
   const gesture = useRef<Gesture>();
+  const suppressClick = useRef(false);
   const [dragging, setDragging] = useState(false);
   const direction = (element: Element) => {
     const rtl = getComputedStyle(element).direction === 'rtl';
@@ -137,7 +156,7 @@ export function Splitter({
       role="separator"
       aria-orientation="vertical"
       aria-label={label}
-      aria-controls={controls}
+      aria-controls={sidebar.open ? controls : undefined}
       aria-valuemin={0}
       aria-valuemax={sidebar.max}
       aria-valuenow={sidebar.width}
@@ -165,8 +184,14 @@ export function Splitter({
         gesture.current = undefined;
         setDragging(false);
         if (!start) return;
-        if (start.moved) sidebar.commit();
-        else onClick?.();
+        if (start.moved) {
+          suppressClick.current = true;
+          sidebar.commit();
+        }
+      }}
+      onClick={(event) => {
+        if (suppressClick.current) suppressClick.current = false;
+        else if (event.detail === 1) onClick?.();
       }}
       onPointerCancel={() => {
         gesture.current = undefined;
@@ -179,10 +204,8 @@ export function Splitter({
         const sign = direction(event.currentTarget);
         const grow = sign === 1 ? 'ArrowRight' : 'ArrowLeft';
         const shrink = sign === 1 ? 'ArrowLeft' : 'ArrowRight';
-        if (event.key === grow) {
-          if (sidebar.open) sidebar.drag(sidebar.width + step);
-          else sidebar.expand();
-        } else if (event.key === shrink) sidebar.drag(sidebar.width - step);
+        if (event.key === grow) sidebar.nudge(step);
+        else if (event.key === shrink) sidebar.nudge(-step);
         else if (event.key === 'Home') sidebar.setOpen(false);
         else if (event.key === 'End') sidebar.drag(sidebar.max);
         else if (event.key === 'Enter') sidebar.toggle();
