@@ -1305,6 +1305,7 @@ html[data-transition] .ff-export[data-expanded] .ff-export__fullscreen[open] .ff
   .ff-toolbar .ff-popover__panel {
     max-block-size: calc(100dvh - 10rem);
     overflow-y: auto;
+    scrollbar-gutter: stable;
   }
 }
 .ff-toolbar .ff-shift {

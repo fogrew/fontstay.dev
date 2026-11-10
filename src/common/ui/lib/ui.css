@@ -687,6 +687,7 @@ html[data-transition] .ff-dock__panel[data-id="export"] {
   max-inline-size: min(36rem, 90vw);
   max-block-size: calc(100dvh - 6rem);
   overflow-y: auto;
+  scrollbar-gutter: stable;
   padding: var(--ff-space-3);
   border: 1px solid var(--ff-border);
   border-radius: var(--ff-radius);
@@ -730,6 +731,7 @@ html[data-transition] .ff-dock__panel[data-id="export"] {
     margin-block-start: var(--ff-space-1);
     max-block-size: calc(100dvh - 6rem);
     overflow-y: auto;
+    scrollbar-gutter: stable;
   }
   .ff-popover[data-align="end"] .ff-popover__panel {
     position-area: block-end span-inline-start;
