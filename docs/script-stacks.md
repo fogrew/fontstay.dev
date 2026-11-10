@@ -53,7 +53,7 @@ Chromium 158, Windows 11, one run:
 | Arabic (`:lang(ar)` stack)         | 22.7 ms        | 10.1 ms      | 2.25x |
 | Emoji-heavy (emoji fonts appended) | 24.3 ms        | 18.6 ms      | 1.31x |
 
-Arabic is about twice as fast with a system Arabic font first, in line with the figures above. Emoji text gains less; the likely reason is that the browser already falls back to an emoji font for those characters, but the benchmark does not test that. The script warns when both stacks lay out to the same height, which means the system fonts are missing and the ratio is meaningless.
+Arabic is about twice as fast with a system Arabic font first, in line with the figures above. Emoji text gains less; the likely reason is that the browser already falls back to an emoji font for those characters, but the benchmark does not test that. On a machine without the listed system fonts the script-aware stack falls through to the generic family and the ratio is meaningless.
 
 ## Not covered yet
 
