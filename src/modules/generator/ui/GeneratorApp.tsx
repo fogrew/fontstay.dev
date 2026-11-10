@@ -474,6 +474,7 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
         setRangeOn(state.range ?? false);
         setPerScript(state.scripts ?? true);
         setStackScripts(state.stackScripts ?? []);
+        setEmojiStack(state.emoji ?? false);
         setPresetId(PRESETS.find((item) => item.id === state.preset)?.id);
         if (state.spacing) {
           setSpacingOn(state.spacing.on);
@@ -1275,6 +1276,7 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
       range: rangeOn,
       perScript,
       stackScripts,
+      emoji: emojiStack,
       spacing: {
         on: spacingOn,
         letter: letter.mode === 'manual' ? letter.value : undefined,

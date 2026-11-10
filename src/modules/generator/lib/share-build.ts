@@ -38,6 +38,7 @@ export interface ShareInput {
   range?: boolean;
   perScript?: boolean;
   stackScripts?: readonly StackScript[];
+  emoji?: boolean;
   spacing?: { on: boolean; letter?: number | undefined; word?: number | undefined };
   panel?: PanelId | typeof NO_PANEL | undefined;
   os?: OsId | undefined;
@@ -98,6 +99,7 @@ export function buildShareState(input: ShareInput): ShareState {
     ...(input.sources && input.sources.length > 0 ? { sources: input.sources } : {}),
     ...(input.range ? { range: true } : {}),
     ...(input.perScript === false ? { scripts: false } : {}),
+    ...(input.emoji ? { emoji: true } : {}),
     ...(input.stackScripts && input.stackScripts.length > 0
       ? { stackScripts: STACK_SCRIPTS.filter((script) => input.stackScripts?.includes(script)) }
       : {}),

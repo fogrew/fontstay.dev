@@ -8,7 +8,7 @@ import {
   resolveQuery,
   splitOsQuery,
 } from '@/modules/audience';
-import { CssExportError, type ExportInput } from '@/modules/export';
+import { CssExportError, type ExportInput, quoteName } from '@/modules/export';
 import { compactRanges, formatUnicodeRange, StackResolveError } from '@/modules/fallback-fit';
 import type { FontMetrics } from '@/modules/font-metrics';
 import { type Category, loadVariantMetrics, type OsId } from '@/modules/os-fonts';
@@ -30,7 +30,13 @@ import {
 } from './per-os';
 import { STRATEGY_LINE_HEIGHT } from './predict-input';
 import { aspectOf, safariStrategyCss } from './safari';
-import { type StackScript, scriptStackRules, uncoveredScripts } from './script-stacks';
+import {
+  emojiFonts,
+  lacksEmoji,
+  type StackScript,
+  scriptStackRules,
+  uncoveredScripts,
+} from './script-stacks';
 import { scriptFaces } from './scripts';
 
 const MIN_SHARE = 1;
@@ -48,6 +54,15 @@ export class FitRunError extends Error {
   }
 }
 
+function withEmojiFonts(output: FontOutput, systems: readonly OsId[]): FontOutput {
+  const names = emojiFonts(systems);
+  return {
+    ...output,
+    families: [...output.families, ...names.map(quoteName)],
+    systemFonts: [...output.systemFonts, ...names],
+  };
+}
+
 export interface FitFontInput {
   fileName: string;
   metrics: FontMetrics;
@@ -63,6 +78,7 @@ export interface FitOptions {
   unicodeRange?: boolean | undefined;
   scripts?: boolean | undefined;
   stackScripts?: readonly StackScript[] | undefined;
+  emoji?: boolean | undefined;
   optimize?: boolean | undefined;
 }
 
@@ -275,7 +291,11 @@ export async function fitFonts(options: FitOptions): Promise<FitResult> {
     if (!fitted) {
       throw new FitRunError('no-fit', `No fallback could be fitted for ${font.fileName}.`);
     }
-    outputs.push(fitted.output);
+    outputs.push(
+      options.emoji && lacksEmoji(font.metrics.codePoints)
+        ? withEmojiFonts(fitted.output, systems)
+        : fitted.output,
+    );
     reports.push(fitted.report);
   }
   const families = groupFonts(outputs);

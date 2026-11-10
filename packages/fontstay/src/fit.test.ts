@@ -121,6 +121,15 @@ describe('script-aware stacks', () => {
   });
 });
 
+describe('emoji stack', () => {
+  it('appends the system emoji fonts to the stack of a font with few emoji', async () => {
+    const options = { fonts: [sourceSans()], audience: 'defaults', systems: ['windows' as const] };
+    const result = await fit({ ...options, emoji: true });
+    expect(result.css).toContain('"Segoe UI Emoji"');
+    expect((await fit(options)).css).not.toContain('Emoji');
+  });
+});
+
 describe('font-face descriptors of bold and italic fonts', () => {
   it('are added to every face of a bold font with bold fallback faces', async () => {
     const parsed = parseFontBuffer(Uint8Array.from(fixture('fonts/FiraSans-Regular.ttf')).buffer);

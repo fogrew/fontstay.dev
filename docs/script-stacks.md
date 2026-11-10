@@ -20,12 +20,14 @@ For each script the web font cannot draw and the user ticks in the Tuning panel 
 - `:lang()` matches through the inherited `lang` attribute, so the rule applies to every element of a page declared in that language and overrides `font-family` there (including headings with a different family). Latin words inside those elements use the system font too.
 
 - Next, Nuxt, Astro and Fontaine configs cannot express a selector: their header comment points to the CSS export when a rule exists.
-- The ticked scripts are kept in the share link (with the Tuning part) and in the saved settings. A script the font covers is ignored.
+- The ticked scripts are kept in the share link (with the Tuning part). A script the font covers is ignored.
 - CLI: `--stack-scripts arabic,thai`; library: `stackScripts`; MCP `fit_font` and `get_export`: `stack_scripts`. A script is skipped when any given font covers it.
 
 ## Emoji and symbols
 
 Emoji and symbols have no language selector, so `:lang()` cannot target them. The Tuning panel offers an opt-in "Emoji and symbols" option when the web font has fewer than 20 emoji. It appends the system emoji fonts of the enabled systems (Segoe UI Emoji, Apple Color Emoji, Noto Color Emoji) to the font stack of every output, before the generic family, in every export format. An emoji font in the stack was chosen over a `unicode-range` face: it needs no extra `@font-face`, works in all formats and keeps the web font and its adjusted fallbacks first. If the web font itself contains the zero width joiner or variation selectors, the browser still takes those from it.
+
+The option is kept in the share link (with the Tuning part). CLI: `--emoji`; library: `emoji`; MCP `fit_font` and `get_export`: `emoji`. It applies to each font with fewer than 20 emoji.
 
 ## Effect on CLS
 
@@ -42,4 +44,4 @@ The rule removes the web font from the stack for that script, so no swap happens
 
 ## Not covered yet
 
-The emoji option in the share link, the CLI and MCP, macOS and iOS coverage data, and a layout-time benchmark. These are tracked as follow-up issues.
+macOS and iOS coverage data, and a layout-time benchmark. These are tracked as follow-up issues.

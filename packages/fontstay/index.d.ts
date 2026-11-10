@@ -60,6 +60,8 @@ export interface FitOptions {
   scripts?: boolean;
   /** Scripts whose text gets a `:lang()` rule with system fonts only; skipped for a script the fonts cover. Default none. */
   stackScripts?: readonly StackScript[];
+  /** Append the system emoji fonts to the stack of each font with fewer than 20 emoji. Default `false`. */
+  emoji?: boolean;
   /** Format of `file`. Default `css`. */
   format?: ExportFormat;
 }

@@ -39,6 +39,12 @@ describe('sharePartsIn', () => {
     expect(sharePartsIn({ v: 1, view: { size: 20 } })).toEqual(['preview']);
   });
 
+  it('counts the emoji option as tuning and drops it with the Tuning part', () => {
+    const state = { v: 1 as const, emoji: true };
+    expect(sharePartsIn(state)).toEqual(['tuning']);
+    expect(withoutShareParts(state, ['tuning']).emoji).toBeUndefined();
+  });
+
   it('counts fit values of other fonts as tuning', () => {
     expect(
       sharePartsIn({ v: 1, others: { 'A.woff2': { manual: { x: { sizeAdjust: 90 } } } } }),
