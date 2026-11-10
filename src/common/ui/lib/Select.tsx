@@ -217,6 +217,7 @@ export function Select({
         aria-expanded={open}
         aria-controls={`${id}-list`}
         aria-labelledby={`${id}-label`}
+        aria-describedby={glyph ? `${id}-value` : undefined}
         title={glyph ? label : undefined}
         data-value={value}
         aria-activedescendant={open ? `${id}-o${active}` : undefined}
@@ -225,7 +226,7 @@ export function Select({
         onKeyDown={onKeyDown}
       >
         {glyph ?? selected?.icon}
-        <span class={glyph ? 'ff-select__value ff-sr-only' : 'ff-select__value'}>
+        <span id={`${id}-value`} class={glyph ? 'ff-select__value ff-sr-only' : 'ff-select__value'}>
           {selected?.label}
         </span>
       </button>

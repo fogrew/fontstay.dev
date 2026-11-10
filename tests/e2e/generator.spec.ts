@@ -2909,9 +2909,9 @@ test('the preview toolbar scrolls away on a phone or a short window', async ({ p
   await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(sourceSans);
   await closePanels(page);
   const toolbar = page.locator('.ff-article-view__controls');
-  await expect(toolbar).toHaveCSS('position', 'static');
+  await expect(toolbar).toHaveCSS('position', 'relative');
   await page.setViewportSize({ width: 1000, height: 500 });
-  await expect(toolbar).toHaveCSS('position', 'static');
+  await expect(toolbar).toHaveCSS('position', 'relative');
 });
 
 test('the last step puts download and copy in the dock footer without share, and spacing is on by default', async ({

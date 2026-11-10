@@ -1311,6 +1311,7 @@ html[data-transition] .ff-export[data-expanded] .ff-export__fullscreen[open] .ff
   outline-offset: 2px;
 }
 .ff-article-view__controls.ff-toolbar {
+  position: relative;
   flex-wrap: nowrap;
   gap: var(--ff-space-2);
   align-items: center;
@@ -1324,7 +1325,6 @@ html[data-transition] .ff-export[data-expanded] .ff-export__fullscreen[open] .ff
 }
 @media (max-width: 52.5rem) {
   .ff-toolbar:not([data-measured]) .ff-toolbar__tools {
-    position: relative;
     display: block;
   }
   .ff-toolbar:not([data-measured]) .ff-toolbar__more-toggle {
@@ -1335,7 +1335,6 @@ html[data-transition] .ff-export[data-expanded] .ff-export__fullscreen[open] .ff
   }
 }
 .ff-toolbar[data-compact] .ff-toolbar__tools {
-  position: relative;
   display: block;
 }
 .ff-toolbar[data-compact] .ff-toolbar__more-toggle {
@@ -1347,15 +1346,13 @@ html[data-transition] .ff-export[data-expanded] .ff-export__fullscreen[open] .ff
 .ff-toolbar[data-compact] .ff-toolbar__tools[data-open] .ff-toolbar__tool-list {
   position: absolute;
   inset-block-start: calc(100% + var(--ff-space-1));
-  inset-inline-start: 0;
+  inset-inline: 0;
   z-index: 40;
   box-sizing: border-box;
   display: flex;
   flex-wrap: wrap;
   gap: var(--ff-space-2);
   align-items: center;
-  inline-size: max-content;
-  max-inline-size: calc(100vw - 2 * var(--ff-space-2));
   padding: var(--ff-space-2);
   border: 1px solid var(--ff-border);
   border-radius: var(--ff-radius);

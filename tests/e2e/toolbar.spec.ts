@@ -20,8 +20,9 @@ for (const locale of LOCALES) {
       await expect(async () => {
         const rows = await toolbar.evaluate((element) => {
           const tops = new Set<number>();
-          for (const child of Array.from(element.children)) {
-            const box = child.getBoundingClientRect();
+          const controls = element.querySelectorAll('button, [role="combobox"], .ff-shift');
+          for (const control of Array.from(controls)) {
+            const box = control.getBoundingClientRect();
             if (box.width > 0) tops.add(Math.round(box.top + box.height / 2));
           }
           return { tops: [...tops], overflow: element.scrollWidth - element.clientWidth };
@@ -76,4 +77,16 @@ test('the view tools move into the More tools menu on a narrow toolbar', async (
   await more.click();
   await expect(toolbar.getByRole('button', { name: 'Overlay' })).toBeVisible();
   await expect(toolbar.getByRole('combobox', { name: 'Emulation' })).toBeVisible();
+  const list = toolbar.locator('.ff-toolbar__tool-list');
+  const box = await list.boundingBox();
+  expect(box?.x).toBeGreaterThanOrEqual(0);
+  expect((box?.x ?? 0) + (box?.width ?? 0)).toBeLessThanOrEqual(390);
+  for (const control of await toolbar.locator('.ff-toolbar__tool-list button:visible').all()) {
+    const size = await control.boundingBox();
+    expect(size?.width).toBeGreaterThanOrEqual(24);
+    expect(size?.height).toBeGreaterThanOrEqual(24);
+  }
+  await page.keyboard.press('Escape');
+  await expect(more).toHaveAttribute('aria-expanded', 'false');
+  await expect(more).toBeFocused();
 });

@@ -1,5 +1,5 @@
 import { type ComponentChildren, Fragment } from 'preact';
-import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'preact/hooks';
+import { useEffect, useId, useLayoutEffect, useMemo, useRef, useState } from 'preact/hooks';
 import { type Locale, messagesFor } from '@/common/i18n';
 import { Accordion, Icon, Popover, ScrollShadow, Select, Splitter, useSidebar } from '@/common/ui';
 import { type Device, DevicePicker, loadDevices } from '@/modules/devices';
@@ -331,6 +331,7 @@ export function ArticleView({
   const [compactBar, setCompactBar] = useState<boolean>();
   const [toolsOpen, setToolsOpen] = useState(false);
   const tools = useRef<HTMLDivElement>(null);
+  const toolsId = useId();
   const [device, setDevice] = useState<Device>();
   const [pageWidth, setPageWidth] = useState(0);
   const frame = useRef<HTMLDivElement>(null);
@@ -1421,19 +1422,26 @@ export function ArticleView({
         data-compact={compactBar ? '' : undefined}
       >
         {start}
-        <div class="ff-toolbar__tools" ref={tools} data-open={toolsOpen ? '' : undefined}>
+        <div
+          class="ff-toolbar__tools"
+          ref={tools}
+          data-open={toolsOpen ? '' : undefined}
+          onFocusOut={(event) => {
+            if (!tools.current?.contains(event.relatedTarget as Node | null)) setToolsOpen(false);
+          }}
+        >
           <button
             type="button"
             class="ff-control ff-button ff-button--secondary ff-tool-button ff-toolbar__more-toggle"
             aria-expanded={toolsOpen}
-            aria-controls="ff-toolbar-tools"
+            aria-controls={toolsId}
             aria-label={t.toolbar_more()}
             title={t.toolbar_more()}
             onClick={() => setToolsOpen((open) => !open)}
           >
             <ToolIcon name="more" />
           </button>
-          <div id="ff-toolbar-tools" class="ff-toolbar__tool-list">
+          <div id={toolsId} class="ff-toolbar__tool-list">
             {viewTools}
           </div>
         </div>
