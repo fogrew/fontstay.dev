@@ -132,7 +132,11 @@ export function lacksEmoji(codePoints: ArrayLike<number>): boolean {
   let count = 0;
   for (let index = 0; index < codePoints.length; index++) {
     const codePoint = codePoints[index] as number;
-    if (codePoint >= 0x1f300 && codePoint <= 0x1faff) count++;
+    if (
+      (codePoint >= 0x1f000 && codePoint <= 0x1faff) ||
+      (codePoint >= 0x2600 && codePoint <= 0x27bf)
+    )
+      count++;
   }
   return count < MIN_EMOJI;
 }
