@@ -14,5 +14,6 @@ Astro.csp?.insertScriptResource("'wasm-unsafe-eval'");
 
 <BaseLayout {locale} path="/">
   <script is:inline slot="head" src="/dock-restore.js"></script>
+  <script is:inline slot="head" src="/layout-restore.js"></script>
   <HomePage {locale} />
 </BaseLayout>

@@ -1,7 +1,7 @@
 import type { GuideId } from '../lib/guides';
 import type { Preset } from '../lib/layers';
 
-export type ToolIconName = Preset | 'xray' | 'boxes' | GuideId;
+export type ToolIconName = Preset | 'xray' | 'boxes' | 'panel-start' | 'panel-end' | GuideId;
 
 const GUIDE_LINE: Record<GuideId, number> = {
   ascender: 2.5,
@@ -58,6 +58,15 @@ function Shapes({ name }: { name: ToolIconName }) {
         <>
           <circle cx="6.8" cy="6.8" r="4.6" />
           <path d="M10.2 10.2L14 14" />
+        </>
+      );
+    case 'panel-start':
+      return <path d="M3 2.5v11M12 3L7 8l5 5" />;
+    case 'panel-end':
+      return (
+        <>
+          <rect x="1.5" y="2.5" width="13" height="11" rx="1.5" />
+          <path d="M10 2.5v11" />
         </>
       );
     case 'boxes':

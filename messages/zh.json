@@ -873,5 +873,8 @@
   "share_part_tuning": "微调数值和间距",
   "share_part_panel": "打开的面板、系统和字体面",
   "share_part_preview": "预览设置、模式和设备宽度",
-  "share_part_site_fonts": "所导入网站的标题字体和正文字体"
+  "share_part_site_fonts": "所导入网站的标题字体和正文字体",
+  "sidebar_left_toggle": "侧边栏",
+  "sidebar_left_resize": "调整侧边栏宽度",
+  "sidebar_right_resize": "调整设置面板宽度"
 }

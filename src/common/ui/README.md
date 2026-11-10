@@ -24,6 +24,13 @@ focus outlines and active-tab borders; reduced motion removes button transitions
 - `CodeBlock`: escaped text in scrollable code, explicit Clipboard API action,
   pending state and localized success/failure feedback. No HTML interpretation.
 - `Disclosure`: native details/summary interaction.
+- `useSidebar` / `Splitter`: a resizable side panel. The hook keeps `{ open, width }` per name
+  in layout storage and mirrors it to `--ff-<name>-width` and `data-sidebar-<name>` on `<html>`;
+  `public/layout-restore.js` applies the saved values before first paint. The `Splitter` is a
+  vertical `role="separator"`: pointer drag (below half of the minimum width collapses the
+  panel and remembers the width before the drag), arrow keys (Shift for a larger step), Home
+  collapses, End maximizes, Enter toggles, double click resets; an optional `onClick` fires
+  for a click without dragging. It is hidden below 64rem, where panels stack.
 - `LiveRegion`: persistent, polite, atomic status node. Callers throttle frequently
   changing announcements before updating its content.
 

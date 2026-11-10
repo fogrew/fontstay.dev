@@ -14,6 +14,7 @@ export interface DockProps {
     footer?: ComponentChildren;
   }[];
   storageKey: string;
+  id?: string;
   defaultOpen?: string;
   nextLabel: (label: string) => string;
   onChange?: (id: string | undefined) => void;
@@ -29,7 +30,7 @@ export interface DockOpenDetail {
 
 const DESKTOP_LAYOUT = '(min-width: 64rem)';
 
-export function Dock({ items, storageKey, defaultOpen, nextLabel, onChange }: DockProps) {
+export function Dock({ items, storageKey, id, defaultOpen, nextLabel, onChange }: DockProps) {
   const base = useId();
   const ids = items.map((item) => item.id);
   const [active, setActive] = useState<string | undefined>(defaultOpen);
@@ -113,6 +114,7 @@ export function Dock({ items, storageKey, defaultOpen, nextLabel, onChange }: Do
   return (
     <div
       ref={root}
+      id={id}
       class="ff-dock"
       data-active={active}
       data-ready={ready || undefined}

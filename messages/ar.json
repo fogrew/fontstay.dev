@@ -873,5 +873,8 @@
   "share_part_tuning": "قيم الضبط والتباعد",
   "share_part_panel": "اللوحة المفتوحة والنظام ونمط الخط",
   "share_part_preview": "إعدادات المعاينة والوضع وعرض الجهاز",
-  "share_part_site_fonts": "خطوط العناوين والنص للموقع المستورد"
+  "share_part_site_fonts": "خطوط العناوين والنص للموقع المستورد",
+  "sidebar_left_toggle": "اللوحة الجانبية",
+  "sidebar_left_resize": "تغيير عرض اللوحة الجانبية",
+  "sidebar_right_resize": "تغيير عرض لوحة الإعدادات"
 }

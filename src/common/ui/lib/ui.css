@@ -913,3 +913,42 @@ html[data-transition] .ff-dock__panel[data-id="export"] {
     outline-offset: -2px;
   }
 }
+
+:root {
+  --ff-splitter-size: 1.25rem;
+}
+.ff-splitter {
+  display: none;
+}
+@media (min-width: 64rem) {
+  .ff-splitter {
+    position: relative;
+    display: block;
+    cursor: col-resize;
+    touch-action: none;
+  }
+  .ff-splitter::before {
+    content: "";
+    position: absolute;
+    inset-block: 0;
+    inset-inline-start: 50%;
+    inline-size: 2px;
+    translate: -50% 0;
+    border-radius: 1px;
+    background: transparent;
+  }
+  .ff-splitter:hover::before,
+  .ff-splitter[data-dragging]::before {
+    background: var(--ff-accent);
+  }
+  .ff-splitter:focus-visible {
+    outline: 3px solid var(--ff-focus);
+    outline-offset: -3px;
+  }
+}
+@media (forced-colors: active) {
+  .ff-splitter:hover::before,
+  .ff-splitter[data-dragging]::before {
+    background: Highlight;
+  }
+}

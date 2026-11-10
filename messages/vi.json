@@ -873,5 +873,8 @@
   "share_part_tuning": "Giá trị tinh chỉnh và khoảng cách",
   "share_part_panel": "Bảng điều khiển đang mở, hệ thống và face phông chữ",
   "share_part_preview": "Cài đặt xem trước, chế độ và độ rộng thiết bị",
-  "share_part_site_fonts": "Phông chữ tiêu đề và nội dung của trang web đã nhập"
+  "share_part_site_fonts": "Phông chữ tiêu đề và nội dung của trang web đã nhập",
+  "sidebar_left_toggle": "Bảng bên",
+  "sidebar_left_resize": "Đổi độ rộng của bảng bên",
+  "sidebar_right_resize": "Đổi độ rộng của bảng cài đặt"
 }

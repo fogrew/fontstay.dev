@@ -1,7 +1,7 @@
 import { type ComponentChildren, Fragment } from 'preact';
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'preact/hooks';
 import { type Locale, messagesFor } from '@/common/i18n';
-import { Icon, Popover, ScrollShadow, Select } from '@/common/ui';
+import { Accordion, Icon, Popover, ScrollShadow, Select, Splitter, useSidebar } from '@/common/ui';
 import { type Device, DevicePicker, loadDevices } from '@/modules/devices';
 import { type FontTuning, LazyFontFeatures } from '@/modules/font-details';
 import { isProbeWidth, measureShift, shiftWidths, type WidthShift } from '../lib/article-shift';
@@ -291,6 +291,8 @@ function ArticleBody({
   );
 }
 
+const RIGHT_LIMITS = { min: 288, max: 640, initial: 352 };
+
 export function ArticleView({
   locale,
   items,
@@ -299,6 +301,7 @@ export function ArticleView({
   onShift,
   restore,
   onView,
+  start,
 }: {
   locale: Locale;
   items: readonly PreviewItem[];
@@ -309,8 +312,15 @@ export function ArticleView({
     | undefined;
   restore?: ViewDiff | undefined;
   onView?: ((diff: ViewDiff) => void) | undefined;
+  start?: ComponentChildren;
 }) {
   const t = messagesFor(locale);
+  const settings = useSidebar({
+    name: 'right',
+    limits: RIGHT_LIMITS,
+    defaultOpen: false,
+    desktopOnly: true,
+  });
   const [articleId, setArticleId] = useState<ArticleId>(
     (ARTICLE_IDS as readonly string[]).includes(locale) ? (locale as ArticleId) : 'en',
   );
@@ -942,300 +952,348 @@ export function ArticleView({
       </div>
     </>
   );
-  const settingsContent = (
-    <>
-      <fieldset class="ff-settings__section">
-        <legend class="ff-settings__legend">{t.article_group_fonts()}</legend>
-        <Select
-          compact
-          label={t.article_heading_font()}
-          value={headingFamily ?? SYSTEM}
-          options={familyOptions}
-          onChange={setHeadingPick}
-        />
-        <Select
-          compact
-          label={t.article_body_font()}
-          value={bodyFamily ?? SYSTEM}
-          options={familyOptions}
-          onChange={setBodyPick}
-        />
-        <Select
-          compact
-          label={t.article_missing_font()}
-          value={substitute}
-          options={SUBSTITUTES.map((value) => ({ value, label: substituteLabel(value) }))}
-          onChange={(value) => setSubstitute(value as Substitute)}
-        />
-      </fieldset>
-      <fieldset class="ff-settings__section">
-        <legend class="ff-settings__legend">{t.article_group_text()}</legend>
-        <div class="ff-field ff-preview__slider">
-          <div class="ff-preview__label">
-            <label class="ff-preview__caption" for="ff-article-size">
-              {t.preview_size_label()}
-            </label>
-            <output for="ff-article-size">{size}px</output>
+  const settingsItems = [
+    {
+      id: 'fonts',
+      label: t.article_group_fonts(),
+      content: (
+        <>
+          <div class="ff-settings__section">
+            <Select
+              compact
+              label={t.article_heading_font()}
+              value={headingFamily ?? SYSTEM}
+              options={familyOptions}
+              onChange={setHeadingPick}
+            />
+            <Select
+              compact
+              label={t.article_body_font()}
+              value={bodyFamily ?? SYSTEM}
+              options={familyOptions}
+              onChange={setBodyPick}
+            />
+            <Select
+              compact
+              label={t.article_missing_font()}
+              value={substitute}
+              options={SUBSTITUTES.map((value) => ({ value, label: substituteLabel(value) }))}
+              onChange={(value) => setSubstitute(value as Substitute)}
+            />
           </div>
-          <input
-            class="ff-article-view__range ff-control"
-            id="ff-article-size"
-            type="range"
-            min={12}
-            max={32}
-            value={size}
-            onInput={(event) => setSize(event.currentTarget.valueAsNumber)}
-          />
-        </div>
-        <div class="ff-field ff-preview__slider">
-          <div class="ff-preview__label">
-            <label class="ff-preview__caption" for="ff-article-line">
-              {t.preview_line_height_label()}
-            </label>
-            <output for="ff-article-line">{lineHeight}</output>
-          </div>
-          <input
-            class="ff-article-view__range ff-control"
-            id="ff-article-line"
-            type="range"
-            min={1}
-            max={2.4}
-            step={0.05}
-            value={lineHeight}
-            onInput={(event) => setLineHeight(event.currentTarget.valueAsNumber)}
-          />
-        </div>
-        <Select
-          compact
-          label={t.article_wrap_label()}
-          value={wrap}
-          options={WRAPS.map((value) => ({ value, label: wrapLabel(value) }))}
-          onChange={(value) => setWrap(value as Wrap)}
-        />
-        <Select
-          compact
-          label={t.article_sample_label()}
-          value={articleId}
-          options={ARTICLE_LANGUAGES.map(([id, label]) => ({ value: id, label }))}
-          onChange={(value) => setArticleId(value as ArticleId)}
-        />
-      </fieldset>
-      <fieldset class="ff-settings__section">
-        <legend class="ff-settings__legend">{t.bg_group()}</legend>
-        <div class="ff-field">
-          <label class="ff-preview__caption" for="ff-bg-file">
-            {t.bg_file()}
-          </label>
-          <input
-            ref={backgroundInput}
-            class="ff-control ff-article-view__file"
-            id="ff-bg-file"
-            type="file"
-            accept={BACKGROUND_TYPES.join(',')}
-            aria-invalid={backgroundError ? true : undefined}
-            aria-describedby={backgroundError ? 'ff-bg-note ff-bg-error' : 'ff-bg-note'}
-            onChange={(event) => void chooseBackground(event.currentTarget.files?.[0])}
-          />
-        </div>
-        <p class="ff-muted ff-article-view__note" id="ff-bg-note">
-          {t.bg_note({ size: MAX_BACKGROUND_BYTES / 1048576 })}
-        </p>
-        {backgroundError && (
-          <p class="ff-error" id="ff-bg-error" role="alert">
-            {backgroundErrorText(backgroundError)}
-          </p>
-        )}
-        <Select
-          compact
-          label={t.bg_fit()}
-          value={backgroundFit}
-          disabled={!background}
-          options={BACKGROUND_FITS.map((value) => ({ value, label: backgroundFitLabel(value) }))}
-          onChange={(value) => setBackgroundFit(value as BackgroundFit)}
-        />
-        <div class="ff-field ff-preview__slider">
-          <div class="ff-preview__label">
-            <label class="ff-preview__caption" for="ff-bg-x">
-              {t.bg_x()}
-            </label>
-            <output for="ff-bg-x">{backgroundX}%</output>
-          </div>
-          <input
-            class="ff-article-view__range ff-control"
-            id="ff-bg-x"
-            type="range"
-            min={0}
-            max={100}
-            step={5}
-            value={backgroundX}
-            disabled={!background}
-            onInput={(event) => setBackgroundX(event.currentTarget.valueAsNumber)}
-          />
-        </div>
-        <div class="ff-field ff-preview__slider">
-          <div class="ff-preview__label">
-            <label class="ff-preview__caption" for="ff-bg-y">
-              {t.bg_y()}
-            </label>
-            <output for="ff-bg-y">{backgroundY}%</output>
-          </div>
-          <input
-            class="ff-article-view__range ff-control"
-            id="ff-bg-y"
-            type="range"
-            min={0}
-            max={100}
-            step={5}
-            value={backgroundY}
-            disabled={!background}
-            onInput={(event) => setBackgroundY(event.currentTarget.valueAsNumber)}
-          />
-        </div>
-        <div class="ff-field ff-preview__slider">
-          <div class="ff-preview__label">
-            <label class="ff-preview__caption" for="ff-bg-fade">
-              {t.bg_fade()}
-            </label>
-            <output for="ff-bg-fade">{backgroundFade}%</output>
-          </div>
-          <input
-            class="ff-article-view__range ff-control"
-            id="ff-bg-fade"
-            type="range"
-            min={0}
-            max={90}
-            step={5}
-            value={backgroundFade}
-            disabled={!background}
-            onInput={(event) => setBackgroundFade(event.currentTarget.valueAsNumber)}
-          />
-        </div>
-        <button
-          type="button"
-          class="ff-control ff-button ff-button--secondary"
-          disabled={!background}
-          onClick={removeBackground}
-        >
-          {t.bg_remove()}
-        </button>
-      </fieldset>
-      {bodyItem && (
-        <LazyFontFeatures
-          locale={locale}
-          metrics={bodyItem.metrics}
-          selection={tuning?.selection}
-          onChange={(next) => setTunings((all) => ({ ...all, [bodyItem.id]: next }))}
-        />
-      )}
-      <fieldset class="ff-settings__section ff-layers" disabled={!overlaid}>
-        <legend class="ff-settings__legend">{t.article_group_layers()}</legend>
-        {LAYER_KINDS.map((layer, row) => {
-          const name = layer === 'web' ? t.preview_web_label() : t.preview_fallback_label();
-          const caption = row === 0 ? undefined : 'ff-sr-only';
-          return (
-            <fieldset class="ff-layers__row" key={layer}>
-              <legend class="ff-settings__legend ff-sr-only">{name}</legend>
-              <span class="ff-layers__name" aria-hidden="true">
-                {name}
-              </span>
-              <Select
-                compact
-                hideLabel={row > 0}
-                label={t.layer_render()}
-                value={layers[layer].render}
-                disabled={!overlaid}
-                options={RENDERS.map((value) => ({
-                  value,
-                  label: value === 'fill' ? t.layer_render_fill() : t.layer_render_outline(),
-                }))}
-                onChange={(value) => setLayer(layer, { render: value as Render })}
-              />
-              <Select
-                compact
-                hideLabel={row > 0}
-                label={t.layer_color()}
-                value={layers[layer].color}
-                disabled={!overlaid}
-                options={COLORS.map((value) => ({ value, label: colorLabel(value) }))}
-                onChange={(value) => setLayer(layer, { color: value as LayerColor })}
-              />
-              <div class="ff-field ff-preview__slider">
-                <div class="ff-preview__label">
-                  <label
-                    class={`ff-preview__caption ${caption ?? ''}`}
-                    for={`ff-layer-${layer}-width`}
-                  >
-                    {t.layer_width()}
-                  </label>
-                  <output for={`ff-layer-${layer}-width`}>{layers[layer].width}px</output>
-                </div>
-                <input
-                  class="ff-article-view__range ff-control"
-                  id={`ff-layer-${layer}-width`}
-                  type="range"
-                  min={0.5}
-                  max={4}
-                  step={0.5}
-                  value={layers[layer].width}
-                  disabled={!overlaid || layers[layer].render !== 'outline'}
-                  onInput={(event) => setLayer(layer, { width: event.currentTarget.valueAsNumber })}
-                />
+        </>
+      ),
+    },
+    {
+      id: 'text',
+      label: t.article_group_text(),
+      content: (
+        <>
+          <div class="ff-settings__section">
+            <div class="ff-field ff-preview__slider">
+              <div class="ff-preview__label">
+                <label class="ff-preview__caption" for="ff-article-size">
+                  {t.preview_size_label()}
+                </label>
+                <output for="ff-article-size">{size}px</output>
               </div>
-              <div class="ff-field ff-preview__slider">
-                <div class="ff-preview__label">
-                  <label
-                    class={`ff-preview__caption ${caption ?? ''}`}
-                    for={`ff-layer-${layer}-opacity`}
-                  >
-                    {t.layer_opacity()}
-                  </label>
-                  <output for={`ff-layer-${layer}-opacity`}>{layers[layer].opacity}%</output>
-                </div>
-                <input
-                  class="ff-article-view__range ff-control"
-                  id={`ff-layer-${layer}-opacity`}
-                  type="range"
-                  min={0}
-                  max={100}
-                  step={5}
-                  value={layers[layer].opacity}
-                  disabled={!overlaid}
-                  onInput={(event) =>
-                    setLayer(layer, { opacity: event.currentTarget.valueAsNumber })
-                  }
-                />
+              <input
+                class="ff-article-view__range ff-control"
+                id="ff-article-size"
+                type="range"
+                min={12}
+                max={32}
+                value={size}
+                onInput={(event) => setSize(event.currentTarget.valueAsNumber)}
+              />
+            </div>
+            <div class="ff-field ff-preview__slider">
+              <div class="ff-preview__label">
+                <label class="ff-preview__caption" for="ff-article-line">
+                  {t.preview_line_height_label()}
+                </label>
+                <output for="ff-article-line">{lineHeight}</output>
               </div>
-            </fieldset>
-          );
-        })}
-      </fieldset>
-      <fieldset class="ff-settings__section" disabled={empty || !inspectable}>
-        <legend class="ff-settings__legend">{t.guides_enable()}</legend>
-        {GUIDES.map((id) => (
-          <button
-            key={id}
-            type="button"
-            class="ff-control ff-button ff-button--secondary ff-settings__toggle"
-            data-guide={id}
-            aria-pressed={guideOn[id]}
-            onClick={() => setGuideOn((all) => ({ ...all, [id]: !all[id] }))}
-          >
-            <ToolIcon name={id} />
-            <span class="ff-settings__toggle-label">{guideLabel(id)}</span>
-          </button>
-        ))}
-        <button
-          type="button"
-          class="ff-control ff-button ff-button--secondary ff-settings__toggle"
-          aria-pressed={boxes}
-          onClick={() => setBoxes((on) => !on)}
-        >
-          <ToolIcon name="boxes" />
-          <span class="ff-settings__toggle-label">{t.boxes_enable()}</span>
-        </button>
-      </fieldset>
-    </>
-  );
+              <input
+                class="ff-article-view__range ff-control"
+                id="ff-article-line"
+                type="range"
+                min={1}
+                max={2.4}
+                step={0.05}
+                value={lineHeight}
+                onInput={(event) => setLineHeight(event.currentTarget.valueAsNumber)}
+              />
+            </div>
+            <Select
+              compact
+              label={t.article_wrap_label()}
+              value={wrap}
+              options={WRAPS.map((value) => ({ value, label: wrapLabel(value) }))}
+              onChange={(value) => setWrap(value as Wrap)}
+            />
+            <Select
+              compact
+              label={t.article_sample_label()}
+              value={articleId}
+              options={ARTICLE_LANGUAGES.map(([id, label]) => ({ value: id, label }))}
+              onChange={(value) => setArticleId(value as ArticleId)}
+            />
+          </div>
+        </>
+      ),
+    },
+    ...(bodyItem
+      ? [
+          {
+            id: 'features',
+            label: t.details_controls_heading(),
+            content: (
+              <LazyFontFeatures
+                locale={locale}
+                metrics={bodyItem.metrics}
+                selection={tuning?.selection}
+                onChange={(next) => setTunings((all) => ({ ...all, [bodyItem.id]: next }))}
+              />
+            ),
+          },
+        ]
+      : []),
+    {
+      id: 'layers',
+      label: t.article_group_layers(),
+      content: (
+        <>
+          <fieldset class="ff-settings__section ff-layers" disabled={!overlaid}>
+            <legend class="ff-sr-only">{t.article_group_layers()}</legend>
+            {LAYER_KINDS.map((layer, row) => {
+              const name = layer === 'web' ? t.preview_web_label() : t.preview_fallback_label();
+              const caption = row === 0 ? undefined : 'ff-sr-only';
+              return (
+                <fieldset class="ff-layers__row" key={layer}>
+                  <legend class="ff-settings__legend ff-sr-only">{name}</legend>
+                  <span class="ff-layers__name" aria-hidden="true">
+                    {name}
+                  </span>
+                  <Select
+                    compact
+                    hideLabel={row > 0}
+                    label={t.layer_render()}
+                    value={layers[layer].render}
+                    disabled={!overlaid}
+                    options={RENDERS.map((value) => ({
+                      value,
+                      label: value === 'fill' ? t.layer_render_fill() : t.layer_render_outline(),
+                    }))}
+                    onChange={(value) => setLayer(layer, { render: value as Render })}
+                  />
+                  <Select
+                    compact
+                    hideLabel={row > 0}
+                    label={t.layer_color()}
+                    value={layers[layer].color}
+                    disabled={!overlaid}
+                    options={COLORS.map((value) => ({ value, label: colorLabel(value) }))}
+                    onChange={(value) => setLayer(layer, { color: value as LayerColor })}
+                  />
+                  <div class="ff-field ff-preview__slider">
+                    <div class="ff-preview__label">
+                      <label
+                        class={`ff-preview__caption ${caption ?? ''}`}
+                        for={`ff-layer-${layer}-width`}
+                      >
+                        {t.layer_width()}
+                      </label>
+                      <output for={`ff-layer-${layer}-width`}>{layers[layer].width}px</output>
+                    </div>
+                    <input
+                      class="ff-article-view__range ff-control"
+                      id={`ff-layer-${layer}-width`}
+                      type="range"
+                      min={0.5}
+                      max={4}
+                      step={0.5}
+                      value={layers[layer].width}
+                      disabled={!overlaid || layers[layer].render !== 'outline'}
+                      onInput={(event) =>
+                        setLayer(layer, { width: event.currentTarget.valueAsNumber })
+                      }
+                    />
+                  </div>
+                  <div class="ff-field ff-preview__slider">
+                    <div class="ff-preview__label">
+                      <label
+                        class={`ff-preview__caption ${caption ?? ''}`}
+                        for={`ff-layer-${layer}-opacity`}
+                      >
+                        {t.layer_opacity()}
+                      </label>
+                      <output for={`ff-layer-${layer}-opacity`}>{layers[layer].opacity}%</output>
+                    </div>
+                    <input
+                      class="ff-article-view__range ff-control"
+                      id={`ff-layer-${layer}-opacity`}
+                      type="range"
+                      min={0}
+                      max={100}
+                      step={5}
+                      value={layers[layer].opacity}
+                      disabled={!overlaid}
+                      onInput={(event) =>
+                        setLayer(layer, { opacity: event.currentTarget.valueAsNumber })
+                      }
+                    />
+                  </div>
+                </fieldset>
+              );
+            })}
+          </fieldset>
+        </>
+      ),
+    },
+    {
+      id: 'guides',
+      label: t.guides_enable(),
+      content: (
+        <>
+          <fieldset class="ff-settings__section" disabled={empty || !inspectable}>
+            <legend class="ff-sr-only">{t.guides_enable()}</legend>
+            {GUIDES.map((id) => (
+              <button
+                key={id}
+                type="button"
+                class="ff-control ff-button ff-button--secondary ff-settings__toggle"
+                data-guide={id}
+                aria-pressed={guideOn[id]}
+                onClick={() => setGuideOn((all) => ({ ...all, [id]: !all[id] }))}
+              >
+                <ToolIcon name={id} />
+                <span class="ff-settings__toggle-label">{guideLabel(id)}</span>
+              </button>
+            ))}
+            <button
+              type="button"
+              class="ff-control ff-button ff-button--secondary ff-settings__toggle"
+              aria-pressed={boxes}
+              onClick={() => setBoxes((on) => !on)}
+            >
+              <ToolIcon name="boxes" />
+              <span class="ff-settings__toggle-label">{t.boxes_enable()}</span>
+            </button>
+          </fieldset>
+        </>
+      ),
+    },
+    {
+      id: 'background',
+      label: t.bg_group(),
+      content: (
+        <>
+          <div class="ff-settings__section">
+            <div class="ff-field">
+              <label class="ff-preview__caption" for="ff-bg-file">
+                {t.bg_file()}
+              </label>
+              <input
+                ref={backgroundInput}
+                class="ff-control ff-article-view__file"
+                id="ff-bg-file"
+                type="file"
+                accept={BACKGROUND_TYPES.join(',')}
+                aria-invalid={backgroundError ? true : undefined}
+                aria-describedby={backgroundError ? 'ff-bg-note ff-bg-error' : 'ff-bg-note'}
+                onChange={(event) => void chooseBackground(event.currentTarget.files?.[0])}
+              />
+            </div>
+            <p class="ff-muted ff-article-view__note" id="ff-bg-note">
+              {t.bg_note({ size: MAX_BACKGROUND_BYTES / 1048576 })}
+            </p>
+            {backgroundError && (
+              <p class="ff-error" id="ff-bg-error" role="alert">
+                {backgroundErrorText(backgroundError)}
+              </p>
+            )}
+            <Select
+              compact
+              label={t.bg_fit()}
+              value={backgroundFit}
+              disabled={!background}
+              options={BACKGROUND_FITS.map((value) => ({
+                value,
+                label: backgroundFitLabel(value),
+              }))}
+              onChange={(value) => setBackgroundFit(value as BackgroundFit)}
+            />
+            <div class="ff-field ff-preview__slider">
+              <div class="ff-preview__label">
+                <label class="ff-preview__caption" for="ff-bg-x">
+                  {t.bg_x()}
+                </label>
+                <output for="ff-bg-x">{backgroundX}%</output>
+              </div>
+              <input
+                class="ff-article-view__range ff-control"
+                id="ff-bg-x"
+                type="range"
+                min={0}
+                max={100}
+                step={5}
+                value={backgroundX}
+                disabled={!background}
+                onInput={(event) => setBackgroundX(event.currentTarget.valueAsNumber)}
+              />
+            </div>
+            <div class="ff-field ff-preview__slider">
+              <div class="ff-preview__label">
+                <label class="ff-preview__caption" for="ff-bg-y">
+                  {t.bg_y()}
+                </label>
+                <output for="ff-bg-y">{backgroundY}%</output>
+              </div>
+              <input
+                class="ff-article-view__range ff-control"
+                id="ff-bg-y"
+                type="range"
+                min={0}
+                max={100}
+                step={5}
+                value={backgroundY}
+                disabled={!background}
+                onInput={(event) => setBackgroundY(event.currentTarget.valueAsNumber)}
+              />
+            </div>
+            <div class="ff-field ff-preview__slider">
+              <div class="ff-preview__label">
+                <label class="ff-preview__caption" for="ff-bg-fade">
+                  {t.bg_fade()}
+                </label>
+                <output for="ff-bg-fade">{backgroundFade}%</output>
+              </div>
+              <input
+                class="ff-article-view__range ff-control"
+                id="ff-bg-fade"
+                type="range"
+                min={0}
+                max={90}
+                step={5}
+                value={backgroundFade}
+                disabled={!background}
+                onInput={(event) => setBackgroundFade(event.currentTarget.valueAsNumber)}
+              />
+            </div>
+            <button
+              type="button"
+              class="ff-control ff-button ff-button--secondary"
+              disabled={!background}
+              onClick={removeBackground}
+            >
+              {t.bg_remove()}
+            </button>
+          </div>
+        </>
+      ),
+    },
+  ];
 
   return (
     <section
@@ -1266,6 +1324,7 @@ export function ArticleView({
         ))}
       </div>
       <div class="ff-article-view__controls ff-toolbar">
+        {start}
         <fieldset class="ff-preview__modes ff-toolbar__modes ff-button-group">
           <legend class="ff-button-group__legend ff-sr-only">{t.preview_compare_label()}</legend>
           {COMPARE_ORDER.map(presetButton)}
@@ -1321,7 +1380,16 @@ export function ArticleView({
             sizeFrame(next?.width);
           }}
         />
-        <Popover label={t.article_group_settings()}>{settingsContent}</Popover>
+        <button
+          type="button"
+          class="ff-control ff-button ff-button--secondary ff-tool-button ff-toolbar__settings-toggle"
+          aria-expanded={settings.open}
+          aria-controls="ff-article-settings"
+          onClick={settings.toggle}
+        >
+          <ToolIcon name="panel-end" />
+          {t.article_group_settings()}
+        </button>
         <DeviceShift
           locale={locale}
           results={shiftResults?.adjusted}
@@ -1331,203 +1399,234 @@ export function ArticleView({
         />
         {actions}
       </div>
-      {loadFailed && (
-        <p class="ff-error" role="alert">
-          {t.preview_load_failed()}
-        </p>
-      )}
-      {notInstalled.length > 0 && (
-        <p role="status">
-          <span class="ff-error">{t.preview_not_installed({ font: notInstalled.join(', ') })}</span>{' '}
-          <span class="ff-muted">{t.preview_not_installed_note()}</span>
-        </p>
-      )}
-      <div
-        ref={frame}
-        class="ff-article-view__frame"
-        data-constrained={frameWidth === undefined ? undefined : ''}
-        style={frameWidth === undefined ? undefined : { inlineSize: `${frameWidth}px` }}
-      >
-        <div
-          ref={loupe}
-          class={xray ? 'ff-article-view__loupe' : 'ff-article-view__stage'}
-          {...(xray
-            ? {
-                tabIndex: 0,
-                role: 'application',
-                'aria-label': t.loupe_label(),
-                onPointerMove: (event: PointerEvent) => {
-                  const box = (event.currentTarget as HTMLElement).getBoundingClientRect();
-                  moveLens(event.clientX - box.left, event.clientY - box.top);
-                },
-                onPointerLeave: hideLens,
-                onWheel: (event: WheelEvent) => {
-                  if (!event.shiftKey && !event.altKey) return;
-                  event.preventDefault();
-                  const delta =
-                    Math.abs(event.deltaY) >= Math.abs(event.deltaX) ? event.deltaY : event.deltaX;
-                  setLensSize((current) =>
-                    Math.min(400, Math.max(80, current + (delta < 0 ? 20 : -20))),
-                  );
-                },
-                onFocus: (event: FocusEvent) => {
-                  const box = (event.currentTarget as HTMLElement).getBoundingClientRect();
-                  moveLens(box.width / 2, Math.min(box.height / 2, 240));
-                },
-                onBlur: hideLens,
-                onKeyDown: (event: KeyboardEvent) => {
-                  if (event.target !== event.currentTarget) return;
-                  const element = event.currentTarget as HTMLElement;
-                  const x = Number.parseFloat(element.style.getPropertyValue('--ff-lens-x')) || 0;
-                  const y = Number.parseFloat(element.style.getPropertyValue('--ff-lens-y')) || 0;
-                  const moves: Record<string, [number, number]> = {
-                    ArrowLeft: [-LENS_STEP, 0],
-                    ArrowRight: [LENS_STEP, 0],
-                    ArrowUp: [0, -LENS_STEP],
-                    ArrowDown: [0, LENS_STEP],
-                  };
-                  const move = moves[event.key];
-                  if (move) {
-                    event.preventDefault();
-                    moveLens(x + move[0], y + move[1]);
-                  } else if (event.key === 'Escape') {
-                    hideLens();
-                  }
-                },
-              }
-            : {})}
-        >
-          {arrangement === 'columns' ? (
-            <div class="ff-article-view__side" data-stacked={stacked ? '' : undefined}>
-              {(['start', 'end'] as const)
-                .flatMap((position) => layersAt(positions, position))
-                .map((id) => (
-                  <figure class="ff-article-view__figure" key={id}>
-                    <figcaption class="ff-article-view__caption">{presetLabel(id)}</figcaption>
-                    <div data-pane="">{page(id)}</div>
-                  </figure>
-                ))}
-            </div>
-          ) : (
-            <div
-              class={clipped ? 'ff-article-view__slider' : 'ff-article-view__overlay'}
-              ref={slider}
-              data-pane=""
-              data-stacked={clipped && stacked ? '' : undefined}
-              style={clipped && hydrated ? { '--ff-split': `${split}%` } : undefined}
-            >
-              {LAYER_IDS.filter((id) => positions[id] !== 'hidden').map((id) =>
-                positions[id] === 'clip' ? (
-                  <div
-                    key={id}
-                    class="ff-article-view__slider-fallback"
-                    aria-hidden="true"
-                    {...{ inert: true }}
-                  >
-                    {page(id, { copy: true })}
-                  </div>
-                ) : (
-                  <Fragment key={id}>
-                    {page(id, { ghost: positions[id] === 'ghost', styled: overlaid })}
-                  </Fragment>
-                ),
-              )}
-              {clipped && (
-                <div
-                  class="ff-article-view__divider"
-                  role="slider"
-                  tabIndex={0}
-                  aria-label={t.slider_label()}
-                  aria-orientation={stacked ? 'vertical' : 'horizontal'}
-                  aria-valuemin={0}
-                  aria-valuemax={100}
-                  aria-valuenow={Math.round(split)}
-                  aria-valuetext={`${Math.round(split)}%`}
-                  onPointerDown={(event) => {
-                    event.currentTarget.setPointerCapture(event.pointerId);
-                    moveSplit(event);
-                  }}
-                  onPointerMove={(event) => {
-                    if (event.currentTarget.hasPointerCapture(event.pointerId)) moveSplit(event);
-                  }}
-                  onKeyDown={(event) => {
-                    const start = isRtl() ? 'ArrowRight' : 'ArrowLeft';
-                    const end = isRtl() ? 'ArrowLeft' : 'ArrowRight';
-                    const back = stacked ? 'ArrowUp' : start;
-                    const forward = stacked ? 'ArrowDown' : end;
-                    const step = event.shiftKey ? 10 : 2;
-                    if (event.key === back) setSplit((value) => Math.max(0, value - step));
-                    else if (event.key === forward)
-                      setSplit((value) => Math.min(100, value + step));
-                    else if (event.key === 'PageUp') setSplit((value) => Math.max(0, value - 10));
-                    else if (event.key === 'PageDown')
-                      setSplit((value) => Math.min(100, value + 10));
-                    else if (event.key === 'Home') setSplit(0);
-                    else if (event.key === 'End') setSplit(100);
-                    else return;
-                    event.preventDefault();
-                  }}
-                />
-              )}
-            </div>
+      <div class="ff-article-view__body">
+        <div class="ff-article-view__main">
+          {loadFailed && (
+            <p class="ff-error" role="alert">
+              {t.preview_load_failed()}
+            </p>
           )}
-          {xray && (
-            <>
-              <div class="ff-article-view__lens" aria-hidden="true" {...{ inert: true }}>
-                <div class="ff-article-view__lens-pane">
-                  {lensContent === 'overlay' ? (
-                    <div class="ff-article-view__overlay">
-                      {page('web', { copy: true, styled: true })}
-                      {page('fallback', { ghost: true, styled: true })}
-                    </div>
-                  ) : (
-                    page(lensContent, { copy: true })
+          {notInstalled.length > 0 && (
+            <p role="status">
+              <span class="ff-error">
+                {t.preview_not_installed({ font: notInstalled.join(', ') })}
+              </span>{' '}
+              <span class="ff-muted">{t.preview_not_installed_note()}</span>
+            </p>
+          )}
+          <div
+            ref={frame}
+            class="ff-article-view__frame"
+            data-constrained={frameWidth === undefined ? undefined : ''}
+            style={frameWidth === undefined ? undefined : { inlineSize: `${frameWidth}px` }}
+          >
+            <div
+              ref={loupe}
+              class={xray ? 'ff-article-view__loupe' : 'ff-article-view__stage'}
+              {...(xray
+                ? {
+                    tabIndex: 0,
+                    role: 'application',
+                    'aria-label': t.loupe_label(),
+                    onPointerMove: (event: PointerEvent) => {
+                      const box = (event.currentTarget as HTMLElement).getBoundingClientRect();
+                      moveLens(event.clientX - box.left, event.clientY - box.top);
+                    },
+                    onPointerLeave: hideLens,
+                    onWheel: (event: WheelEvent) => {
+                      if (!event.shiftKey && !event.altKey) return;
+                      event.preventDefault();
+                      const delta =
+                        Math.abs(event.deltaY) >= Math.abs(event.deltaX)
+                          ? event.deltaY
+                          : event.deltaX;
+                      setLensSize((current) =>
+                        Math.min(400, Math.max(80, current + (delta < 0 ? 20 : -20))),
+                      );
+                    },
+                    onFocus: (event: FocusEvent) => {
+                      const box = (event.currentTarget as HTMLElement).getBoundingClientRect();
+                      moveLens(box.width / 2, Math.min(box.height / 2, 240));
+                    },
+                    onBlur: hideLens,
+                    onKeyDown: (event: KeyboardEvent) => {
+                      if (event.target !== event.currentTarget) return;
+                      const element = event.currentTarget as HTMLElement;
+                      const x =
+                        Number.parseFloat(element.style.getPropertyValue('--ff-lens-x')) || 0;
+                      const y =
+                        Number.parseFloat(element.style.getPropertyValue('--ff-lens-y')) || 0;
+                      const moves: Record<string, [number, number]> = {
+                        ArrowLeft: [-LENS_STEP, 0],
+                        ArrowRight: [LENS_STEP, 0],
+                        ArrowUp: [0, -LENS_STEP],
+                        ArrowDown: [0, LENS_STEP],
+                      };
+                      const move = moves[event.key];
+                      if (move) {
+                        event.preventDefault();
+                        moveLens(x + move[0], y + move[1]);
+                      } else if (event.key === 'Escape') {
+                        hideLens();
+                      }
+                    },
+                  }
+                : {})}
+            >
+              {arrangement === 'columns' ? (
+                <div class="ff-article-view__side" data-stacked={stacked ? '' : undefined}>
+                  {(['start', 'end'] as const)
+                    .flatMap((position) => layersAt(positions, position))
+                    .map((id) => (
+                      <figure class="ff-article-view__figure" key={id}>
+                        <figcaption class="ff-article-view__caption">{presetLabel(id)}</figcaption>
+                        <div data-pane="">{page(id)}</div>
+                      </figure>
+                    ))}
+                </div>
+              ) : (
+                <div
+                  class={clipped ? 'ff-article-view__slider' : 'ff-article-view__overlay'}
+                  ref={slider}
+                  data-pane=""
+                  data-stacked={clipped && stacked ? '' : undefined}
+                  style={clipped && hydrated ? { '--ff-split': `${split}%` } : undefined}
+                >
+                  {LAYER_IDS.filter((id) => positions[id] !== 'hidden').map((id) =>
+                    positions[id] === 'clip' ? (
+                      <div
+                        key={id}
+                        class="ff-article-view__slider-fallback"
+                        aria-hidden="true"
+                        {...{ inert: true }}
+                      >
+                        {page(id, { copy: true })}
+                      </div>
+                    ) : (
+                      <Fragment key={id}>
+                        {page(id, { ghost: positions[id] === 'ghost', styled: overlaid })}
+                      </Fragment>
+                    ),
+                  )}
+                  {clipped && (
+                    <div
+                      class="ff-article-view__divider"
+                      role="slider"
+                      tabIndex={0}
+                      aria-label={t.slider_label()}
+                      aria-orientation={stacked ? 'vertical' : 'horizontal'}
+                      aria-valuemin={0}
+                      aria-valuemax={100}
+                      aria-valuenow={Math.round(split)}
+                      aria-valuetext={`${Math.round(split)}%`}
+                      onPointerDown={(event) => {
+                        event.currentTarget.setPointerCapture(event.pointerId);
+                        moveSplit(event);
+                      }}
+                      onPointerMove={(event) => {
+                        if (event.currentTarget.hasPointerCapture(event.pointerId))
+                          moveSplit(event);
+                      }}
+                      onKeyDown={(event) => {
+                        const start = isRtl() ? 'ArrowRight' : 'ArrowLeft';
+                        const end = isRtl() ? 'ArrowLeft' : 'ArrowRight';
+                        const back = stacked ? 'ArrowUp' : start;
+                        const forward = stacked ? 'ArrowDown' : end;
+                        const step = event.shiftKey ? 10 : 2;
+                        if (event.key === back) setSplit((value) => Math.max(0, value - step));
+                        else if (event.key === forward)
+                          setSplit((value) => Math.min(100, value + step));
+                        else if (event.key === 'PageUp')
+                          setSplit((value) => Math.max(0, value - 10));
+                        else if (event.key === 'PageDown')
+                          setSplit((value) => Math.min(100, value + 10));
+                        else if (event.key === 'Home') setSplit(0);
+                        else if (event.key === 'End') setSplit(100);
+                        else return;
+                        event.preventDefault();
+                      }}
+                    />
                   )}
                 </div>
-              </div>
-              <span class="ff-article-view__ring" aria-hidden="true" />
-            </>
-          )}
+              )}
+              {xray && (
+                <>
+                  <div class="ff-article-view__lens" aria-hidden="true" {...{ inert: true }}>
+                    <div class="ff-article-view__lens-pane">
+                      {lensContent === 'overlay' ? (
+                        <div class="ff-article-view__overlay">
+                          {page('web', { copy: true, styled: true })}
+                          {page('fallback', { ghost: true, styled: true })}
+                        </div>
+                      ) : (
+                        page(lensContent, { copy: true })
+                      )}
+                    </div>
+                  </div>
+                  <span class="ff-article-view__ring" aria-hidden="true" />
+                </>
+              )}
+            </div>
+            <div
+              class="ff-article-view__resize"
+              role="slider"
+              tabIndex={0}
+              aria-label={t.frame_width_label()}
+              aria-orientation="horizontal"
+              aria-valuemin={MIN_FRAME}
+              aria-valuemax={Math.max(MIN_FRAME, fullWidth())}
+              aria-valuenow={currentFrame()}
+              aria-valuetext={`${currentFrame()}px`}
+              onPointerDown={(event) => {
+                event.currentTarget.setPointerCapture(event.pointerId);
+              }}
+              onPointerMove={(event) => {
+                const box = frame.current?.getBoundingClientRect();
+                if (box && event.currentTarget.hasPointerCapture(event.pointerId)) {
+                  resizeFrame(isRtl() ? box.right - event.clientX : event.clientX - box.left);
+                }
+              }}
+              onDblClick={() => resizeFrame(undefined)}
+              onKeyDown={(event) => {
+                const step = event.shiftKey ? FRAME_BIG_STEP : FRAME_STEP;
+                const shrink = isRtl() ? 'ArrowRight' : 'ArrowLeft';
+                const grow = isRtl() ? 'ArrowLeft' : 'ArrowRight';
+                if (event.key === shrink) resizeFrame(currentFrame() - step);
+                else if (event.key === grow) resizeFrame(currentFrame() + step);
+                else if (event.key === 'Home') resizeFrame(MIN_FRAME);
+                else if (event.key === 'End') resizeFrame(undefined);
+                else return;
+                event.preventDefault();
+              }}
+            >
+              <span class="ff-article-view__resize-size" aria-hidden="true">
+                {currentFrame()}px
+              </span>
+            </div>
+          </div>
+          {overlaid && <p class="ff-muted ff-article-view__legend">{t.overlay_legend()}</p>}
+          {clipped && <p class="ff-muted ff-article-view__legend">{t.slider_legend()}</p>}
         </div>
-        <div
-          class="ff-article-view__resize"
-          role="slider"
-          tabIndex={0}
-          aria-label={t.frame_width_label()}
-          aria-orientation="horizontal"
-          aria-valuemin={MIN_FRAME}
-          aria-valuemax={Math.max(MIN_FRAME, fullWidth())}
-          aria-valuenow={currentFrame()}
-          aria-valuetext={`${currentFrame()}px`}
-          onPointerDown={(event) => {
-            event.currentTarget.setPointerCapture(event.pointerId);
-          }}
-          onPointerMove={(event) => {
-            const box = frame.current?.getBoundingClientRect();
-            if (box && event.currentTarget.hasPointerCapture(event.pointerId)) {
-              resizeFrame(isRtl() ? box.right - event.clientX : event.clientX - box.left);
-            }
-          }}
-          onDblClick={() => resizeFrame(undefined)}
-          onKeyDown={(event) => {
-            const step = event.shiftKey ? FRAME_BIG_STEP : FRAME_STEP;
-            const shrink = isRtl() ? 'ArrowRight' : 'ArrowLeft';
-            const grow = isRtl() ? 'ArrowLeft' : 'ArrowRight';
-            if (event.key === shrink) resizeFrame(currentFrame() - step);
-            else if (event.key === grow) resizeFrame(currentFrame() + step);
-            else if (event.key === 'Home') resizeFrame(MIN_FRAME);
-            else if (event.key === 'End') resizeFrame(undefined);
-            else return;
-            event.preventDefault();
-          }}
+        <Splitter
+          sidebar={settings}
+          side="end"
+          label={t.sidebar_right_resize()}
+          controls="ff-article-settings"
+          onClick={settings.toggle}
+        />
+        <aside
+          id="ff-article-settings"
+          class="ff-article-view__settings"
+          aria-label={t.article_group_settings()}
         >
-          <span class="ff-article-view__resize-size" aria-hidden="true">
-            {currentFrame()}px
-          </span>
-        </div>
+          <Accordion
+            storageKey="article-settings"
+            resizable={false}
+            resizeLabel={(above, below) => t.accordion_resize({ above, below })}
+            items={settingsItems}
+          />
+        </aside>
       </div>
-      {overlaid && <p class="ff-muted ff-article-view__legend">{t.overlay_legend()}</p>}
-      {clipped && <p class="ff-muted ff-article-view__legend">{t.slider_legend()}</p>}
     </section>
   );
 }

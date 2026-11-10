@@ -873,5 +873,8 @@
   "share_part_tuning": "調整値と間隔",
   "share_part_panel": "開いているパネル、システム、フォントフェイス",
   "share_part_preview": "プレビューの設定、モード、デバイス幅",
-  "share_part_site_fonts": "インポートしたサイトの見出しと本文のフォント"
+  "share_part_site_fonts": "インポートしたサイトの見出しと本文のフォント",
+  "sidebar_left_toggle": "サイドパネル",
+  "sidebar_left_resize": "サイドパネルの幅を変更",
+  "sidebar_right_resize": "設定パネルの幅を変更"
 }
