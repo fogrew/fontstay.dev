@@ -42,6 +42,7 @@
     "og:build": "node scripts/og/build-og.mjs",
     "unicode:blocks": "node scripts/unicode/import-blocks.mjs",
     "os-fonts:metrics": "node scripts/os-fonts/extract-metrics.mjs",
+    "os-fonts:scripts": "node scripts/os-fonts/extract-scripts.mjs",
     "postinstall": "pnpm i18n:compile"
   },
   "dependencies": {

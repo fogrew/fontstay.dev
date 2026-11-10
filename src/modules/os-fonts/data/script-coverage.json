@@ -1,0 +1,281 @@
+{
+  "schema": 1,
+  "totals": {
+    "arabic": 153,
+    "hebrew": 31,
+    "devanagari": 81,
+    "bengali": 55,
+    "tamil": 37,
+    "thai": 57,
+    "japanese": 183,
+    "korean": 11172,
+    "chinese_hans": 20992,
+    "chinese_hant": 20992
+  },
+  "fonts": [
+    {
+      "id": "arial",
+      "family": "Arial",
+      "aliases": [],
+      "source": {
+        "kind": "local",
+        "file": "arial.ttf",
+        "sha256": "edfbd22a3d088fc2f5d7c79b8c9c732df6dc878a60f0a80be0f92a3c7a634404"
+      },
+      "scripts": { "arabic": 153, "hebrew": 31 }
+    },
+    {
+      "id": "leelawadee-ui",
+      "family": "Leelawadee UI",
+      "aliases": [],
+      "source": {
+        "kind": "local",
+        "file": "LeelawUI.ttf",
+        "sha256": "ca9a670f12d0e47c20441012a22f78ab17c1b126818e0e887ef7db6ecf5e76b4"
+      },
+      "scripts": { "thai": 57 }
+    },
+    {
+      "id": "malgun-gothic",
+      "family": "Malgun Gothic",
+      "aliases": [],
+      "source": {
+        "kind": "local",
+        "file": "malgun.ttf",
+        "sha256": "7a183cf1c6c56b9609fcc16eda8b5229fbc11758a21e669ec00343239b02192f"
+      },
+      "scripts": { "japanese": 169, "korean": 11172, "chinese_hans": 7476, "chinese_hant": 7476 }
+    },
+    {
+      "id": "microsoft-jhenghei",
+      "family": "Microsoft JhengHei",
+      "aliases": [],
+      "source": {
+        "kind": "local",
+        "file": "msjh.ttc",
+        "sha256": "5948f236d25ca33844c1341e0b618f1dee9d6704d0944c8d1066e2088c6f9b1b"
+      },
+      "scripts": { "japanese": 183, "chinese_hans": 20939, "chinese_hant": 20939 }
+    },
+    {
+      "id": "microsoft-yahei",
+      "family": "Microsoft YaHei",
+      "aliases": [],
+      "source": {
+        "kind": "local",
+        "file": "msyh.ttc",
+        "sha256": "154a61e53a1227ea70365d31835d1bea6852d115c2fb16ad35f0ef94f7ed31da"
+      },
+      "scripts": { "japanese": 183, "chinese_hans": 20992, "chinese_hant": 20992 }
+    },
+    {
+      "id": "ms-gothic",
+      "family": "MS Gothic",
+      "aliases": [],
+      "source": {
+        "kind": "local",
+        "file": "msgothic.ttc",
+        "sha256": "32a109fb2560188fe9d92ffa7458bbee0ae46f9a8a0fed6abece4c1a51c5f37d"
+      },
+      "scripts": { "japanese": 183, "chinese_hans": 12584, "chinese_hant": 12584 }
+    },
+    {
+      "id": "nirmala-ui",
+      "family": "Nirmala UI",
+      "aliases": [],
+      "source": {
+        "kind": "local",
+        "file": "Nirmala.ttc",
+        "sha256": "2e399d1c792ed492712bf480befd217787017efe94885296d7fab8459cc7d437"
+      },
+      "scripts": { "devanagari": 81, "bengali": 55, "tamil": 37 }
+    },
+    {
+      "id": "noto-naskh-arabic",
+      "family": "Noto Naskh Arabic",
+      "aliases": [],
+      "source": {
+        "kind": "download",
+        "file": "NotoNaskhArabic[wght].ttf",
+        "url": "https://raw.githubusercontent.com/google/fonts/bd8f81ddb5c74d5c8897b36ad88b440266245103/ofl/notonaskharabic/NotoNaskhArabic%5Bwght%5D.ttf",
+        "license": "OFL-1.1",
+        "sha256": "67b5a525a661b607971fbd3f96a81b89d3a768e74534fca84f18ac97e6fab72f"
+      },
+      "scripts": { "arabic": 153 }
+    },
+    {
+      "id": "noto-sans-arabic",
+      "family": "Noto Sans Arabic",
+      "aliases": [],
+      "source": {
+        "kind": "download",
+        "file": "NotoSansArabic[wdth,wght].ttf",
+        "url": "https://raw.githubusercontent.com/google/fonts/bd8f81ddb5c74d5c8897b36ad88b440266245103/ofl/notosansarabic/NotoSansArabic%5Bwdth%2Cwght%5D.ttf",
+        "license": "OFL-1.1",
+        "sha256": "63111b5b2e074dd48cc67692e0a2726d86ee94c1c37fe8598257b7b4e87e869e"
+      },
+      "scripts": { "arabic": 153 }
+    },
+    {
+      "id": "noto-sans-bengali",
+      "family": "Noto Sans Bengali",
+      "aliases": [],
+      "source": {
+        "kind": "download",
+        "file": "NotoSansBengali[wdth,wght].ttf",
+        "url": "https://raw.githubusercontent.com/google/fonts/bd8f81ddb5c74d5c8897b36ad88b440266245103/ofl/notosansbengali/NotoSansBengali%5Bwdth%2Cwght%5D.ttf",
+        "license": "OFL-1.1",
+        "sha256": "dcd42978094e584a849c84a51450eeac40c8826057d566ea6d4b9627a403a05a"
+      },
+      "scripts": { "bengali": 55 }
+    },
+    {
+      "id": "noto-sans-devanagari",
+      "family": "Noto Sans Devanagari",
+      "aliases": [],
+      "source": {
+        "kind": "download",
+        "file": "NotoSansDevanagari[wdth,wght].ttf",
+        "url": "https://raw.githubusercontent.com/google/fonts/bd8f81ddb5c74d5c8897b36ad88b440266245103/ofl/notosansdevanagari/NotoSansDevanagari%5Bwdth%2Cwght%5D.ttf",
+        "license": "OFL-1.1",
+        "sha256": "14ec4af41f27482216d1c2229f417ff9b1425e1babb014e57d1d40d03229853e"
+      },
+      "scripts": { "devanagari": 81 }
+    },
+    {
+      "id": "noto-sans-hebrew",
+      "family": "Noto Sans Hebrew",
+      "aliases": [],
+      "source": {
+        "kind": "download",
+        "file": "NotoSansHebrew[wdth,wght].ttf",
+        "url": "https://raw.githubusercontent.com/google/fonts/bd8f81ddb5c74d5c8897b36ad88b440266245103/ofl/notosanshebrew/NotoSansHebrew%5Bwdth%2Cwght%5D.ttf",
+        "license": "OFL-1.1",
+        "sha256": "7ef36a2c3593758cdb622e1bdef4f84523e92fbc3ccc667438dd80ff54c2de88"
+      },
+      "scripts": { "hebrew": 31 }
+    },
+    {
+      "id": "noto-sans-jp",
+      "family": "Noto Sans JP",
+      "aliases": ["Noto Sans CJK JP"],
+      "source": {
+        "kind": "download",
+        "file": "NotoSansJP[wght].ttf",
+        "url": "https://raw.githubusercontent.com/google/fonts/bd8f81ddb5c74d5c8897b36ad88b440266245103/ofl/notosansjp/NotoSansJP%5Bwght%5D.ttf",
+        "license": "OFL-1.1",
+        "sha256": "c2f3b4d463500a2ddcd3849cded1fceeb9fd6d1c32e6cbecd568453ba50fc68f"
+      },
+      "scripts": { "japanese": 183, "chinese_hans": 12747, "chinese_hant": 12747 }
+    },
+    {
+      "id": "noto-sans-kr",
+      "family": "Noto Sans KR",
+      "aliases": ["Noto Sans CJK KR"],
+      "source": {
+        "kind": "download",
+        "file": "NotoSansKR[wght].ttf",
+        "url": "https://raw.githubusercontent.com/google/fonts/bd8f81ddb5c74d5c8897b36ad88b440266245103/ofl/notosanskr/NotoSansKR%5Bwght%5D.ttf",
+        "license": "OFL-1.1",
+        "sha256": "194018e6b2b293a7964f037b25c0249ce1418bc9ab3c971060a03aa57861e252"
+      },
+      "scripts": { "japanese": 183, "korean": 11172, "chinese_hans": 8138, "chinese_hant": 8138 }
+    },
+    {
+      "id": "noto-sans-sc",
+      "family": "Noto Sans SC",
+      "aliases": ["Noto Sans CJK SC"],
+      "source": {
+        "kind": "download",
+        "file": "NotoSansSC[wght].ttf",
+        "url": "https://raw.githubusercontent.com/google/fonts/bd8f81ddb5c74d5c8897b36ad88b440266245103/ofl/notosanssc/NotoSansSC%5Bwght%5D.ttf",
+        "license": "OFL-1.1",
+        "sha256": "a3041811a78c361b1de50f953c805e0244951c21c5bd412f7232ef0d899af0da"
+      },
+      "scripts": { "japanese": 183, "chinese_hans": 20976, "chinese_hant": 20976 }
+    },
+    {
+      "id": "noto-sans-tamil",
+      "family": "Noto Sans Tamil",
+      "aliases": [],
+      "source": {
+        "kind": "download",
+        "file": "NotoSansTamil[wdth,wght].ttf",
+        "url": "https://raw.githubusercontent.com/google/fonts/bd8f81ddb5c74d5c8897b36ad88b440266245103/ofl/notosanstamil/NotoSansTamil%5Bwdth%2Cwght%5D.ttf",
+        "license": "OFL-1.1",
+        "sha256": "aa3a9b321f4b0bb2c40203ffbde9af89713227866e0e13f76e5b9eeea727cf88"
+      },
+      "scripts": { "tamil": 37 }
+    },
+    {
+      "id": "noto-sans-tc",
+      "family": "Noto Sans TC",
+      "aliases": ["Noto Sans CJK TC"],
+      "source": {
+        "kind": "download",
+        "file": "NotoSansTC[wght].ttf",
+        "url": "https://raw.githubusercontent.com/google/fonts/bd8f81ddb5c74d5c8897b36ad88b440266245103/ofl/notosanstc/NotoSansTC%5Bwght%5D.ttf",
+        "license": "OFL-1.1",
+        "sha256": "864727d210d54f2537bbe23b3a839436c3992af72de9322af5270897246bd44f"
+      },
+      "scripts": { "japanese": 183, "chinese_hans": 15383, "chinese_hant": 15383 }
+    },
+    {
+      "id": "noto-sans-thai",
+      "family": "Noto Sans Thai",
+      "aliases": [],
+      "source": {
+        "kind": "download",
+        "file": "NotoSansThai[wdth,wght].ttf",
+        "url": "https://raw.githubusercontent.com/google/fonts/bd8f81ddb5c74d5c8897b36ad88b440266245103/ofl/notosansthai/NotoSansThai%5Bwdth%2Cwght%5D.ttf",
+        "license": "OFL-1.1",
+        "sha256": "5a1c559bb539583c8a1fd99d1c5b9491e5e14478c9cd2bd0970d5c3096cc9ef8"
+      },
+      "scripts": { "thai": 57 }
+    },
+    {
+      "id": "segoe-ui",
+      "family": "Segoe UI",
+      "aliases": [],
+      "source": {
+        "kind": "local",
+        "file": "segoeui.ttf",
+        "sha256": "704eada12961a27fd271f7d3b09e2066520e758390c1776744eff430fee30f6e"
+      },
+      "scripts": { "arabic": 153, "hebrew": 31 }
+    },
+    {
+      "id": "simsun",
+      "family": "SimSun",
+      "aliases": [],
+      "source": {
+        "kind": "local",
+        "file": "simsun.ttc",
+        "sha256": "a9530e6924270d4e258067d75d2436e698748930c83632c9237f597c04b4c361"
+      },
+      "scripts": { "japanese": 174, "chinese_hans": 20992, "chinese_hant": 20992 }
+    },
+    {
+      "id": "tahoma",
+      "family": "Tahoma",
+      "aliases": [],
+      "source": {
+        "kind": "local",
+        "file": "tahoma.ttf",
+        "sha256": "9af03d4ad44a3b413d92f7de48b94aa7cc8a1471a75d498406eae837f62ee1d1"
+      },
+      "scripts": { "arabic": 153, "hebrew": 31, "thai": 57 }
+    },
+    {
+      "id": "yu-gothic",
+      "family": "Yu Gothic",
+      "aliases": [],
+      "source": {
+        "kind": "local",
+        "file": "YuGothR.ttc",
+        "sha256": "ce3b5d0fa20721c6f70ff38917e6bf84832de8d33a6a84a3353e61a68ca720b9"
+      },
+      "scripts": { "japanese": 183, "chinese_hans": 12721, "chinese_hant": 12721 }
+    }
+  ]
+}

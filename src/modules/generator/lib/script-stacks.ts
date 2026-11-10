@@ -1,7 +1,18 @@
 import { quoteName } from '@/modules/export';
-import type { OsId } from '@/modules/os-fonts';
+import { type OsId, scriptCoverage, scriptShare } from '@/modules/os-fonts';
 
-export const STACK_SCRIPTS = ['arabic', 'hebrew', 'devanagari', 'thai'] as const;
+export const STACK_SCRIPTS = [
+  'arabic',
+  'hebrew',
+  'devanagari',
+  'bengali',
+  'tamil',
+  'thai',
+  'japanese',
+  'korean',
+  'chinese_hans',
+  'chinese_hant',
+] as const;
 export type StackScript = (typeof STACK_SCRIPTS)[number];
 
 type Span = readonly [number, number];
@@ -9,10 +20,13 @@ type Span = readonly [number, number];
 interface ScriptStack {
   langs: readonly string[];
   spans: readonly Span[];
+  core: readonly Span[];
+  minShare: number;
   fonts: Partial<Record<OsId, readonly string[]>>;
 }
 
 const NOTO = (name: string) => [`Noto Sans ${name}`];
+const CJK = (region: string) => [`Noto Sans CJK ${region}`];
 
 const STACKS: Record<StackScript, ScriptStack> = {
   arabic: {
@@ -24,6 +38,8 @@ const STACKS: Record<StackScript, ScriptStack> = {
       [0xfb50, 0xfdff],
       [0xfe70, 0xfeff],
     ],
+    core: [[0x600, 0x6ff]],
+    minShare: 0.8,
     fonts: {
       windows: ['Segoe UI', 'Tahoma'],
       macos: ['Geeza Pro'],
@@ -39,6 +55,8 @@ const STACKS: Record<StackScript, ScriptStack> = {
       [0x590, 0x5ff],
       [0xfb1d, 0xfb4f],
     ],
+    core: [[0x590, 0x5ff]],
+    minShare: 0.8,
     fonts: {
       windows: ['Segoe UI', 'Arial'],
       macos: ['Arial Hebrew'],
@@ -54,6 +72,8 @@ const STACKS: Record<StackScript, ScriptStack> = {
       [0x900, 0x97f],
       [0xa8e0, 0xa8ff],
     ],
+    core: [[0x900, 0x97f]],
+    minShare: 0.8,
     fonts: {
       windows: ['Nirmala UI'],
       macos: ['Devanagari Sangam MN'],
@@ -63,9 +83,39 @@ const STACKS: Record<StackScript, ScriptStack> = {
       chromeos: NOTO('Devanagari'),
     },
   },
+  bengali: {
+    langs: ['bn', 'as'],
+    spans: [[0x980, 0x9ff]],
+    core: [[0x980, 0x9ff]],
+    minShare: 0.8,
+    fonts: {
+      windows: ['Nirmala UI'],
+      macos: ['Bangla Sangam MN'],
+      ios: ['Bangla Sangam MN'],
+      android: NOTO('Bengali'),
+      linux: NOTO('Bengali'),
+      chromeos: NOTO('Bengali'),
+    },
+  },
+  tamil: {
+    langs: ['ta'],
+    spans: [[0xb80, 0xbff]],
+    core: [[0xb80, 0xbff]],
+    minShare: 0.8,
+    fonts: {
+      windows: ['Nirmala UI'],
+      macos: ['Tamil Sangam MN'],
+      ios: ['Tamil Sangam MN'],
+      android: NOTO('Tamil'),
+      linux: NOTO('Tamil'),
+      chromeos: NOTO('Tamil'),
+    },
+  },
   thai: {
     langs: ['th'],
     spans: [[0xe00, 0xe7f]],
+    core: [[0xe00, 0xe7f]],
+    minShare: 0.8,
     fonts: {
       windows: ['Leelawadee UI', 'Tahoma'],
       macos: ['Thonburi'],
@@ -75,12 +125,78 @@ const STACKS: Record<StackScript, ScriptStack> = {
       chromeos: NOTO('Thai'),
     },
   },
+  japanese: {
+    langs: ['ja'],
+    spans: [[0x3040, 0x30ff]],
+    core: [[0x3040, 0x30ff]],
+    minShare: 0.9,
+    fonts: {
+      windows: ['Yu Gothic', 'MS Gothic'],
+      macos: ['Hiragino Sans'],
+      ios: ['Hiragino Sans'],
+      android: CJK('JP'),
+      linux: CJK('JP'),
+      chromeos: CJK('JP'),
+    },
+  },
+  korean: {
+    langs: ['ko'],
+    spans: [
+      [0x1100, 0x11ff],
+      [0xac00, 0xd7af],
+    ],
+    core: [[0xac00, 0xd7a3]],
+    minShare: 0.9,
+    fonts: {
+      windows: ['Malgun Gothic'],
+      macos: ['Apple SD Gothic Neo'],
+      ios: ['Apple SD Gothic Neo'],
+      android: CJK('KR'),
+      linux: CJK('KR'),
+      chromeos: CJK('KR'),
+    },
+  },
+  chinese_hans: {
+    langs: ['zh-Hans', 'zh-CN', 'zh-SG'],
+    spans: [[0x4e00, 0x9fff]],
+    core: [[0x4e00, 0x9fff]],
+    minShare: 0.5,
+    fonts: {
+      windows: ['Microsoft YaHei', 'SimSun'],
+      macos: ['PingFang SC'],
+      ios: ['PingFang SC'],
+      android: CJK('SC'),
+      linux: CJK('SC'),
+      chromeos: CJK('SC'),
+    },
+  },
+  chinese_hant: {
+    langs: ['zh-Hant', 'zh-TW', 'zh-HK', 'zh-MO'],
+    spans: [[0x4e00, 0x9fff]],
+    core: [[0x4e00, 0x9fff]],
+    minShare: 0.5,
+    fonts: {
+      windows: ['Microsoft JhengHei'],
+      macos: ['PingFang TC'],
+      ios: ['PingFang TC'],
+      android: CJK('TC'),
+      linux: CJK('TC'),
+      chromeos: CJK('TC'),
+    },
+  },
 };
+
+export const SCRIPT_CORE_SPANS: Record<StackScript, readonly Span[]> = Object.fromEntries(
+  STACK_SCRIPTS.map((script) => [script, STACKS[script].core]),
+) as Record<StackScript, readonly Span[]>;
 
 const MIN_LETTERS = 20;
 
 export function uncoveredScripts(codePoints: ArrayLike<number>): StackScript[] {
-  const counts: Record<StackScript, number> = { arabic: 0, hebrew: 0, devanagari: 0, thai: 0 };
+  const counts = Object.fromEntries(STACK_SCRIPTS.map((script) => [script, 0])) as Record<
+    StackScript,
+    number
+  >;
   for (let index = 0; index < codePoints.length; index++) {
     const codePoint = codePoints[index] as number;
     for (const script of STACK_SCRIPTS) {
@@ -95,6 +211,22 @@ export function uncoveredScripts(codePoints: ArrayLike<number>): StackScript[] {
   return STACK_SCRIPTS.filter((script) => counts[script] < MIN_LETTERS);
 }
 
+export function fontCoversScript(font: string, script: StackScript): boolean | undefined {
+  const entry = scriptCoverage(font);
+  if (!entry) return undefined;
+  return scriptShare(entry, script) >= STACKS[script].minShare;
+}
+
+export function scriptStackFonts(script: StackScript, systems: readonly OsId[]): string[] {
+  const stack = STACKS[script];
+  const fonts = systems.flatMap((os) => stack.fonts[os] ?? []);
+  return [...new Set(fonts)].filter((font) => fontCoversScript(font, script) !== false);
+}
+
+export function scriptStackCandidates(script: StackScript): string[] {
+  return [...new Set(Object.values(STACKS[script].fonts).flat())];
+}
+
 export function scriptStackRules(
   scripts: readonly StackScript[],
   systems: readonly OsId[],
@@ -103,12 +235,11 @@ export function scriptStackRules(
   const rules: string[] = [];
   for (const script of STACK_SCRIPTS) {
     if (!scripts.includes(script)) continue;
-    const stack = STACKS[script];
-    const fonts = [...new Set(systems.flatMap((os) => stack.fonts[os] ?? []))];
+    const fonts = scriptStackFonts(script, systems);
     if (fonts.length === 0) continue;
     rules.push(
       [
-        `${stack.langs.map((lang) => `:lang(${lang})`).join(', ')} {`,
+        `${STACKS[script].langs.map((lang) => `:lang(${lang})`).join(', ')} {`,
         `  font-family: ${[...fonts.map(quoteName), generic].join(', ')};`,
         '}',
       ].join('\n'),

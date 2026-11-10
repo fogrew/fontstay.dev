@@ -1,5 +1,15 @@
 export type OsId = 'windows' | 'macos' | 'ios' | 'android' | 'linux' | 'chromeos';
-export type StackScript = 'arabic' | 'hebrew' | 'devanagari' | 'thai';
+export type StackScript =
+  | 'arabic'
+  | 'hebrew'
+  | 'devanagari'
+  | 'bengali'
+  | 'tamil'
+  | 'thai'
+  | 'japanese'
+  | 'korean'
+  | 'chinese_hans'
+  | 'chinese_hant';
 export type Category = 'sans-serif' | 'serif' | 'monospace' | 'cursive';
 export type ExportFormat =
   | 'css'
