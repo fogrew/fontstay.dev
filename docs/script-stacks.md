@@ -42,6 +42,19 @@ The rule removes the web font from the stack for that script, so no swap happens
 - Chinese simplified and traditional share one Unicode block, so the dataset cannot tell a Simplified-only font from a Traditional-only one; the two stacks differ by their curated candidates. Follow-up: #563.
 - Which system ships a font is still curated, as before.
 
+## Layout time
+
+`pnpm perf:layout` (`scripts/perf/script-stack-layout.mjs`) lays out 200 paragraphs in real Chromium with a Latin-only web font (Source Sans Pro) and compares the current stack (web font first) with the script-aware stack, as the median of 15 forced layouts. It is a manual measurement, not part of `pnpm verify`; results depend on the installed system fonts (the stacks use the Windows candidates).
+
+Chromium 158, Windows 11, one run:
+
+| Text                               | Web font first | Script-aware | Ratio |
+| ---------------------------------- | -------------- | ------------ | ----- |
+| Arabic (`:lang(ar)` stack)         | 22.7 ms        | 10.1 ms      | 2.25x |
+| Emoji-heavy (emoji fonts appended) | 24.3 ms        | 18.6 ms      | 1.31x |
+
+Arabic is about twice as fast with a system Arabic font first, in line with the figures above. Emoji text gains less; the likely reason is that the browser already falls back to an emoji font for those characters, but the benchmark does not test that. On a machine without the listed system fonts the script-aware stack falls through to the generic family and the ratio is meaningless.
+
 ## Not covered yet
 
-macOS and iOS coverage data, and a layout-time benchmark. These are tracked as follow-up issues.
+macOS and iOS coverage data. These are tracked as follow-up issues.

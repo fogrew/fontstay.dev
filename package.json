@@ -37,6 +37,7 @@
     "extension:build": "node scripts/extension/build.mjs",
     "fontsource:catalog": "node scripts/font-sources/import-fontsource-catalog.mjs",
     "perf": "node scripts/check-budget.mjs",
+    "perf:layout": "node scripts/perf/script-stack-layout.mjs",
     "cli:build": "node scripts/cli/build.mjs",
     "icons:build": "node scripts/pwa/build-icons.mjs",
     "og:build": "node scripts/og/build-og.mjs",
