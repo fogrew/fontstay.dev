@@ -111,6 +111,13 @@ describe('scanCss', () => {
     expect(css.faces[0]?.latin).toBe(true);
   });
 
+  it('stays fast on a hostile src value', () => {
+    const hostile = `@font-face{font-family:a;src:${'url( '.repeat(1600)}}`.repeat(60);
+    const started = performance.now();
+    scanCss(hostile, 'https://example.com/');
+    expect(performance.now() - started).toBeLessThan(1000);
+  });
+
   it('stays fast on hostile input with unclosed rules', () => {
     const started = performance.now();
     scanCss(`${'@font-face{'.repeat(40_000)}${'@import '.repeat(40_000)}`, 'https://example.com/');

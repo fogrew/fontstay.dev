@@ -146,7 +146,6 @@ const RANK: Record<string, number> = {
   ttf: 2,
   otf: 3,
 };
-const SOURCE = /url\(\s*["']?([^"')]+)["']?\s*\)(?:\s*format\(\s*["']?([^"')]+)["']?\s*\))?/gi;
 
 function stripComments(css: string): string {
   let result = '';
@@ -196,12 +195,27 @@ function weightOf(value: string): number {
   return /bold/i.test(value) ? 700 : 400;
 }
 
-function bestUrl(src: string, base: string): string {
+function bestUrl(source: string, base: string): string {
+  const src = source.slice(0, 2000);
+  const lower = asciiLower(src);
   let best = '';
   let bestRank = 99;
-  for (const match of src.slice(0, 8000).matchAll(SOURCE)) {
-    const href = resolveHttps(match[1] ?? '', base);
-    const kind = (match[2] ?? (match[1] ?? '').split('?')[0]?.split('.').pop() ?? '').toLowerCase();
+  let position = 0;
+  for (let count = 0; count < 20; count++) {
+    const start = lower.indexOf('url(', position);
+    if (start < 0) break;
+    const close = src.indexOf(')', start + 4);
+    if (close < 0) break;
+    position = close + 1;
+    const raw = src
+      .slice(start + 4, close)
+      .trim()
+      .replace(/^["']|["']$/g, '');
+    const href = resolveHttps(raw, base);
+    const format = /^\s{0,8}format\(\s{0,8}["']?([^"')]{1,30})/i.exec(
+      src.slice(position, position + 80),
+    );
+    const kind = (format?.[1] ?? raw.split('?')[0]?.split('.').pop() ?? '').toLowerCase();
     const rank = Object.hasOwn(RANK, kind) ? (RANK[kind] ?? 50) : 50;
     if (href && rank < bestRank) {
       best = href;
