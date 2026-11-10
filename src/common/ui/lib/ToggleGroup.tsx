@@ -15,10 +15,10 @@ export interface ToggleGroupProps {
 }
 
 export function ToggleGroup({ items, selected, label, fill = false, onChange }: ToggleGroupProps) {
-  const anchor = useRef<string>();
-  const drag = useRef<{ on: boolean; working: Set<string> }>();
+  const anchor = useRef<string | undefined>(undefined);
+  const drag = useRef<{ on: boolean; working: Set<string> } | undefined>(undefined);
   const swallowClick = useRef(false);
-  const stop = useRef<() => void>();
+  const stop = useRef<(() => void) | undefined>(undefined);
 
   useEffect(() => () => stop.current?.(), []);
 

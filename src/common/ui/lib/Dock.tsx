@@ -37,7 +37,7 @@ export function Dock({ items, storageKey, id, defaultOpen, nextLabel, onChange }
   const [ready, setReady] = useState(false);
   const root = useRef<HTMLDivElement>(null);
   const skippedRestore = useRef(false);
-  const transient = useRef<{ id: string | undefined }>();
+  const transient = useRef<{ id: string | undefined } | undefined>(undefined);
   const [focusRequest, setFocusRequest] = useState<{ id: string }>();
 
   useEffect(() => {

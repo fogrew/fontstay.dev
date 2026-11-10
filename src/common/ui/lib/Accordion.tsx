@@ -98,7 +98,7 @@ export function Accordion({ items, resizeLabel, storageKey, resizable = true }: 
     if (storageKey && ready) saveLayout(storageKey, { sizes, closed: [...closed] });
   }, [storageKey, ready, sizes, closed]);
   const elements = useRef(new Map<string, HTMLElement>());
-  const drag = useRef<Drag>();
+  const drag = useRef<Drag | undefined>(undefined);
 
   const toggle = (id: string) =>
     transition(() => {

@@ -44,7 +44,7 @@ export function useSidebar({
   const [state, setState] = useState<SidebarState>({ open: defaultOpen, width: limits.initial });
   const [max, setMax] = useState(limits.max);
   const latest = useRef(state);
-  const anchor = useRef<number>();
+  const anchor = useRef<number | undefined>(undefined);
   const [loaded, setLoaded] = useState(false);
   const bounds = { min: limits.min, max, initial: limits.initial };
 
@@ -143,7 +143,7 @@ export function Splitter({
   controls: string;
   onClick?: () => void;
 }) {
-  const gesture = useRef<Gesture>();
+  const gesture = useRef<Gesture | undefined>(undefined);
   const suppressClick = useRef(false);
   const [dragging, setDragging] = useState(false);
   const direction = (element: Element) => {
