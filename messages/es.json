@@ -500,6 +500,7 @@
   "stack_hebrew": "Hebreo (he)",
   "stack_devanagari": "Devanagari (hi, mr, ne)",
   "stack_thai": "Tailandés (th)",
+  "stack_emoji": "Emoji y símbolos",
   "import_page_title": "Recibiendo datos del sitio",
   "import_receiving": "Recibiendo los datos del sitio…",
   "import_nothing": "No se recibió nada. Ejecuta de nuevo el bookmarklet o la extensión desde el sitio que quieres importar.",

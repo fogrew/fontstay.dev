@@ -500,6 +500,7 @@
   "stack_hebrew": "希伯来文（he）",
   "stack_devanagari": "天城文（hi、mr、ne）",
   "stack_thai": "泰文（th）",
+  "stack_emoji": "Emoji and symbols",
   "import_page_title": "正在接收网站数据",
   "import_receiving": "正在从网站接收数据…",
   "import_nothing": "未收到任何数据。请在要导入的网站上重新运行书签小程序或扩展程序。",

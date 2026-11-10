@@ -116,3 +116,27 @@ export function scriptStackRules(
   }
   return rules.join('\n\n');
 }
+
+const EMOJI_FONTS: Partial<Record<OsId, readonly string[]>> = {
+  windows: ['Segoe UI Emoji'],
+  macos: ['Apple Color Emoji'],
+  ios: ['Apple Color Emoji'],
+  android: ['Noto Color Emoji'],
+  linux: ['Noto Color Emoji'],
+  chromeos: ['Noto Color Emoji'],
+};
+
+const MIN_EMOJI = 20;
+
+export function lacksEmoji(codePoints: ArrayLike<number>): boolean {
+  let count = 0;
+  for (let index = 0; index < codePoints.length; index++) {
+    const codePoint = codePoints[index] as number;
+    if (codePoint >= 0x1f300 && codePoint <= 0x1faff) count++;
+  }
+  return count < MIN_EMOJI;
+}
+
+export function emojiFonts(systems: readonly OsId[]): string[] {
+  return [...new Set(systems.flatMap((os) => EMOJI_FONTS[os] ?? []))];
+}
