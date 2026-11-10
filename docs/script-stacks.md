@@ -37,7 +37,7 @@ The rule removes the web font from the stack for that script, so no swap happens
 
 - Verified: Segoe UI, Tahoma, Arial, Nirmala UI, Leelawadee UI, Yu Gothic, MS Gothic, Malgun Gothic, Microsoft YaHei, SimSun, Microsoft JhengHei (Windows 11 files) and Noto Sans / Naskh for each script (Noto Sans CJK names alias the Noto Sans JP/KR/SC/TC files).
 - Not verified: the macOS and iOS fonts (Geeza Pro, Arial Hebrew, the Sangam MN family, Thonburi, Hiragino Sans, Apple SD Gothic Neo, PingFang) have no dataset entry because the files are not available off macOS; run `pnpm os-fonts:scripts` on a Mac to fill them in, after adding them to `scripts/os-fonts/script-sources.ts`.
-- Chinese simplified and traditional share one Unicode block, so the dataset cannot tell a Simplified-only font from a Traditional-only one; the two stacks differ by their curated candidates.
+- Chinese simplified and traditional share one Unicode block, so the dataset cannot tell a Simplified-only font from a Traditional-only one; the two stacks differ by their curated candidates. Follow-up: #563.
 - Which system ships a font is still curated, as before.
 
 ## Not covered yet

@@ -68,6 +68,7 @@ try {
       const response = await fetch(spec.url, { headers: { 'user-agent': 'fontstay-metrics/1.0' } });
       if (!response.ok) throw new Error(`${spec.url}: HTTP ${response.status}`);
       raw = Buffer.from(await response.arrayBuffer());
+      if (raw.length > 50 * 1024 * 1024) throw new Error(`${spec.url}: larger than 50 MB`);
       writeFileSync(cached, raw);
     }
     return { bytes: raw, file: decodeURIComponent(spec.url.split('/').pop().split('?')[0]) };
@@ -84,6 +85,7 @@ try {
     }
   }
 
+  let missing = 0;
   for (const spec of SCRIPT_SOURCES) {
     let found = spec.files.length > 0 ? findLocal(spec.files) : null;
     let source = found ? { kind: 'local', file: found.file } : null;
@@ -97,6 +99,7 @@ try {
       };
     }
     if (!found || !source) {
+      if (!byId.has(spec.id)) missing++;
       console.log(
         `skipped ${spec.id}: font file not found${byId.has(spec.id) ? ' (kept previous entry)' : ''}`,
       );
@@ -128,6 +131,7 @@ try {
     );
   }
 
+  if (missing > 0) process.exitCode = 1;
   const fonts = [...byId.values()].sort((a, b) => a.id.localeCompare(b.id));
   writeFileSync(output, `${JSON.stringify({ schema: 1, totals, fonts })}\n`);
   console.log(`${fonts.length} fonts written`);
