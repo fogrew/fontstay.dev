@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { directImport } from './direct-fetch';
-import { isPrivateHost, parsePublicUrl, scanCss, scanPage } from './scan';
+import { isPrivateHost, mergeFaces, parsePublicUrl, scanCss, scanPage } from './scan';
 
 const FONT = new Uint8Array([0, 1, 0, 0, 1, 2, 3, 4]);
 
@@ -225,5 +225,81 @@ describe('directImport', () => {
       credentials: 'omit',
       referrerPolicy: 'no-referrer',
     });
+  });
+});
+
+describe('limits and ordering', () => {
+  const faceCss = (family: string, url: string, range = '') =>
+    `@font-face{font-family:${family};${range ? `unicode-range:${range};` : ''}src:url(${url})}`;
+
+  it('prefers the latin subset of a face and caps the face count', () => {
+    const css = scanCss(
+      `${faceCss('A', '/cyr.woff2', 'U+0400-04FF')}${faceCss('A', '/lat.woff2', 'U+0000-00FF')}`,
+      'https://example.com/',
+    );
+    expect(mergeFaces(css.faces)[0]?.url).toBe('https://example.com/lat.woff2');
+    const many = scanCss(
+      Array.from({ length: 100 }, (_, index) => faceCss(`F${index}`, '/f.woff2')).join(''),
+      'https://example.com/',
+    );
+    expect(mergeFaces(many.faces)).toHaveLength(64);
+  });
+
+  it('downloads at most eight font files', async () => {
+    const files: Record<string, { body: string | Uint8Array; type?: string }> = {
+      'https://example.com/': { body: '<link rel="stylesheet" href="/s.css">' },
+      'https://example.com/s.css': {
+        body: Array.from({ length: 12 }, (_, index) =>
+          faceCss(`F${index}`, `/f${index}.woff2`),
+        ).join(''),
+        type: 'text/css',
+      },
+    };
+    for (let index = 0; index < 12; index++) {
+      files[`https://example.com/f${index}.woff2`] = { body: FONT };
+    }
+    const result = await directImport('https://example.com/', { fetcher: site(files) });
+    expect(result.ok && result.value.files.length).toBe(8);
+    expect(result.ok && result.value.faces.length).toBe(12);
+  });
+
+  it('does not request private sub-resources named by the page', async () => {
+    const requested: string[] = [];
+    const fetcher = (async (input: RequestInfo | URL) => {
+      requested.push(String(input));
+      return new Response(
+        '<link rel="stylesheet" href="https://192.168.0.1/a.css"><link rel="stylesheet" href="https://intranet/b.css"><link rel="stylesheet" href="https://example.com:8443/c.css">',
+      );
+    }) as typeof fetch;
+    const result = await directImport('https://example.com/', { fetcher });
+    expect(result).toEqual({ ok: false, reason: 'stylesheets' });
+    expect(requested).toEqual(['https://example.com/']);
+  });
+
+  it('keeps linked stylesheets ahead of inline imports when the sheet limit is reached', async () => {
+    const imports = Array.from({ length: 8 }, (_, index) => `@import "/i${index}.css";`).join('');
+    const requested: string[] = [];
+    const fetcher = (async (input: RequestInfo | URL) => {
+      const url = String(input);
+      requested.push(url);
+      if (url === 'https://example.com/') {
+        return new Response(`<style>${imports}</style><link rel="stylesheet" href="/real.css">`);
+      }
+      return new Response('', { headers: { 'content-type': 'text/css' } });
+    }) as typeof fetch;
+    await directImport('https://example.com/', { fetcher });
+    expect(requested).toContain('https://example.com/real.css');
+  });
+
+  it('stops when the caller aborts', async () => {
+    const controller = new AbortController();
+    controller.abort();
+    const fetcher = ((_input: RequestInfo | URL, init?: RequestInit) =>
+      init?.signal?.aborted
+        ? Promise.reject(new DOMException('aborted', 'AbortError'))
+        : Promise.resolve(new Response(''))) as typeof fetch;
+    expect(
+      await directImport('https://example.com/', { fetcher, signal: controller.signal }),
+    ).toEqual({ ok: false, reason: 'unreachable' });
   });
 });

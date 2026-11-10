@@ -50,7 +50,8 @@ async function readBounded(response: Response, limit: number, budget?: { left: n
   const reader = response.body?.getReader();
   if (!reader) {
     const buffer = await response.arrayBuffer();
-    if (buffer.byteLength > limit) throw new Failure('unreachable');
+    if (budget) budget.left -= buffer.byteLength;
+    if (buffer.byteLength > limit || (budget && budget.left < 0)) throw new Failure('unreachable');
     return buffer;
   }
   const chunks: Uint8Array[] = [];
@@ -81,6 +82,8 @@ async function load(
   options: DirectOptions,
   budget?: { left: number },
 ): Promise<Loaded> {
+  const target = parsePublicUrl(url);
+  if (!target || isPrivateHost(target.hostname)) throw new Failure('blocked');
   const fetcher = options.fetcher ?? fetch;
   const timeout = AbortSignal.timeout(TIMEOUT_MS);
   let response: Response;
@@ -156,8 +159,9 @@ async function collect(startUrl: string, options: DirectOptions): Promise<SiteIm
     enqueue(take(scanCss(decode(page.bytes), page.url)));
   } else {
     const scan = scanPage(decode(page.bytes), page.url);
-    for (const text of scan.inline) enqueue(take(scanCss(text, page.url)));
+    const inlineImports = scan.inline.flatMap((text) => take(scanCss(text, page.url)));
     enqueue(scan.hrefs);
+    enqueue(inlineImports);
   }
 
   for (let depth = 0; depth < IMPORT_DEPTH && queue.length > 0; depth++) {

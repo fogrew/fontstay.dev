@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'preact/hooks';
 import { type Locale, messagesFor } from '@/common/i18n';
 import { Button } from '@/common/ui';
 import type { SiteImport } from '@/modules/import-receiver';
-import type { DirectFailure } from '../lib/direct-fetch';
+import type { DirectFailure, DirectResult } from '../lib/direct-fetch';
 import './site-import.css';
 
 export function DirectFetch({
@@ -31,13 +31,17 @@ export function DirectFetch({
   const submit = async (event: Event) => {
     event.preventDefault();
     if (busy) return;
-    abort.current?.abort();
     const controller = new AbortController();
     abort.current = controller;
     setBusy(true);
     setFailure('');
-    const { directImport } = await import('../lib/direct-fetch');
-    const result = await directImport(address, { signal: controller.signal });
+    let result: DirectResult;
+    try {
+      const { directImport } = await import('../lib/direct-fetch');
+      result = await directImport(address, { signal: controller.signal });
+    } catch {
+      result = { ok: false, reason: 'unreachable' };
+    }
     if (controller.signal.aborted) return;
     setBusy(false);
     if (result.ok) onImport(result.value);
@@ -46,6 +50,9 @@ export function DirectFetch({
 
   return (
     <form class="ff-site-import__direct" onSubmit={submit}>
+      <p class="ff-muted" id="ff-direct-hint">
+        {t.import_direct_hint()}
+      </p>
       <div class="ff-field">
         <label for="ff-direct-address">{t.import_direct_field()}</label>
         <input
@@ -56,16 +63,29 @@ export function DirectFetch({
           spellcheck={false}
           autocomplete="off"
           placeholder="https://example.com"
+          aria-describedby={failure ? 'ff-direct-hint ff-direct-error' : 'ff-direct-hint'}
+          aria-invalid={failure !== ''}
           value={address}
           onInput={(event) => setAddress(event.currentTarget.value)}
         />
       </div>
       <p class="ff-site-import__actions">
-        <Button type="submit" variant="secondary" disabled={busy || address.trim() === ''}>
+        <Button
+          type="submit"
+          variant="secondary"
+          aria-disabled={busy}
+          disabled={address.trim() === ''}
+        >
           {busy ? t.import_direct_busy() : t.import_direct_button()}
         </Button>
       </p>
-      <div role="status">{failure && <p class="ff-error">{errors[failure]}</p>}</div>
+      <div role="status">
+        {failure && (
+          <p class="ff-error" id="ff-direct-error">
+            {errors[failure]}
+          </p>
+        )}
+      </div>
     </form>
   );
 }

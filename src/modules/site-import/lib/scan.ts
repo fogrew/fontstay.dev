@@ -92,9 +92,9 @@ export function scanPage(source: string, base: string): PageScan {
     if (start < 0) break;
     position = start + 5;
     if (!/[\s/>]/.test(lower[position] ?? '')) continue;
-    const end = lower.indexOf('>', position);
-    if (end < 0 || end - start > MAX_TAG) continue;
-    const attrs = attributes(html.slice(position, end));
+    const length = lower.slice(position, position + MAX_TAG).indexOf('>');
+    if (length < 0) continue;
+    const attrs = attributes(html.slice(position, position + length));
     const rel = (attrs.get('rel') ?? '').toLowerCase().split(/\s+/);
     const href = attrs.get('href');
     if (!href || !rel.includes('stylesheet') || rel.includes('alternate')) continue;

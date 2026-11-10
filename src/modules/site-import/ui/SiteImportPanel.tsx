@@ -18,7 +18,6 @@ export function SiteImportPanel({
     <div class="ff-site-import">
       <p class="ff-muted">{t.import_note()}</p>
       <h3 class="ff-heading ff-site-import__title">{t.import_direct_label()}</h3>
-      <p class="ff-muted">{t.import_direct_hint()}</p>
       <DirectFetch locale={locale} onImport={onImport} />
       <h3 class="ff-heading ff-site-import__title">{t.import_bookmarklet_label()}</h3>
       <p class="ff-muted">{t.import_bookmarklet_hint()}</p>
