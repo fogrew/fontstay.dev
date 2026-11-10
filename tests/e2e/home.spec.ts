@@ -89,3 +89,13 @@ test('language switcher keeps the page and the URL hash', async ({ page }) => {
   await expect(page).toHaveURL(/\/ru\/#section$/);
   await expect(page.getByRole('navigation', { name: 'Язык' })).toBeVisible();
 });
+
+test('scrollbars are thin and the page reserves their gutter', async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await page.goto('/en/');
+  const style = await page.evaluate(() => ({
+    width: getComputedStyle(document.body).scrollbarWidth,
+    gutter: getComputedStyle(document.documentElement).scrollbarGutter,
+  }));
+  expect(style).toEqual({ width: 'thin', gutter: 'stable' });
+});

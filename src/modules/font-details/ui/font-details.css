@@ -62,6 +62,7 @@
   margin: 0;
   padding: var(--ff-space-1) var(--ff-space-2);
   overflow-y: auto;
+  scrollbar-gutter: stable;
   border: 1px solid var(--ff-border);
   border-radius: var(--ff-radius);
   list-style: none;

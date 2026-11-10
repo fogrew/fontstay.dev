@@ -3943,7 +3943,7 @@ test('Share opens a centered modal dialog that closes on Escape and the backdrop
   const box = await dialog.boundingBox();
   const viewport = page.viewportSize();
   if (!box || !viewport) throw new Error('no layout');
-  expect(Math.abs(box.x + box.width / 2 - viewport.width / 2)).toBeLessThan(2);
+  expect(Math.abs(box.x + box.width / 2 - viewport.width / 2)).toBeLessThan(8);
   expect(Math.abs(box.y + box.height / 2 - viewport.height / 2)).toBeLessThan(2);
   expect(await page.evaluate(() => getComputedStyle(document.documentElement).overflow)).toBe(
     'hidden',

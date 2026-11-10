@@ -60,6 +60,13 @@
 }
 * {
   box-sizing: border-box;
+  scrollbar-width: thin;
+  scrollbar-color: var(--ff-border) transparent;
+}
+@media (min-width: 48rem) {
+  html {
+    scrollbar-gutter: stable;
+  }
 }
 body {
   display: flex;
@@ -383,8 +390,8 @@ body {
   .ff-header__nav {
     flex-wrap: nowrap;
   }
-  .ff-header__menu:not([data-ready]) {
-    visibility: hidden;
+  .ff-header__menu:not([data-ready]) .ff-header__nav {
+    overflow: hidden;
   }
 }
 .ff-header__nav-link,

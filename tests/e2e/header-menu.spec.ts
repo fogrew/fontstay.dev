@@ -193,4 +193,39 @@ test.describe('header navigation fit', () => {
     await expect(page.locator('[data-more]')).toBeHidden();
     await expect(page.locator('#ff-nav').getByRole('link')).toHaveCount(9);
   });
+  for (const width of [900, 1440]) {
+    test(`${width}px: keeps the navigation visible while navigating between pages`, async ({
+      page,
+    }) => {
+      await page.setViewportSize({ width, height: 700 });
+      await page.addInitScript(() => {
+        const hiddenFrames = () => {
+          const nav = document.querySelector('#ff-nav');
+          if (!nav) return false;
+          const link = nav.querySelector('a');
+          return (
+            getComputedStyle(nav).visibility === 'hidden' ||
+            !link ||
+            link.getBoundingClientRect().width === 0
+          );
+        };
+        let frames = 0;
+        const tick = () => {
+          if (hiddenFrames()) sessionStorage.setItem('ff-nav-blink', 'yes');
+          if (frames++ < 60) requestAnimationFrame(tick);
+        };
+        requestAnimationFrame(tick);
+      });
+      await page.goto('/en/');
+      await settled(page);
+      await page.evaluate(() => sessionStorage.removeItem('ff-nav-blink'));
+      const nav = page.getByRole('navigation', { name: 'Main' });
+      for (const name of ['System fonts', 'Presets', 'Guide']) {
+        await nav.getByRole('link', { name }).click();
+        await expect(nav.locator('a[aria-current="page"]')).toHaveText(name);
+        await page.waitForTimeout(500);
+      }
+      expect(await page.evaluate(() => sessionStorage.getItem('ff-nav-blink'))).toBeNull();
+    });
+  }
 });
