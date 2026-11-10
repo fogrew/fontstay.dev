@@ -191,6 +191,16 @@ describe('tools', () => {
     expect(text(reply, 1)).toMatch(/^Suggested file name: .+/);
   });
 
+  it('adds :lang() rules for stack_scripts', async () => {
+    const reply = await call('get_export', {
+      paths: [fixture('FiraSans-Regular.ttf')],
+      systems: ['windows'],
+      format: 'tailwind',
+      stack_scripts: ['thai'],
+    });
+    expect(text(reply)).toContain(':lang(th)');
+  });
+
   it('names the unreadable font among several', async () => {
     const garbage = join(scratch, 'second.woff2');
     writeFileSync(garbage, 'not a font');
@@ -252,6 +262,11 @@ describe('tools', () => {
         /Invalid audience/,
       ],
       ['get_export', { paths: [fixture('FiraSans-Regular.ttf')], format: 'docx' }, /"format"/],
+      [
+        'get_css',
+        { paths: [fixture('FiraSans-Regular.ttf')], stack_scripts: ['klingon'] },
+        /"stack_scripts"/,
+      ],
       ['analyze_font', {}, /"path"/],
     ];
     for (const [name, args, pattern] of cases) {
