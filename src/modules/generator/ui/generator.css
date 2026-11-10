@@ -1168,7 +1168,8 @@ html[data-transition] .ff-export[data-expanded] .ff-export__fullscreen[open] .ff
 .ff-settings__section .ff-select__label {
   white-space: normal;
 }
-.ff-popover__panel .ff-details__checklist {
+.ff-popover__panel .ff-details__checklist,
+.ff-article-view__settings .ff-details__checklist {
   max-block-size: none;
   overflow: visible;
 }
