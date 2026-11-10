@@ -75,11 +75,13 @@ function systemsOf(value: string): OsId[] {
 }
 
 function stackScriptsOf(value: string): StackScript[] {
-  return value
+  const scripts = value
     .split(',')
     .map((item) => item.trim().toLowerCase())
     .filter(Boolean)
     .map((item) => choice(item, STACK_SCRIPTS, '--stack-scripts entry'));
+  if (scripts.length === 0) throw new UsageError('--stack-scripts needs at least one script.');
+  return scripts;
 }
 
 function reportOf({ css: _css, ...rest }: FitOutput) {
@@ -170,7 +172,9 @@ export async function run(argv: readonly string[], io: Io): Promise<number> {
       locale,
       unicodeRange: values['unicode-range'] ?? false,
       scripts: !values['no-scripts'],
-      ...(values['stack-scripts'] ? { stackScripts: stackScriptsOf(values['stack-scripts']) } : {}),
+      ...(values['stack-scripts'] !== undefined
+        ? { stackScripts: stackScriptsOf(values['stack-scripts']) }
+        : {}),
       format,
     });
     for (const font of result.fonts) {
