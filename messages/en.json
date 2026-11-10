@@ -542,6 +542,7 @@
   "import_paste_error": "The pasted text is not valid import data.",
   "import_confirm_title": "Import from {origin}?",
   "import_confirm_summary": "{files} font files, {faces} font declarations.",
+  "import_confirm_elements": "{count} page elements (text and boxes) are used to rank fallbacks and estimate layout shift.",
   "import_verified": "The browser confirmed where the data came from.",
   "import_unverified": "The origin comes from the pasted text and was not verified.",
   "import_faces_missing": "The page did not allow fetching its fonts. Download them and add them yourself:",

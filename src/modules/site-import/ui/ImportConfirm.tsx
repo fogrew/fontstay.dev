@@ -34,6 +34,11 @@ export function ImportConfirm({
           faces: value.faces.length,
         })}
       </p>
+      {value.blocks.length > 0 && (
+        <p class="ff-muted ff-site-import__line">
+          {t.import_confirm_elements({ count: value.blocks.length })}
+        </p>
+      )}
       <SplitWarnings locale={locale} rules={value.rules ?? []} />
       <p class={`ff-site-import__line ${value.verified ? 'ff-muted' : 'ff-error'}`}>
         {value.verified ? t.import_verified() : t.import_unverified()}

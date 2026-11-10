@@ -542,6 +542,7 @@
   "import_paste_error": "粘贴的文本不是有效的导入数据。",
   "import_confirm_title": "从 {origin} 导入？",
   "import_confirm_summary": "{files} 个字体文件，{faces} 条字体声明。",
+  "import_confirm_elements": "{count} 个页面元素（文本和边框）用于对后备字体排序并估算布局偏移。",
   "import_verified": "浏览器已确认数据的来源。",
   "import_unverified": "来源取自粘贴的文本，未经验证。",
   "import_faces_missing": "该页面不允许获取其字体。请自行下载并添加：",
