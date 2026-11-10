@@ -39,7 +39,8 @@ export function sharePartsIn(state: ShareState): SharePart[] {
       anyFont((font) => font.manual !== undefined) ||
       state.spacing !== undefined ||
       state.range === true ||
-      state.scripts === false,
+      state.scripts === false ||
+      state.stackScripts !== undefined,
     panel: state.panel !== undefined || state.os !== undefined || state.face !== undefined,
     preview: previewOf(state.view) !== undefined,
     siteFonts: state.view?.headingFont !== undefined || state.view?.bodyFont !== undefined,
@@ -61,7 +62,7 @@ export function withoutShareParts(state: ShareState, excluded: Iterable<SharePar
   const off = new Set(excluded);
   if (off.size === 0) return state;
   const { v, data, query, fontName, all, sources, preset, disabled, others } = state;
-  const { range, scripts, spacing, panel, os, face, view } = state;
+  const { range, scripts, stackScripts, spacing, panel, os, face, view } = state;
   const keepFonts = !off.has('fonts');
   const keepTuning = !off.has('tuning');
   const keepPanel = !off.has('panel');
@@ -94,6 +95,7 @@ export function withoutShareParts(state: ShareState, excluded: Iterable<SharePar
     ...(hasKeys(keptOthers) ? { others: keptOthers } : {}),
     ...(keepTuning && range ? { range } : {}),
     ...(keepTuning && scripts !== undefined ? { scripts } : {}),
+    ...(keepTuning && stackScripts ? { stackScripts } : {}),
     ...(keepTuning && spacing ? { spacing } : {}),
     ...(keepPanel && panel !== undefined ? { panel } : {}),
     ...(keepPanel && os !== undefined ? { os } : {}),

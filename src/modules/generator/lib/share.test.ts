@@ -30,6 +30,14 @@ const sample: ShareState = {
 };
 
 describe('share state', () => {
+  it('keeps only known ticked scripts', () => {
+    expect(
+      parseShareState({ v: 1, stackScripts: ['thai', 'nope', 'arabic', 7] })?.stackScripts,
+    ).toEqual(['arabic', 'thai']);
+    expect(parseShareState({ v: 1, stackScripts: ['nope'] })?.stackScripts).toBeUndefined();
+    expect(parseShareState({ v: 1, stackScripts: 'thai' })?.stackScripts).toBeUndefined();
+  });
+
   it('keeps the state of every font and drops hostile names', () => {
     const parsed = parseShareState({
       v: 1,

@@ -11,6 +11,7 @@ import {
   FitRunError,
   fitFonts,
 } from '@/modules/generator/lib/fit-fonts';
+import { STACK_SCRIPTS, type StackScript } from '@/modules/generator/lib/script-stacks';
 import { CATEGORIES, type Category, OS_IDS, type OsId } from '@/modules/os-fonts';
 import { arrayBufferOf, readFont, readText } from './read-font';
 
@@ -23,8 +24,9 @@ export type {
   FontParseErrorCode,
   OsId,
   SplitIssue,
+  StackScript,
 };
-export { CATEGORIES, EXPORT_FORMATS, FitRunError, FontParseError, OS_IDS };
+export { CATEGORIES, EXPORT_FORMATS, FitRunError, FontParseError, OS_IDS, STACK_SCRIPTS };
 
 export interface FontFile {
   fileName: string;
@@ -39,6 +41,7 @@ export interface FitOptions {
   kind?: Category;
   unicodeRange?: boolean;
   scripts?: boolean;
+  stackScripts?: readonly StackScript[];
   format?: ExportFormat;
 }
 
@@ -66,6 +69,7 @@ export async function fit(options: FitOptions): Promise<FitOutput> {
     locale: options.locale,
     unicodeRange: options.unicodeRange,
     scripts: options.scripts,
+    stackScripts: options.stackScripts,
   });
   return {
     css: result.input.css,

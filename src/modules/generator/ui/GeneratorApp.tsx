@@ -463,6 +463,7 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
         setEnabledSystems(Object.fromEntries((state.disabled ?? []).map((os) => [os, false])));
         setRangeOn(state.range ?? false);
         setPerScript(state.scripts ?? true);
+        setStackScripts(state.stackScripts ?? []);
         setPresetId(PRESETS.find((item) => item.id === state.preset)?.id);
         if (state.spacing) {
           setSpacingOn(state.spacing.on);
@@ -1258,6 +1259,7 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
       disabled: ALL_SYSTEMS.filter((os) => enabledSystems[os] === false),
       range: rangeOn,
       perScript,
+      stackScripts,
       spacing: {
         on: spacingOn,
         letter: letter.mode === 'manual' ? letter.value : undefined,

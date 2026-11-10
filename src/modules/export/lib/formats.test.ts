@@ -70,6 +70,20 @@ describe('buildExport', () => {
     expect(buildExport('variables', input).text).not.toContain(':lang(');
   });
 
+  it('adds the script rules to Tailwind, WordPress and notes them in the framework configs', () => {
+    const rules = ':lang(th) {\n  font-family: "Tahoma", sans-serif;\n}';
+    const withRules = { ...input, scriptRules: rules };
+    expect(buildExport('tailwind', withRules).text.endsWith(rules)).toBe(true);
+    const theme = JSON.parse(buildExport('wordpress', withRules).text);
+    expect(theme.styles.css).toBe(rules);
+    expect(JSON.parse(buildExport('wordpress', input).text).styles).toBeUndefined();
+    for (const format of ['next', 'nuxt', 'astro', 'fontaine'] as const) {
+      expect(buildExport(format, withRules).text).toContain(':lang() rules');
+      expect(buildExport(format, input).text).not.toContain(':lang()');
+    }
+    expect(buildExport('tailwind', input).text).not.toContain(':lang(');
+  });
+
   it('names the variables after the families when there are several', () => {
     expect(buildExport('tailwind', several).text).toContain('--font-inter:');
     expect(buildExport('tailwind', several).text).toContain('--font-merriweather:');

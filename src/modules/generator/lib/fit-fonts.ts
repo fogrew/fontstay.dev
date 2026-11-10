@@ -30,6 +30,7 @@ import {
 } from './per-os';
 import { STRATEGY_LINE_HEIGHT } from './predict-input';
 import { aspectOf, safariStrategyCss } from './safari';
+import { type StackScript, scriptStackRules, uncoveredScripts } from './script-stacks';
 import { scriptFaces } from './scripts';
 
 const MIN_SHARE = 1;
@@ -61,6 +62,7 @@ export interface FitOptions {
   locale?: Language | undefined;
   unicodeRange?: boolean | undefined;
   scripts?: boolean | undefined;
+  stackScripts?: readonly StackScript[] | undefined;
   optimize?: boolean | undefined;
 }
 
@@ -277,13 +279,27 @@ export async function fitFonts(options: FitOptions): Promise<FitResult> {
     reports.push(fitted.report);
   }
   const families = groupFonts(outputs);
+  const generics = new Set(families.map((family) => family.generic));
+  const uncoveredByAll = (script: StackScript) =>
+    options.fonts.every((font) => uncoveredScripts(font.metrics.codePoints).includes(script));
+  const scriptRules = scriptStackRules(
+    (options.stackScripts ?? []).filter(uncoveredByAll),
+    systems,
+    generics.size === 1 ? ([...generics][0] ?? 'sans-serif') : 'sans-serif',
+  );
   const input: ExportInput = {
     families,
     fontFaces: [
       ...new Set(outputs.flatMap((entry) => entry.fontFaces.split('\n\n')).filter(Boolean)),
     ].join('\n\n'),
     strategy: outputs[0]?.strategy ?? '',
-    css: mergeOutputs(outputs, loadingCss(optimizer?.spacing ?? { letter: 0, word: 0 })),
+    css: mergeOutputs(
+      outputs,
+      [loadingCss(optimizer?.spacing ?? { letter: 0, word: 0 }), scriptRules]
+        .filter(Boolean)
+        .join('\n\n'),
+    ),
+    scriptRules,
     loadingScript: loadingScript(families.map((family) => family.targetFamily)),
   };
   const uncovered = ALL_SYSTEMS.filter(

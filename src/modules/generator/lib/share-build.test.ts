@@ -88,12 +88,14 @@ describe('buildShareState', () => {
       disabled: ['linux'],
       range: true,
       perScript: false,
+      stackScripts: ['thai', 'arabic'],
       spacing: { on: true, word: 1 },
       panel: 'export',
       os: 'macos',
       face: 'helvetica',
       view: { mode: 'side', size: 22, layers: { fallback: { color: 'red' } } },
     });
+    expect(state.stackScripts).toEqual(['arabic', 'thai']);
     expect(state.others).toEqual({ 'Inter-Italic.woff2': { style: 'italic' } });
     expect(state.picks).toEqual({ windows: ['arial'] });
     expect(await decodeShareState(await encodeShareState(state))).toEqual(state);
