@@ -44,6 +44,7 @@ Options:
       --no-scripts         Do not emit separate faces for other scripts
       --stack-scripts <list>  Comma-separated scripts (${STACK_SCRIPTS.join(', ')}) that get a
                            :lang() rule with system fonts only
+      --emoji              Append the system emoji fonts to the stack of fonts with few emoji
   -o, --out <file>         Write the output to a file instead of stdout
       --json               Print a JSON report (output, picks, shares) instead of the file text
   -h, --help               Show this help
@@ -121,6 +122,7 @@ export async function run(argv: readonly string[], io: Io): Promise<number> {
         'unicode-range': { type: 'boolean' },
         'no-scripts': { type: 'boolean' },
         'stack-scripts': { type: 'string' },
+        emoji: { type: 'boolean' },
         out: { type: 'string', short: 'o' },
         json: { type: 'boolean' },
         help: { type: 'boolean', short: 'h' },
@@ -175,6 +177,7 @@ export async function run(argv: readonly string[], io: Io): Promise<number> {
       ...(values['stack-scripts'] !== undefined
         ? { stackScripts: stackScriptsOf(values['stack-scripts']) }
         : {}),
+      emoji: values.emoji ?? false,
       format,
     });
     for (const font of result.fonts) {

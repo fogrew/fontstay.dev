@@ -201,6 +201,16 @@ describe('tools', () => {
     expect(text(reply)).toContain(':lang(th)');
   });
 
+  it('appends emoji fonts for emoji', async () => {
+    const reply = await call('get_export', {
+      paths: [fixture('FiraSans-Regular.ttf')],
+      systems: ['windows'],
+      format: 'tailwind',
+      emoji: true,
+    });
+    expect(text(reply)).toContain('Segoe UI Emoji');
+  });
+
   it('names the unreadable font among several', async () => {
     const garbage = join(scratch, 'second.woff2');
     writeFileSync(garbage, 'not a font');

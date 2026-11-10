@@ -42,6 +42,7 @@ export interface ShareState extends FontState {
   range?: boolean;
   scripts?: boolean;
   stackScripts?: StackScript[];
+  emoji?: boolean;
   spacing?: { on: boolean; letter?: number; word?: number };
   panel?: PanelId | typeof NO_PANEL;
   os?: OsId;
@@ -163,6 +164,7 @@ export function parseShareState(
   }
   if (typeof input.range === 'boolean') state.range = input.range;
   if (typeof input.scripts === 'boolean') state.scripts = input.scripts;
+  if (input.emoji === true) state.emoji = true;
   if (Array.isArray(input.stackScripts)) {
     const stackScripts = STACK_SCRIPTS.filter((script) =>
       (input.stackScripts as unknown[]).includes(script),

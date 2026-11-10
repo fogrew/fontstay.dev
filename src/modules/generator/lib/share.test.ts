@@ -38,6 +38,12 @@ describe('share state', () => {
     expect(parseShareState({ v: 1, stackScripts: 'thai' })?.stackScripts).toBeUndefined();
   });
 
+  it('keeps the emoji option only when it is true', () => {
+    expect(parseShareState({ v: 1, emoji: true })?.emoji).toBe(true);
+    expect(parseShareState({ v: 1, emoji: 'yes' })?.emoji).toBeUndefined();
+    expect(parseShareState({ v: 1, emoji: false })?.emoji).toBeUndefined();
+  });
+
   it('keeps the state of every font and drops hostile names', () => {
     const parsed = parseShareState({
       v: 1,

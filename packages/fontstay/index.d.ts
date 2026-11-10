@@ -60,6 +60,7 @@ export interface FitOptions {
   scripts?: boolean;
   /** Scripts whose text gets a `:lang()` rule with system fonts only; skipped for a script the fonts cover. Default none. */
   stackScripts?: readonly StackScript[];
+  emoji?: boolean;
   /** Format of `file`. Default `css`. */
   format?: ExportFormat;
 }

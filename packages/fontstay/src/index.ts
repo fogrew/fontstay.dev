@@ -42,6 +42,7 @@ export interface FitOptions {
   unicodeRange?: boolean;
   scripts?: boolean;
   stackScripts?: readonly StackScript[];
+  emoji?: boolean;
   format?: ExportFormat;
 }
 
@@ -70,6 +71,7 @@ export async function fit(options: FitOptions): Promise<FitOutput> {
     unicodeRange: options.unicodeRange,
     scripts: options.scripts,
     stackScripts: options.stackScripts,
+    emoji: options.emoji,
   });
   return {
     css: result.input.css,

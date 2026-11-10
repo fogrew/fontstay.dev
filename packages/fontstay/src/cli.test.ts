@@ -55,6 +55,13 @@ describe('fontstay fit', () => {
     expect(bad.code).not.toBe(0);
   });
 
+  it('appends the system emoji fonts for --emoji', async () => {
+    const file = font('SourceSansPro-Regular.woff2');
+    const result = await cli('fit', file, '-a', 'defaults', '-s', 'windows', '--emoji');
+    expect(result.code).toBe(0);
+    expect(result.stdout).toContain('Segoe UI Emoji');
+  });
+
   it('uses a .browserslistrc found above the working directory', async () => {
     const project = join(scratch, 'rc-project');
     const nested = join(project, 'nested');

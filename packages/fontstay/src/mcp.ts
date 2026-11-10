@@ -101,6 +101,11 @@ const FIT_PROPERTIES = {
     description:
       'Scripts whose text (matched by :lang()) gets a font stack of system fonts only, so spaces and letters are not shaped from different fonts. Applies only to a script the fonts do not cover. Default: none.',
   },
+  emoji: {
+    type: 'boolean',
+    description:
+      'Append the system emoji fonts of the audience to the font stack of each font with fewer than 20 emoji. Default false.',
+  },
 };
 
 function stringOf(input: Json, key: string): string | undefined {
@@ -225,6 +230,7 @@ async function fitOf(input: Json, format: ExportFormat): Promise<FitOutput> {
     unicodeRange: booleanOf(input, 'unicode_range') ?? false,
     scripts: booleanOf(input, 'scripts') ?? true,
     ...(stackScripts ? { stackScripts } : {}),
+    emoji: booleanOf(input, 'emoji') ?? false,
     format,
   };
   const fonts = await readFonts(paths);
