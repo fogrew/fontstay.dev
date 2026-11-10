@@ -60,6 +60,15 @@ for (const testCase of CASES) {
   await measure(testCase.aware);
   const current = [];
   const aware = [];
+  const heights = [
+    (await measure(testCase.current)).height,
+    (await measure(testCase.aware)).height,
+  ];
+  if (heights[0] === heights[1]) {
+    console.warn(
+      `${testCase.name}: both stacks laid out to the same height; the system fonts may be missing`,
+    );
+  }
   for (let round = 0; round < ROUNDS; round += 1) {
     current.push((await measure(testCase.current)).ms);
     aware.push((await measure(testCase.aware)).ms);
