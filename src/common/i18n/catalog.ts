@@ -2,6 +2,7 @@ import ar from '../../../messages/ar.json';
 import el from '../../../messages/el.json';
 import en from '../../../messages/en.json';
 import es from '../../../messages/es.json';
+import ja from '../../../messages/ja.json';
 import pt from '../../../messages/pt.json';
 import ru from '../../../messages/ru.json';
 import th from '../../../messages/th.json';
@@ -11,7 +12,7 @@ import type { Locale } from './paraglide/runtime.js';
 
 type MessageKey = Exclude<keyof typeof en, '$schema'>;
 
-export const catalogs = { en, ru, ar, es, pt, vi, th, el, zh } satisfies Record<
+export const catalogs = { en, ru, ar, es, pt, vi, th, el, zh, ja } satisfies Record<
   Locale,
   Record<MessageKey, string>
 >;

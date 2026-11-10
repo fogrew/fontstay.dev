@@ -1,6 +1,6 @@
 import { test as base, expect, type Locator, type Page } from '@playwright/test';
 
-export const LOCALES = ['en', 'ru', 'ar', 'es', 'pt', 'vi', 'th', 'el', 'zh'] as const;
+export const LOCALES = ['en', 'ru', 'ar', 'es', 'pt', 'vi', 'th', 'el', 'zh', 'ja'] as const;
 export const RTL_LOCALES: readonly string[] = ['ar'];
 
 export const test = base.extend({

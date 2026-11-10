@@ -34,7 +34,7 @@ const canonical = new URL(localizeHref(path, { locale }), Astro.site);
 const title = pageTitle ?? t.seo_home_title();
 const description = pageDescription ?? t.seo_home_description();
 const image = new URL('/og.png', Astro.site);
-const ogLocale = { en: 'en_US', ru: 'ru_RU', ar: 'ar_AR', es: 'es_ES', pt: 'pt_BR', vi: 'vi_VN', th: 'th_TH', el: 'el_GR', zh: 'zh_CN' }[locale];
+const ogLocale = { en: 'en_US', ru: 'ru_RU', ar: 'ar_AR', es: 'es_ES', pt: 'pt_BR', vi: 'vi_VN', th: 'th_TH', el: 'el_GR', zh: 'zh_CN', ja: 'ja_JP' }[locale];
 const structured = JSON.stringify({
   '@context': 'https://schema.org',
   '@type': 'WebApplication',
