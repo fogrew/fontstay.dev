@@ -26,4 +26,10 @@ export {
   type OsAvailabilityResult,
   osAvailability,
 } from './lib/query';
+export {
+  type ScriptCoverageEntry,
+  scriptCoverage,
+  scriptCoverageEntries,
+  scriptShare,
+} from './lib/script-coverage';
 export { assertDataset, validateDataset } from './lib/validate';
