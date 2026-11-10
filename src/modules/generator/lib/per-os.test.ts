@@ -7,6 +7,21 @@ const ascii = Array.from({ length: 95 }, (_, index) => 0x20 + index);
 const cyrillic = Array.from({ length: 64 }, (_, index) => 0x410 + index);
 
 describe('rankFor', () => {
+  it('scores imported element boxes instead of the sample documents', () => {
+    const web = font(ascii, 520);
+    const blocks = [
+      {
+        tag: 'p' as const,
+        text: 'Imported text that wraps in a narrow column of the original site.',
+        style: { fontPx: 18, maxWidth: 200 },
+      },
+    ];
+    const sample = rankFor(web, 'windows', 'en').candidates;
+    const imported = rankFor(web, 'windows', 'en', 'regular', blocks).candidates;
+    expect(imported.map((item) => item.id).sort()).toEqual(sample.map((item) => item.id).sort());
+    expect(imported.map((item) => item.cost)).not.toEqual(sample.map((item) => item.cost));
+  });
+
   it('lists only fonts preinstalled on the system, lowest predicted shift first within full coverage', () => {
     const windows = rankFor(font(ascii, 520), 'windows', 'en').candidates.map((item) => item.id);
     expect(windows).toContain('arial');

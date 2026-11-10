@@ -542,6 +542,7 @@
   "import_paste_error": "貼り付けたテキストは、有効なインポートデータではありません。",
   "import_confirm_title": "{origin} からインポートしますか？",
   "import_confirm_summary": "フォントファイル {files} 個、フォント宣言 {faces} 件。",
+  "import_confirm_elements": "ページ要素 {count} 個（テキストとボックス）を、代替フォントの順位付けとレイアウトシフトの推定に使います。",
   "import_verified": "データの取得元がブラウザーによって確認されました。",
   "import_unverified": "取得元は貼り付けたテキストに基づくもので、確認されていません。",
   "import_faces_missing": "このページは、フォントの取得を許可していませんでした。ダウンロードして、ご自身で追加してください：",

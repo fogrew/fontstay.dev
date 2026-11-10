@@ -542,6 +542,7 @@
   "import_paste_error": "El texto pegado no son datos de importación válidos.",
   "import_confirm_title": "¿Importar desde {origin}?",
   "import_confirm_summary": "{files} archivos de fuente, {faces} declaraciones de fuente.",
+  "import_confirm_elements": "{count} elementos de la página (texto y cajas) se usan para ordenar las fuentes de reserva y estimar el desplazamiento de diseño.",
   "import_verified": "El navegador confirmó el origen de los datos.",
   "import_unverified": "El origen proviene del texto pegado y no se verificó.",
   "import_faces_missing": "La página no permitió obtener sus fuentes. Descárgalas y añádelas tú mismo:",

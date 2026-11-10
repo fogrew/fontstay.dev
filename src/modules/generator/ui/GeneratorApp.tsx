@@ -686,7 +686,7 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
     if (selected) {
       for (const os of systems) {
         try {
-          result[os] = rankFor(selected.metrics, os, language, styleKey);
+          result[os] = rankFor(selected.metrics, os, language, styleKey, importedLayout?.blocks);
         } catch (thrown) {
           if (!isNoCoverage(thrown)) throw thrown;
           noCoverage = true;
@@ -694,7 +694,7 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
       }
     }
     return { result, noCoverage };
-  }, [selected, systems, language, styleKey, variantsReady]);
+  }, [selected, systems, language, styleKey, variantsReady, importedLayout]);
 
   const isEnabled = (os: OsId) => enabledSystems[os] !== false;
   const candidatesOf = (os: OsId): Candidate[] =>
@@ -898,10 +898,13 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
 
   const rankCache = useRef(new Map<string, Ranking | null>());
   const rankOf = (font: LoadedFont, os: OsId, lang: Language, style: FontStyleKey) => {
-    const cacheKey = `${font.id}|${os}|${lang}|${style}|${variantsReady}`;
+    const cacheKey = `${font.id}|${os}|${lang}|${style}|${variantsReady}|${importedLayout?.key ?? ''}`;
     if (!rankCache.current.has(cacheKey)) {
       try {
-        rankCache.current.set(cacheKey, rankFor(font.metrics, os, lang, style));
+        rankCache.current.set(
+          cacheKey,
+          rankFor(font.metrics, os, lang, style, importedLayout?.blocks),
+        );
       } catch (thrown) {
         if (!isNoCoverage(thrown)) throw thrown;
         rankCache.current.set(cacheKey, null);

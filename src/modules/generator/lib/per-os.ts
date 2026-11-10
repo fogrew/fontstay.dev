@@ -169,7 +169,8 @@ const SIZE_WEIGHT = 0.05;
 
 const documents = new Map<Language, Block[][]>();
 
-function documentsFor(language: Language): Block[][] {
+function documentsFor(language: Language, imported?: readonly Block[]): Block[][] {
+  if (imported && imported.length > 0) return [[...imported]];
   const cached = documents.get(language);
   if (cached) return cached;
   const list = [sampleBlocks(language), articleBlocks(BUILT_IN[language === 'ru' ? 'ru' : 'en'])];
@@ -180,10 +181,11 @@ function documentsFor(language: Language): Block[][] {
 function predictCandidate(
   candidate: Candidate,
   model: PredictModel,
+  imported?: readonly Block[],
 ): { cost: number; shift: number | null } {
   const font = fallbackPredictFont(candidate, candidate.adjustment, { letter: 0, word: 0 });
   if (!font) return { cost: 1, shift: null };
-  const scores = documentsFor(model.language).flatMap((blocks) =>
+  const scores = documentsFor(model.language, imported).flatMap((blocks) =>
     DEFAULT_VIEWPORTS.map((viewport) => predictViewport(model.web, font, blocks, viewport).score),
   );
   const mean = scores.reduce((sum, score) => sum + score, 0) / scores.length;
@@ -203,6 +205,7 @@ export function rankFor(
   os: OsId,
   language: Language,
   style: FontStyleKey = 'regular',
+  imported?: readonly Block[],
 ): Ranking {
   const weights = languageWeights(language);
   const own = fitFont(web, web, weights);
@@ -238,7 +241,7 @@ export function rankFor(
           cost: 1,
           shift: null,
         };
-        Object.assign(candidate, predictCandidate(candidate, model));
+        Object.assign(candidate, predictCandidate(candidate, model, imported));
         candidates.push(candidate);
       } else if (font.latinWidthEm !== null && language === 'en') {
         candidates.push({

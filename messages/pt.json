@@ -542,6 +542,7 @@
   "import_paste_error": "O texto colado não são dados de importação válidos.",
   "import_confirm_title": "Importar de {origin}?",
   "import_confirm_summary": "{files} arquivos de fonte, {faces} declarações de fonte.",
+  "import_confirm_elements": "{count} elementos da página (texto e caixas) são usados para ordenar as fontes de reserva e estimar a mudança de layout.",
   "import_verified": "O navegador confirmou a origem dos dados.",
   "import_unverified": "A origem vem do texto colado e não foi verificada.",
   "import_faces_missing": "A página não permitiu obter as suas fontes. Baixe-as e adicione-as você mesmo:",

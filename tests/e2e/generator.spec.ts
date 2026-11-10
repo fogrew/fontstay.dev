@@ -3057,6 +3057,7 @@ test('an imported site hands its element boxes to the layout shift check', async
   await page.goto('/en/#import');
   await page.reload();
   await waitForGenerator(page);
+  await expect(page.getByText(/2 page elements \(text and boxes\) are used/)).toBeVisible();
   await page.getByRole('button', { name: 'Import', exact: true }).click();
   await openSupport(page);
   await expect(page.getByText('Layout taken from https://site.test.')).toBeVisible();

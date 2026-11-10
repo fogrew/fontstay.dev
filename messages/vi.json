@@ -542,6 +542,7 @@
   "import_paste_error": "Văn bản đã dán không phải là dữ liệu nhập hợp lệ.",
   "import_confirm_title": "Nhập từ {origin}?",
   "import_confirm_summary": "{files} tệp phông chữ, {faces} khai báo phông chữ.",
+  "import_confirm_elements": "{count} phần tử trang (văn bản và khung) được dùng để xếp hạng phông dự phòng và ước tính dịch chuyển bố cục.",
   "import_verified": "Trình duyệt đã xác nhận nguồn gốc của dữ liệu.",
   "import_unverified": "Nguồn gốc lấy từ văn bản đã dán và chưa được xác minh.",
   "import_faces_missing": "Trang không cho phép tải các phông chữ của nó. Hãy tải chúng xuống và tự thêm vào:",

@@ -542,6 +542,7 @@
   "import_paste_error": "النص الملصوق ليس بيانات استيراد صالحة.",
   "import_confirm_title": "الاستيراد من {origin}؟",
   "import_confirm_summary": "{files} من ملفات الخطوط، و{faces} من تصريحات الخطوط.",
+  "import_confirm_elements": "{count} من عناصر الصفحة (النص والأبعاد) تُستخدم لترتيب الخطوط الاحتياطية وتقدير انزياح التخطيط.",
   "import_verified": "أكّد المتصفح مصدر البيانات.",
   "import_unverified": "المصدر مأخوذ من النص الملصوق ولم يُتحقق منه.",
   "import_faces_missing": "لم تسمح الصفحة بجلب خطوطها. نزّلها وأضفها بنفسك:",
