@@ -92,6 +92,7 @@ import type { ShiftReport, ToolHost } from '@/modules/webmcp';
 import { fallbackRatio, measureWebRatio } from '../lib/calibration';
 import { displayName, fitLanguage, isNoCoverage, LOW_COVERAGE } from '../lib/compute';
 import { adjustmentOf, buildCss, fallbackFamilyName, type Overrides } from '../lib/css';
+import { faceLabel } from '../lib/face-label';
 import {
   clampFontLimit,
   loadFontLimit,
@@ -615,6 +616,15 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
   const factorOf = (font: LoadedFont) => webK[calibrationKey(font.id, font)] ?? 1;
   const fallbackFactor = (candidate: Candidate, font: LoadedFont) =>
     fallbackK[calibrationKey(candidate.id, font)] ?? 1;
+  const faceOf = (font: LoadedFont) =>
+    faceLabel(
+      {
+        weight: font.metrics.style.weight,
+        italic: font.metrics.style.italic,
+        subset: font.origin?.subset,
+      },
+      { regular: t.style_regular(), italic: t.style_italic() },
+    );
   const styleOf = (font: (typeof fonts)[number]): FontStyleKey =>
     styleChoices[font.id] ?? styleKeyOf(font.metrics.style);
   const styleKey: FontStyleKey = selected ? styleOf(selected) : 'regular';
@@ -1959,6 +1969,7 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
       <Collapsible
         key={font.id}
         title={displayName(font.metrics.names.fullName ?? font.fileName)}
+        detail={faceOf(font)}
         toggleId={fitToggleId(font.id)}
         open={isOpen}
         onToggle={(next) => {
@@ -1993,7 +2004,7 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
               aria-label={`${t.upload_remove()}: ${font.fileName}`}
               onClick={() => removeFont(font, fitToggleId)}
             >
-              <span aria-hidden="true">×</span>
+              <Icon name="forget" />
             </button>
           </>
         }
@@ -2096,6 +2107,7 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
                     fonts={fonts.map((font) => ({
                       id: font.id,
                       title: displayName(font.metrics.names.fullName ?? font.fileName),
+                      face: faceOf(font),
                       metrics: font.metrics,
                     }))}
                     onRemove={(id) => {

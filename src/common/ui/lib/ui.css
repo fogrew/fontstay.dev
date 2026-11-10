@@ -296,6 +296,13 @@
 .ff-collapsible__toggle[aria-expanded="true"]::before {
   content: "▾" / "";
 }
+.ff-collapsible__detail {
+  display: block;
+  padding-inline-start: 1.25rem;
+  color: var(--ff-muted);
+  font-size: 0.8125rem;
+  font-weight: 400;
+}
 .ff-collapsible__body {
   display: grid;
   gap: var(--ff-space-2);
@@ -355,6 +362,10 @@
   block-size: 1em;
   margin-inline-end: 0.35em;
   vertical-align: -0.125em;
+}
+.ff-icon-button .ff-icon {
+  margin: 0;
+  vertical-align: baseline;
 }
 .ff-icon--wide {
   inline-size: 1.8em;
