@@ -192,30 +192,30 @@ export function FontInput({
                 )}
             </li>
             <li>{t.input_hint_drop()}</li>
-            <li>{t.input_hint_css()}</li>
+            <li>
+              <button
+                type="button"
+                class="ff-control ff-link-button"
+                disabled={busy}
+                onClick={() => input.current?.click()}
+              >
+                {t.input_hint_choose()}
+              </button>
+            </li>
+            <li>
+              <button
+                type="button"
+                class="ff-control ff-link-button"
+                aria-expanded={site}
+                onClick={() => setSite(!site)}
+              >
+                {t.input_hint_site()}
+              </button>
+            </li>
           </ul>
-          {searching && <p class="ff-drop__hint-line">{t.source_keyboard_hint()}</p>}
         </div>
       </div>
       {familySearch.content}
-      <p class="ff-drop__paragraph ff-drop__links">
-        <button
-          type="button"
-          class="ff-control ff-link-button"
-          disabled={busy}
-          onClick={() => input.current?.click()}
-        >
-          {t.input_choose()}
-        </button>
-        <button
-          type="button"
-          class="ff-control ff-link-button"
-          aria-expanded={site}
-          onClick={() => setSite(!site)}
-        >
-          {t.input_site()}
-        </button>
-      </p>
       <input
         class="ff-control"
         ref={input}

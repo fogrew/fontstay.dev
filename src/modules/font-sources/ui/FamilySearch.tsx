@@ -1,4 +1,4 @@
-import { useEffect, useId, useMemo, useState } from 'preact/hooks';
+import { useEffect, useId, useMemo, useRef, useState } from 'preact/hooks';
 import { type Locale, messagesFor } from '@/common/i18n';
 import { Button, Icon, Popover, ScrollShadow, ToggleGroup } from '@/common/ui';
 import { FontSourceError } from '../lib/download';
@@ -89,14 +89,7 @@ export function useFamilySearch({
   const [message, setMessage] = useState('');
   const [downloading, setDownloading] = useState(false);
   const [navigation, setNavigation] = useState<{ query: string; index: number }>();
-  const [tip, setTip] = useState<{ text: string; left: number; top: number }>();
-
-  useEffect(() => {
-    if (!tip) return;
-    const hide = () => setTip(undefined);
-    window.addEventListener('scroll', hide, { capture: true, passive: true });
-    return () => window.removeEventListener('scroll', hide, { capture: true });
-  }, [tip]);
+  const limitInput = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     for (const id of Object.keys(SOURCES) as SourceId[]) {
@@ -160,16 +153,14 @@ export function useFamilySearch({
     } else choose(hit);
   };
   const optionElement = (index: number) => document.getElementById(`${listId}-option-${index}`);
-  const showTip = (hit: Hit, index: number) => {
-    const badges = optionElement(index)?.querySelector('.ff-source__badges');
-    if (!badges) return;
-    const box = badges.getBoundingClientRect();
-    setTip({
-      text: t.source_tip({ service: sourceName(hit.source), license: hit.family.license }),
-      left: box.right,
-      top: box.top,
-    });
+  const commitLimit = (next: number) => {
+    if (Number.isNaN(next)) return;
+    const bounded = Math.min(limit.max, Math.max(limit.min, Math.round(next)));
+    if (limitInput.current) limitInput.current.value = String(bounded);
+    onLimitChange(bounded);
   };
+  const stepLimit = (delta: number) =>
+    commitLimit((limitInput.current?.valueAsNumber ?? limit.value) + delta);
   const handleListKeyDown = (event: KeyboardEvent) => {
     if (event.isComposing || event.altKey || event.ctrlKey || event.metaKey) return;
     const current = Math.max(activeIndex, 0);
@@ -182,14 +173,8 @@ export function useFamilySearch({
       event.preventDefault();
       setNavigation({ query, index });
       optionElement(index)?.focus();
-    } else if (event.key === 'Enter' || event.key === ' ') {
-      const hit = hits[current];
-      if (!hit) return;
-      event.preventDefault();
-      toggle(hit);
     } else if (event.key === 'Escape') {
       event.preventDefault();
-      setTip(undefined);
       document.getElementById('ff-input-text')?.focus();
     }
   };
@@ -292,74 +277,60 @@ export function useFamilySearch({
           )}
         </div>
         {hits.length > 0 ? (
-          <ScrollShadow class="ff-source__scroll" tabIndex={0} label={t.source_list_label()}>
-            <div
+          <ScrollShadow class="ff-source__scroll">
+            <ul
               id={listId}
-              role="listbox"
               class="ff-generator__list ff-source__list"
               aria-label={t.source_list_label()}
               onKeyDown={handleListKeyDown}
-              onMouseLeave={() => setTip(undefined)}
             >
               {hits.map((hit, index) => (
-                // biome-ignore lint/a11y/useKeyWithClickEvents: keys are handled on the listbox
-                <div
-                  id={`${listId}-option-${index}`}
-                  role="option"
-                  tabIndex={index === Math.max(activeIndex, 0) ? 0 : -1}
-                  aria-selected={isChosen(hit)}
-                  aria-label={t.source_option_label({
-                    name: hit.family.name,
-                    service: sourceName(hit.source),
-                    license: hit.family.license,
-                  })}
-                  class={`ff-control ff-generator__item ff-source__item${index === activeIndex ? ' ff-source__item--active' : ''}${isChosen(hit) ? ' ff-source__item--chosen' : ''}`}
-                  key={`${hit.source}-${hit.family.id}`}
-                  onClick={() => {
-                    setNavigation({ query, index });
-                    toggle(hit);
-                  }}
-                  onFocus={() => {
-                    setNavigation({ query, index });
-                    showTip(hit, index);
-                  }}
-                  onBlur={() => setTip(undefined)}
-                  onMouseEnter={() => showTip(hit, index)}
-                >
-                  <span>{hit.family.name}</span>
-                  <span class="ff-source__badges" aria-hidden="true">
+                <li class="ff-button-group ff-source__item" key={`${hit.source}-${hit.family.id}`}>
+                  <button
+                    type="button"
+                    id={`${listId}-option-${index}`}
+                    tabIndex={index === Math.max(activeIndex, 0) ? 0 : -1}
+                    aria-pressed={isChosen(hit)}
+                    class={`ff-control ff-button ff-button--secondary ff-source__name${index === activeIndex ? ' ff-source__name--active' : ''}`}
+                    onClick={() => {
+                      setNavigation({ query, index });
+                      toggle(hit);
+                    }}
+                    onFocus={() => setNavigation({ query, index })}
+                  >
+                    {hit.family.name}
+                  </button>
+                  <span class="ff-button ff-source__license">
                     <Icon name="license" />
-                    <ServiceIcon source={hit.source} />
+                    <span aria-hidden="true">{hit.family.license}</span>
+                    <span class="ff-sr-only">
+                      {t.source_license({ license: hit.family.license })}
+                    </span>
                   </span>
-                </div>
+                  <a
+                    class="ff-control ff-button ff-button--secondary ff-source__link"
+                    href={familyPageUrl(hit.source, hit.family)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    tabIndex={index === Math.max(activeIndex, 0) ? 0 : -1}
+                    onFocus={() => setNavigation({ query, index })}
+                    aria-label={t.source_open({
+                      name: hit.family.name,
+                      service: sourceName(hit.source),
+                    })}
+                    title={sourceName(hit.source)}
+                  >
+                    <ServiceIcon source={hit.source} />
+                  </a>
+                </li>
               ))}
-            </div>
+            </ul>
           </ScrollShadow>
         ) : (
           loading && <div class="ff-source__placeholder" aria-hidden="true" />
         )}
-        {tip && (
-          <div
-            class="ff-source__tip"
-            aria-hidden="true"
-            style={{ left: `${tip.left}px`, top: `${tip.top}px` }}
-          >
-            {tip.text}
-          </div>
-        )}
         {chosen && (
           <div class="ff-source__chosen">
-            <p class="ff-source__text">
-              <strong>{chosen.family.name}</strong>{' '}
-              <a
-                class="ff-link"
-                href={familyPageUrl(chosen.source, chosen.family)}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                {sourceName(chosen.source)}
-              </a>
-            </p>
             <div class="ff-source__groups">
               <fieldset class="ff-toggle-set">
                 <legend class="ff-toggle-set__legend">{t.source_style_label()}</legend>
@@ -375,6 +346,7 @@ export function useFamilySearch({
                       <ToggleGroup
                         key={`${chosen.family.id}-${italic}`}
                         label={italic ? t.style_italic() : t.source_upright()}
+                        fill
                         items={keys.map((key) => ({
                           key,
                           label: String(parseStyle(key).weight),
@@ -432,29 +404,38 @@ export function useFamilySearch({
               <label class="ff-muted" for={`${listId}-limit`}>
                 {t.font_limit_label()}
               </label>
-              <input
-                id={`${listId}-limit`}
-                class="ff-control ff-source__limit-input"
-                type="number"
-                inputMode="numeric"
-                min={limit.min}
-                max={limit.max}
-                defaultValue={limit.value}
-                aria-describedby={count > slots ? `${listId}-limit-hint` : undefined}
-                onChange={(event) => {
-                  const next = event.currentTarget.valueAsNumber;
-                  if (Number.isNaN(next)) return;
-                  event.currentTarget.value = String(
-                    Math.min(limit.max, Math.max(limit.min, Math.round(next))),
-                  );
-                  onLimitChange(next);
-                }}
-              />
-              {count > slots && (
-                <span class="ff-muted" id={`${listId}-limit-hint`}>
-                  {t.font_limit_hint()}
-                </span>
-              )}
+              <Popover label={t.font_limit_info()} info>
+                {t.font_limit_hint()}
+              </Popover>
+              <div class="ff-button-group ff-source__stepper">
+                <button
+                  type="button"
+                  class="ff-control ff-button ff-button--secondary"
+                  aria-label={t.font_limit_decrease()}
+                  onClick={() => stepLimit(-1)}
+                >
+                  −
+                </button>
+                <input
+                  ref={limitInput}
+                  id={`${listId}-limit`}
+                  class="ff-control ff-input ff-source__limit-input"
+                  type="number"
+                  inputMode="numeric"
+                  min={limit.min}
+                  max={limit.max}
+                  defaultValue={limit.value}
+                  onChange={(event) => commitLimit(event.currentTarget.valueAsNumber)}
+                />
+                <button
+                  type="button"
+                  class="ff-control ff-button ff-button--secondary"
+                  aria-label={t.font_limit_increase()}
+                  onClick={() => stepLimit(1)}
+                >
+                  +
+                </button>
+              </div>
             </div>
             {count > 0 && loaded + count > SOFT_LIMIT && count <= slots && (
               <p class="ff-source__text ff-muted" role="status">

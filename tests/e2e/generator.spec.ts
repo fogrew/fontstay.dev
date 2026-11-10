@@ -1622,8 +1622,8 @@ test('a Google Fonts family can be searched and downloaded through the two allow
   await openStep(page, 'inputs');
   await page.getByLabel('Font name, CSS or copied site data').fill('open sans');
   await page
-    .getByRole('listbox', { name: 'Matching families' })
-    .getByRole('option', { name: /^Open Sans.*Google Fonts/ })
+    .getByRole('list', { name: 'Matching families' })
+    .getByRole('button', { name: 'Open Sans', exact: true })
     .click();
   await expect(page.getByRole('button', { name: 'latin', exact: true })).toHaveAttribute(
     'aria-pressed',
@@ -1641,25 +1641,25 @@ test('the default family list is long, a second click deselects, the source link
   await page.goto('/en/');
   await waitForGenerator(page);
   await openStep(page, 'inputs');
-  const list = page.getByRole('listbox', { name: 'Matching families' });
-  await expect(list.getByRole('option').nth(29)).toBeVisible();
-  expect(await list.getByRole('option').count()).toBeGreaterThanOrEqual(40);
+  const list = page.getByRole('list', { name: 'Matching families' });
+  await expect(list.getByRole('listitem').nth(29)).toBeVisible();
+  expect(await list.getByRole('listitem').count()).toBeGreaterThanOrEqual(40);
   await expect(page.getByText('they see your IP address')).toHaveCount(0);
 
-  const option = list.getByRole('option', { name: /^Roboto, Google Fonts/ });
+  const option = list.getByRole('button', { name: 'Roboto', exact: true });
   await option.click();
-  await expect(option).toHaveAttribute('aria-selected', 'true');
-  const link = page.locator('.ff-source__chosen').getByRole('link', { name: 'Google Fonts' });
+  await expect(option).toHaveAttribute('aria-pressed', 'true');
+  const link = list.getByRole('link', { name: 'Open Roboto on Google Fonts' });
   await expect(link).toHaveAttribute('href', 'https://fonts.google.com/specimen/Roboto');
   await expect(link).toHaveAttribute('target', '_blank');
   await expect(link).toHaveAttribute('rel', /noopener/);
 
   await option.click();
-  await expect(option).toHaveAttribute('aria-selected', 'false');
+  await expect(option).toHaveAttribute('aria-pressed', 'false');
   await expect(page.locator('.ff-source__chosen')).toHaveCount(0);
 
-  await list.getByRole('option', { name: /^Geist Sans, Fontsource/ }).click();
-  await expect(page.locator('.ff-source__chosen').getByRole('link')).toHaveAttribute(
+  await list.getByRole('button', { name: 'Geist Sans', exact: true }).click();
+  await expect(list.getByRole('link', { name: 'Open Geist Sans on Fontsource' })).toHaveAttribute(
     'href',
     'https://fontsource.org/fonts/geist-sans',
   );
@@ -1686,8 +1686,8 @@ test('several styles of a catalog family are added with one click', async ({ pag
   await openStep(page, 'inputs');
   await page.getByLabel('Font name, CSS or copied site data').fill('open sans');
   await page
-    .getByRole('listbox', { name: 'Matching families' })
-    .getByRole('option', { name: /^Open Sans.*Google Fonts/ })
+    .getByRole('list', { name: 'Matching families' })
+    .getByRole('button', { name: 'Open Sans', exact: true })
     .click();
   await page.getByRole('button', { name: '700', exact: true }).click();
   await page.getByRole('button', { name: '400 Italic', exact: true }).click();
@@ -1726,8 +1726,8 @@ const chooseMontserrat = async (page: Page) => {
   await openStep(page, 'inputs');
   await page.getByLabel('Font name, CSS or copied site data').fill('montserrat');
   await page
-    .getByRole('listbox', { name: 'Matching families' })
-    .getByRole('option', { name: /^Montserrat.*Google Fonts/ })
+    .getByRole('list', { name: 'Matching families' })
+    .getByRole('button', { name: 'Montserrat', exact: true })
     .first()
     .click();
 };
@@ -1771,12 +1771,12 @@ test('the font limit explains itself and can be raised', async ({ page }) => {
   await chosen.getByRole('button', { name: '600', exact: true }).click();
   await expect(chosen).toContainText('The limit is 3 fonts and 0 are loaded.');
   await expect(page.getByRole('button', { name: /^Add to the fonts/ })).toBeDisabled();
-  await page.getByLabel('Font limit').fill('500');
-  await page.getByLabel('Font limit').press('Enter');
-  await expect(page.getByLabel('Font limit')).toHaveValue('128');
-  await page.getByLabel('Font limit').fill('8');
-  await page.getByLabel('Font limit').press('Enter');
-  await expect(page.getByLabel('Font limit')).toBeFocused();
+  await page.getByLabel('Max fonts', { exact: true }).fill('500');
+  await page.getByLabel('Max fonts', { exact: true }).press('Enter');
+  await expect(page.getByLabel('Max fonts', { exact: true })).toHaveValue('128');
+  await page.getByLabel('Max fonts', { exact: true }).fill('8');
+  await page.getByLabel('Max fonts', { exact: true }).press('Enter');
+  await expect(page.getByLabel('Max fonts', { exact: true })).toBeFocused();
   await expect(page.getByRole('button', { name: 'Add to the fonts (4)' })).toBeEnabled();
   expect(await page.evaluate(() => localStorage.getItem('fontstay:font-limit'))).toBe('8');
 });
@@ -1809,8 +1809,8 @@ test('a share link carries Google Fonts choices and downloads them again', async
   await openStep(page, 'inputs');
   await page.getByLabel('Font name, CSS or copied site data').fill('open sans');
   await page
-    .getByRole('listbox', { name: 'Matching families' })
-    .getByRole('option', { name: /^Open Sans.*Google Fonts/ })
+    .getByRole('list', { name: 'Matching families' })
+    .getByRole('button', { name: 'Open Sans', exact: true })
     .click();
   await page.getByRole('button', { name: 'Add to the fonts' }).click();
   await expect(page.getByText('Downloaded Open Sans.')).toBeVisible();
@@ -1846,8 +1846,8 @@ test('a Fontsource family is downloaded from jsDelivr', async ({ page }) => {
   await openStep(page, 'inputs');
   await page.getByLabel('Font name, CSS or copied site data').fill('aileron');
   await page
-    .getByRole('listbox', { name: 'Matching families' })
-    .getByRole('option', { name: /^Aileron.*Fontsource/ })
+    .getByRole('list', { name: 'Matching families' })
+    .getByRole('button', { name: 'Aileron', exact: true })
     .click();
   await page.getByRole('button', { name: 'Add to the fonts' }).click();
   await expect(page.getByText('Downloaded Aileron.')).toBeVisible();
@@ -1902,8 +1902,8 @@ test('a failed Google Fonts download is explained', async ({ page }) => {
   await openStep(page, 'inputs');
   await page.getByLabel('Font name, CSS or copied site data').fill('lora');
   await page
-    .getByRole('listbox', { name: 'Matching families' })
-    .getByRole('option', { name: /^Lora.*Google Fonts/ })
+    .getByRole('list', { name: 'Matching families' })
+    .getByRole('button', { name: 'Lora', exact: true })
     .click();
   await page.getByRole('button', { name: 'Add to the fonts' }).click();
   await expect(page.getByText(/Could not download the font/)).toBeVisible();
@@ -2524,7 +2524,7 @@ test('the bookmarklet hands only the fonts of a page to the generator after a co
   await page.goto('/en/');
   await waitForGenerator(page);
   await openStep(page, 'inputs');
-  await page.getByRole('button', { name: 'Import from a website…' }).click();
+  await page.getByRole('button', { name: 'import from a website…' }).click();
   const link = page.getByRole('link', { name: 'Send to fontstay' });
   const href = (await link.getAttribute('href')) ?? '';
   expect(href).toMatch(/^javascript:/);
@@ -3061,19 +3061,19 @@ test.describe('the single input field', () => {
     page,
   }) => {
     const field = await open(page);
-    const list = page.getByRole('listbox', { name: 'Matching families' });
-    await expect(list.getByRole('option').first()).toBeVisible();
-    await expect(list.getByRole('option').first()).toContainText('Open Sans');
-    await expect(list.getByRole('option', { name: /Geist Sans.*Fontsource/ })).toBeVisible();
+    const list = page.getByRole('list', { name: 'Matching families' });
+    await expect(list.getByRole('listitem').first()).toBeVisible();
+    await expect(list.getByRole('listitem').first()).toContainText('Open Sans');
+    await expect(list.getByRole('button', { name: 'Geist Sans', exact: true })).toBeVisible();
     await expect(
       page.getByRole('status').filter({ hasText: 'catalog fonts available' }),
     ).toContainText('catalog fonts available');
-    await expect(list.getByRole('option', { name: /Fontsource/ }).first()).toBeVisible();
-    await expect(list.getByRole('option', { name: /Google Fonts/ }).first()).toBeVisible();
+    await expect(list.getByRole('link', { name: /on Fontsource$/ }).first()).toBeVisible();
+    await expect(list.getByRole('link', { name: /on Google Fonts$/ }).first()).toBeVisible();
     await field.focus();
     await field.pressSequentially('Open S');
-    await expect(list.locator('.ff-source__item--active')).toContainText('Open Sans');
-    await expect(list.getByRole('option', { selected: true })).toHaveCount(0);
+    await expect(list.locator('.ff-source__name--active')).toContainText('Open Sans');
+    await expect(list.getByRole('button', { pressed: true })).toHaveCount(0);
     await expect(field).not.toHaveAttribute('aria-controls');
     await expect(field).not.toHaveAttribute('aria-autocomplete');
     await expect(
@@ -3081,26 +3081,30 @@ test.describe('the single input field', () => {
     ).toContainText('Highlighted font: Open Sans.');
     await field.press('Tab');
     await expect(field).toHaveValue('Open Sans');
-    await expect(list.getByRole('option', { name: /^Open Sans.*Google Fonts/ })).toHaveAttribute(
-      'aria-selected',
+    await expect(list.getByRole('button', { name: 'Open Sans', exact: true })).toHaveAttribute(
+      'aria-pressed',
       'true',
     );
     await expect(page.getByRole('button', { name: 'Add to the fonts' })).toBeVisible();
     await expect(
-      page.getByRole('button', { name: 'Choose a font or CSS file…' }),
+      page.getByRole('button', { name: 'choose a font or CSS file…' }),
     ).not.toBeFocused();
-    await expect(page.getByRole('button', { name: 'Import from a website…' })).not.toBeFocused();
+    await expect(page.getByRole('button', { name: 'import from a website…' })).not.toBeFocused();
     await field.fill('Lora');
     await field.press('Enter');
-    await expect(page.locator('.ff-source__chosen strong')).toHaveText('Lora');
+    await expect(
+      page
+        .getByRole('list', { name: 'Matching families' })
+        .getByRole('button', { name: 'Lora', exact: true }),
+    ).toHaveAttribute('aria-pressed', 'true');
   });
 
   test('Tab skips incomplete matches only once and preserves the chosen style', async ({
     page,
   }) => {
     const field = await open(page);
-    const list = page.getByRole('listbox', { name: 'Matching families' });
-    await expect(list.getByRole('option').first()).toBeVisible();
+    const list = page.getByRole('list', { name: 'Matching families' });
+    await expect(list.getByRole('listitem').first()).toBeVisible();
     await field.focus();
     await field.press('Tab');
     await expect(field).toHaveValue('');
@@ -3192,35 +3196,54 @@ test.describe('the single input field', () => {
     await expect(chosen.getByText('extra letters for the same script')).toBeHidden();
   });
 
-  test('the source label is vertically centred against the family name', async ({ page }) => {
+  test('each list row is one button group with equal segments and no clipped focus ring', async ({
+    page,
+  }) => {
     for (const width of [320, 1280]) {
       await page.setViewportSize({ width, height: 800 });
       await open(page);
-      const rows = page.getByRole('listbox', { name: 'Matching families' }).getByRole('option');
+      const list = page.getByRole('list', { name: 'Matching families' });
+      const rows = list.getByRole('listitem');
       await expect(rows.first()).toBeVisible();
-      const offsets = await rows.evaluateAll((items) =>
+      const spans = await rows.evaluateAll((items) =>
         items.slice(0, 20).map((item) => {
-          const [name, source] = [...item.children].map((child) => {
-            const range = document.createRange();
-            range.selectNodeContents(child);
-            const box = range.getBoundingClientRect();
-            return box.top + box.height / 2;
-          });
-          return Math.abs((name ?? 0) - (source ?? 0));
+          const boxes = [...item.children].map((child) => child.getBoundingClientRect());
+          const row = item.getBoundingClientRect();
+          return {
+            segments: boxes.length,
+            tops: boxes.map((box) => Math.round(box.top)),
+            heights: boxes.map((box) => Math.round(box.height)),
+            fits: boxes.every((box) => box.right <= row.right + 1 && box.left >= row.left - 1),
+          };
         }),
       );
-      expect(Math.max(...offsets)).toBeLessThanOrEqual(1);
+      for (const span of spans) {
+        expect(span.segments).toBe(3);
+        expect(new Set(span.tops).size).toBe(1);
+        expect(new Set(span.heights).size).toBe(1);
+        expect(span.fits).toBe(true);
+      }
+      const first = list.locator('.ff-source__name').first();
+      await first.focus();
+      const clipped = await first.evaluate((button) => {
+        const scroll = button.closest('.ff-source__scroll');
+        if (!scroll) return true;
+        const ring = button.getBoundingClientRect();
+        const box = scroll.getBoundingClientRect();
+        return ring.left - 3 < box.left || ring.top - 3 < box.top;
+      });
+      expect(clipped).toBe(false);
     }
   });
 
   test('arrows move the highlighted suggestion and Enter accepts it', async ({ page }) => {
     const field = await open(page);
-    const list = page.getByRole('listbox', { name: 'Matching families' });
+    const list = page.getByRole('list', { name: 'Matching families' });
     await field.fill('Open S');
     await field.press('ArrowDown');
-    await expect(list.locator('.ff-source__item--active')).not.toContainText('Open Sans');
+    await expect(list.locator('.ff-source__name--active')).not.toContainText('Open Sans');
     await field.press('ArrowUp');
-    await expect(list.locator('.ff-source__item--active')).toContainText('Open Sans');
+    await expect(list.locator('.ff-source__name--active')).toContainText('Open Sans');
     await field.press('Enter');
     await expect(field).toHaveValue('Open Sans');
   });
@@ -3242,14 +3265,14 @@ test.describe('the single input field', () => {
   test('a font name lists families of both catalogs with their source', async ({ page }) => {
     const field = await open(page);
     await field.fill('roboto');
-    const list = page.getByRole('listbox', { name: 'Matching families' });
+    const list = page.getByRole('list', { name: 'Matching families' });
     await expect(list).toBeVisible();
     await expect(
-      list.getByRole('option', { name: /^Roboto\b.*Google Fonts/ }).first(),
+      list.getByRole('link', { name: /^Open Roboto\b.* on Google Fonts$/ }).first(),
     ).toBeVisible();
     await field.fill('a');
-    await expect(list.getByRole('option', { name: /Fontsource/ }).first()).toBeVisible();
-    await expect(list.getByRole('option', { name: /Google Fonts/ }).first()).toBeVisible();
+    await expect(list.getByRole('link', { name: /on Fontsource$/ }).first()).toBeVisible();
+    await expect(list.getByRole('link', { name: /on Google Fonts$/ }).first()).toBeVisible();
   });
 
   test('arrow keys move focus through the list and Enter and Escape act on it', async ({
@@ -3257,10 +3280,10 @@ test.describe('the single input field', () => {
   }) => {
     const field = await open(page);
     await field.fill('roboto');
-    const list = page.getByRole('listbox', { name: 'Matching families' });
-    const options = list.getByRole('option');
+    const list = page.getByRole('list', { name: 'Matching families' });
+    const options = list.locator('.ff-source__name');
     await expect(options.first()).toBeVisible();
-    await expect(list.locator('[role=option][tabindex="0"]')).toHaveCount(1);
+    await expect(list.locator('.ff-source__name[tabindex="0"]')).toHaveCount(1);
     await options.first().focus();
     const scrollY = await page.evaluate(() => window.scrollY);
     await page.keyboard.press('ArrowDown');
@@ -3271,24 +3294,118 @@ test.describe('the single input field', () => {
     await expect(options.last()).toBeFocused();
     expect(await page.evaluate(() => window.scrollY)).toBe(scrollY);
     await page.keyboard.press('Enter');
-    await expect(options.last()).toHaveAttribute('aria-selected', 'true');
+    await expect(options.last()).toHaveAttribute('aria-pressed', 'true');
     await page.keyboard.press('Escape');
     await expect(field).toBeFocused();
   });
 
-  test('a list row shows service and license icons with a tooltip', async ({ page }) => {
+  test('a list row shows the license and links to the family page', async ({ page }) => {
     const field = await open(page);
     await field.fill('roboto');
-    const option = page
-      .getByRole('listbox', { name: 'Matching families' })
-      .getByRole('option', { name: /^Roboto, Google Fonts, license OFL-1.1$/ });
-    await expect(option).toBeVisible();
-    await option.hover();
-    await expect(page.locator('.ff-source__tip')).toHaveText('Google Fonts · license OFL-1.1');
-    await page.mouse.move(0, 0);
+    const row = page
+      .getByRole('list', { name: 'Matching families' })
+      .getByRole('listitem')
+      .filter({ has: page.getByRole('button', { name: 'Roboto', exact: true }) });
+    await expect(row).toContainText('OFL-1.1');
+    await expect(row.getByText('license OFL-1.1')).toBeAttached();
+    await expect(row.getByRole('link', { name: 'Open Roboto on Google Fonts' })).toHaveAttribute(
+      'href',
+      'https://fonts.google.com/specimen/Roboto',
+    );
+    await row.getByRole('button', { name: 'Roboto', exact: true }).hover();
     await expect(page.locator('.ff-source__tip')).toHaveCount(0);
-    await option.focus();
-    await expect(page.locator('.ff-source__tip')).toBeVisible();
+  });
+
+  test('the ways to add a font stay on one line each and hold the file and site buttons', async ({
+    page,
+  }) => {
+    await open(page);
+    const items = page.locator('#ff-input-hint li');
+    await expect(items).toHaveCount(5);
+    await expect(items.nth(3).getByRole('button')).toHaveText('choose a font or CSS file…');
+    await expect(items.nth(4).getByRole('button')).toHaveText('import from a website…');
+    await expect(page.getByText('Arrow keys move through the list')).toHaveCount(0);
+    const lines = await items.evaluateAll((nodes) =>
+      nodes.map((node) => {
+        const style = getComputedStyle(node);
+        const line = Number.parseFloat(style.lineHeight) || Number.parseFloat(style.fontSize) * 1.2;
+        return Math.round(node.getBoundingClientRect().height / line);
+      }),
+    );
+    expect(lines.every((count) => count <= 2)).toBe(true);
+    const widths = await items.evaluateAll((nodes) =>
+      nodes.map((node) => node.scrollWidth <= node.clientWidth + 1),
+    );
+    expect(widths.every(Boolean)).toBe(true);
+  });
+
+  test('style lists fit one row each at the narrowest width', async ({ page }) => {
+    await page.setViewportSize({ width: 320, height: 800 });
+    await open(page);
+    await page
+      .getByRole('list', { name: 'Matching families' })
+      .getByRole('button', { name: 'Montserrat', exact: true })
+      .click();
+    for (const name of ['Upright', 'Italic']) {
+      const buttons = page
+        .locator('.ff-source__chosen')
+        .getByRole('group', { name })
+        .getByRole('button');
+      await expect(buttons).toHaveCount(9);
+      const tops = await buttons.evaluateAll((nodes) =>
+        nodes.map((node) => Math.round(node.getBoundingClientRect().top)),
+      );
+      expect(new Set(tops).size).toBe(1);
+      const label = page.locator('.ff-toggle-group__label').filter({ hasText: name });
+      const [labelBox, firstBox] = await Promise.all([
+        label.boundingBox(),
+        buttons.first().boundingBox(),
+      ]);
+      expect(labelBox && firstBox && labelBox.y + labelBox.height <= firstBox.y).toBe(true);
+    }
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(
+      true,
+    );
+  });
+
+  test('the Ext info button is a small icon and its tip stays inside the viewport', async ({
+    page,
+  }) => {
+    for (const width of [320, 1280]) {
+      await page.setViewportSize({ width, height: 800 });
+      await open(page);
+      await page
+        .getByRole('list', { name: 'Matching families' })
+        .getByRole('button', { name: 'Montserrat', exact: true })
+        .click();
+      const info = page.getByRole('button', { name: 'About ext subsets' });
+      await info.scrollIntoViewIfNeeded();
+      const box = await info.boundingBox();
+      expect(box?.width).toBeLessThanOrEqual(26);
+      expect(box?.height).toBeLessThanOrEqual(26);
+      await info.click();
+      const tip = page.locator('.ff-source .ff-popover__panel:not([hidden])');
+      await expect(tip).toBeVisible();
+      const tipBox = await tip.boundingBox();
+      expect(tipBox && tipBox.x >= 0 && tipBox.x + tipBox.width <= width).toBe(true);
+      await page.keyboard.press('Escape');
+    }
+  });
+
+  test('the font limit has a help tip and a stepper', async ({ page }) => {
+    await open(page);
+    await page
+      .getByRole('list', { name: 'Matching families' })
+      .getByRole('button', { name: 'Montserrat', exact: true })
+      .click();
+    const limit = page.getByLabel('Max fonts', { exact: true });
+    const before = Number(await limit.inputValue());
+    await page.getByRole('button', { name: 'Raise the font limit' }).click();
+    await expect(limit).toHaveValue(String(before + 1));
+    await page.getByRole('button', { name: 'Lower the font limit' }).click();
+    await expect(limit).toHaveValue(String(before));
+    await page.getByRole('button', { name: 'About the font limit' }).click();
+    await expect(page.getByText('Each style and script is one font file')).toBeVisible();
   });
 
   test('the hint links both services and the catalog link line is gone', async ({ page }) => {
@@ -3316,7 +3433,7 @@ test.describe('the single input field', () => {
     const faces = page.getByRole('list', { name: 'Fonts found in the CSS' });
     await expect(faces).toContainText('Demo Sans');
     await expect(faces.getByRole('link', { name: 'Download the file' })).toBeVisible();
-    await expect(page.getByRole('listbox', { name: 'Matching families' })).toHaveCount(0);
+    await expect(page.getByRole('list', { name: 'Matching families' })).toHaveCount(0);
   });
 
   test('pasted CSS split into subsets lists one row per weight and style', async ({ page }) => {
@@ -3399,7 +3516,7 @@ test.describe('the single input field', () => {
 
   test('the import instructions open from the link under the field', async ({ page }) => {
     await open(page);
-    const toggle = page.getByRole('button', { name: 'Import from a website…' });
+    const toggle = page.getByRole('button', { name: 'import from a website…' });
     await expect(toggle).toHaveAttribute('aria-expanded', 'false');
     await toggle.click();
     await expect(toggle).toHaveAttribute('aria-expanded', 'true');
@@ -3414,11 +3531,12 @@ test('the input field with suggestions and CSS results has no axe violations', a
   const field = page.getByLabel('Font name, CSS or copied site data');
   await field.fill('roboto');
   await page
-    .getByRole('listbox', { name: 'Matching families' })
-    .getByRole('option')
+    .getByRole('list', { name: 'Matching families' })
+    .getByRole('listitem')
     .first()
+    .getByRole('button')
     .click();
-  await page.getByRole('button', { name: 'Import from a website…' }).click();
+  await page.getByRole('button', { name: 'import from a website…' }).click();
   const names = await new AxeBuilder({ page }).analyze();
   expect(names.violations).toEqual([]);
   await field.fill('@font-face { font-family: A; src: url(https://f.test/a.woff2); }');
@@ -3569,7 +3687,7 @@ test('accepting a site import while a font is still being read keeps the offer',
   await page.goto('/en/');
   await waitForGenerator(page);
   await openStep(page, 'inputs');
-  await page.getByRole('button', { name: 'Import from a website…' }).click();
+  await page.getByRole('button', { name: 'import from a website…' }).click();
   const href =
     (await page.getByRole('link', { name: 'Send to fontstay' }).getAttribute('href')) ?? '';
 
@@ -3607,7 +3725,7 @@ test('the bookmarklet copies the metadata to the clipboard when the new tab is b
   await page.goto('/en/');
   await waitForGenerator(page);
   await openStep(page, 'inputs');
-  await page.getByRole('button', { name: 'Import from a website…' }).click();
+  await page.getByRole('button', { name: 'import from a website…' }).click();
   const href =
     (await page.getByRole('link', { name: 'Send to fontstay' }).getAttribute('href')) ?? '';
 
