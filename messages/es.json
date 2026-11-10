@@ -873,5 +873,8 @@
   "share_part_tuning": "Valores de ajuste y espaciado",
   "share_part_panel": "Panel abierto, sistema y variante de fuente",
   "share_part_preview": "Ajustes de vista previa, modo y ancho del dispositivo",
-  "share_part_site_fonts": "Fuentes de títulos y de texto del sitio importado"
+  "share_part_site_fonts": "Fuentes de títulos y de texto del sitio importado",
+  "sidebar_left_toggle": "Panel lateral",
+  "sidebar_left_resize": "Cambiar el ancho del panel lateral",
+  "sidebar_right_resize": "Cambiar el ancho del panel de ajustes"
 }

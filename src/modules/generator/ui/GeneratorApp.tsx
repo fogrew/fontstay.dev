@@ -16,6 +16,8 @@ import {
   LiveRegion,
   neighbourAfterRemoval,
   Select,
+  Splitter,
+  useSidebar,
 } from '@/common/ui';
 import {
   AUDIENCE_FILE_EVENT,
@@ -166,6 +168,7 @@ import { CoverageMap } from './CoverageMap';
 import { type ExportChoice, ExportPanel, effectiveFormat, exportFileFor } from './ExportPanel';
 import { FontInput } from './FontInput';
 import { ShareDialog } from './ShareDialog';
+import { ToolIcon } from './ToolIcons';
 import './generator.css';
 
 interface LoadedFont {
@@ -218,8 +221,11 @@ const AUTO: Values = {
 
 const fitToggleId = (id: number) => `fit-${id}`;
 
+const LEFT_LIMITS = { min: 288, max: 640, initial: 352 };
+
 export function GeneratorApp({ locale }: { locale: Locale }) {
   const t = messagesFor(locale);
+  const sidebar = useSidebar({ name: 'left', limits: LEFT_LIMITS, defaultOpen: true });
   const kindLabels: Record<Category, string> = {
     'sans-serif': t.type_sans(),
     serif: t.type_serif(),
@@ -2045,6 +2051,7 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
       <LiveRegion>{announcement}</LiveRegion>
       <LiveRegion>{planIssue || planNote}</LiveRegion>
       <Dock
+        id="ff-dock"
         storageKey="dock"
         defaultOpen={DEFAULT_PANEL}
         onChange={(id) => {
@@ -2238,6 +2245,7 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
           },
         ]}
       />
+      <Splitter sidebar={sidebar} side="start" label={t.sidebar_left_resize()} controls="ff-dock" />
       <div class="ff-generator__stage">
         <LiveRegion>{fitting ? t.fit_running() : ''}</LiveRegion>
         <ArticleView
@@ -2245,6 +2253,19 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
           items={previewItems}
           fitting={fitting}
           restore={viewRestore}
+          start={
+            <button
+              type="button"
+              class="ff-control ff-button ff-button--secondary ff-tool-button ff-toolbar__panel-toggle"
+              aria-expanded={sidebar.open}
+              aria-controls="ff-dock"
+              aria-label={t.sidebar_left_toggle()}
+              title={t.sidebar_left_toggle()}
+              onClick={sidebar.toggle}
+            >
+              <ToolIcon name="panel-start" />
+            </button>
+          }
           onView={(diff) => {
             viewDiff.current = diff;
           }}

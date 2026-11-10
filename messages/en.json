@@ -873,5 +873,8 @@
   "share_part_tuning": "Tuning values and spacing",
   "share_part_panel": "Open panel, system and font face",
   "share_part_preview": "Preview settings, mode and device width",
-  "share_part_site_fonts": "Heading and body fonts of the imported site"
+  "share_part_site_fonts": "Heading and body fonts of the imported site",
+  "sidebar_left_toggle": "Side panel",
+  "sidebar_left_resize": "Resize the side panel",
+  "sidebar_right_resize": "Resize the settings panel"
 }
