@@ -6,6 +6,8 @@ export const MAX_FACES = 64;
 export const MAX_USED = 16;
 export const MAX_RULES = 256;
 export const MAX_RANGE = 1500;
+export const MAX_BLOCKS = 60;
+export const MAX_BLOCK_TEXT = 400;
 export const MAX_URL = 2000;
 export const MAX_METADATA_BYTES = 200_000;
 
@@ -34,6 +36,22 @@ export interface ImportedUse {
   weight: number;
 }
 
+export const BLOCK_TAGS = ['h1', 'h2', 'h3', 'p', 'li', 'blockquote', 'button'] as const;
+export type BlockTag = (typeof BLOCK_TAGS)[number];
+
+export interface ImportedBlock {
+  tag: BlockTag;
+  text: string;
+  fontPx: number;
+  width: number;
+  indent: number;
+  marginTop: number;
+  marginBottom: number;
+  padX: number;
+  padY: number;
+  lineHeight?: number;
+}
+
 export interface ImportedFile {
   name: string;
   bytes: ArrayBuffer;
@@ -47,6 +65,8 @@ export interface SiteImport {
   faces: ImportedFace[];
   rules: ImportedRule[];
   used: ImportedUse[];
+  blocks: ImportedBlock[];
+  viewport: number;
   files: ImportedFile[];
 }
 
@@ -89,6 +109,12 @@ function number(value: unknown, min: number, max: number): number | undefined {
   return typeof value === 'number' && Number.isFinite(value) && value >= min && value <= max
     ? value
     : undefined;
+}
+
+function clamped(value: unknown, min: number, max: number): number {
+  return typeof value === 'number' && Number.isFinite(value)
+    ? Math.min(max, Math.max(min, value))
+    : 0;
 }
 
 export function cleanOrigin(value: unknown): string {
@@ -162,6 +188,32 @@ function used(raw: unknown): ImportedUse[] {
   return result;
 }
 
+function blocks(raw: unknown): ImportedBlock[] {
+  if (!Array.isArray(raw)) return [];
+  const result: ImportedBlock[] = [];
+  for (const item of raw.slice(0, MAX_BLOCKS)) {
+    if (!isRecord(item) || !BLOCK_TAGS.includes(item.tag as BlockTag)) continue;
+    const text = cleanText(item.text, MAX_BLOCK_TEXT);
+    const fontPx = number(item.fontPx, 1, 400);
+    const width = number(item.width, 1, 10_000);
+    if (!text || fontPx === undefined || width === undefined) continue;
+    const lineHeight = number(item.lineHeight, 0.5, 10);
+    result.push({
+      tag: item.tag as BlockTag,
+      text,
+      fontPx,
+      width,
+      indent: clamped(item.indent, 0, 5000),
+      marginTop: clamped(item.marginTop, 0, 1000),
+      marginBottom: clamped(item.marginBottom, 0, 1000),
+      padX: clamped(item.padX, 0, 500),
+      padY: clamped(item.padY, 0, 500),
+      ...(lineHeight === undefined ? {} : { lineHeight }),
+    });
+  }
+  return result;
+}
+
 function files(raw: unknown): ImportedFile[] {
   if (!Array.isArray(raw)) return [];
   const result: ImportedFile[] = [];
@@ -188,6 +240,8 @@ export function sanitizeImport(raw: unknown, origin: string, verified: boolean):
     faces: faces(raw.faces),
     rules: rules(raw.rules),
     used: used(raw.used),
+    blocks: blocks(raw.blocks),
+    viewport: number(raw.viewport, 200, 10_000) ?? 0,
     files: files(raw.files),
   };
   const empty = result.faces.length + result.used.length + result.files.length === 0;

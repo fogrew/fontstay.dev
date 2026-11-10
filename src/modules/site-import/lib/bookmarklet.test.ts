@@ -40,6 +40,10 @@ describe('bookmarklet', () => {
     expect(source).toContain('fontstay:ready');
   });
 
+  it('leaves the element boxes and files out of the clipboard copy', () => {
+    expect(bookmarkletSource(options)).toContain('files: [], blocks: []');
+  });
+
   it('says so when the collector fails, with or without the generator window', async () => {
     const run = async (child: unknown) => {
       const alert = vi.fn();
@@ -93,6 +97,7 @@ describe('bookmarklet handshake', () => {
       title: 'Site',
       body: { querySelectorAll: () => [] },
       querySelector: () => null,
+      querySelectorAll: () => [],
     };
     new Function('window', 'document', bookmarkletSource(options))(win, doc);
     const emit = (event: unknown) => {

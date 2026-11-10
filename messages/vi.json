@@ -154,6 +154,8 @@
   "self_host_error": "Không thể tạo tệp nén.",
   "cls_verify": "Kiểm tra trên thiết bị này",
   "cls_verifying": "Đang đo trong trình duyệt…",
+  "cls_imported_layout": "Bố cục lấy từ {origin}.",
+  "cls_imported_reset": "Dùng trang mẫu",
   "cls_verified": "Đã đo trong trình duyệt với các phông chữ cài trên thiết bị này: {results}.",
   "matrix_heading": "Hỗ trợ trình duyệt",
   "matrix_empty": "Hãy tải một phông chữ và chọn một truy vấn trình duyệt để xem đoạn mã phủ những trình duyệt nào.",

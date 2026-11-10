@@ -10,6 +10,8 @@ export interface BlockStyle {
   padX: number;
   padY: number;
   fitContent: boolean;
+  maxWidth?: number;
+  lineHeightEm?: number;
 }
 
 export const BODY_PADDING = 16;
@@ -75,7 +77,10 @@ export const STYLES: Record<BlockTag, BlockStyle> = {
 export interface Block {
   tag: BlockTag;
   text: string;
+  style?: Partial<BlockStyle>;
 }
+
+export const styleOf = (block: Block): BlockStyle => ({ ...STYLES[block.tag], ...block.style });
 
 const cache = new Map<SampleLanguage, Block[]>();
 

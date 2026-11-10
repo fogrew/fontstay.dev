@@ -103,6 +103,7 @@ import {
   MIN_FONT_LIMIT,
   saveFontLimit,
 } from '../lib/font-limit';
+import { type ImportedLayout, layoutFromImport } from '../lib/imported-layout';
 import { hasSpacing, loadingCss, loadingScript, type SpacingEm } from '../lib/loading';
 import { optimizeFace } from '../lib/optimize-fit';
 import { currentFallback, type FontOutput, groupFonts, mergeOutputs } from '../lib/overview';
@@ -297,6 +298,7 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const [incoming, setIncoming] = useState<SiteImport | null>(null);
+  const [importedLayout, setImportedLayout] = useState<ImportedLayout | undefined>();
   useEffect(() => {
     if (location.hash !== PENDING_HASH) return;
     history.replaceState(null, '', location.pathname + location.search);
@@ -319,6 +321,9 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
     }
     const value = incoming;
     setIncoming(null);
+    setImportedLayout(
+      layoutFromImport(value.origin, value.blocks, `${value.origin}:${Date.now()}`, value.viewport),
+    );
     if (value.files.length > 0) {
       void addFiles(value.files.map((file) => new File([file.bytes], file.name)));
       setAnnouncement(t.import_done({ count: value.files.length, origin: value.origin }));
@@ -882,6 +887,7 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
           ),
           generic: kind,
           language,
+          blocks: importedLayout?.blocks,
           spacing: { letterEm: spacingEm.letter, wordEm: spacingEm.word },
         };
       }
@@ -1424,7 +1430,7 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
           fallbackFactor(entry.candidate, selected),
         );
         if (font) {
-          value = worstShift({ web, language }, font);
+          value = worstShift({ web, language, blocks: importedLayout?.blocks }, font);
         }
       }
       shiftCache.set(key, value);
@@ -1434,6 +1440,7 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
   const matrixKey = JSON.stringify([
     selected?.id,
     language,
+    importedLayout?.key,
     kind,
     enabledSystems,
     spacingEm,
@@ -1498,6 +1505,7 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
   const fitKey = JSON.stringify([
     selected?.id,
     language,
+    importedLayout?.key,
     kind,
     styleKey,
     spacingOn,
@@ -1530,6 +1538,7 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
         const model = {
           web: webPredictFont(job.font.metrics, job.anyRanking, undefined, factorOf(job.font)),
           language: job.language,
+          blocks: importedLayout?.blocks,
         };
         for (const [index, candidate] of job.faces.entries()) {
           const free = spacingOn && jobIndex === 0 && index === 0;
@@ -2329,7 +2338,9 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
                       <LayoutShiftPanel
                         locale={locale}
                         verify={simulation}
-                        signature={output.fontFaces}
+                        signature={`${importedLayout?.key ?? ''}|${output.fontFaces}`}
+                        layoutOrigin={importedLayout?.origin}
+                        onResetLayout={() => setImportedLayout(undefined)}
                       />
                     )}
                   </>

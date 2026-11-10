@@ -3007,6 +3007,65 @@ test('the generated code stays left to right and queries stay readable on an Ara
   await expect(tag).toHaveAttribute('dir', 'auto');
 });
 
+test('an imported site hands its element boxes to the layout shift check', async ({ page }) => {
+  await page.goto('/en/');
+  await waitForGenerator(page);
+  const base64 = readFileSync(sourceSans).toString('base64');
+  await page.evaluate(
+    (data) =>
+      new Promise<void>((resolve, reject) => {
+        const bytes = Uint8Array.from(atob(data), (char) => char.charCodeAt(0)).buffer;
+        const box = {
+          tag: 'p',
+          text: 'A narrow column of imported text that wraps onto several lines.',
+          fontPx: 18,
+          width: 240,
+          indent: 0,
+          marginTop: 0,
+          marginBottom: 16,
+          padX: 0,
+          padY: 0,
+          lineHeight: 1.5,
+        };
+        const value = {
+          v: 1,
+          origin: 'https://site.test',
+          verified: false,
+          title: 'Site',
+          faces: [],
+          rules: [],
+          used: [],
+          blocks: [{ ...box, tag: 'h1', fontPx: 32 }, box],
+          files: [{ name: 'SourceSansPro-Regular.woff2', bytes }],
+        };
+        const request = indexedDB.open('fontstay-import', 1);
+        request.onupgradeneeded = () => request.result.createObjectStore('pending');
+        request.onsuccess = () => {
+          const db = request.result;
+          const tx = db.transaction('pending', 'readwrite');
+          tx.objectStore('pending').put({ receivedAt: Date.now(), value }, 'latest');
+          tx.oncomplete = () => {
+            db.close();
+            resolve();
+          };
+          tx.onerror = () => reject(tx.error);
+        };
+        request.onerror = () => reject(request.error);
+      }),
+    base64,
+  );
+  await page.goto('/en/#import');
+  await page.reload();
+  await waitForGenerator(page);
+  await page.getByRole('button', { name: 'Import', exact: true }).click();
+  await openSupport(page);
+  await expect(page.getByText('Layout taken from https://site.test.')).toBeVisible();
+  await page.getByRole('button', { name: 'Verify on this device' }).click();
+  await expect(page.getByText(/Measured in the browser/)).toBeVisible({ timeout: 25_000 });
+  await page.getByRole('button', { name: 'Use the sample page' }).click();
+  await expect(page.getByText('Layout taken from https://site.test.')).toHaveCount(0);
+});
+
 test('an import link without a pending import explains that it expired', async ({ page }) => {
   await page.goto('/en/#import');
   await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));

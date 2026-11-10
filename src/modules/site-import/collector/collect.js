@@ -14,6 +14,10 @@ export async function fontstayCollect(win, doc, options = {}) {
   const MAX_RULES = 256;
   const MAX_RANGE = 1500;
   const MAX_SHEETS = 6;
+  const MAX_BLOCKS = 60;
+  const MAX_BLOCK_TEXT = 400;
+  const BLOCKS = 'h1,h2,h3,p,li,blockquote,button';
+  const CHROME = 'body > header,nav,footer,aside,[aria-hidden="true"]';
   const MAX_CSS = 500000;
   const readBounded = async (response, limit, budget) => {
     if (!response.ok || Number(response.headers.get('content-length')) > limit) {
@@ -236,6 +240,52 @@ export async function fontstayCollect(win, doc, options = {}) {
     });
   }
 
+  const px = (value) => {
+    const number = Number.parseFloat(value);
+    return Number.isFinite(number) ? Math.max(0, number) : 0;
+  };
+  const found = [];
+  for (const element of Array.from(doc.querySelectorAll(BLOCKS))) {
+    if (found.length >= MAX_BLOCKS) break;
+    if (element.querySelector(BLOCKS) || element.closest(CHROME)) continue;
+    const text = String(element.textContent ?? '')
+      .replace(/\s+/g, ' ')
+      .trim()
+      .slice(0, MAX_BLOCK_TEXT);
+    const rect = element.getBoundingClientRect();
+    if (!text || !(rect.width > 0) || !(rect.height > 0)) continue;
+    const style = win.getComputedStyle(element);
+    if (style.position === 'fixed' || style.visibility === 'hidden') continue;
+    const size = Number.parseFloat(style.fontSize);
+    const line = Number.parseFloat(style.lineHeight);
+    found.push({
+      left: rect.left,
+      block: {
+        tag: element.tagName.toLowerCase(),
+        text,
+        fontPx: size,
+        width: rect.width,
+        marginTop: px(style.marginTop),
+        marginBottom: px(style.marginBottom),
+        padX:
+          (px(style.paddingLeft) +
+            px(style.paddingRight) +
+            px(style.borderLeftWidth) +
+            px(style.borderRightWidth)) /
+          2,
+        padY:
+          (px(style.paddingTop) +
+            px(style.paddingBottom) +
+            px(style.borderTopWidth) +
+            px(style.borderBottomWidth)) /
+          2,
+        ...(Number.isFinite(line) && size > 0 ? { lineHeight: line / size } : {}),
+      },
+    });
+  }
+  const origin = found.reduce((least, item) => Math.min(least, item.left), Infinity);
+  const blocks = found.map(({ left, block }) => ({ ...block, indent: Math.max(0, left - origin) }));
+
   const families = new Set(
     used.flatMap((item) => item.family.split(',').map((name) => unquote(name).toLowerCase())),
   );
@@ -278,6 +328,8 @@ export async function fontstayCollect(win, doc, options = {}) {
     faces,
     rules: faceRules,
     used,
+    blocks,
+    viewport: win.innerWidth,
     files,
   };
 }

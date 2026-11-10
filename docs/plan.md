@@ -65,7 +65,7 @@ Both modes:
   - Preview document rendered in hidden same-origin iframes at preset viewports (412 / 1350, the Lighthouse mobile and desktop sizes).
   - Element boxes collected with fallback vs web font, layout shift score computed per the Layout Instability spec (impact fraction × distance fraction).
   - Shows score per viewport with Good / Needs improvement / Poor rating (0.1 / 0.25 thresholds), plus line-count delta, block height delta, width delta %, line-break mismatches.
-  - Always the sample article until the site's structure is available (#173).
+  - The sample article, or the element boxes of an imported page when the bookmarklet or extension collected them (#173); a direct URL import and the per-OS ranking still use the sample article.
   - Device picker in the preview toolbar (Responsive, phones, foldables, tablets, laptops and displays; list generated from Chrome DevTools' emulated devices by `pnpm devices:import`). A chosen device or a dragged preview width sets the frame width and the score is recomputed at that width; the page width is measured too when the preview is not constrained.
 - **Descriptor support matrix** for the selected audience (MDN BCD data). Notably Safari/iOS do not support `ascent-override` / `descent-override` / `line-gap-override` (only `size-adjust` from 17), so the tool shows the expected residual shift there and offers the `font-size-adjust` + fixed `line-height` strategy.
 - **Coverage estimate**: share of the audience whose OS has each fallback preinstalled (usage from browserslist/caniuse data × OS availability dataset).

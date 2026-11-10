@@ -1,4 +1,4 @@
-import { sampleBlocks } from './document';
+import { type Block, sampleBlocks } from './document';
 import { type PredictFont, predictViewport, textWidth } from './predict';
 import { type SampleLanguage, samples } from './samples';
 import type { ViewportResult } from './score';
@@ -7,6 +7,7 @@ import { DEFAULT_VIEWPORTS } from './simulate';
 export interface PredictModel {
   web: PredictFont;
   language: SampleLanguage;
+  blocks?: readonly Block[] | undefined;
 }
 
 export function scoreOf(
@@ -14,7 +15,7 @@ export function scoreOf(
   font: PredictFont,
   viewports = DEFAULT_VIEWPORTS,
 ): ViewportResult[] {
-  const blocks = sampleBlocks(model.language);
+  const blocks = model.blocks ?? sampleBlocks(model.language);
   return viewports.map((viewport) => predictViewport(model.web, font, blocks, viewport));
 }
 

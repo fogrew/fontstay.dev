@@ -1,4 +1,4 @@
-import { type Block, BODY_PADDING, STYLES } from './document';
+import { type Block, BODY_PADDING, styleOf } from './document';
 import {
   type Box,
   layoutShiftScore,
@@ -34,7 +34,7 @@ interface Table {
 }
 
 const tables = new WeakMap<object, Table>();
-const webLayouts = new WeakMap<PredictFont, Map<string, Layout>>();
+const webLayouts = new WeakMap<PredictFont, WeakMap<readonly Block[], Map<number, Layout>>>();
 
 function tableOf(font: PredictFont): Table {
   const key = font.advances as object;
@@ -82,7 +82,8 @@ class Metrics {
     return this.glyph(0x20, fontPx) + (this.font.letterEm + this.font.wordEm) * fontPx;
   }
 
-  lineHeight(fontPx: number): number {
+  lineHeight(fontPx: number, fixedEm?: number): number {
+    if (fixedEm !== undefined) return fixedEm * fontPx;
     if (this.font.lineHeightEm !== undefined) return this.font.lineHeightEm * fontPx;
     const { ascent, descent, lineGap } = this.font;
     return (
@@ -130,20 +131,20 @@ export function layoutDocument(
   let bottom = BODY_PADDING;
   let previousMargin: number | null = null;
   for (const block of blocks) {
-    const style = STYLES[block.tag];
-    const available = Math.max(1, viewportWidth - 2 * BODY_PADDING - style.indent - 2 * style.padX);
+    const style = styleOf(block);
+    const room = viewportWidth - 2 * BODY_PADDING - style.indent;
+    const outer = style.maxWidth === undefined ? room : Math.min(room, style.maxWidth);
+    const available = Math.max(1, outer - 2 * style.padX);
     const words = block.text
       .split(/\s+/)
       .filter(Boolean)
       .map((word) => metrics.word(word, style.fontPx));
     const space = metrics.space(style.fontPx);
     const count = wrapLines(words, space, available);
-    const lineHeight = metrics.lineHeight(style.fontPx);
+    const lineHeight = metrics.lineHeight(style.fontPx, style.lineHeightEm);
     const naturalWidth =
       words.reduce((sum, width) => sum + width, 0) + Math.max(0, words.length - 1) * space;
-    const width = style.fitContent
-      ? Math.min(naturalWidth, available) + 2 * style.padX
-      : viewportWidth - 2 * BODY_PADDING - style.indent;
+    const width = style.fitContent ? Math.min(naturalWidth, available) + 2 * style.padX : outer;
     const gap =
       previousMargin === null ? style.marginTop : Math.max(previousMargin, style.marginTop);
     const top = bottom + gap;
@@ -157,16 +158,20 @@ export function layoutDocument(
 }
 
 function cachedLayout(font: PredictFont, blocks: readonly Block[], width: number): Layout {
-  let byKey = webLayouts.get(font);
-  if (!byKey) {
-    byKey = new Map();
-    webLayouts.set(font, byKey);
+  let byBlocks = webLayouts.get(font);
+  if (!byBlocks) {
+    byBlocks = new WeakMap();
+    webLayouts.set(font, byBlocks);
   }
-  const key = `${blocks.length}:${blocks[0]?.text.length ?? 0}:${width}`;
-  const cached = byKey.get(key);
+  let byWidth = byBlocks.get(blocks);
+  if (!byWidth) {
+    byWidth = new Map();
+    byBlocks.set(blocks, byWidth);
+  }
+  const cached = byWidth.get(width);
   if (cached) return cached;
   const layout = layoutDocument(font, blocks, width);
-  byKey.set(key, layout);
+  byWidth.set(width, layout);
   return layout;
 }
 

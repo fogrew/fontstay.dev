@@ -154,6 +154,8 @@
   "self_host_error": "No se pudo crear el archivo.",
   "cls_verify": "Verificar en este dispositivo",
   "cls_verifying": "Midiendo en el navegador…",
+  "cls_imported_layout": "Diseño tomado de {origin}.",
+  "cls_imported_reset": "Usar la página de ejemplo",
   "cls_verified": "Medido en el navegador con las fuentes instaladas en este dispositivo: {results}.",
   "matrix_heading": "Compatibilidad de navegadores",
   "matrix_empty": "Carga una fuente y elige una consulta de navegadores para ver cuáles cubre el fragmento.",

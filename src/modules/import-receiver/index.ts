@@ -1,5 +1,6 @@
 export { clearPendingStore, discardPending, takePending } from './lib/handoff';
 export type {
+  ImportedBlock,
   ImportedFace,
   ImportedFile,
   ImportedRule,

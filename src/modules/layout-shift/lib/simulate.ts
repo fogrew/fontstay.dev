@@ -1,4 +1,4 @@
-import { blockCss, sampleBlocks } from './document';
+import { type Block, blockCss, sampleBlocks } from './document';
 import type { SampleLanguage } from './samples';
 import {
   type Box,
@@ -26,6 +26,7 @@ export interface SimulationInput {
   fallbackFamilies: readonly string[];
   generic: string;
   language: SampleLanguage;
+  blocks?: readonly Block[] | undefined;
   viewports: readonly Viewport[];
   spacing?: Spacing | undefined;
   signal?: AbortSignal | undefined;
@@ -99,10 +100,30 @@ function snapshot(root: Element): Snapshot {
   };
 }
 
-function buildSample(doc: Document, language: SampleLanguage) {
-  for (const block of sampleBlocks(language)) {
+function applyStyle(element: HTMLElement, block: Block) {
+  const { style } = block;
+  if (!style) return;
+  const set = (name: string, value: number | undefined, unit = 'px') => {
+    if (value !== undefined) element.style.setProperty(name, `${finite(value)}${unit}`);
+  };
+  set('font-size', style.fontPx);
+  set('margin-top', style.marginTop);
+  set('margin-bottom', style.marginBottom);
+  set('margin-left', style.indent);
+  set('padding-block', style.padY);
+  set('padding-inline', style.padX);
+  set('line-height', style.lineHeightEm, '');
+  if (style.maxWidth !== undefined) {
+    element.style.setProperty('box-sizing', 'border-box');
+    set('max-width', style.maxWidth);
+  }
+}
+
+function buildSample(doc: Document, language: SampleLanguage, blocks?: readonly Block[]) {
+  for (const block of blocks ?? sampleBlocks(language)) {
     const element = doc.createElement(block.tag);
     element.textContent = block.text;
+    applyStyle(element, block);
     doc.body.append(element);
   }
 }
@@ -163,7 +184,7 @@ async function openSession(input: SimulationInput, viewport: Viewport): Promise<
     const sheet = new (view as unknown as { CSSStyleSheet: typeof CSSStyleSheet }).CSSStyleSheet();
     sheet.replaceSync(buildStylesheet(input));
     doc.adoptedStyleSheets = [sheet];
-    buildSample(doc, input.language);
+    buildSample(doc, input.language, input.blocks);
     const web = new (view as unknown as { FontFace: typeof FontFace }).FontFace(
       WEB_FAMILY,
       input.webBytes.slice(0),
