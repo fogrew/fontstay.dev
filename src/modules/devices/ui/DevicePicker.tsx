@@ -10,11 +10,13 @@ export function DevicePicker({
   locale,
   value,
   detail,
+  glyph,
   onChange,
 }: {
   locale: Locale;
   value: Device | undefined;
   detail?: ((device: Device) => ComponentChildren) | undefined;
+  glyph?: ComponentChildren;
   onChange: (device: Device | undefined) => void;
 }) {
   const t = messagesFor(locale);
@@ -54,6 +56,7 @@ export function DevicePicker({
     <Select
       compact
       hideLabel
+      glyph={glyph}
       label={t.device_label()}
       value={selected?.id ?? RESPONSIVE}
       options={options}

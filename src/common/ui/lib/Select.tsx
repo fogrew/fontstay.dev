@@ -18,6 +18,7 @@ export interface SelectProps {
   disabled?: boolean;
   hideLabel?: boolean;
   compact?: boolean;
+  glyph?: ComponentChildren;
   onChange: (value: string) => void;
 }
 
@@ -33,6 +34,7 @@ export function Select({
   disabled,
   hideLabel,
   compact,
+  glyph,
   onChange,
 }: SelectProps) {
   const id = useId();
@@ -193,7 +195,12 @@ export function Select({
   };
 
   return (
-    <div class="ff-field ff-select" data-compact={compact ? 'true' : undefined} ref={root}>
+    <div
+      class="ff-field ff-select"
+      data-compact={compact ? 'true' : undefined}
+      data-glyph={glyph ? 'true' : undefined}
+      ref={root}
+    >
       <span
         id={`${id}-label`}
         class={hideLabel ? 'ff-select__label ff-sr-only' : 'ff-select__label'}
@@ -210,14 +217,18 @@ export function Select({
         aria-expanded={open}
         aria-controls={`${id}-list`}
         aria-labelledby={`${id}-label`}
+        aria-describedby={glyph ? `${id}-value` : undefined}
+        title={glyph ? label : undefined}
         data-value={value}
         aria-activedescendant={open ? `${id}-o${active}` : undefined}
         disabled={disabled}
         onClick={() => (open ? setOpen(false) : show())}
         onKeyDown={onKeyDown}
       >
-        {selected?.icon}
-        <span class="ff-select__value">{selected?.label}</span>
+        {glyph ?? selected?.icon}
+        <span id={`${id}-value`} class={glyph ? 'ff-select__value ff-sr-only' : 'ff-select__value'}>
+          {selected?.label}
+        </span>
       </button>
       {open && box && (
         <div

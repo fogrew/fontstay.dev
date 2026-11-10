@@ -2278,9 +2278,13 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
                 files={uploaded}
                 note={shareNote}
               />
-              <Button onClick={() => void forget()}>
+              <Button
+                class="ff-tool-button"
+                aria-label={t.share_forget_short()}
+                title={t.share_forget_short()}
+                onClick={() => void forget()}
+              >
                 <Icon name="forget" />
-                {t.share_forget_short()}
               </Button>
             </div>
           }
