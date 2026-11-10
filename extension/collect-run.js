@@ -17,7 +17,7 @@ async function fontstayCollect(win, doc, options = {}) {
   const MAX_BLOCKS = 60;
   const MAX_BLOCK_TEXT = 400;
   const BLOCKS = 'h1,h2,h3,p,li,blockquote,button';
-  const CHROME = 'nav,header,footer,aside,[aria-hidden="true"]';
+  const CHROME = 'body > header,nav,footer,aside,[aria-hidden="true"]';
   const MAX_CSS = 500000;
   const readBounded = async (response, limit, budget) => {
     if (!response.ok || Number(response.headers.get('content-length')) > limit) {
