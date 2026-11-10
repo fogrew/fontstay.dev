@@ -244,5 +244,17 @@ test('added faces are told apart by a face line and removed with a centred trash
   if (!button || !icon) throw new Error('missing boxes');
   expect(Math.abs(button.x + button.width / 2 - (icon.x + icon.width / 2))).toBeLessThan(1);
   expect(Math.abs(button.y + button.height / 2 - (icon.y + icon.height / 2))).toBeLessThan(1);
+  await openStep(page, 'tuning');
+  const fit = page.locator('.ff-collapsible__toggle[data-toggle-id^="fit-"]');
+  await expect(fit).toHaveCount(2);
+  await expect(fit.first().locator('.ff-collapsible__detail')).toHaveText(
+    /^\d{3} (Regular|Italic)/,
+  );
+  await expect(
+    page
+      .getByRole('button', { name: /^Remove: .+\.(ttf|woff2)$/ })
+      .first()
+      .locator('svg.ff-icon'),
+  ).toBeVisible();
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(320);
 });
