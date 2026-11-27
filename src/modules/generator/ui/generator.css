@@ -1717,19 +1717,35 @@ html:not([data-sidebar-right="open"]) .ff-article-view__settings {
   }
 }
 @media (min-width: 64rem) {
-  .ff-article-view__body {
+  .ff-article-view {
+    display: grid;
     grid-template-columns: minmax(0, 1fr) var(--ff-splitter-size) min(
         var(--ff-right-width, 0px),
         45vw
       );
-    gap: 0;
+    column-gap: 0;
+    align-items: start;
+  }
+  .ff-article-view__body {
+    display: contents;
+  }
+  .ff-article-view__controls,
+  .ff-article-view__main {
+    grid-column: 1;
+  }
+  .ff-article-view__body > .ff-splitter {
+    grid-column: 2;
+    grid-row: 1 / span 2;
+    align-self: stretch;
   }
   .ff-article-view__settings {
+    grid-column: 3;
+    grid-row: 1 / span 2;
     order: 0;
     position: sticky;
-    inset-block-start: 4rem;
+    inset-block-start: 0;
     align-self: start;
-    max-block-size: calc(100dvh - 5rem);
+    max-block-size: calc(100dvh - 1rem);
     overflow-y: auto;
   }
 }

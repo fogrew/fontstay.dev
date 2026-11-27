@@ -105,6 +105,31 @@ test('the settings sidebar is collapsed, opens on a click and keeps its state', 
   await expect(toggle).toHaveAttribute('aria-expanded', 'false');
 });
 
+for (const locale of ['en', 'ar']) {
+  test(`both sidebars align and the settings toggle follows Share and Reset in ${locale}`, async ({
+    page,
+  }) => {
+    await page.goto(`/${locale}/`);
+    await waitForGenerator(page);
+    const toolbar = page.locator('.ff-article-view__controls');
+    const settingsToggle = toolbar.locator('.ff-toolbar__settings-toggle');
+    await settingsToggle.click();
+
+    const dock = await page.locator('#ff-dock').boundingBox();
+    const settings = await page.locator('#ff-article-settings').boundingBox();
+    expect(dock).not.toBeNull();
+    expect(settings).not.toBeNull();
+    expect(Math.abs((dock?.y ?? 0) - (settings?.y ?? 0))).toBeLessThanOrEqual(1);
+
+    const order = await toolbar
+      .locator('button')
+      .evaluateAll((buttons) => buttons.map((button) => button.getAttribute('class') ?? ''));
+    expect(order.at(-1)).toContain('ff-toolbar__settings-toggle');
+    await expect(toolbar.locator('.ff-share button')).toHaveCount(2);
+    await expect(page.locator('.ff-toolbar__panel-toggle svg rect')).toHaveCount(1);
+  });
+}
+
 test('the phone layout stacks the panels without horizontal scroll', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 800 });
   await page.goto('/en/');

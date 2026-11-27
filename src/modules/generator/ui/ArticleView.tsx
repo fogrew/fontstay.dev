@@ -1445,6 +1445,14 @@ export function ArticleView({
             {viewTools}
           </div>
         </div>
+        <DeviceShift
+          locale={locale}
+          results={shiftResults?.adjusted}
+          focusWidth={focusWidth}
+          baseline={shiftResults?.plain}
+          fitting={fitting}
+        />
+        {actions}
         <button
           type="button"
           class="ff-control ff-button ff-button--secondary ff-tool-button ff-toolbar__settings-toggle"
@@ -1456,14 +1464,6 @@ export function ArticleView({
         >
           <ToolIcon name="panel-end" />
         </button>
-        <DeviceShift
-          locale={locale}
-          results={shiftResults?.adjusted}
-          focusWidth={focusWidth}
-          baseline={shiftResults?.plain}
-          fitting={fitting}
-        />
-        {actions}
       </div>
       <div class="ff-article-view__body">
         <div class="ff-article-view__main">
