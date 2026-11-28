@@ -1,6 +1,6 @@
-import { useEffect, useId, useMemo, useRef, useState } from 'preact/hooks';
+import { useEffect, useId, useLayoutEffect, useMemo, useRef, useState } from 'preact/hooks';
 import { type Locale, messagesFor } from '@/common/i18n';
-import { Button, Icon, Popover, ScrollShadow, ToggleGroup } from '@/common/ui';
+import { Button, Icon, Popover, ScrollShadow, ToggleGroup, transition } from '@/common/ui';
 import { FontSourceError } from '../lib/download';
 import {
   downloadOrigin,
@@ -90,6 +90,7 @@ export function useFamilySearch({
   const [downloading, setDownloading] = useState(false);
   const [navigation, setNavigation] = useState<{ query: string; index: number }>();
   const limitInput = useRef<HTMLInputElement>(null);
+  const chosenPanel = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     for (const id of Object.keys(SOURCES) as SourceId[]) {
@@ -100,6 +101,17 @@ export function useFamilySearch({
       );
     }
   }, []);
+
+  useLayoutEffect(() => {
+    const item = chosenPanel.current?.parentElement;
+    const scroll = item?.closest('.ff-source__scroll');
+    if (!item || !scroll) return;
+    const box = scroll.getBoundingClientRect();
+    const rect = item.getBoundingClientRect();
+    const pad = Number.parseFloat(getComputedStyle(scroll).scrollPaddingTop) || 0;
+    // scrollIntoView would scroll the page too
+    scroll.scrollTop += Math.min(rect.top - box.top - pad, Math.max(0, rect.bottom - box.bottom));
+  }, [chosen]);
 
   const hits = useMemo(() => {
     if (Object.values(catalogs).some((catalog) => catalog.state === 'loading')) return [];
@@ -137,20 +149,26 @@ export function useFamilySearch({
 
   const isChosen = (hit: Hit) =>
     chosen?.source === hit.source && chosen.family.id === hit.family.id;
-  const choose = (hit: Hit) => {
+  const choose = (hit: Hit, animate = true) => {
     if (isChosen(hit)) return;
-    setChosen(hit);
     const { family } = hit;
-    setStyles(new Set([family.styles.includes('400') ? '400' : (family.styles[0] ?? '400')]));
     const names = scriptsOf(family);
-    setSubsets(new Set([names.includes('latin') ? 'latin' : (names[0] ?? 'latin')]));
-    setMessage('');
+    const apply = () => {
+      setChosen(hit);
+      setStyles(new Set([family.styles.includes('400') ? '400' : (family.styles[0] ?? '400')]));
+      setSubsets(new Set([names.includes('latin') ? 'latin' : (names[0] ?? 'latin')]));
+      setMessage('');
+    };
+    if (animate) transition(apply);
+    else apply();
   };
   const toggle = (hit: Hit) => {
-    if (isChosen(hit)) {
-      setChosen(undefined);
-      setMessage('');
-    } else choose(hit);
+    if (isChosen(hit))
+      transition(() => {
+        setChosen(undefined);
+        setMessage('');
+      });
+    else choose(hit);
   };
   const optionElement = (index: number) => document.getElementById(`${listId}-option-${index}`);
   const commitLimit = (next: number) => {
@@ -163,6 +181,7 @@ export function useFamilySearch({
     commitLimit((limitInput.current?.valueAsNumber ?? limit.value) + delta);
   const handleListKeyDown = (event: KeyboardEvent) => {
     if (event.isComposing || event.altKey || event.ctrlKey || event.metaKey) return;
+    if (!(event.target as Element).closest('.ff-source__row')) return;
     const current = Math.max(activeIndex, 0);
     let index: number | undefined;
     if (event.key === 'ArrowDown') index = Math.min(current + 1, hits.length - 1);
@@ -204,7 +223,7 @@ export function useFamilySearch({
         if (chosen?.source === hit.source && chosen.family.id === hit.family.id) return;
       }
       if (event.key === 'Enter') event.preventDefault();
-      choose(hit);
+      choose(hit, false);
       onAccepted(hit.family.name);
     }
   };
@@ -251,6 +270,121 @@ export function useFamilySearch({
     setDownloading(false);
   };
 
+  const panel = chosen && (
+    <div class="ff-source__chosen" ref={chosenPanel}>
+      <div class="ff-source__groups">
+        <fieldset class="ff-toggle-set">
+          <legend class="ff-toggle-set__legend">{t.source_style_label()}</legend>
+          {[false, true].map((italic) => {
+            const keys = chosen.family.styles.filter((key) => parseStyle(key).italic === italic);
+            return keys.length === 0 ? null : (
+              <div class="ff-toggle-group" key={String(italic)}>
+                <span class="ff-muted ff-toggle-group__label">
+                  {italic ? t.style_italic() : t.source_upright()}
+                </span>
+                <ToggleGroup
+                  key={`${chosen.family.id}-${italic}`}
+                  label={italic ? t.style_italic() : t.source_upright()}
+                  fill
+                  items={keys.map((key) => ({
+                    key,
+                    label: String(parseStyle(key).weight),
+                    ariaLabel: styleLabel(key),
+                  }))}
+                  selected={styles}
+                  onChange={setStyles}
+                />
+              </div>
+            );
+          })}
+        </fieldset>
+        <fieldset class="ff-toggle-set">
+          <legend class="ff-toggle-set__legend">{t.source_subset_label()}</legend>
+          {[false, true].map((ext) => {
+            const names = scriptsOf(chosen.family).filter((name) => name.endsWith('-ext') === ext);
+            const label = ext ? t.source_subset_ext() : t.source_subset_base();
+            return names.length === 0 ? null : (
+              <div class="ff-toggle-group" key={String(ext)}>
+                <span class="ff-muted ff-toggle-group__label">
+                  {label}
+                  {ext && (
+                    <Popover label={t.source_subset_ext_info()} info>
+                      {t.source_subset_ext_hint()}
+                    </Popover>
+                  )}
+                </span>
+                <ToggleGroup
+                  key={`${chosen.family.id}-${ext}`}
+                  label={label}
+                  items={names.map((name) => ({ key: name, label: name }))}
+                  selected={subsets}
+                  onChange={setSubsets}
+                />
+              </div>
+            );
+          })}
+        </fieldset>
+      </div>
+      <div class="ff-source__add">
+        <Button
+          variant="primary"
+          disabled={busy || downloading || count === 0 || count > slots}
+          onClick={() => void add()}
+        >
+          {count > 1 ? `${t.source_add()} (${count})` : t.source_add()}
+        </Button>
+        {count > slots && (
+          <span class="ff-error">{t.source_too_many({ limit: limit.value, loaded })}</span>
+        )}
+      </div>
+      <div class="ff-source__limit">
+        <label class="ff-muted" for={`${listId}-limit`}>
+          {t.font_limit_label()}
+        </label>
+        <Popover label={t.font_limit_info()} info>
+          {t.font_limit_hint()}
+        </Popover>
+        <div class="ff-button-group ff-source__stepper">
+          <button
+            type="button"
+            class="ff-control ff-button ff-button--secondary"
+            aria-label={t.font_limit_decrease()}
+            onClick={() => stepLimit(-1)}
+          >
+            −
+          </button>
+          <input
+            ref={limitInput}
+            id={`${listId}-limit`}
+            class="ff-control ff-input ff-source__limit-input"
+            type="number"
+            inputMode="numeric"
+            min={limit.min}
+            max={limit.max}
+            defaultValue={limit.value}
+            onChange={(event) => commitLimit(event.currentTarget.valueAsNumber)}
+          />
+          <button
+            type="button"
+            class="ff-control ff-button ff-button--secondary"
+            aria-label={t.font_limit_increase()}
+            onClick={() => stepLimit(1)}
+          >
+            +
+          </button>
+        </div>
+      </div>
+      {count > 0 && loaded + count > SOFT_LIMIT && count <= slots && (
+        <p class="ff-source__text ff-muted" role="status">
+          {t.source_many_warning({
+            total: loaded + count,
+            size: `${Math.round(((averageBytes || GUESS_BYTES) * count) / 1000)} kB`,
+          })}
+        </p>
+      )}
+    </div>
+  );
+
   return {
     onKeyDown: handleKeyDown,
     content: enabled ? (
@@ -285,167 +419,53 @@ export function useFamilySearch({
               onKeyDown={handleListKeyDown}
             >
               {hits.map((hit, index) => (
-                <li class="ff-button-group ff-source__item" key={`${hit.source}-${hit.family.id}`}>
-                  <button
-                    type="button"
-                    id={`${listId}-option-${index}`}
-                    tabIndex={index === Math.max(activeIndex, 0) ? 0 : -1}
-                    aria-pressed={isChosen(hit)}
-                    class={`ff-control ff-button ff-button--secondary ff-source__name${index === activeIndex ? ' ff-source__name--active' : ''}`}
-                    onClick={() => {
-                      setNavigation({ query, index });
-                      toggle(hit);
-                    }}
-                    onFocus={() => setNavigation({ query, index })}
-                  >
-                    {hit.family.name}
-                  </button>
-                  <span class="ff-button ff-source__license">
-                    <Icon name="license" />
-                    <span aria-hidden="true">{hit.family.license}</span>
-                    <span class="ff-sr-only">
-                      {t.source_license({ license: hit.family.license })}
-                    </span>
-                  </span>
-                  <a
-                    class="ff-control ff-button ff-button--secondary ff-source__link"
-                    href={familyPageUrl(hit.source, hit.family)}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    tabIndex={index === Math.max(activeIndex, 0) ? 0 : -1}
-                    onFocus={() => setNavigation({ query, index })}
-                    aria-label={t.source_open({
-                      name: hit.family.name,
-                      service: sourceName(hit.source),
-                    })}
-                    title={sourceName(hit.source)}
-                  >
-                    <ServiceIcon source={hit.source} />
-                  </a>
+                <li class="ff-source__item" key={`${hit.source}-${hit.family.id}`}>
+                  <div class="ff-button-group ff-source__row">
+                    <button
+                      type="button"
+                      id={`${listId}-option-${index}`}
+                      tabIndex={index === Math.max(activeIndex, 0) ? 0 : -1}
+                      aria-pressed={isChosen(hit)}
+                      aria-describedby={`${listId}-license-${index}`}
+                      class={`ff-control ff-button ff-button--secondary ff-source__name${index === activeIndex ? ' ff-source__name--active' : ''}`}
+                      onClick={() => {
+                        setNavigation({ query, index });
+                        toggle(hit);
+                      }}
+                      onFocus={() => setNavigation({ query, index })}
+                    >
+                      <span class="ff-source__family">{hit.family.name}</span>{' '}
+                      <span class="ff-source__license">
+                        <bdi>{hit.family.license}</bdi>
+                        <Icon name="license" />
+                      </span>
+                      <span id={`${listId}-license-${index}`} hidden>
+                        {t.source_license({ license: hit.family.license })}
+                      </span>
+                    </button>
+                    <a
+                      class="ff-control ff-button ff-button--secondary ff-source__link"
+                      href={familyPageUrl(hit.source, hit.family)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      tabIndex={index === Math.max(activeIndex, 0) ? 0 : -1}
+                      onFocus={() => setNavigation({ query, index })}
+                      aria-label={t.source_open({
+                        name: hit.family.name,
+                        service: sourceName(hit.source),
+                      })}
+                      title={sourceName(hit.source)}
+                    >
+                      <ServiceIcon source={hit.source} />
+                    </a>
+                  </div>
+                  {isChosen(hit) && panel}
                 </li>
               ))}
             </ul>
           </ScrollShadow>
         ) : (
           loading && <div class="ff-source__placeholder" aria-hidden="true" />
-        )}
-        {chosen && (
-          <div class="ff-source__chosen">
-            <div class="ff-source__groups">
-              <fieldset class="ff-toggle-set">
-                <legend class="ff-toggle-set__legend">{t.source_style_label()}</legend>
-                {[false, true].map((italic) => {
-                  const keys = chosen.family.styles.filter(
-                    (key) => parseStyle(key).italic === italic,
-                  );
-                  return keys.length === 0 ? null : (
-                    <div class="ff-toggle-group" key={String(italic)}>
-                      <span class="ff-muted ff-toggle-group__label">
-                        {italic ? t.style_italic() : t.source_upright()}
-                      </span>
-                      <ToggleGroup
-                        key={`${chosen.family.id}-${italic}`}
-                        label={italic ? t.style_italic() : t.source_upright()}
-                        fill
-                        items={keys.map((key) => ({
-                          key,
-                          label: String(parseStyle(key).weight),
-                          ariaLabel: styleLabel(key),
-                        }))}
-                        selected={styles}
-                        onChange={setStyles}
-                      />
-                    </div>
-                  );
-                })}
-              </fieldset>
-              <fieldset class="ff-toggle-set">
-                <legend class="ff-toggle-set__legend">{t.source_subset_label()}</legend>
-                {[false, true].map((ext) => {
-                  const names = scriptsOf(chosen.family).filter(
-                    (name) => name.endsWith('-ext') === ext,
-                  );
-                  const label = ext ? t.source_subset_ext() : t.source_subset_base();
-                  return names.length === 0 ? null : (
-                    <div class="ff-toggle-group" key={String(ext)}>
-                      <span class="ff-muted ff-toggle-group__label">
-                        {label}
-                        {ext && (
-                          <Popover label={t.source_subset_ext_info()} info>
-                            {t.source_subset_ext_hint()}
-                          </Popover>
-                        )}
-                      </span>
-                      <ToggleGroup
-                        key={`${chosen.family.id}-${ext}`}
-                        label={label}
-                        items={names.map((name) => ({ key: name, label: name }))}
-                        selected={subsets}
-                        onChange={setSubsets}
-                      />
-                    </div>
-                  );
-                })}
-              </fieldset>
-            </div>
-            <div class="ff-source__add">
-              <Button
-                variant="primary"
-                disabled={busy || downloading || count === 0 || count > slots}
-                onClick={() => void add()}
-              >
-                {count > 1 ? `${t.source_add()} (${count})` : t.source_add()}
-              </Button>
-              {count > slots && (
-                <span class="ff-error">{t.source_too_many({ limit: limit.value, loaded })}</span>
-              )}
-            </div>
-            <div class="ff-source__limit">
-              <label class="ff-muted" for={`${listId}-limit`}>
-                {t.font_limit_label()}
-              </label>
-              <Popover label={t.font_limit_info()} info>
-                {t.font_limit_hint()}
-              </Popover>
-              <div class="ff-button-group ff-source__stepper">
-                <button
-                  type="button"
-                  class="ff-control ff-button ff-button--secondary"
-                  aria-label={t.font_limit_decrease()}
-                  onClick={() => stepLimit(-1)}
-                >
-                  −
-                </button>
-                <input
-                  ref={limitInput}
-                  id={`${listId}-limit`}
-                  class="ff-control ff-input ff-source__limit-input"
-                  type="number"
-                  inputMode="numeric"
-                  min={limit.min}
-                  max={limit.max}
-                  defaultValue={limit.value}
-                  onChange={(event) => commitLimit(event.currentTarget.valueAsNumber)}
-                />
-                <button
-                  type="button"
-                  class="ff-control ff-button ff-button--secondary"
-                  aria-label={t.font_limit_increase()}
-                  onClick={() => stepLimit(1)}
-                >
-                  +
-                </button>
-              </div>
-            </div>
-            {count > 0 && loaded + count > SOFT_LIMIT && count <= slots && (
-              <p class="ff-source__text ff-muted" role="status">
-                {t.source_many_warning({
-                  total: loaded + count,
-                  size: `${Math.round(((averageBytes || GUESS_BYTES) * count) / 1000)} kB`,
-                })}
-              </p>
-            )}
-          </div>
         )}
         <p role="status" class="ff-source__text ff-muted">
           {message}
