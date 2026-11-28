@@ -739,7 +739,12 @@ html[data-transition] .ff-dock__panel[data-id="export"] {
   .ff-popover__panel {
     position-anchor: --ff-popover;
     position-area: block-end span-inline-end;
-    position-try-fallbacks: flip-inline, --ff-popover-wide;
+    position-try-fallbacks:
+      flip-inline,
+      --ff-popover-wide,
+      flip-block,
+      flip-block flip-inline,
+      --ff-popover-wide flip-block;
     inset: auto;
     margin-block-start: var(--ff-space-1);
   }

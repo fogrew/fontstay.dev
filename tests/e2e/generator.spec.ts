@@ -3691,6 +3691,42 @@ test.describe('the single input field', () => {
     }
   });
 
+  test('the list tips open upward near the bottom edge', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 600 });
+    await open(page);
+    await page
+      .getByRole('list', { name: 'Matching families' })
+      .getByRole('button', { name: familyOption('Montserrat') })
+      .click();
+    for (const dir of ['ltr', 'rtl']) {
+      await page.evaluate((value) => {
+        document.documentElement.dir = value;
+      }, dir);
+      for (const name of ['About ext subsets', 'About the font limit']) {
+        const info = page.getByRole('button', { name });
+        await info.evaluate((el) => el.scrollIntoView({ block: 'end' }));
+        await info.click();
+        const tip = page.locator('.ff-source .ff-popover__panel:not([hidden])');
+        await expect(tip).toBeVisible();
+        const placement = () =>
+          tip.evaluate((el) => {
+            const panel = el.getBoundingClientRect();
+            const button = el.parentElement?.querySelector('button')?.getBoundingClientRect();
+            return {
+              above: !!button && panel.bottom <= button.top,
+              inside:
+                panel.left >= 0 &&
+                panel.top >= 0 &&
+                panel.right <= document.documentElement.clientWidth &&
+                panel.bottom <= innerHeight,
+            };
+          });
+        await expect.poll(placement, `${dir}: ${name}`).toEqual({ above: true, inside: true });
+        await page.keyboard.press('Escape');
+      }
+    }
+  });
+
   test('without anchor positioning the list tips are not clipped', async ({ page }) => {
     await page.addInitScript(() => {
       CSS.supports = () => false;
