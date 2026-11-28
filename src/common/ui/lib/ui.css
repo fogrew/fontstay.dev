@@ -379,6 +379,12 @@
   margin-inline-end: 0.35em;
   vertical-align: -0.125em;
 }
+.ff-button .ff-icon {
+  margin-inline-end: 0;
+}
+.ff-button .ff-icon + .ff-button__label {
+  margin-inline-start: 0.35em;
+}
 .ff-icon-button .ff-icon {
   margin: 0;
   vertical-align: baseline;
@@ -414,6 +420,7 @@
 }
 .ff-select[data-glyph] .ff-select__button {
   justify-content: center;
+  gap: 0;
   inline-size: auto;
   min-inline-size: 2rem;
   padding-inline: 0.5rem;
