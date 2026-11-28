@@ -396,6 +396,7 @@
   "col_tuning": "3. Ajuste fino",
   "col_export": "4. Exportar",
   "dock_next": "Siguiente: {label}",
+  "dock_back": "Atrás",
   "tuning_empty": "Añade una fuente para ajustar sus respaldos.",
   "preview_not_installed_note": "La vista previa recurre a una fuente genérica; los valores y la matriz de compatibilidad se calculan igualmente para ella.",
   "results_pick_font": "Elige una sola fuente en la primera columna para ver esto.",

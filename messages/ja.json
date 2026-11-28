@@ -396,6 +396,7 @@
   "col_tuning": "3. 微調整",
   "col_export": "4. エクスポート",
   "dock_next": "次へ：{label}",
+  "dock_back": "戻る",
   "tuning_empty": "フォールバックを調整するには、フォントを追加してください。",
   "preview_not_installed_note": "プレビューは汎用フォントで表示されます。値とサポート表は、それでも計算されます。",
   "results_pick_font": "これを表示するには、1 列目でフォントを 1 つ選んでください。",

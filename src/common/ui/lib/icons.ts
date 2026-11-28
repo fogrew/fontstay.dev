@@ -44,6 +44,7 @@ export const ICON_NAMES = [
   'baseline-widely',
   'baseline-newly',
   'license',
+  'arrow-left',
 ] as const;
 
 export type IconName = (typeof ICON_NAMES)[number];

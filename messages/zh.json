@@ -396,6 +396,7 @@
   "col_tuning": "3. 微调",
   "col_export": "4. 导出",
   "dock_next": "下一步：{label}",
+  "dock_back": "返回",
   "tuning_empty": "添加字体后即可调整其回退字体。",
   "preview_not_installed_note": "预览会退回到通用字体；数值和支持矩阵仍会为其计算。",
   "results_pick_font": "请在第一列中选择单个字体以查看此内容。",
