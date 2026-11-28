@@ -506,7 +506,27 @@ test('the loupe shows the comparison only under the lens', async ({ page }) => {
   await expect(loupe.locator('.ff-article-view__ring')).toBeHidden();
 });
 
-test('the x-ray lens follows the pointer in every layout and covers the divider', async ({
+test('comparison views stay unavailable until a web font is added', async ({ page }) => {
+  await page.goto('/en/');
+  await waitForGenerator(page);
+  await closePanels(page);
+  const view = page.getByRole('region', { name: 'Article' });
+  const mode = (name: string) => view.getByRole('button', { name, exact: true });
+  for (const name of ['Slider', 'Overlay', 'Side by side', 'X-ray', 'Top and bottom']) {
+    await expect(mode(name), name).toBeDisabled();
+    await expect(mode(name), name).toHaveAttribute('aria-pressed', 'false');
+  }
+  await expect(view.getByRole('slider', { name: /^Divider/ })).toHaveCount(0);
+  await expect(view.getByRole('application')).toHaveCount(0);
+  await expect(view.locator('.ff-article:not([data-probe])')).toHaveCount(1);
+
+  await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(sourceSans);
+  await expect(view.getByRole('slider', { name: /^Divider/ })).toBeVisible();
+  await expect(mode('Slider')).toHaveAttribute('aria-pressed', 'true');
+  await expect(view.getByRole('application', { name: /^X-ray:/ })).toBeVisible();
+});
+
+test('the x-ray lens follows the pointer in every layout and stays under the divider', async ({
   page,
 }) => {
   await page.setViewportSize({ width: 1500, height: 900 });
@@ -534,6 +554,10 @@ test('the x-ray lens follows the pointer in every layout and covers the divider'
     await expect.poll(radius, layout).toBe(100);
     const pane = await loupe.locator('.ff-article-view__lens-pane').boundingBox();
     expect(pane?.width, layout).toBeGreaterThan(300);
+    if (layout === 'Slider') {
+      await expect(loupe.locator('.ff-article-view__lens')).toHaveCSS('z-index', '3');
+      await expect(loupe.locator('.ff-article-view__divider')).toHaveCSS('z-index', '4');
+    }
     if (layout === 'Side by side') {
       const under = await loupe.locator('[data-pane] > .ff-article').nth(1).boundingBox();
       expect(Math.abs((pane?.y ?? 0) - (under?.y ?? 99))).toBeLessThan(1);
@@ -2162,6 +2186,7 @@ test('a share link reproduces the open panel and the preview modes with a compac
   await waitForGenerator(other);
   await expect(step(other, 'export')).toHaveAttribute('aria-expanded', 'true');
   await expect(step(other, 'inputs')).toHaveAttribute('aria-expanded', 'false');
+  await other.locator('input[type="file"][accept*="woff2"]').setInputFiles(sourceSans);
   for (const name of ['Side by side', 'Top and bottom']) {
     await expect(pressed(other, name)).toHaveAttribute('aria-pressed', 'true');
   }

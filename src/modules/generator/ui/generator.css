@@ -777,9 +777,6 @@ html[data-transition] .ff-export[data-expanded] .ff-export__fullscreen[open] .ff
   text-decoration: underline dotted var(--ff-layer-color) 2px;
   text-underline-offset: 0.15em;
 }
-.ff-article-view .ff-article--ghost[data-idle] {
-  visibility: hidden;
-}
 .ff-article-view[data-background] .ff-article:not(.ff-article--ghost, [data-probe]) {
   background-image:
     linear-gradient(
@@ -1025,7 +1022,7 @@ html[data-transition] .ff-export[data-expanded] .ff-export__fullscreen[open] .ff
   position: fixed;
   position-anchor: --ff-mark;
   position-visibility: always;
-  z-index: 5;
+  z-index: 6;
   inline-size: max-content;
   max-inline-size: min(18rem, 90vw);
   margin: var(--ff-space-1);
@@ -1486,6 +1483,7 @@ html[data-transition] .ff-export[data-expanded] .ff-export__fullscreen[open] .ff
   position: absolute;
   inset-block: 0;
   inset-inline-start: var(--ff-split);
+  z-index: 4;
   inline-size: 1.25rem;
   margin-inline-start: -0.625rem;
   cursor: ew-resize;
@@ -1497,18 +1495,35 @@ html[data-transition] .ff-export[data-expanded] .ff-export__fullscreen[open] .ff
   inset-block: 0;
   inset-inline-start: calc(50% - 1px);
   inline-size: 2px;
+  background: var(--ff-border);
+}
+.ff-article-view__divider:hover::before,
+.ff-article-view__divider:focus-visible::before {
   background: var(--ff-accent);
 }
-.ff-article-view__divider::after {
+.ff-grip {
+  box-sizing: border-box;
+  inline-size: 0.625rem;
+  block-size: 2.625rem;
+  border: 1px solid var(--ff-border);
+  border-radius: 0.3125rem;
+  background: var(--ff-surface);
+}
+.ff-grip::before {
   content: "";
   position: absolute;
+  inset-block-start: calc(50% - 0.375rem);
+  inset-inline: 0;
+  box-sizing: border-box;
+  inline-size: 4px;
+  block-size: 0.75rem;
+  margin-inline: auto;
+  border-inline: 1px solid var(--ff-muted);
+}
+.ff-article-view__knob {
+  position: absolute;
   inset-block-start: min(50%, 14rem);
-  inset-inline-start: calc(50% - 0.5rem);
-  inline-size: 1rem;
-  block-size: 1rem;
-  border: 2px solid var(--ff-accent);
-  border-radius: 50%;
-  background: var(--ff-surface);
+  inset-inline-start: calc(50% - 0.3125rem);
 }
 .ff-article-view__slider[data-stacked] .ff-article-view__divider {
   inset-block: var(--ff-split) auto;
@@ -1524,9 +1539,10 @@ html[data-transition] .ff-export[data-expanded] .ff-export__fullscreen[open] .ff
   inline-size: auto;
   block-size: 2px;
 }
-.ff-article-view__slider[data-stacked] .ff-article-view__divider::after {
-  inset-block: calc(50% - 0.5rem) auto;
+.ff-article-view__slider[data-stacked] .ff-article-view__knob {
+  inset-block-start: calc(50% - 1.3125rem);
   inset-inline-start: min(50%, 20rem);
+  rotate: 90deg;
 }
 .ff-article-view__divider:focus-visible {
   outline: 3px solid var(--ff-focus);
@@ -1582,7 +1598,7 @@ html[data-transition] .ff-export[data-expanded] .ff-export__fullscreen[open] .ff
   position: absolute;
   inset-block: 0;
   inset-inline-end: 0;
-  z-index: 2;
+  z-index: 5;
   inline-size: 1rem;
   cursor: ew-resize;
   touch-action: none;
@@ -1594,17 +1610,6 @@ html[data-transition] .ff-export[data-expanded] .ff-export__fullscreen[open] .ff
   inset-inline-start: calc(50% - 1px);
   inline-size: 2px;
   background: var(--ff-border);
-}
-.ff-article-view__resize::after {
-  content: "";
-  position: absolute;
-  inset-block-start: min(50%, 14rem);
-  inset-inline-start: calc(50% - 0.25rem);
-  inline-size: 0.5rem;
-  block-size: 2.5rem;
-  border: 1px solid var(--ff-border);
-  border-radius: 0.25rem;
-  background: var(--ff-surface);
 }
 .ff-article-view__resize:hover::before,
 .ff-article-view__resize:focus-visible::before {

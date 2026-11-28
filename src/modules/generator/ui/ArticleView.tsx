@@ -395,10 +395,6 @@ export function ArticleView({
   };
   const slider = useRef<HTMLDivElement>(null);
   const loupe = useRef<HTMLDivElement>(null);
-  const arrangement = arrangementOf(positions);
-  const clipped = hasPosition(positions, 'clip');
-  const inspectable = visibleLayers(positions).some((id) => id !== 'plain');
-  const overlaid = hasPosition(positions, 'ghost');
   const preset = presetOf(positions);
   const lensContent = lensShows ?? lensDefault(preset ?? 'slider');
   const [guideOn, setGuideOn] = useState<Record<GuideId, boolean>>({
@@ -652,6 +648,12 @@ export function ArticleView({
   ]);
 
   const empty = items.length === 0 || !headingFamily || !bodyFamily;
+  const shown = empty ? PRESETS.web : positions;
+  const lensOn = xray && !empty;
+  const arrangement = arrangementOf(shown);
+  const clipped = hasPosition(shown, 'clip');
+  const inspectable = visibleLayers(shown).some((id) => id !== 'plain');
+  const overlaid = hasPosition(shown, 'ghost');
   const stack = (family: string | undefined, kind: LayerId) => {
     if (!family || family === SYSTEM) return 'system-ui, sans-serif';
     const key = keyOf(family);
@@ -723,6 +725,7 @@ export function ArticleView({
   }, [
     boxes,
     positions,
+    empty,
     xray,
     lensContent,
     stacked,
@@ -809,7 +812,6 @@ export function ArticleView({
       aria-hidden={ghost || copy ? 'true' : undefined}
       data-render={styled && kind !== 'plain' ? layers[kind].render : undefined}
       data-guides={guides && kind !== 'plain' ? '' : undefined}
-      data-idle={empty && ghost ? '' : undefined}
       style={hydrated ? pageStyle(kind, styled) : undefined}
     >
       <IntroGuide
@@ -876,8 +878,8 @@ export function ArticleView({
     if (loupe.current) delete loupe.current.dataset.active;
   };
   useEffect(() => {
-    if (!xray) hideLens();
-  }, [xray]);
+    if (!lensOn) hideLens();
+  }, [lensOn]);
   useEffect(() => {
     const element = loupe.current;
     if (element && 'active' in element.dataset) {
@@ -941,7 +943,7 @@ export function ArticleView({
       key={value}
       type="button"
       class="ff-control ff-button ff-button--secondary ff-tool-button"
-      aria-pressed={preset === value}
+      aria-pressed={!empty && preset === value}
       aria-label={presetLabel(value)}
       title={presetLabel(value)}
       disabled={empty}
@@ -1346,7 +1348,7 @@ export function ArticleView({
             key={kind}
             type="button"
             class="ff-control ff-button ff-button--secondary ff-preview__arrange-button"
-            aria-pressed={stacked === (kind === 'stacked')}
+            aria-pressed={!empty && stacked === (kind === 'stacked')}
             aria-label={kind === 'stacked' ? t.side_stacked() : t.side_horizontal()}
             title={kind === 'stacked' ? t.side_stacked() : t.side_horizontal()}
             disabled={empty || (arrangement !== 'columns' && !clipped)}
@@ -1360,7 +1362,7 @@ export function ArticleView({
         <button
           type="button"
           class="ff-control ff-button ff-button--secondary ff-tool-button"
-          aria-pressed={xray}
+          aria-pressed={lensOn}
           aria-label={t.mode_loupe()}
           title={t.mode_loupe()}
           disabled={empty}
@@ -1488,8 +1490,8 @@ export function ArticleView({
           >
             <div
               ref={loupe}
-              class={xray ? 'ff-article-view__loupe' : 'ff-article-view__stage'}
-              {...(xray
+              class={lensOn ? 'ff-article-view__loupe' : 'ff-article-view__stage'}
+              {...(lensOn
                 ? {
                     tabIndex: 0,
                     role: 'application',
@@ -1542,7 +1544,7 @@ export function ArticleView({
               {arrangement === 'columns' ? (
                 <div class="ff-article-view__side" data-stacked={stacked ? '' : undefined}>
                   {(['start', 'end'] as const)
-                    .flatMap((position) => layersAt(positions, position))
+                    .flatMap((position) => layersAt(shown, position))
                     .map((id) => (
                       <figure class="ff-article-view__figure" key={id}>
                         <figcaption class="ff-article-view__caption">{presetLabel(id)}</figcaption>
@@ -1558,8 +1560,8 @@ export function ArticleView({
                   data-stacked={clipped && stacked ? '' : undefined}
                   style={clipped && hydrated ? { '--ff-split': `${split}%` } : undefined}
                 >
-                  {LAYER_IDS.filter((id) => positions[id] !== 'hidden').map((id) =>
-                    positions[id] === 'clip' ? (
+                  {LAYER_IDS.filter((id) => shown[id] !== 'hidden').map((id) =>
+                    shown[id] === 'clip' ? (
                       <div
                         key={id}
                         class="ff-article-view__slider-fallback"
@@ -1570,7 +1572,7 @@ export function ArticleView({
                       </div>
                     ) : (
                       <Fragment key={id}>
-                        {page(id, { ghost: positions[id] === 'ghost', styled: overlaid })}
+                        {page(id, { ghost: shown[id] === 'ghost', styled: overlaid })}
                       </Fragment>
                     ),
                   )}
@@ -1611,11 +1613,13 @@ export function ArticleView({
                         else return;
                         event.preventDefault();
                       }}
-                    />
+                    >
+                      <span class="ff-grip ff-article-view__knob" aria-hidden="true" />
+                    </div>
                   )}
                 </div>
               )}
-              {xray && (
+              {lensOn && (
                 <>
                   <div class="ff-article-view__lens" aria-hidden="true" {...{ inert: true }}>
                     <div class="ff-article-view__lens-pane">
@@ -1665,6 +1669,7 @@ export function ArticleView({
                 event.preventDefault();
               }}
             >
+              <span class="ff-grip ff-article-view__knob" aria-hidden="true" />
               <span class="ff-article-view__resize-size" aria-hidden="true">
                 {currentFrame()}px
               </span>
