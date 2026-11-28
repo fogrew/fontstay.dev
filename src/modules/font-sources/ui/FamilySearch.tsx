@@ -106,9 +106,11 @@ export function useFamilySearch({
     const item = chosenPanel.current?.parentElement;
     const scroll = item?.closest('.ff-source__scroll');
     if (!item || !scroll) return;
-    item.scrollIntoView({
-      block: item.offsetHeight > scroll.clientHeight ? 'start' : 'nearest',
-    });
+    const box = scroll.getBoundingClientRect();
+    const rect = item.getBoundingClientRect();
+    const pad = Number.parseFloat(getComputedStyle(scroll).scrollPaddingTop) || 0;
+    // scrollIntoView would scroll the page too
+    scroll.scrollTop += Math.min(rect.top - box.top - pad, Math.max(0, rect.bottom - box.bottom));
   }, [chosen]);
 
   const hits = useMemo(() => {

@@ -3326,9 +3326,12 @@ test.describe('the single input field', () => {
         .filter({ has: page.getByRole('button', { name: familyOption('Montserrat') }) });
       const button = row.getByRole('button', { name: familyOption('Montserrat') });
       await expect(button).toHaveAccessibleDescription('license OFL-1.1');
+      await button.scrollIntoViewIfNeeded();
+      const pageScroll = await page.evaluate(() => window.scrollY);
       await button.click();
       const chosen = row.locator('.ff-source__chosen');
       await expect(chosen).toBeInViewport();
+      expect(await page.evaluate(() => window.scrollY)).toBe(pageScroll);
       const clipped = await row.evaluate((item) => {
         const right = item.closest('.ff-source__scroll')?.getBoundingClientRect().right ?? 0;
         return [...item.querySelectorAll('button, a, input')].filter(
