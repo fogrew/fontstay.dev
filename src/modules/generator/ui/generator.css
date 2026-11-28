@@ -1377,6 +1377,11 @@ html[data-transition] .ff-export[data-expanded] .ff-export__fullscreen[open] .ff
   background: var(--ff-surface);
   box-shadow: 0 6px 20px rgb(0 0 0 / 20%);
 }
+@media (min-width: 64rem) {
+  html:has(.ff-article-view__controls) {
+    scroll-padding-block-start: 1.75rem;
+  }
+}
 @media (min-width: 40rem) and (min-height: 40rem) {
   html:has(.ff-article-view__controls) {
     scroll-padding-block-start: 9rem;
@@ -1548,8 +1553,16 @@ html[data-transition] .ff-export[data-expanded] .ff-export__fullscreen[open] .ff
   outline: 3px solid var(--ff-focus);
   outline-offset: -3px;
 }
-.ff-article-view .ff-shadow {
+.ff-article .ff-shadow {
   --ff-shadow-bg: var(--ff-surface-2);
+}
+.ff-article-view__settings > .ff-shadow {
+  --ff-shadow-bg: var(--ff-bg);
+}
+@media (min-width: 40rem) and (min-height: 40rem) {
+  .ff-article-view__frame > .ff-shadow--page {
+    --ff-page-shadow-top: calc(2.125rem + 2 * var(--ff-space-2));
+  }
 }
 .ff-article-view .ff-article__code {
   box-sizing: border-box;
@@ -1726,9 +1739,12 @@ html[data-transition] .ff-share-dialog[open] {
 .ff-article-view__settings {
   order: -1;
   min-inline-size: 0;
-  padding: var(--ff-space-2);
   border: 1px solid var(--ff-border);
   border-radius: var(--ff-radius);
+}
+.ff-article-view__settings-scroll {
+  padding: var(--ff-space-2);
+  scroll-padding-block: var(--ff-shadow-size);
 }
 html:not([data-sidebar-right="open"]) .ff-article-view__settings {
   display: none;
@@ -1743,6 +1759,9 @@ html:not([data-sidebar-right="open"]) .ff-article-view__settings {
   }
 }
 @media (min-width: 64rem) {
+  html:has(.ff-article-view__controls) {
+    scroll-padding-block-end: 1.75rem;
+  }
   .ff-article-view {
     display: grid;
     grid-template-columns: minmax(0, 1fr) var(--ff-splitter-size) min(
@@ -1769,9 +1788,19 @@ html:not([data-sidebar-right="open"]) .ff-article-view__settings {
     grid-row: 1 / span 2;
     order: 0;
     position: sticky;
-    inset-block-start: 0;
+    inset-block-start: var(--ff-space-2);
     align-self: start;
-    max-block-size: calc(100dvh - 1rem);
-    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    max-block-size: calc(100dvh - var(--ff-dock-top, 3.3125rem) - var(--ff-space-2));
+    overflow: hidden;
+  }
+  .ff-article-view__settings > .ff-shadow {
+    display: flex;
+    flex-direction: column;
+    min-block-size: 0;
+  }
+  .ff-article-view__settings-scroll {
+    min-block-size: 0;
   }
 }

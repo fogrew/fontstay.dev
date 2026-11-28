@@ -1,7 +1,17 @@
 import { type ComponentChildren, Fragment } from 'preact';
 import { useEffect, useId, useLayoutEffect, useMemo, useRef, useState } from 'preact/hooks';
 import { type Locale, messagesFor } from '@/common/i18n';
-import { Accordion, Icon, Popover, ScrollShadow, Select, Splitter, useSidebar } from '@/common/ui';
+import {
+  Accordion,
+  Icon,
+  PageShadow,
+  Popover,
+  ScrollShadow,
+  Select,
+  Splitter,
+  useDockTop,
+  useSidebar,
+} from '@/common/ui';
 import { type Device, DevicePicker, loadDevices } from '@/modules/devices';
 import { type FontTuning, LazyFontFeatures } from '@/modules/font-details';
 import { isProbeWidth, measureShift, shiftWidths, type WidthShift } from '../lib/article-shift';
@@ -322,6 +332,8 @@ export function ArticleView({
     defaultOpen: false,
     desktopOnly: true,
   });
+  const aside = useRef<HTMLElement>(null);
+  useDockTop(aside);
   const [articleId, setArticleId] = useState<ArticleId>(
     (ARTICLE_IDS as readonly string[]).includes(locale) ? (locale as ArticleId) : 'en',
   );
@@ -1488,155 +1500,159 @@ export function ArticleView({
             data-constrained={frameWidth === undefined ? undefined : ''}
             style={frameWidth === undefined ? undefined : { inlineSize: `${frameWidth}px` }}
           >
-            <div
-              ref={loupe}
-              class={lensOn ? 'ff-article-view__loupe' : 'ff-article-view__stage'}
-              {...(lensOn
-                ? {
-                    tabIndex: 0,
-                    role: 'application',
-                    'aria-label': t.loupe_label(),
-                    onPointerMove: (event: PointerEvent) => {
-                      const box = (event.currentTarget as HTMLElement).getBoundingClientRect();
-                      moveLens(event.clientX - box.left, event.clientY - box.top);
-                    },
-                    onPointerLeave: hideLens,
-                    onWheel: (event: WheelEvent) => {
-                      if (!event.shiftKey && !event.altKey) return;
-                      event.preventDefault();
-                      const delta =
-                        Math.abs(event.deltaY) >= Math.abs(event.deltaX)
-                          ? event.deltaY
-                          : event.deltaX;
-                      setLensSize((current) =>
-                        Math.min(400, Math.max(80, current + (delta < 0 ? 20 : -20))),
-                      );
-                    },
-                    onFocus: (event: FocusEvent) => {
-                      const box = (event.currentTarget as HTMLElement).getBoundingClientRect();
-                      moveLens(box.width / 2, Math.min(box.height / 2, 240));
-                    },
-                    onBlur: hideLens,
-                    onKeyDown: (event: KeyboardEvent) => {
-                      if (event.target !== event.currentTarget) return;
-                      const element = event.currentTarget as HTMLElement;
-                      const x =
-                        Number.parseFloat(element.style.getPropertyValue('--ff-lens-x')) || 0;
-                      const y =
-                        Number.parseFloat(element.style.getPropertyValue('--ff-lens-y')) || 0;
-                      const moves: Record<string, [number, number]> = {
-                        ArrowLeft: [-LENS_STEP, 0],
-                        ArrowRight: [LENS_STEP, 0],
-                        ArrowUp: [0, -LENS_STEP],
-                        ArrowDown: [0, LENS_STEP],
-                      };
-                      const move = moves[event.key];
-                      if (move) {
+            <PageShadow>
+              <div
+                ref={loupe}
+                class={lensOn ? 'ff-article-view__loupe' : 'ff-article-view__stage'}
+                {...(lensOn
+                  ? {
+                      tabIndex: 0,
+                      role: 'application',
+                      'aria-label': t.loupe_label(),
+                      onPointerMove: (event: PointerEvent) => {
+                        const box = (event.currentTarget as HTMLElement).getBoundingClientRect();
+                        moveLens(event.clientX - box.left, event.clientY - box.top);
+                      },
+                      onPointerLeave: hideLens,
+                      onWheel: (event: WheelEvent) => {
+                        if (!event.shiftKey && !event.altKey) return;
                         event.preventDefault();
-                        moveLens(x + move[0], y + move[1]);
-                      } else if (event.key === 'Escape') {
-                        hideLens();
-                      }
-                    },
-                  }
-                : {})}
-            >
-              {arrangement === 'columns' ? (
-                <div class="ff-article-view__side" data-stacked={stacked ? '' : undefined}>
-                  {(['start', 'end'] as const)
-                    .flatMap((position) => layersAt(shown, position))
-                    .map((id) => (
-                      <figure class="ff-article-view__figure" key={id}>
-                        <figcaption class="ff-article-view__caption">{presetLabel(id)}</figcaption>
-                        <div data-pane="">{page(id)}</div>
-                      </figure>
-                    ))}
-                </div>
-              ) : (
-                <div
-                  class={clipped ? 'ff-article-view__slider' : 'ff-article-view__overlay'}
-                  ref={slider}
-                  data-pane=""
-                  data-stacked={clipped && stacked ? '' : undefined}
-                  style={clipped && hydrated ? { '--ff-split': `${split}%` } : undefined}
-                >
-                  {LAYER_IDS.filter((id) => shown[id] !== 'hidden').map((id) =>
-                    shown[id] === 'clip' ? (
-                      <div
-                        key={id}
-                        class="ff-article-view__slider-fallback"
-                        aria-hidden="true"
-                        {...{ inert: true }}
-                      >
-                        {page(id, { copy: true })}
-                      </div>
-                    ) : (
-                      <Fragment key={id}>
-                        {page(id, { ghost: shown[id] === 'ghost', styled: overlaid })}
-                      </Fragment>
-                    ),
-                  )}
-                  {clipped && (
-                    <div
-                      class="ff-article-view__divider"
-                      role="slider"
-                      tabIndex={0}
-                      aria-label={t.slider_label()}
-                      aria-orientation={stacked ? 'vertical' : 'horizontal'}
-                      aria-valuemin={0}
-                      aria-valuemax={100}
-                      aria-valuenow={Math.round(split)}
-                      aria-valuetext={`${Math.round(split)}%`}
-                      onPointerDown={(event) => {
-                        event.currentTarget.setPointerCapture(event.pointerId);
-                        moveSplit(event);
-                      }}
-                      onPointerMove={(event) => {
-                        if (event.currentTarget.hasPointerCapture(event.pointerId))
-                          moveSplit(event);
-                      }}
-                      onKeyDown={(event) => {
-                        const start = isRtl() ? 'ArrowRight' : 'ArrowLeft';
-                        const end = isRtl() ? 'ArrowLeft' : 'ArrowRight';
-                        const back = stacked ? 'ArrowUp' : start;
-                        const forward = stacked ? 'ArrowDown' : end;
-                        const step = event.shiftKey ? 10 : 2;
-                        if (event.key === back) setSplit((value) => Math.max(0, value - step));
-                        else if (event.key === forward)
-                          setSplit((value) => Math.min(100, value + step));
-                        else if (event.key === 'PageUp')
-                          setSplit((value) => Math.max(0, value - 10));
-                        else if (event.key === 'PageDown')
-                          setSplit((value) => Math.min(100, value + 10));
-                        else if (event.key === 'Home') setSplit(0);
-                        else if (event.key === 'End') setSplit(100);
-                        else return;
-                        event.preventDefault();
-                      }}
-                    >
-                      <span class="ff-grip ff-article-view__knob" aria-hidden="true" />
-                    </div>
-                  )}
-                </div>
-              )}
-              {lensOn && (
-                <>
-                  <div class="ff-article-view__lens" aria-hidden="true" {...{ inert: true }}>
-                    <div class="ff-article-view__lens-pane">
-                      {lensContent === 'overlay' ? (
-                        <div class="ff-article-view__overlay">
-                          {page('web', { copy: true, styled: true })}
-                          {page('fallback', { ghost: true, styled: true })}
+                        const delta =
+                          Math.abs(event.deltaY) >= Math.abs(event.deltaX)
+                            ? event.deltaY
+                            : event.deltaX;
+                        setLensSize((current) =>
+                          Math.min(400, Math.max(80, current + (delta < 0 ? 20 : -20))),
+                        );
+                      },
+                      onFocus: (event: FocusEvent) => {
+                        const box = (event.currentTarget as HTMLElement).getBoundingClientRect();
+                        moveLens(box.width / 2, Math.min(box.height / 2, 240));
+                      },
+                      onBlur: hideLens,
+                      onKeyDown: (event: KeyboardEvent) => {
+                        if (event.target !== event.currentTarget) return;
+                        const element = event.currentTarget as HTMLElement;
+                        const x =
+                          Number.parseFloat(element.style.getPropertyValue('--ff-lens-x')) || 0;
+                        const y =
+                          Number.parseFloat(element.style.getPropertyValue('--ff-lens-y')) || 0;
+                        const moves: Record<string, [number, number]> = {
+                          ArrowLeft: [-LENS_STEP, 0],
+                          ArrowRight: [LENS_STEP, 0],
+                          ArrowUp: [0, -LENS_STEP],
+                          ArrowDown: [0, LENS_STEP],
+                        };
+                        const move = moves[event.key];
+                        if (move) {
+                          event.preventDefault();
+                          moveLens(x + move[0], y + move[1]);
+                        } else if (event.key === 'Escape') {
+                          hideLens();
+                        }
+                      },
+                    }
+                  : {})}
+              >
+                {arrangement === 'columns' ? (
+                  <div class="ff-article-view__side" data-stacked={stacked ? '' : undefined}>
+                    {(['start', 'end'] as const)
+                      .flatMap((position) => layersAt(shown, position))
+                      .map((id) => (
+                        <figure class="ff-article-view__figure" key={id}>
+                          <figcaption class="ff-article-view__caption">
+                            {presetLabel(id)}
+                          </figcaption>
+                          <div data-pane="">{page(id)}</div>
+                        </figure>
+                      ))}
+                  </div>
+                ) : (
+                  <div
+                    class={clipped ? 'ff-article-view__slider' : 'ff-article-view__overlay'}
+                    ref={slider}
+                    data-pane=""
+                    data-stacked={clipped && stacked ? '' : undefined}
+                    style={clipped && hydrated ? { '--ff-split': `${split}%` } : undefined}
+                  >
+                    {LAYER_IDS.filter((id) => shown[id] !== 'hidden').map((id) =>
+                      shown[id] === 'clip' ? (
+                        <div
+                          key={id}
+                          class="ff-article-view__slider-fallback"
+                          aria-hidden="true"
+                          {...{ inert: true }}
+                        >
+                          {page(id, { copy: true })}
                         </div>
                       ) : (
-                        page(lensContent, { copy: true })
-                      )}
-                    </div>
+                        <Fragment key={id}>
+                          {page(id, { ghost: shown[id] === 'ghost', styled: overlaid })}
+                        </Fragment>
+                      ),
+                    )}
+                    {clipped && (
+                      <div
+                        class="ff-article-view__divider"
+                        role="slider"
+                        tabIndex={0}
+                        aria-label={t.slider_label()}
+                        aria-orientation={stacked ? 'vertical' : 'horizontal'}
+                        aria-valuemin={0}
+                        aria-valuemax={100}
+                        aria-valuenow={Math.round(split)}
+                        aria-valuetext={`${Math.round(split)}%`}
+                        onPointerDown={(event) => {
+                          event.currentTarget.setPointerCapture(event.pointerId);
+                          moveSplit(event);
+                        }}
+                        onPointerMove={(event) => {
+                          if (event.currentTarget.hasPointerCapture(event.pointerId))
+                            moveSplit(event);
+                        }}
+                        onKeyDown={(event) => {
+                          const start = isRtl() ? 'ArrowRight' : 'ArrowLeft';
+                          const end = isRtl() ? 'ArrowLeft' : 'ArrowRight';
+                          const back = stacked ? 'ArrowUp' : start;
+                          const forward = stacked ? 'ArrowDown' : end;
+                          const step = event.shiftKey ? 10 : 2;
+                          if (event.key === back) setSplit((value) => Math.max(0, value - step));
+                          else if (event.key === forward)
+                            setSplit((value) => Math.min(100, value + step));
+                          else if (event.key === 'PageUp')
+                            setSplit((value) => Math.max(0, value - 10));
+                          else if (event.key === 'PageDown')
+                            setSplit((value) => Math.min(100, value + 10));
+                          else if (event.key === 'Home') setSplit(0);
+                          else if (event.key === 'End') setSplit(100);
+                          else return;
+                          event.preventDefault();
+                        }}
+                      >
+                        <span class="ff-grip ff-article-view__knob" aria-hidden="true" />
+                      </div>
+                    )}
                   </div>
-                  <span class="ff-article-view__ring" aria-hidden="true" />
-                </>
-              )}
-            </div>
+                )}
+                {lensOn && (
+                  <>
+                    <div class="ff-article-view__lens" aria-hidden="true" {...{ inert: true }}>
+                      <div class="ff-article-view__lens-pane">
+                        {lensContent === 'overlay' ? (
+                          <div class="ff-article-view__overlay">
+                            {page('web', { copy: true, styled: true })}
+                            {page('fallback', { ghost: true, styled: true })}
+                          </div>
+                        ) : (
+                          page(lensContent, { copy: true })
+                        )}
+                      </div>
+                    </div>
+                    <span class="ff-article-view__ring" aria-hidden="true" />
+                  </>
+                )}
+              </div>
+            </PageShadow>
             <div
               class="ff-article-view__resize"
               role="slider"
@@ -1686,16 +1702,19 @@ export function ArticleView({
           onClick={settings.toggle}
         />
         <aside
+          ref={aside}
           id="ff-article-settings"
           class="ff-article-view__settings"
           aria-label={t.article_group_settings()}
         >
-          <Accordion
-            storageKey="article-settings"
-            resizable={false}
-            resizeLabel={(above, below) => t.accordion_resize({ above, below })}
-            items={settingsItems}
-          />
+          <ScrollShadow class="ff-article-view__settings-scroll">
+            <Accordion
+              storageKey="article-settings"
+              resizable={false}
+              resizeLabel={(above, below) => t.accordion_resize({ above, below })}
+              items={settingsItems}
+            />
+          </ScrollShadow>
         </aside>
       </div>
     </section>

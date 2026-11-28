@@ -4,6 +4,7 @@ import { Icon } from './Icon';
 import { loadLayout, parseIds, saveLayout } from './persist';
 import { ScrollShadow } from './ScrollShadow';
 import { transition } from './transition';
+import { useDockTop } from './use-dock-top';
 
 export interface DockProps {
   items: readonly {
@@ -93,32 +94,7 @@ export function Dock({
       saveLayout(storageKey, { opened: active ? [active] : [] });
   }, [ready, active, storageKey]);
 
-  useEffect(() => {
-    const el = root.current;
-    if (!el) return;
-    const desktop = window.matchMedia(DESKTOP_LAYOUT);
-    let frame = 0;
-    const measure = () => {
-      frame = 0;
-      if (!desktop.matches) {
-        el.style.removeProperty('--ff-dock-top');
-        return;
-      }
-      const inset = Number.parseFloat(getComputedStyle(el).insetBlockStart) || 0;
-      el.style.setProperty('--ff-dock-top', `${Math.max(el.getBoundingClientRect().top, inset)}px`);
-    };
-    const schedule = () => {
-      if (!frame) frame = requestAnimationFrame(measure);
-    };
-    measure();
-    window.addEventListener('scroll', schedule, { passive: true });
-    window.addEventListener('resize', schedule);
-    return () => {
-      cancelAnimationFrame(frame);
-      window.removeEventListener('scroll', schedule);
-      window.removeEventListener('resize', schedule);
-    };
-  }, []);
+  useDockTop(root);
 
   const go = (step: string) =>
     transition(() => {

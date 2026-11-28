@@ -37,6 +37,65 @@ export function measureEdges(box: {
   };
 }
 
+export function measurePageEdges(
+  box: { top: number; bottom: number },
+  topEdge: { top: number },
+  bottomEdge: { bottom: number },
+): Pick<Edges, 'top' | 'bottom'> {
+  return { top: topEdge.top - box.top > 1, bottom: box.bottom - bottomEdge.bottom > 1 };
+}
+
+export function PageShadow({ children }: { children: ComponentChildren }) {
+  const root = useRef<HTMLDivElement>(null);
+  const top = useRef<HTMLDivElement>(null);
+  const bottom = useRef<HTMLDivElement>(null);
+  const [edges, setEdges] = useState({ top: false, bottom: false });
+  useEffect(() => {
+    const element = root.current;
+    if (!element) return;
+    let frame = 0;
+    const update = () => {
+      frame = 0;
+      if (!top.current || !bottom.current) return;
+      const next = measurePageEdges(
+        element.getBoundingClientRect(),
+        top.current.getBoundingClientRect(),
+        bottom.current.getBoundingClientRect(),
+      );
+      setEdges((current) =>
+        current.top === next.top && current.bottom === next.bottom ? current : next,
+      );
+    };
+    const schedule = () => {
+      if (!frame) frame = requestAnimationFrame(update);
+    };
+    schedule();
+    const observer = new ResizeObserver(schedule);
+    observer.observe(element);
+    observer.observe(document.body);
+    window.addEventListener('scroll', schedule, { passive: true });
+    window.addEventListener('resize', schedule);
+    return () => {
+      cancelAnimationFrame(frame);
+      observer.disconnect();
+      window.removeEventListener('scroll', schedule);
+      window.removeEventListener('resize', schedule);
+    };
+  }, []);
+  return (
+    <div
+      ref={root}
+      class="ff-shadow ff-shadow--page"
+      data-top={edges.top}
+      data-bottom={edges.bottom}
+    >
+      <div ref={top} class="ff-shadow__edge" data-edge="top" aria-hidden="true" />
+      {children}
+      <div ref={bottom} class="ff-shadow__edge" data-edge="bottom" aria-hidden="true" />
+    </div>
+  );
+}
+
 export function ScrollShadow({
   class: className,
   tabIndex,
