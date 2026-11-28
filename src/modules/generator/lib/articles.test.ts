@@ -26,6 +26,9 @@ const SUBSET: Record<string, string> = {
   lo: 'lao',
   ru: 'cyrillic',
   en: 'latin',
+  es: 'latin',
+  pt: 'latin',
+  vi: 'vietnamese',
 };
 
 const RANGES: Record<string, [number, number][]> = {
@@ -66,7 +69,7 @@ describe('article languages', () => {
       'th',
       'zh-Hans',
     ]);
-    expect(['es', 'pt', 'vi'].map(articleFor)).toEqual(['en', 'en', 'en']);
+    expect(['es', 'pt', 'vi'].map(articleFor)).toEqual(['es', 'pt', 'vi']);
   });
 
   it('only offers scripts with at least five Google Fonts families', () => {
@@ -106,5 +109,29 @@ describe('article languages', () => {
       expect((await loadArticle(id))?.dir).toBe('rtl');
     }
     expect((await loadArticle('th'))?.dir).toBe('ltr');
+  });
+
+  it('preserves the English article structure and inline runs in es, pt and vi', async () => {
+    const english = await loadArticle('en');
+    if (!english) throw new Error('English article is missing');
+    const runShape = (runs: typeof english.columns) =>
+      runs.map((paragraph) =>
+        paragraph.map((run) => (typeof run === 'string' ? 'text' : Object.keys(run)[0])),
+      );
+    for (const id of ['es', 'pt', 'vi'] as const) {
+      const article = await loadArticle(id);
+      if (!article) throw new Error(`${id} article is missing`);
+      expect(
+        article.factors.map((factor) => factor.icon),
+        id,
+      ).toEqual(english.factors.map((factor) => factor.icon));
+      expect(runShape(article.columns), id).toEqual(runShape(english.columns));
+      expect(runShape(article.list), id).toEqual(runShape(english.list));
+      expect(article.tableRows.length, id).toBe(english.tableRows.length);
+      expect(article.title, id).not.toBe(english.title);
+      for (const sample of ['1/2 3/4', '1st 2nd', 'office affluent']) {
+        expect(article.glyphs, id).toContain(sample);
+      }
+    }
   });
 });

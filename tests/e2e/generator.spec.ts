@@ -896,7 +896,9 @@ test('the article follows the interface language and loads its text on demand', 
     ['th', 'th', 'ltr'],
     ['zh', 'zh-Hans', 'ltr'],
     ['ja', 'ja', 'ltr'],
-    ['es', 'en', 'ltr'],
+    ['es', 'es', 'ltr'],
+    ['pt', 'pt', 'ltr'],
+    ['vi', 'vi', 'ltr'],
   ] as const) {
     await page.goto(`/${locale}/`);
     const article = page.locator('.ff-article-view .ff-article:not([data-probe])').first();
@@ -905,6 +907,21 @@ test('the article follows the interface language and loads its text on demand', 
     await expect(article.locator('.ff-article__title').last()).not.toBeEmpty();
   }
 });
+
+for (const [locale, title] of [
+  ['es', 'Por qué salta la página cuando se carga una fuente'],
+  ['pt', 'Por que a página pula quando uma fonte é carregada'],
+  ['vi', 'Vì sao trang bị xê dịch khi phông chữ tải xong'],
+] as const) {
+  test(`${locale}: preview displays its translated article`, async ({ page }) => {
+    await page.goto(`/${locale}/`);
+    const article = page.locator('.ff-article-view .ff-article:not([data-probe])').first();
+    await expect(article).toHaveAttribute('lang', locale);
+    const articleTitle = article.locator('.ff-article__title').last();
+    await expect(articleTitle).toHaveText(title);
+    await expect(articleTitle).not.toHaveText('Why the page jumps when a font loads');
+  });
+}
 
 test('an old link that chose a sample text opens in the interface language', async ({ page }) => {
   await page.goto('/en/');
