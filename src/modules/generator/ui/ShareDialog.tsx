@@ -212,7 +212,7 @@ export function ShareDialog({ locale, build, canPin, files, note }: ShareDialogP
             <div class="ff-share-dialog__footer">
               <Button variant="primary" disabled={!link} onClick={() => void copy()}>
                 <Icon name="copy" />
-                {t.share_dialog_copy()}
+                <span class="ff-button__label">{t.share_dialog_copy()}</span>
               </Button>
               <span class="ff-muted" role="status">
                 {message}

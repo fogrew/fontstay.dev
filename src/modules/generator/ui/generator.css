@@ -1094,8 +1094,19 @@ html[data-transition] .ff-export[data-expanded] .ff-export__fullscreen[open] .ff
   margin: 0;
 }
 .ff-tool-button {
-  min-inline-size: 2rem;
+  min-inline-size: 2.25rem;
   padding-inline: 0.5rem;
+}
+.ff-toolbar .ff-tool-button {
+  min-block-size: 2rem;
+  padding-block: 0;
+}
+.ff-toolbar__xray .ff-popover {
+  display: flex;
+}
+.ff-toolbar .ff-toolbar__xray .ff-popover__button {
+  block-size: 2rem;
+  padding-block: 0;
 }
 .ff-tool-icon {
   display: block;

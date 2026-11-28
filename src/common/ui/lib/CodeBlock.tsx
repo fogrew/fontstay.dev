@@ -44,7 +44,7 @@ export function CodeActions({
     <>
       <Button disabled={pending} onClick={copy} aria-label={`${t.ui_copy_code()}: ${label}`}>
         <Icon name="copy" />
-        {t.ui_copy_code()}
+        <span class="ff-button__label">{t.ui_copy_code()}</span>
       </Button>
       {fileName && (
         <Button
@@ -63,7 +63,7 @@ export function CodeActions({
           aria-label={`${t.ui_download()}: ${label}`}
         >
           <Icon name="download" />
-          {t.ui_download()}
+          <span class="ff-button__label">{t.ui_download()}</span>
         </Button>
       )}
       {status === 'failed' && (
