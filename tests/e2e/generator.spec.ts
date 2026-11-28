@@ -451,6 +451,39 @@ test('a step panel that scrolls shows an edge shadow only on the side with more 
   );
 });
 
+test('the article and the right sidebar show a shadow on the sides with more content', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1280, height: 700 });
+  await page.goto('/en/');
+  await waitForGenerator(page);
+  const article = page.locator('.ff-shadow--page');
+  await expect(article).toHaveAttribute('data-bottom', 'true');
+  await expect(article).toHaveAttribute('data-top', 'false');
+  await page.evaluate(() => window.scrollTo(0, 600));
+  await expect(article).toHaveAttribute('data-top', 'true');
+  await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
+  await expect(article).toHaveAttribute('data-bottom', 'false');
+  await page.evaluate(() => window.scrollTo(0, 0));
+
+  await page.locator('.ff-toolbar__settings-toggle').click();
+  const aside = page.locator('#ff-article-settings');
+  const shadow = aside.locator('> .ff-shadow');
+  await expect(shadow).toHaveAttribute('data-bottom', 'true');
+  await expect(shadow).toHaveAttribute('data-top', 'false');
+  await expect
+    .poll(async () => {
+      const box = await aside.boundingBox();
+      return box ? box.y + box.height : Number.POSITIVE_INFINITY;
+    })
+    .toBeLessThanOrEqual(700);
+  await shadow.locator('> .ff-shadow__scroll').evaluate((node) => {
+    node.scrollTop = node.scrollHeight;
+  });
+  await expect(shadow).toHaveAttribute('data-top', 'true');
+  await expect(shadow).toHaveAttribute('data-bottom', 'false');
+});
+
 test('a dropdown list that scrolls shows an edge shadow on the side with more options', async ({
   page,
 }) => {

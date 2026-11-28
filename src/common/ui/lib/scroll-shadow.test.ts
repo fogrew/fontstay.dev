@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { measureEdges } from './ScrollShadow';
+import { measureEdges, measurePageEdges } from './ScrollShadow';
 
 const box = (overrides: Partial<Parameters<typeof measureEdges>[0]> = {}) => ({
   scrollLeft: 0,
@@ -36,6 +36,24 @@ describe('measureEdges', () => {
     expect(measureEdges(box({ scrollWidth: 300, scrollLeft: -200 }))).toMatchObject({
       start: true,
       end: false,
+    });
+  });
+});
+
+describe('measurePageEdges', () => {
+  const box = { top: 0, bottom: 1000 };
+
+  it('shows nothing while both edges rest at the ends of the content', () => {
+    expect(measurePageEdges(box, { top: 0 }, { bottom: 1000 })).toEqual({
+      top: false,
+      bottom: false,
+    });
+  });
+
+  it('shows a side once its edge is stuck away from the end of the content', () => {
+    expect(measurePageEdges(box, { top: 200 }, { bottom: 600 })).toEqual({
+      top: true,
+      bottom: true,
     });
   });
 });

@@ -834,6 +834,27 @@ html[data-transition] .ff-dock__panel[data-id="export"] {
 .ff-shadow:dir(rtl) > .ff-shadow__edge[data-edge="end"] {
   background: linear-gradient(to right, var(--ff-shadow-bg, var(--ff-surface)), transparent);
 }
+.ff-shadow--page {
+  display: flow-root;
+}
+.ff-shadow--page > .ff-shadow__edge {
+  position: sticky;
+  display: block;
+  z-index: 4;
+}
+.ff-shadow--page > .ff-shadow__edge[data-edge="top"] {
+  inset-block-start: var(--ff-page-shadow-top, 0px);
+  margin-block-end: calc(-1 * var(--ff-shadow-size));
+}
+.ff-shadow--page > .ff-shadow__edge[data-edge="bottom"] {
+  inset-block-end: 0;
+  margin-block-start: calc(-1 * var(--ff-shadow-size));
+}
+@media not (min-width: 64rem) {
+  .ff-shadow--page > .ff-shadow__edge {
+    display: none;
+  }
+}
 .ff-shadow[data-top="true"] > .ff-shadow__edge[data-edge="top"],
 .ff-shadow[data-bottom="true"] > .ff-shadow__edge[data-edge="bottom"],
 .ff-shadow[data-start="true"] > .ff-shadow__edge[data-edge="start"],
