@@ -3727,6 +3727,58 @@ test.describe('the single input field', () => {
     }
   });
 
+  test('an anchored tip shrinks and scrolls when neither side fits', async ({ page }) => {
+    await page.setViewportSize({ width: 320, height: 256 });
+    expect(
+      await page.evaluate(() =>
+        CSS.supports('(position-area: block-end) and (anchor-scope: --ff-popover)'),
+      ),
+    ).toBe(true);
+    await open(page);
+    await page
+      .getByRole('list', { name: 'Matching families' })
+      .getByRole('button', { name: familyOption('Montserrat') })
+      .click();
+    for (const theme of ['light', 'dark']) {
+      for (const dir of ['ltr', 'rtl']) {
+        await page.evaluate(
+          ({ theme, dir }) => {
+            document.documentElement.dataset.theme = theme;
+            document.documentElement.dir = dir;
+          },
+          { theme, dir },
+        );
+        const info = page.getByRole('button', { name: 'About the font limit' });
+        await info.evaluate((el) => el.scrollIntoView({ block: 'center' }));
+        await info.click();
+        const tip = page.locator('.ff-source .ff-popover__panel:not([hidden])');
+        await expect(tip).toBeVisible();
+        await expect(tip).toHaveAttribute('data-manual-position', '');
+        await expect
+          .poll(() =>
+            tip.evaluate((el) => {
+              const panel = el.getBoundingClientRect();
+              return {
+                inside:
+                  panel.left >= 0 &&
+                  panel.top >= 0 &&
+                  panel.right <= document.documentElement.clientWidth &&
+                  panel.bottom <= innerHeight,
+                scrollable: el.scrollHeight > el.clientHeight,
+              };
+            }),
+          )
+          .toEqual({ inside: true, scrollable: true });
+        await page.screenshot({ path: `test-results/issue-596-${theme}-${dir}.png` });
+        await tip.evaluate((el) => {
+          el.scrollTop = el.scrollHeight;
+        });
+        expect(await tip.evaluate((el) => el.scrollTop)).toBeGreaterThan(0);
+        await page.keyboard.press('Escape');
+      }
+    }
+  });
+
   test('without anchor positioning the list tips are not clipped', async ({ page }) => {
     await page.addInitScript(() => {
       CSS.supports = () => false;
