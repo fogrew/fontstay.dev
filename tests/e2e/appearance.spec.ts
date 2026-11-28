@@ -1,5 +1,6 @@
+import { readFileSync } from 'node:fs';
 import AxeBuilder from '@axe-core/playwright';
-import { expect, LOCALES, openExport, test, waitForGenerator } from './fixtures';
+import { expect, LOCALES, openExport, openStep, test, waitForGenerator } from './fixtures';
 
 test('theme and vision choices persist before first paint', async ({ page }) => {
   await page.addInitScript(() => {
@@ -183,6 +184,61 @@ test('vision simulation keeps fixed option lists aligned and visibly changes con
   expect(listBox).not.toBeNull();
   expect(Math.abs((listBox?.x ?? 0) - (buttonBox?.x ?? 0))).toBeLessThan(5);
 });
+
+for (const [locale, theme, vision, width] of [
+  ['en', 'light', 'protanopia', 1280],
+  ['ar', 'dark', 'blur', 320],
+] as const) {
+  test(`${locale} ${theme}: vision simulation covers top-layer dialogs and export help`, async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width, height: 700 });
+    await page.addInitScript(
+      ({ theme, vision }) => {
+        localStorage.setItem('fontstay:appearance', JSON.stringify({ theme, vision }));
+      },
+      { theme, vision },
+    );
+    await page.goto(`/${locale}/`);
+    await waitForGenerator(page);
+    const filter = vision === 'blur' ? 'blur(1.5px)' : /#ff-protanopia/;
+
+    await page.locator('.ff-share__trigger').click();
+    const share = page.locator('.ff-share-dialog');
+    await expect(share).toBeVisible();
+    await expect(share).toHaveCSS('filter', filter);
+    await share.screenshot({ path: `test-results/vision-share-${locale}.png` });
+    await page.keyboard.press('Escape');
+    await expect(share).not.toBeVisible();
+
+    const font = new URL(
+      '../fixtures/fonts/SourceSansPro-Regular.woff2',
+      import.meta.url,
+    ).pathname.replace(/^\/([A-Za-z]:)/, '$1');
+    await page.route('https://cdn.jsdelivr.net/fontsource/fonts/**', (route) =>
+      route.fulfill({
+        status: 200,
+        headers: { 'access-control-allow-origin': '*', 'content-type': 'font/woff2' },
+        body: readFileSync(font),
+      }),
+    );
+    await openStep(page, 'inputs');
+    await page.locator('#ff-input-text').fill('aileron');
+    await page.locator('.ff-source__name').filter({ hasText: 'Aileron' }).click();
+    await page.locator('.ff-source__add button').click();
+    await openExport(page);
+    await page.locator('.ff-export__question').focus();
+    const tooltip = page.locator('.ff-export__tooltip');
+    await expect(tooltip).toBeVisible();
+    await expect(tooltip).toHaveCSS('filter', filter);
+    await tooltip.screenshot({ path: `test-results/vision-tooltip-${locale}.png` });
+    await page.locator('.ff-export__expand').click();
+    const fullscreen = page.locator('.ff-export__fullscreen');
+    await expect(fullscreen).toBeVisible();
+    await expect(fullscreen).toHaveCSS('filter', filter);
+    await fullscreen.screenshot({ path: `test-results/vision-export-${locale}.png` });
+  });
+}
 
 test('high contrast and text aids keep the page accessible at 320px', async ({ page }) => {
   await page.setViewportSize({ width: 320, height: 700 });
