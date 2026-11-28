@@ -487,7 +487,9 @@
   font-size: 1rem;
 }
 .ff-dock__toggle {
-  display: block;
+  display: flex;
+  align-items: center;
+  gap: var(--ff-space-2);
   inline-size: 100%;
   min-block-size: 2.25rem;
   padding: var(--ff-space-1) var(--ff-space-3);
@@ -500,11 +502,10 @@
   cursor: pointer;
 }
 .ff-dock__icon {
-  display: inline-grid;
+  display: grid;
+  flex: none;
   place-items: center;
   inline-size: 1.125em;
-  margin-inline-end: var(--ff-space-2);
-  vertical-align: -0.2em;
 }
 .ff-dock__icon .ff-icon {
   margin: 0;
@@ -514,8 +515,8 @@
 }
 .ff-dock__toggle::before {
   content: "▸" / "";
-  display: inline-block;
-  margin-inline-end: var(--ff-space-2);
+  order: 1;
+  margin-inline-start: auto;
 }
 .ff-dock__toggle[aria-expanded="true"]::before {
   content: "▾" / "";

@@ -130,6 +130,59 @@ for (const locale of ['en', 'ar']) {
   });
 }
 
+const chevrons = (toggles: Locator) =>
+  toggles.evaluateAll((buttons) =>
+    buttons.map((button) => {
+      const style = getComputedStyle(button);
+      const chevron = getComputedStyle(button, '::before');
+      const rtl = style.direction === 'rtl';
+      const box = button.getBoundingClientRect();
+      const range = document.createRange();
+      range.selectNodeContents(button);
+      const rects = [...range.getClientRects()];
+      const titleEnd = rtl
+        ? box.right - Math.min(...rects.map((rect) => rect.left))
+        : Math.max(...rects.map((rect) => rect.right)) - box.left;
+      const start =
+        titleEnd +
+        Number.parseFloat(style.columnGap) +
+        Number.parseFloat(chevron.marginInlineStart);
+      const end = start + Number.parseFloat(chevron.width);
+      const inset =
+        Number.parseFloat(style.paddingInlineEnd) + Number.parseFloat(style.borderInlineEndWidth);
+      return {
+        glyph: chevron.content.charAt(1),
+        expanded: button.getAttribute('aria-expanded') === 'true',
+        afterTitle: chevron.order === '1' && start > titleEnd,
+        offEnd: Math.abs(box.width - inset - end),
+      };
+    }),
+  );
+
+for (const [locale, closed] of [
+  ['en', '▸'],
+  ['ar', '◂'],
+] as const) {
+  test(`dock chevrons sit at the inline-end edge of every header in ${locale}`, async ({
+    page,
+  }) => {
+    await page.goto(`/${locale}/`);
+    await waitForGenerator(page);
+    await page.locator('.ff-toolbar__settings-toggle').click();
+    for (const sidebar of ['#ff-dock', '#ff-article-settings']) {
+      const toggles = page.locator(`${sidebar} .ff-dock__toggle`);
+      await expect(toggles.first()).toBeVisible();
+      const headers = await chevrons(toggles);
+      expect(headers.length).toBeGreaterThan(1);
+      for (const header of headers) {
+        expect(header.glyph).toBe(header.expanded ? '▾' : closed);
+        expect(header.afterTitle).toBe(true);
+        expect(header.offEnd).toBeLessThan(2);
+      }
+    }
+  });
+}
+
 test('the phone layout stacks the panels without horizontal scroll', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 800 });
   await page.goto('/en/');
