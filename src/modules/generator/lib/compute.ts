@@ -17,6 +17,16 @@ export function covers(web: Pick<FontMetrics, 'codePoints'>, text: string): bool
   return letters.length === 0 || present / letters.length >= SAMPLE_COVERAGE;
 }
 
+const LATIN_PROBE = 'abcdefghijklmnopqrstuvwxyz';
+
+export function isScriptPair(
+  a: Pick<FontMetrics, 'codePoints'>,
+  b: Pick<FontMetrics, 'codePoints'>,
+  probe: string,
+): boolean {
+  return covers(a, probe) !== covers(b, probe) && covers(a, LATIN_PROBE) !== covers(b, LATIN_PROBE);
+}
+
 export function uncoveredFamilies(
   fonts: readonly { fileName: string; metrics: Pick<FontMetrics, 'codePoints' | 'names'> }[],
   probe: string,

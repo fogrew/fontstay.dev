@@ -320,6 +320,15 @@ describe('mergeFaces with a locale script', () => {
 
   it('keeps the script file next to the Latin one', () => {
     expect(urls()).toEqual(['https://a.test/lat.woff2']);
-    expect(urls(0x430)).toEqual(['https://a.test/cyr.woff2', 'https://a.test/lat.woff2']);
+    expect(urls(0x430)).toEqual(['https://a.test/lat.woff2', 'https://a.test/cyr.woff2']);
+  });
+
+  it('keeps every Latin file ahead of the script files', () => {
+    const many = Array.from({ length: 40 }, (_, index) =>
+      css.replaceAll('font-family:A', `font-family:F${index}`),
+    ).join('');
+    const faces = mergeFaces(scanCss(many, 'https://a.test/', 0x430).faces);
+    expect(faces).toHaveLength(64);
+    expect(faces.slice(0, 40).every((face) => face.url?.endsWith('lat.woff2'))).toBe(true);
   });
 });

@@ -250,11 +250,26 @@ function covers(range: string, points: readonly number[]): boolean {
   });
 }
 
-export const splitsScript = (rules: readonly { unicodeRange?: string }[], point?: number) =>
-  point !== undefined &&
-  rules.some(
+export function includesScript(
+  value: {
+    faces: readonly { family: string; weight: number; style: string; url?: string }[];
+    rules?: readonly { unicodeRange?: string }[];
+    files: readonly unknown[];
+  },
+  point?: number,
+): boolean {
+  if (point === undefined) return false;
+  const split = value.rules?.some(
     ({ unicodeRange = '' }) => !covers(unicodeRange, LATIN_POINTS) && covers(unicodeRange, [point]),
   );
+  const keys = value.faces.map(({ family, weight, style }) => `${family}|${weight}|${style}`);
+  const urls = new Set(value.faces.flatMap(({ url }) => url ?? []));
+  return (
+    Boolean(split) &&
+    new Set(keys).size < keys.length &&
+    (value.files.length === 0 || value.files.length >= urls.size)
+  );
+}
 
 export function scanCss(source: string, base: string, scriptPoint?: number): ScannedCss {
   const css = stripComments(source.slice(0, MAX_CSS));
@@ -311,8 +326,13 @@ export function scanCss(source: string, base: string, scriptPoint?: number): Sca
 export function mergeFaces(parts: ScannedCss['faces']): ScannedFace[] {
   const slots = new Map<string, number>();
   const result: ScannedPart[] = [];
+  const extra = new Map<string, ScannedFace>();
   for (const part of parts) {
-    const key = `${part.face.family.toLowerCase()}|${part.face.weight}|${part.face.style}|${part.script ?? ''}`;
+    const key = `${part.face.family.toLowerCase()}|${part.face.weight}|${part.face.style}`;
+    if (part.script) {
+      if (!extra.has(key) && extra.size < MAX_FACES) extra.set(key, part.face);
+      continue;
+    }
     const slot = slots.get(key);
     if (slot === undefined) {
       if (result.length >= MAX_FACES) continue;
@@ -322,5 +342,6 @@ export function mergeFaces(parts: ScannedCss['faces']): ScannedFace[] {
       result[slot] = part;
     }
   }
-  return result.map((part) => part.face);
+  // script faces come last so they never displace the others from a cap
+  return [...result.map((part) => part.face), ...extra.values()].slice(0, MAX_FACES);
 }

@@ -244,8 +244,8 @@ describe('parseFontFaces with a locale script', () => {
 
   it('also keeps the rule that covers the script', () => {
     const faces = parseFontFaces(css, 0x430);
-    expect(faces.map((face) => face.script)).toEqual([true, undefined]);
-    expect(faces[0]?.sources[0]?.url).toContain('cyr');
+    expect(faces.map((face) => face.script)).toEqual([undefined, true]);
+    expect(faces[1]?.sources[0]?.url).toContain('cyr');
   });
 
   it('adds nothing for a rule that covers both', () => {

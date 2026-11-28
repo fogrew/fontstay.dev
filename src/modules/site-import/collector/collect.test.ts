@@ -260,8 +260,8 @@ describe('fontstayCollect', () => {
     ]);
     const russian = await fontstayCollect(win, doc, { scriptPoint: 0x430 });
     expect(russian.faces).toEqual([
-      expect.objectContaining({ url: 'https://site.test/cyrillic.woff2' }),
       expect.objectContaining({ url: 'https://site.test/latin.woff2' }),
+      expect.objectContaining({ url: 'https://site.test/cyrillic.woff2' }),
     ]);
   });
 

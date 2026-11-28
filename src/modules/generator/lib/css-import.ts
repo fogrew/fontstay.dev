@@ -170,6 +170,7 @@ export function parseFontFaces(css: string, scriptPoint?: number): ImportedFace[
   const faces: ImportedFace[] = [];
   const slots = new Map<string, number>();
   const latin = new Set<ImportedFace>();
+  const extra = new Map<string, ImportedFace>();
   let rules = 0;
   let position = 0;
   while (rules < MAX_RULES) {
@@ -199,7 +200,13 @@ export function parseFontFaces(css: string, scriptPoint?: number): ImportedFace[
     const range = values.get('unicode-range')?.slice(0, 4096);
     const base = covers(range, LATIN_POINTS);
     if (!base && scriptPoint !== undefined && covers(range, [scriptPoint])) face.script = true;
-    const key = `${family.toLowerCase()}|${weightKey(face.weight)}|${styleKey(face.style)}|${face.script ?? ''}`;
+    const key = `${family.toLowerCase()}|${weightKey(face.weight)}|${styleKey(face.style)}`;
+    if (face.script) {
+      const kept = extra.get(key);
+      if (kept) kept.skipped++;
+      else if (extra.size < MAX_FACES) extra.set(key, face);
+      continue;
+    }
     const slot = slots.get(key);
     if (slot === undefined) {
       if (faces.length >= MAX_FACES) continue;
@@ -216,7 +223,7 @@ export function parseFontFaces(css: string, scriptPoint?: number): ImportedFace[
       faces[slot] = face;
     } else current.skipped++;
   }
-  return faces;
+  return [...faces, ...extra.values()].slice(0, MAX_FACES);
 }
 
 const DATA_URL =

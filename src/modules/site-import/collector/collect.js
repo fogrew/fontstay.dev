@@ -104,6 +104,7 @@ export async function fontstayCollect(win, doc, options = {}) {
   const faceRules = [];
   const slots = new Map();
   const latin = new Map();
+  const extra = new Map();
   const pending = [];
   const queued = new Set();
   const defer = (href, base) => {
@@ -115,7 +116,11 @@ export async function fontstayCollect(win, doc, options = {}) {
   const addFace = (face, range) => {
     const base = covers(range, [0x41, 0x61]);
     const script = !base && options.scriptPoint && covers(range, [options.scriptPoint]);
-    const key = `${face.family.toLowerCase()}|${face.weight}|${face.style}|${script ? 1 : 0}`;
+    const key = `${face.family.toLowerCase()}|${face.weight}|${face.style}`;
+    if (script) {
+      if (!extra.has(key) && extra.size < MAX_FACES) extra.set(key, face);
+      return;
+    }
     const slot = slots.get(key);
     if (slot === undefined) {
       if (faces.length >= MAX_FACES) return;
@@ -291,10 +296,12 @@ export async function fontstayCollect(win, doc, options = {}) {
   const families = new Set(
     used.flatMap((item) => item.family.split(',').map((name) => unquote(name).toLowerCase())),
   );
-  const ordered = [...faces].sort(
-    (a, b) =>
-      Number(families.has(b.family.toLowerCase())) - Number(families.has(a.family.toLowerCase())),
-  );
+  const byUse = (list) =>
+    [...list].sort(
+      (a, b) =>
+        Number(families.has(b.family.toLowerCase())) - Number(families.has(a.family.toLowerCase())),
+    );
+  const ordered = [...byUse(faces), ...byUse(extra.values())];
   const urls = [...new Set(ordered.map((face) => face.url).filter(Boolean))].slice(0, MAX_FILES);
   const budget = { left: MAX_TOTAL };
   const results = await Promise.allSettled(
@@ -327,7 +334,7 @@ export async function fontstayCollect(win, doc, options = {}) {
     v: 1,
     origin: win.location.origin,
     title: doc.title,
-    faces,
+    faces: [...faces, ...extra.values()].slice(0, MAX_FACES),
     rules: faceRules,
     used,
     blocks,

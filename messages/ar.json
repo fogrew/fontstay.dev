@@ -266,7 +266,7 @@
   "source_script_missing": "لا يدرج الفهرس مجموعة {script} لهذه العائلة.",
   "source_script_split": "مجموعة {script} مقسمة هنا إلى ملفات صغيرة كثيرة، لذا لا يمكن إضافتها من هذه القائمة.",
   "source_script_mark": "يتضمن {script}",
-  "script_not_covered": "لا توجد تغطية لـ {script} في: {fonts}. سيظهر النص بتلك الكتابة بخطوط أخرى.",
+  "script_not_covered": "لا تغطية لكتابة {script} في: {fonts}. سيظهر النص بتلك الكتابة بخطوط أخرى.",
   "import_script_included": "يقسم هذا الموقع خطوطه حسب نظام الكتابة: ملفات {script} مضمّنة أيضًا.",
   "source_error_file": "تم رفض الملف الذي نُزّل.",
   "source_downloaded": "تم تنزيل {name}.",

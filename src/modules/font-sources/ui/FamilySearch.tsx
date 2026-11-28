@@ -96,7 +96,7 @@ export function useFamilySearch({
   const script = localeScript(locale);
   const scriptName = localeScriptName(locale);
   const split = script !== undefined && CJK_SUBSETS.has(script.subset);
-  const preferred = script && !split ? script.subset : '';
+  const preferred = script?.subset ?? '';
 
   useEffect(() => {
     for (const id of Object.keys(SOURCES) as SourceId[]) {

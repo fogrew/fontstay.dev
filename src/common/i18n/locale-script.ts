@@ -27,8 +27,9 @@ const SCRIPTS: Record<string, LocaleScript> = {
 
 export const localeScript = (locale: string): LocaleScript | undefined => SCRIPTS[locale];
 
+// CJK web fonts come in numbered slices, so one rule cannot stand for the script
 export const localeScriptPoint = (locale: string): number | undefined =>
-  SCRIPTS[locale]?.probe.codePointAt(0);
+  locale === 'ja' || locale === 'zh' ? undefined : SCRIPTS[locale]?.probe.codePointAt(0);
 
 export function localeScriptName(locale: string): string {
   const entry = SCRIPTS[locale];

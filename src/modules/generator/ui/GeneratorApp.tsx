@@ -98,6 +98,7 @@ import {
   displayName,
   fitLanguage,
   isNoCoverage,
+  isScriptPair,
   LOW_COVERAGE,
   uncoveredFamilies,
 } from '../lib/compute';
@@ -332,7 +333,8 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
       layoutFromImport(value.origin, value.blocks, `${value.origin}:${Date.now()}`, value.viewport),
     );
     if (value.files.length > 0) {
-      void addFiles(value.files.map((file) => new File([file.bytes], file.name)));
+      const files = value.files.map((file) => new File([file.bytes], file.name));
+      void addFiles(files, true, undefined, true);
       setAnnouncement(t.import_done({ count: value.files.length, origin: value.origin }));
     }
   };
@@ -382,6 +384,7 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
     files: File[],
     persist = true,
     origins?: ReadonlyMap<File, FontOrigin>,
+    localeFirst = false,
   ) => {
     if (files.length === 0 || busy) return;
     parser.current ??= createFontParser();
@@ -455,7 +458,7 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
     if (failures.length > 0)
       setError((message) => [message, ...failures].filter(Boolean).join(' '));
     const rank = (font: LoadedFont) => (fitLanguage(font.metrics, locale) === 'en' ? 1 : 0);
-    added.sort((a, b) => rank(a) - rank(b));
+    if (localeFirst) added.sort((a, b) => rank(a) - rank(b));
     if (added.length > 0) {
       if (persist) {
         for (const item of added)
@@ -842,9 +845,16 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
     () => (selected ? compactRanges(selected.metrics.codePoints) : []),
     [selected],
   );
-  const isSplit = ({ origin }: LoadedFont) =>
-    origin !== undefined &&
-    fonts.some((other) => other.origin && isSubsetSibling(origin, other.origin));
+  const isSplit = ({ origin, metrics }: LoadedFont) =>
+    fonts.some(
+      (other) =>
+        (origin && other.origin && isSubsetSibling(origin, other.origin)) ||
+        (script &&
+          other.metrics.names.family === metrics.names.family &&
+          other.metrics.style.weight === metrics.style.weight &&
+          other.metrics.style.italic === metrics.style.italic &&
+          isScriptPair(metrics, other.metrics, script.probe)),
+    );
   const scriptsOf = (font: LoadedFont, candidate: Candidate, lang: Language, applied: Overrides) =>
     perScript
       ? scriptFaces(
@@ -1370,7 +1380,7 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
     );
     const fontFiles = files.filter(isFontFile);
     const styleFiles = files.filter(isStyleFile);
-    if (fontFiles.length > 0) void addFiles(fontFiles);
+    if (fontFiles.length > 0) void addFiles(fontFiles, true, undefined, true);
     if (styleFiles.length > 0) setCssDrop({ id: Date.now(), files: styleFiles });
     if (fontFiles.length > 0 || styleFiles.length > 0) {
       window.dispatchEvent(new CustomEvent(DOCK_OPEN_EVENT, { detail: 'inputs' }));
@@ -2119,7 +2129,7 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
                   onLimitChange={changeFontLimit}
                   dragging={dragging}
                   dropped={cssDrop}
-                  onFiles={(files, origins) => addFiles(files, true, origins)}
+                  onFiles={(files, origins) => addFiles(files, true, origins, true)}
                   onImport={setIncoming}
                 />
                 {incoming && (
