@@ -167,3 +167,39 @@ test('the settings sidebar keeps one panel open, joined to its header, across a 
   await expect(text).toHaveAttribute('aria-expanded', 'true');
   await expect(panel).toHaveCount(1);
 });
+
+const font = new URL(
+  '../fixtures/fonts/SourceSansPro-Regular.woff2',
+  import.meta.url,
+).pathname.replace(/^\/([A-Za-z]:)/, '$1');
+
+test('the font features panel stays chosen across a reload, once its font is back', async ({
+  page,
+}) => {
+  await page.goto('/en/');
+  await waitForGenerator(page);
+  await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(font);
+  await page.getByRole('button', { name: 'Settings', exact: true }).click();
+  const features = page
+    .getByRole('complementary', { name: 'Settings' })
+    .getByRole('button', { name: 'Font features and axes' });
+  await features.click();
+  await expect(features).toHaveAttribute('aria-expanded', 'true');
+
+  await page.reload();
+  await waitForGenerator(page);
+  await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(font);
+  await expect(features).toHaveAttribute('aria-expanded', 'true');
+});
+
+test('a short window keeps the open settings panel usable', async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 340 });
+  await page.goto('/en/');
+  await waitForGenerator(page);
+  await page.getByRole('button', { name: 'Settings', exact: true }).click();
+  const aside = page.getByRole('complementary', { name: 'Settings' });
+  await aside.getByRole('button', { name: 'Background image' }).click();
+  const panel = aside.locator('.ff-dock__panel:not([hidden])');
+  await panel.scrollIntoViewIfNeeded();
+  expect((await panel.boundingBox())?.height ?? 0).toBeGreaterThan(100);
+});

@@ -606,6 +606,17 @@
     flex-grow: 1;
   }
 }
+@media (min-width: 64rem) and (max-height: 32rem) {
+  .ff-dock {
+    overflow-y: auto;
+  }
+  .ff-dock__column[data-open="true"] {
+    min-block-size: 10rem;
+  }
+  .ff-dock__toggle:focus-visible {
+    outline-offset: -3px;
+  }
+}
 html[data-transition] .ff-dock__panel[data-id="audience"] {
   view-transition-name: ff-dock-audience;
 }
