@@ -2927,6 +2927,43 @@ test('the next button moves to the following panel and the last one has none', a
   await expect(page.getByRole('button', { name: /^Next:/ })).toHaveCount(0);
 });
 
+test('the back button returns to the previous step and the first one has none', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1500, height: 900 });
+  await page.goto('/en/');
+  await waitForGenerator(page);
+  await openStep(page, 'inputs');
+  const back = page.getByRole('button', { name: 'Back', exact: true });
+  await expect(back).toHaveCount(0);
+  await openStep(page, 'export');
+  for (const name of ['3. Fine-tuning', '2. Audience', '1. Inputs']) {
+    await back.click();
+    const step = page.getByRole('button', { name, exact: true });
+    await expect(step).toHaveAttribute('aria-expanded', 'true');
+    await expect(step).toBeFocused();
+  }
+  await expect(back).toHaveCount(0);
+});
+
+test('a short step does not stretch its panel over a tall window', async ({ page }) => {
+  await page.setViewportSize({ width: 1500, height: 1400 });
+  await page.goto('/en/');
+  await waitForGenerator(page);
+  await openStep(page, 'tuning');
+  const panel = page.locator('.ff-dock__panel:not([hidden])');
+  await expect
+    .poll(() =>
+      panel.evaluate((element) => {
+        const scroll = element.querySelector('.ff-dock__scroll');
+        const footer = element.querySelector('.ff-dock__footer');
+        const content = scroll?.lastElementChild?.getBoundingClientRect().bottom ?? 0;
+        return (footer?.getBoundingClientRect().top ?? 0) - content;
+      }),
+    )
+    .toBeLessThan(32);
+});
+
 test('a click outside keeps settings open beside the article', async ({ page }) => {
   await page.setViewportSize({ width: 1500, height: 900 });
   await page.goto('/en/');
@@ -2995,7 +3032,8 @@ test('the last step puts download and copy in the dock footer without share, and
   const footer = panel.locator('.ff-dock__footer');
   await expect(footer.getByRole('button', { name: /^Download/ })).toBeVisible();
   await expect(footer.getByRole('button', { name: /^Copy code/ })).toBeVisible();
-  await expect(footer.getByRole('button').first()).toHaveText(/^Copy code/);
+  await expect(footer.getByRole('button').first()).toHaveAccessibleName('Back');
+  await expect(footer.getByRole('button').nth(1)).toHaveText(/^Copy code/);
   await expect(footer.getByRole('button').last()).toHaveText(/^Download/);
   await expect(footer.getByRole('button', { name: /^Download/ })).toHaveClass(/ff-button--primary/);
   await expect(footer.getByRole('button', { name: /^Copy code/ })).toHaveClass(
