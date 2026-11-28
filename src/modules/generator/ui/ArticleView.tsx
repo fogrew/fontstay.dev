@@ -1014,6 +1014,7 @@ export function ArticleView({
     {
       id: 'fonts',
       label: t.article_group_fonts(),
+      icon: <Icon name="font" />,
       content: (
         <>
           <div class="ff-settings__section">
@@ -1045,6 +1046,7 @@ export function ArticleView({
     {
       id: 'text',
       label: t.article_group_text(),
+      icon: <Icon name="paragraph" />,
       content: (
         <>
           <div class="ff-settings__section">
@@ -1106,6 +1108,7 @@ export function ArticleView({
           {
             id: 'features',
             label: t.details_controls_heading(),
+            icon: <Icon name="superscript" />,
             content: (
               <LazyFontFeatures
                 locale={locale}
@@ -1120,98 +1123,113 @@ export function ArticleView({
     {
       id: 'layers',
       label: t.article_group_layers(),
+      icon: <ToolIcon name="overlay" />,
       content: (
         <>
-          <fieldset class="ff-settings__section ff-layers" disabled={!overlaid}>
-            <legend class="ff-sr-only">{t.article_group_layers()}</legend>
-            {LAYER_KINDS.map((layer, row) => {
-              const name = layer === 'web' ? t.preview_web_label() : t.preview_fallback_label();
-              const caption = row === 0 ? undefined : 'ff-sr-only';
-              return (
-                <fieldset class="ff-layers__row" key={layer}>
-                  <legend class="ff-settings__legend ff-sr-only">{name}</legend>
-                  <span class="ff-layers__name" aria-hidden="true">
-                    {name}
-                  </span>
-                  <Select
-                    compact
-                    hideLabel={row > 0}
-                    label={t.layer_render()}
-                    value={layers[layer].render}
-                    disabled={!overlaid}
-                    options={RENDERS.map((value) => ({
-                      value,
-                      label: value === 'fill' ? t.layer_render_fill() : t.layer_render_outline(),
-                    }))}
-                    onChange={(value) => setLayer(layer, { render: value as Render })}
-                  />
-                  <Select
-                    compact
-                    hideLabel={row > 0}
-                    label={t.layer_color()}
-                    value={layers[layer].color}
-                    disabled={!overlaid}
-                    options={COLORS.map((value) => ({ value, label: colorLabel(value) }))}
-                    onChange={(value) => setLayer(layer, { color: value as LayerColor })}
-                  />
-                  <div class="ff-field ff-preview__slider">
-                    <div class="ff-preview__label">
-                      <label
-                        class={`ff-preview__caption ${caption ?? ''}`}
-                        for={`ff-layer-${layer}-width`}
-                      >
-                        {t.layer_width()}
-                      </label>
-                      <output for={`ff-layer-${layer}-width`}>{layers[layer].width}px</output>
-                    </div>
-                    <input
-                      class="ff-article-view__range ff-control"
-                      id={`ff-layer-${layer}-width`}
-                      type="range"
-                      min={0.5}
-                      max={4}
-                      step={0.5}
-                      value={layers[layer].width}
-                      disabled={!overlaid || layers[layer].render !== 'outline'}
-                      onInput={(event) =>
-                        setLayer(layer, { width: event.currentTarget.valueAsNumber })
-                      }
-                    />
-                  </div>
-                  <div class="ff-field ff-preview__slider">
-                    <div class="ff-preview__label">
-                      <label
-                        class={`ff-preview__caption ${caption ?? ''}`}
-                        for={`ff-layer-${layer}-opacity`}
-                      >
-                        {t.layer_opacity()}
-                      </label>
-                      <output for={`ff-layer-${layer}-opacity`}>{layers[layer].opacity}%</output>
-                    </div>
-                    <input
-                      class="ff-article-view__range ff-control"
-                      id={`ff-layer-${layer}-opacity`}
-                      type="range"
-                      min={0}
-                      max={100}
-                      step={5}
-                      value={layers[layer].opacity}
+          <div class="ff-settings__section">
+            {!overlaid && (
+              <p class="ff-muted ff-article-view__note" id="ff-layers-note">
+                {(empty ? t.layers_unavailable_empty : t.layers_unavailable)({
+                  mode: t.mode_overlay(),
+                })}
+              </p>
+            )}
+            <fieldset
+              class="ff-settings__section ff-layers"
+              disabled={!overlaid}
+              aria-describedby={overlaid ? undefined : 'ff-layers-note'}
+            >
+              <legend class="ff-sr-only">{t.article_group_layers()}</legend>
+              {LAYER_KINDS.map((layer, row) => {
+                const name = layer === 'web' ? t.preview_web_label() : t.preview_fallback_label();
+                const caption = row === 0 ? undefined : 'ff-sr-only';
+                return (
+                  <fieldset class="ff-layers__row" key={layer}>
+                    <legend class="ff-settings__legend ff-sr-only">{name}</legend>
+                    <span class="ff-layers__name" aria-hidden="true">
+                      {name}
+                    </span>
+                    <Select
+                      compact
+                      hideLabel={row > 0}
+                      label={t.layer_render()}
+                      value={layers[layer].render}
                       disabled={!overlaid}
-                      onInput={(event) =>
-                        setLayer(layer, { opacity: event.currentTarget.valueAsNumber })
-                      }
+                      options={RENDERS.map((value) => ({
+                        value,
+                        label: value === 'fill' ? t.layer_render_fill() : t.layer_render_outline(),
+                      }))}
+                      onChange={(value) => setLayer(layer, { render: value as Render })}
                     />
-                  </div>
-                </fieldset>
-              );
-            })}
-          </fieldset>
+                    <Select
+                      compact
+                      hideLabel={row > 0}
+                      label={t.layer_color()}
+                      value={layers[layer].color}
+                      disabled={!overlaid}
+                      options={COLORS.map((value) => ({ value, label: colorLabel(value) }))}
+                      onChange={(value) => setLayer(layer, { color: value as LayerColor })}
+                    />
+                    <div class="ff-field ff-preview__slider">
+                      <div class="ff-preview__label">
+                        <label
+                          class={`ff-preview__caption ${caption ?? ''}`}
+                          for={`ff-layer-${layer}-width`}
+                        >
+                          {t.layer_width()}
+                        </label>
+                        <output for={`ff-layer-${layer}-width`}>{layers[layer].width}px</output>
+                      </div>
+                      <input
+                        class="ff-article-view__range ff-control"
+                        id={`ff-layer-${layer}-width`}
+                        type="range"
+                        min={0.5}
+                        max={4}
+                        step={0.5}
+                        value={layers[layer].width}
+                        disabled={!overlaid || layers[layer].render !== 'outline'}
+                        onInput={(event) =>
+                          setLayer(layer, { width: event.currentTarget.valueAsNumber })
+                        }
+                      />
+                    </div>
+                    <div class="ff-field ff-preview__slider">
+                      <div class="ff-preview__label">
+                        <label
+                          class={`ff-preview__caption ${caption ?? ''}`}
+                          for={`ff-layer-${layer}-opacity`}
+                        >
+                          {t.layer_opacity()}
+                        </label>
+                        <output for={`ff-layer-${layer}-opacity`}>{layers[layer].opacity}%</output>
+                      </div>
+                      <input
+                        class="ff-article-view__range ff-control"
+                        id={`ff-layer-${layer}-opacity`}
+                        type="range"
+                        min={0}
+                        max={100}
+                        step={5}
+                        value={layers[layer].opacity}
+                        disabled={!overlaid}
+                        onInput={(event) =>
+                          setLayer(layer, { opacity: event.currentTarget.valueAsNumber })
+                        }
+                      />
+                    </div>
+                  </fieldset>
+                );
+              })}
+            </fieldset>
+          </div>
         </>
       ),
     },
     {
       id: 'guides',
       label: t.guides_enable(),
+      icon: <Icon name="ruler" />,
       content: (
         <>
           <fieldset class="ff-settings__section" disabled={empty || !inspectable}>
@@ -1245,6 +1263,7 @@ export function ArticleView({
     {
       id: 'background',
       label: t.bg_group(),
+      icon: <ToolIcon name="image" />,
       content: (
         <>
           <div class="ff-settings__section">
