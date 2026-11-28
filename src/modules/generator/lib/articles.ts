@@ -63,8 +63,13 @@ export const ARTICLE_LANGUAGES = [
   ['el', 'Ελληνικά'],
   ['lo', 'ລາວ'],
 ] as const;
-export const ARTICLE_IDS = ARTICLE_LANGUAGES.map(([id]) => id);
+const ARTICLE_IDS = ARTICLE_LANGUAGES.map(([id]) => id);
 export type ArticleId = (typeof ARTICLE_LANGUAGES)[number][0];
+
+export function articleFor(locale: string): ArticleId {
+  const id = locale === 'zh' ? 'zh-Hans' : locale;
+  return ARTICLE_IDS.find((known) => known === id) ?? 'en';
+}
 
 const en: Article = {
   id: 'en',

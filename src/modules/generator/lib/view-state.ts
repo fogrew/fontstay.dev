@@ -1,4 +1,3 @@
-import { ARTICLE_IDS, type ArticleId } from './articles';
 import { finite, isRecord, oneOf } from './guard';
 import { GUIDES, type GuideId } from './guides';
 import { PRESET_IDS, type Preset } from './layers';
@@ -52,7 +51,6 @@ export const DEFAULT_LAYERS: Record<LayerKind, LayerStyle> = {
 };
 
 export interface PreviewView {
-  article: ArticleId;
   mode: Preset;
   stacked: boolean;
   xray: boolean;
@@ -73,7 +71,6 @@ export interface PreviewView {
 }
 
 export interface ViewDiff {
-  article?: ArticleId;
   mode?: Preset;
   stacked?: boolean;
   xray?: boolean;
@@ -102,9 +99,8 @@ export function lensDefault(mode: Preset): LensShows {
   return mode === 'web' ? 'fallback' : 'web';
 }
 
-export function defaultView(article: ArticleId): PreviewView {
+export function defaultView(): PreviewView {
   return {
-    article,
     mode: 'slider',
     stacked: false,
     xray: true,
@@ -123,7 +119,6 @@ export function defaultView(article: ArticleId): PreviewView {
 
 const LAYER_KEYS = ['render', 'color', 'width', 'opacity'] as const;
 const SCALAR_KEYS = [
-  'article',
   'mode',
   'stacked',
   'xray',
@@ -215,8 +210,6 @@ function parseLayer(raw: unknown): Partial<LayerStyle> | undefined {
 export function parseViewDiff(raw: unknown): ViewDiff | undefined {
   if (!isRecord(raw)) return undefined;
   const view: ViewDiff = {};
-  const article = oneOf(ARTICLE_IDS, raw.article);
-  if (article) view.article = article;
   const mode = oneOf(PRESET_IDS, raw.mode);
   if (mode) view.mode = mode;
   if (typeof raw.stacked === 'boolean') view.stacked = raw.stacked;

@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import { ARTICLE_LANGUAGES, type ArticleId, loadArticle } from './articles';
+import { ARTICLE_LANGUAGES, type ArticleId, articleFor, loadArticle } from './articles';
 
 const SUBSET: Record<string, string> = {
   ar: 'arabic',
@@ -57,6 +57,18 @@ const families = (
 ).families;
 
 describe('article languages', () => {
+  it('follows the interface language and falls back to English', () => {
+    expect(['ar', 'ru', 'ja', 'el', 'th', 'zh'].map(articleFor)).toEqual([
+      'ar',
+      'ru',
+      'ja',
+      'el',
+      'th',
+      'zh-Hans',
+    ]);
+    expect(['es', 'pt', 'vi'].map(articleFor)).toEqual(['en', 'en', 'en']);
+  });
+
   it('only offers scripts with at least five Google Fonts families', () => {
     for (const [id] of ARTICLE_LANGUAGES) {
       const subset = SUBSET[id];
