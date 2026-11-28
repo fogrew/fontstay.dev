@@ -615,26 +615,44 @@ body {
   content: "";
   backdrop-filter: blur(1.5px);
 }
-:root[data-vision="protanopia"] .ff-popover__panel {
+:root[data-vision="protanopia"] .ff-popover__panel,
+:root[data-vision="protanopia"] .ff-share-dialog,
+:root[data-vision="protanopia"] .ff-export__fullscreen,
+:root[data-vision="protanopia"] .ff-export__tooltip {
   filter: url("#ff-protanopia");
 }
-:root[data-vision="deuteranopia"] .ff-popover__panel {
+:root[data-vision="deuteranopia"] .ff-popover__panel,
+:root[data-vision="deuteranopia"] .ff-share-dialog,
+:root[data-vision="deuteranopia"] .ff-export__fullscreen,
+:root[data-vision="deuteranopia"] .ff-export__tooltip {
   filter: url("#ff-deuteranopia");
 }
-:root[data-vision="tritanopia"] .ff-popover__panel {
+:root[data-vision="tritanopia"] .ff-popover__panel,
+:root[data-vision="tritanopia"] .ff-share-dialog,
+:root[data-vision="tritanopia"] .ff-export__fullscreen,
+:root[data-vision="tritanopia"] .ff-export__tooltip {
   filter: url("#ff-tritanopia");
 }
-:root[data-vision="achromatopsia"] .ff-popover__panel {
+:root[data-vision="achromatopsia"] .ff-popover__panel,
+:root[data-vision="achromatopsia"] .ff-share-dialog,
+:root[data-vision="achromatopsia"] .ff-export__fullscreen,
+:root[data-vision="achromatopsia"] .ff-export__tooltip {
   filter: url("#ff-achromatopsia");
 }
-:root[data-vision="blur"] .ff-popover__panel {
+:root[data-vision="blur"] .ff-popover__panel,
+:root[data-vision="blur"] .ff-share-dialog,
+:root[data-vision="blur"] .ff-export__fullscreen,
+:root[data-vision="blur"] .ff-export__tooltip {
   filter: blur(1.5px);
 }
 @media (forced-colors: active) {
   :root[data-vision] .ff-appearance-surface::after {
     content: none;
   }
-  :root[data-vision] .ff-popover__panel {
+  :root[data-vision] .ff-popover__panel,
+  :root[data-vision] .ff-share-dialog,
+  :root[data-vision] .ff-export__fullscreen,
+  :root[data-vision] .ff-export__tooltip {
     filter: none;
   }
 }
