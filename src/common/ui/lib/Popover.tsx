@@ -1,5 +1,6 @@
 import type { ComponentChildren } from 'preact';
 import { useEffect, useId, useLayoutEffect, useRef, useState } from 'preact/hooks';
+import { popoverPosition } from './popover-position';
 
 export interface PopoverProps {
   label: string;
@@ -26,19 +27,48 @@ export function Popover({
   const button = useRef<HTMLButtonElement>(null);
   const panel = useRef<HTMLFieldSetElement>(null);
   useLayoutEffect(() => {
-    if (!open || !panel.current || CSS.supports('position-area', 'block-end')) return;
-    const place = () => {
-      const el = panel.current;
-      if (!el) return;
-      root.current?.removeAttribute('data-flip');
-      const rect = el.getBoundingClientRect();
-      const width = document.documentElement.clientWidth;
-      root.current?.toggleAttribute('data-flip', rect.left < 0 || rect.right > width);
+    const el = panel.current;
+    const anchor = button.current;
+    if (!open || disabled || !el || !anchor) return;
+    el.showPopover?.();
+    const close = () => {
+      if (el.isConnected) el.hidePopover?.();
+    };
+    if (CSS.supports('(position-area: block-end) and (anchor-scope: --ff-popover)')) return close;
+    const place = (event?: Event) => {
+      if (event?.type === 'scroll' && el.contains(event.target as Node)) return;
+      el.style.left = '0px';
+      el.style.top = '0px';
+      const origin = el.getBoundingClientRect();
+      const rtl = getComputedStyle(el).direction === 'rtl';
+      const { left, edge, up, room } = popoverPosition(
+        anchor.getBoundingClientRect(),
+        { width: origin.width, height: el.offsetHeight - el.clientHeight + el.scrollHeight },
+        { width: document.documentElement.clientWidth, height: innerHeight },
+        rtl !== (align === 'end'),
+      );
+      el.style.setProperty('--ff-popover-room', `${room}px`);
+      el.style.left = `${left - origin.left}px`;
+      el.style.top = `${(up ? edge - el.offsetHeight : edge) - origin.top}px`;
     };
     place();
+    const observer = new ResizeObserver(() => place());
+    observer.observe(el);
+    const visibility = new IntersectionObserver(([entry]) => {
+      el.style.visibility = entry?.isIntersecting ? '' : 'hidden';
+    });
+    visibility.observe(anchor);
     addEventListener('resize', place);
-    return () => removeEventListener('resize', place);
-  }, [open]);
+    addEventListener('scroll', place, true);
+    return () => {
+      close();
+      observer.disconnect();
+      visibility.disconnect();
+      el.style.visibility = '';
+      removeEventListener('resize', place);
+      removeEventListener('scroll', place, true);
+    };
+  }, [open, disabled, align]);
   useEffect(() => {
     if (!open) return;
     const close = (event: Event) => {
@@ -76,7 +106,13 @@ export function Popover({
         {info ? <span aria-hidden="true">i</span> : !compact && label}
         {badge !== undefined && badge !== 0 && <span class="ff-popover__badge">{badge}</span>}
       </button>
-      <fieldset ref={panel} id={id} class="ff-popover__panel" hidden={!open || disabled}>
+      <fieldset
+        ref={panel}
+        id={id}
+        class="ff-popover__panel"
+        popover="manual"
+        hidden={!open || disabled}
+      >
         <legend class="ff-sr-only">{label}</legend>
         {children}
       </fieldset>

@@ -615,9 +615,27 @@ body {
   content: "";
   backdrop-filter: blur(1.5px);
 }
+:root[data-vision="protanopia"] .ff-popover__panel {
+  filter: url("#ff-protanopia");
+}
+:root[data-vision="deuteranopia"] .ff-popover__panel {
+  filter: url("#ff-deuteranopia");
+}
+:root[data-vision="tritanopia"] .ff-popover__panel {
+  filter: url("#ff-tritanopia");
+}
+:root[data-vision="achromatopsia"] .ff-popover__panel {
+  filter: url("#ff-achromatopsia");
+}
+:root[data-vision="blur"] .ff-popover__panel {
+  filter: blur(1.5px);
+}
 @media (forced-colors: active) {
   :root[data-vision] .ff-appearance-surface::after {
     content: none;
+  }
+  :root[data-vision] .ff-popover__panel {
+    filter: none;
   }
 }
 :root[data-motion] *,
