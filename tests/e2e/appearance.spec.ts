@@ -117,6 +117,42 @@ test('saved appearance does not shift the phone layout during loading', async ({
   expect(shift).toBeLessThanOrEqual(0.001);
 });
 
+for (const locale of ['en', 'ar'] as const) {
+  for (const theme of ['light', 'dark'] as const) {
+    test(`${locale} ${theme}: enlarged text keeps the layout shift score visible on desktop`, async ({
+      page,
+    }) => {
+      await page.setViewportSize({ width: 1280, height: 800 });
+      await page.addInitScript((chosen) => {
+        localStorage.setItem(
+          'fontstay:appearance',
+          JSON.stringify({ theme: chosen, spacing: true, largeText: true }),
+        );
+      }, theme);
+      await page.goto(`/${locale}/`);
+      const score = page.locator('.ff-toolbar .ff-shift__score');
+      await expect(score).toBeVisible();
+      const visible = await score.evaluate((element) => {
+        const bounds = element.getBoundingClientRect();
+        const container = element.closest('.ff-shift')?.getBoundingClientRect();
+        return container && bounds.left >= container.left && bounds.right <= container.right;
+      });
+      expect(visible).toBe(true);
+      if (locale === 'en' && theme === 'light') {
+        const toolbar = page.locator('.ff-toolbar');
+        await expect(toolbar).toHaveAttribute('data-compact', '');
+        const menu = page.locator('[data-appearance-menu]');
+        await menu.locator('summary').click();
+        const largeText = menu.locator('[data-appearance-aid="largeText"]');
+        await largeText.uncheck();
+        await expect(toolbar).not.toHaveAttribute('data-compact', '');
+        await largeText.check();
+        await expect(toolbar).toHaveAttribute('data-compact', '');
+      }
+    });
+  }
+}
+
 test('vision simulation keeps fixed option lists aligned and visibly changes content', async ({
   page,
 }) => {

@@ -943,11 +943,23 @@ export function ArticleView({
   useLayoutEffect(() => {
     const element = view.current;
     if (!element) return;
-    const update = () => setCompactBar(element.clientWidth < COMPACT_BAR_PX);
+    const update = () =>
+      setCompactBar(
+        element.clientWidth <
+          COMPACT_BAR_PX * (document.documentElement.hasAttribute('data-large-text') ? 1.25 : 1),
+      );
     update();
     const observer = new ResizeObserver(update);
     observer.observe(element);
-    return () => observer.disconnect();
+    const appearance = new MutationObserver(update);
+    appearance.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['data-large-text'],
+    });
+    return () => {
+      observer.disconnect();
+      appearance.disconnect();
+    };
   }, []);
 
   const presetButton = (value: Preset) => (
