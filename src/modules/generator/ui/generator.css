@@ -1022,7 +1022,7 @@ html[data-transition] .ff-export[data-expanded] .ff-export__fullscreen[open] .ff
   position: fixed;
   position-anchor: --ff-mark;
   position-visibility: always;
-  z-index: 5;
+  z-index: 6;
   inline-size: max-content;
   max-inline-size: min(18rem, 90vw);
   margin: var(--ff-space-1);

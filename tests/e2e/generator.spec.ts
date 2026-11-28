@@ -512,7 +512,7 @@ test('comparison views stay unavailable until a web font is added', async ({ pag
   await closePanels(page);
   const view = page.getByRole('region', { name: 'Article' });
   const mode = (name: string) => view.getByRole('button', { name, exact: true });
-  for (const name of ['Slider', 'Overlay', 'Side by side', 'X-ray']) {
+  for (const name of ['Slider', 'Overlay', 'Side by side', 'X-ray', 'Top and bottom']) {
     await expect(mode(name), name).toBeDisabled();
     await expect(mode(name), name).toHaveAttribute('aria-pressed', 'false');
   }

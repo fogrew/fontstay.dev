@@ -1348,7 +1348,7 @@ export function ArticleView({
             key={kind}
             type="button"
             class="ff-control ff-button ff-button--secondary ff-preview__arrange-button"
-            aria-pressed={stacked === (kind === 'stacked')}
+            aria-pressed={!empty && stacked === (kind === 'stacked')}
             aria-label={kind === 'stacked' ? t.side_stacked() : t.side_horizontal()}
             title={kind === 'stacked' ? t.side_stacked() : t.side_horizontal()}
             disabled={empty || (arrangement !== 'columns' && !clipped)}
