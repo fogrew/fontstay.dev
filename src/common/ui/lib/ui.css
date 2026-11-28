@@ -532,6 +532,9 @@
   margin-inline-end: auto;
   padding-inline: var(--ff-space-2);
 }
+.ff-dock__back .ff-icon {
+  margin: 0;
+}
 .ff-dock__back:dir(rtl) .ff-icon {
   transform: scaleX(-1);
 }
