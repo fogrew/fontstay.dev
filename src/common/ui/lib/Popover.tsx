@@ -30,30 +30,41 @@ export function Popover({
     const el = panel.current;
     const anchor = button.current;
     if (!open || disabled || !el || !anchor) return;
-    if (CSS.supports('(position-area: block-end) and (anchor-scope: --ff-popover)')) return;
+    el.showPopover?.();
+    const close = () => {
+      if (el.isConnected) el.hidePopover?.();
+    };
+    if (CSS.supports('(position-area: block-end) and (anchor-scope: --ff-popover)')) return close;
     const place = (event?: Event) => {
       if (event?.type === 'scroll' && el.contains(event.target as Node)) return;
       el.style.left = '0px';
       el.style.top = '0px';
       const origin = el.getBoundingClientRect();
       const rtl = getComputedStyle(el).direction === 'rtl';
-      const { left, top, room } = popoverPosition(
+      const { left, edge, up, room } = popoverPosition(
         anchor.getBoundingClientRect(),
         { width: origin.width, height: el.offsetHeight - el.clientHeight + el.scrollHeight },
         { width: document.documentElement.clientWidth, height: innerHeight },
         rtl !== (align === 'end'),
       );
-      el.style.left = `${left - origin.left}px`;
-      el.style.top = `${top - origin.top}px`;
       el.style.setProperty('--ff-popover-room', `${room}px`);
+      el.style.left = `${left - origin.left}px`;
+      el.style.top = `${(up ? edge - el.offsetHeight : edge) - origin.top}px`;
     };
     place();
     const observer = new ResizeObserver(() => place());
     observer.observe(el);
+    const visibility = new IntersectionObserver(([entry]) => {
+      el.style.visibility = entry?.isIntersecting ? '' : 'hidden';
+    });
+    visibility.observe(anchor);
     addEventListener('resize', place);
     addEventListener('scroll', place, true);
     return () => {
+      close();
       observer.disconnect();
+      visibility.disconnect();
+      el.style.visibility = '';
       removeEventListener('resize', place);
       removeEventListener('scroll', place, true);
     };
@@ -95,7 +106,13 @@ export function Popover({
         {info ? <span aria-hidden="true">i</span> : !compact && label}
         {badge !== undefined && badge !== 0 && <span class="ff-popover__badge">{badge}</span>}
       </button>
-      <fieldset ref={panel} id={id} class="ff-popover__panel" hidden={!open || disabled}>
+      <fieldset
+        ref={panel}
+        id={id}
+        class="ff-popover__panel"
+        popover="manual"
+        hidden={!open || disabled}
+      >
         <legend class="ff-sr-only">{label}</legend>
         {children}
       </fieldset>

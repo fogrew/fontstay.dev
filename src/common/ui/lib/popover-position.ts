@@ -7,7 +7,8 @@ export interface PopoverAnchor {
 
 export interface PopoverPlacement {
   left: number;
-  top: number;
+  edge: number;
+  up: boolean;
   room: number;
 }
 
@@ -31,6 +32,5 @@ export function popoverPosition(
   const above = Math.max(0, anchor.top - gap * 2);
   const up = panel.height > below && above > below;
   const room = up ? above : below;
-  const top = up ? anchor.top - gap - Math.min(panel.height, room) : anchor.bottom + gap;
-  return { left, top, room };
+  return { left, edge: up ? anchor.top - gap : anchor.bottom + gap, up, room };
 }
