@@ -65,6 +65,25 @@ test('toolbar icon buttons have names, 24 px targets and a centred arrange group
   expect(second).toBeLessThanOrEqual(1);
 });
 
+test('the split-direction icons stay distinct in forced colors', async ({ page }) => {
+  await page.emulateMedia({ forcedColors: 'active' });
+  await page.setViewportSize({ width: 1280, height: 900 });
+  await page.goto('/en/');
+  await waitForGenerator(page);
+  await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(sourceSans);
+  const icon = page.locator('.ff-article-view__controls .ff-arrange-icon[data-kind="stacked"]');
+  await expect(page.locator('.ff-preview__arrange-button').nth(1)).toBeEnabled({ timeout: 20_000 });
+  const stacked = await icon.screenshot();
+  // Same button for both shapes, so its pressed colours cannot make them differ
+  await icon.evaluate((element) => element.setAttribute('data-kind', 'horizontal'));
+  const horizontal = await page
+    .locator('.ff-preview__arrange-button')
+    .nth(1)
+    .locator('span')
+    .screenshot();
+  expect(horizontal.equals(stacked)).toBe(false);
+});
+
 test('the view tools move into the More tools menu on a narrow toolbar', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 800 });
   await page.goto('/en/');

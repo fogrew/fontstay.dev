@@ -1243,29 +1243,27 @@ html[data-transition] .ff-export[data-expanded] .ff-export__fullscreen[open] .ff
   opacity: 0.45;
 }
 .ff-arrange-icon {
+  position: relative;
   display: block;
   inline-size: 1.125rem;
   block-size: 0.875rem;
   border: 2px solid currentcolor;
   border-radius: 2px;
 }
-.ff-arrange-icon[data-kind="horizontal"] {
-  background: linear-gradient(
-    to right,
-    transparent calc(50% - 1px),
-    currentcolor calc(50% - 1px),
-    currentcolor calc(50% + 1px),
-    transparent calc(50% + 1px)
-  );
+/* A border, not a background: forced colors drop gradients */
+.ff-arrange-icon::after {
+  content: "";
+  position: absolute;
 }
-.ff-arrange-icon[data-kind="stacked"] {
-  background: linear-gradient(
-    to bottom,
-    transparent calc(50% - 1px),
-    currentcolor calc(50% - 1px),
-    currentcolor calc(50% + 1px),
-    transparent calc(50% + 1px)
-  );
+.ff-arrange-icon[data-kind="horizontal"]::after {
+  inset-block: 0;
+  inset-inline-start: calc(50% - 1px);
+  border-inline-start: 2px solid currentcolor;
+}
+.ff-arrange-icon[data-kind="stacked"]::after {
+  inset-block-start: calc(50% - 1px);
+  inset-inline: 0;
+  border-block-start: 2px solid currentcolor;
 }
 .ff-shift .ff-shift__baseline {
   margin: 0;
