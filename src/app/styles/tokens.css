@@ -595,23 +595,28 @@ body {
   z-index: 999;
   pointer-events: none;
 }
-:root[data-vision="protanopia"] .ff-appearance-surface::after {
+:root[data-vision="protanopia"] .ff-appearance-surface::after,
+:root[data-vision="protanopia"] .ff-format-bar::after {
   content: "";
   backdrop-filter: url("#ff-protanopia");
 }
-:root[data-vision="deuteranopia"] .ff-appearance-surface::after {
+:root[data-vision="deuteranopia"] .ff-appearance-surface::after,
+:root[data-vision="deuteranopia"] .ff-format-bar::after {
   content: "";
   backdrop-filter: url("#ff-deuteranopia");
 }
-:root[data-vision="tritanopia"] .ff-appearance-surface::after {
+:root[data-vision="tritanopia"] .ff-appearance-surface::after,
+:root[data-vision="tritanopia"] .ff-format-bar::after {
   content: "";
   backdrop-filter: url("#ff-tritanopia");
 }
-:root[data-vision="achromatopsia"] .ff-appearance-surface::after {
+:root[data-vision="achromatopsia"] .ff-appearance-surface::after,
+:root[data-vision="achromatopsia"] .ff-format-bar::after {
   content: "";
   backdrop-filter: url("#ff-achromatopsia");
 }
-:root[data-vision="blur"] .ff-appearance-surface::after {
+:root[data-vision="blur"] .ff-appearance-surface::after,
+:root[data-vision="blur"] .ff-format-bar::after {
   content: "";
   backdrop-filter: blur(1.5px);
 }
@@ -646,7 +651,8 @@ body {
   filter: blur(1.5px);
 }
 @media (forced-colors: active) {
-  :root[data-vision] .ff-appearance-surface::after {
+  :root[data-vision] .ff-appearance-surface::after,
+  :root[data-vision] .ff-format-bar::after {
     content: none;
   }
   :root[data-vision] .ff-popover__panel,

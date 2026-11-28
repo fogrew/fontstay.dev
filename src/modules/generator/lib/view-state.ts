@@ -16,6 +16,29 @@ export type LayerColor = (typeof COLORS)[number];
 export const LAYER_KINDS = ['web', 'fallback'] as const;
 export type LayerKind = (typeof LAYER_KINDS)[number];
 
+export const TEXT_LEVELS = [
+  'title',
+  'heading',
+  'subheading',
+  'kicker',
+  'lead',
+  'body',
+  'quote',
+  'small',
+  'code',
+] as const;
+export type TextLevel = (typeof TEXT_LEVELS)[number];
+export const LEVEL_SIZE = { min: 8, max: 96 };
+export const BODY_SIZE = { min: 12, max: 32 };
+export const LINE_HEIGHT = { min: 1, max: 2.4 };
+
+export interface LevelStyle {
+  size?: number | undefined;
+  lineHeight?: number | undefined;
+  wrap?: Wrap | undefined;
+}
+export type LevelStyles = Partial<Record<TextLevel, LevelStyle>>;
+
 export interface LayerStyle {
   render: Render;
   color: LayerColor;
@@ -40,6 +63,7 @@ export interface PreviewView {
   size: number;
   lineHeight: number;
   wrap: Wrap;
+  levels: LevelStyles;
   substitute: Substitute;
   headingFont?: string | undefined;
   bodyFont?: string | undefined;
@@ -60,6 +84,7 @@ export interface ViewDiff {
   size?: number;
   lineHeight?: number;
   wrap?: Wrap;
+  levels?: LevelStyles;
   substitute?: Substitute;
   headingFont?: string;
   bodyFont?: string;
@@ -89,6 +114,7 @@ export function defaultView(article: ArticleId): PreviewView {
     size: 18,
     lineHeight: 1.5,
     wrap: 'wrap',
+    levels: {},
     substitute: 'sans-serif',
     layers: DEFAULT_LAYERS,
     split: 50,
@@ -123,6 +149,7 @@ export function diffView(view: PreviewView, base: PreviewView): ViewDiff {
     if (view[key] !== base[key] && view[key] !== undefined) diff[key] = view[key];
   }
   if (!sameGuides(view.guides, base.guides)) diff.guides = view.guides;
+  if (JSON.stringify(view.levels) !== JSON.stringify(base.levels)) diff.levels = view.levels;
   const layers: NonNullable<ViewDiff['layers']> = {};
   for (const kind of LAYER_KINDS) {
     const changed: Record<string, unknown> = {};
@@ -148,6 +175,29 @@ function parseFont(value: unknown): string | undefined {
   return typeof value === 'string' && value.length > 0 && value.length <= MAX_FONT_NAME
     ? value
     : undefined;
+}
+
+function parseLevel(level: TextLevel, raw: unknown): LevelStyle | undefined {
+  if (!isRecord(raw)) return undefined;
+  const style: LevelStyle = {};
+  // body size and line height are the view's own `size` and `lineHeight`
+  if (level !== 'body') {
+    if (finite(raw.size, LEVEL_SIZE.min, LEVEL_SIZE.max)) style.size = raw.size;
+    if (finite(raw.lineHeight, LINE_HEIGHT.min, LINE_HEIGHT.max)) style.lineHeight = raw.lineHeight;
+  }
+  const wrap = oneOf(WRAPS, raw.wrap);
+  if (wrap) style.wrap = wrap;
+  return Object.keys(style).length > 0 ? style : undefined;
+}
+
+function parseLevels(raw: unknown): LevelStyles | undefined {
+  if (!isRecord(raw)) return undefined;
+  const levels: LevelStyles = {};
+  for (const level of TEXT_LEVELS) {
+    const style = parseLevel(level, raw[level]);
+    if (style) levels[level] = style;
+  }
+  return Object.keys(levels).length > 0 ? levels : undefined;
 }
 
 function parseLayer(raw: unknown): Partial<LayerStyle> | undefined {
@@ -179,10 +229,12 @@ export function parseViewDiff(raw: unknown): ViewDiff | undefined {
     if (guides.length > 0) view.guides = guides;
   }
   if (typeof raw.boxes === 'boolean') view.boxes = raw.boxes;
-  if (finite(raw.size, 12, 32)) view.size = raw.size;
-  if (finite(raw.lineHeight, 1, 2.4)) view.lineHeight = raw.lineHeight;
+  if (finite(raw.size, BODY_SIZE.min, BODY_SIZE.max)) view.size = raw.size;
+  if (finite(raw.lineHeight, LINE_HEIGHT.min, LINE_HEIGHT.max)) view.lineHeight = raw.lineHeight;
   const wrap = oneOf(WRAPS, raw.wrap);
   if (wrap) view.wrap = wrap;
+  const levels = parseLevels(raw.levels);
+  if (levels) view.levels = levels;
   const substitute = oneOf(SUBSTITUTES, raw.substitute);
   if (substitute) view.substitute = substitute;
   const headingFont = parseFont(raw.headingFont);
