@@ -1309,6 +1309,7 @@ html[data-transition] .ff-export[data-expanded] .ff-export__fullscreen[open] .ff
 }
 .ff-article-view__ring {
   position: absolute;
+  z-index: 3;
   left: calc(var(--ff-lens-x) - var(--ff-lens-r));
   top: calc(var(--ff-lens-y) - var(--ff-lens-r));
   box-sizing: border-box;

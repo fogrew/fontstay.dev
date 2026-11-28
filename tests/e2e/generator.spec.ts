@@ -547,6 +547,43 @@ test('the loupe shows the comparison only under the lens', async ({ page }) => {
   await expect(loupe.locator('.ff-article-view__ring')).toBeHidden();
 });
 
+test('the lens ring is painted above the lens and below the compare divider', async ({ page }) => {
+  await page.goto('/en/');
+  await waitForGenerator(page);
+  await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(sourceSans);
+  await closePanels(page);
+  const view = page.getByRole('region', { name: 'Article' });
+  const loupe = view.getByRole('application', { name: /^X-ray:/ });
+  await loupe.evaluate((node) => node.scrollIntoView({ block: 'start' }));
+  await loupe.focus();
+  await expect(loupe.locator('.ff-article-view__ring')).toBeVisible();
+  const painted = await loupe.evaluate((node) => {
+    const part = (name: string) => node.querySelector<HTMLElement>(`.ff-article-view__${name}`);
+    const ring = part('ring');
+    const lens = part('lens');
+    const divider = part('divider');
+    if (!ring || !lens || !divider) throw new Error('no lens');
+    lens.removeAttribute('inert');
+    lens.style.pointerEvents = 'auto';
+    ring.style.pointerEvents = 'auto';
+    const box = ring.getBoundingClientRect();
+    const line = divider.getBoundingClientRect();
+    const at = (x: number, y: number) => document.elementFromPoint(x, y)?.className;
+    return {
+      edge: at(box.left + 1, box.top + box.height / 2),
+      divider: divider.contains(
+        document.elementFromPoint(line.left + line.width / 2, box.top + box.height / 2),
+      ),
+      inside: line.left > box.left && line.right < box.right,
+    };
+  });
+  expect(painted).toEqual({
+    edge: 'ff-article-view__ring',
+    divider: true,
+    inside: true,
+  });
+});
+
 test('comparison views stay unavailable until a web font is added', async ({ page }) => {
   await page.goto('/en/');
   await waitForGenerator(page);
