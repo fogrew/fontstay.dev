@@ -14,7 +14,8 @@ describe('popoverPosition', () => {
   it('opens below the button in the preferred direction', () => {
     expect(popoverPosition(anchor(40, 50), panel, viewport, false)).toMatchObject({
       left: 40,
-      top: 78,
+      edge: 78,
+      up: false,
     });
     expect(popoverPosition(anchor(300, 50), panel, viewport, true).left).toBe(124);
   });
@@ -33,7 +34,8 @@ describe('popoverPosition', () => {
   it('opens above the button when there is more room there', () => {
     expect(popoverPosition(anchor(40, 540), panel, viewport, false)).toEqual({
       left: 40,
-      top: 436,
+      edge: 536,
+      up: true,
       room: 532,
     });
   });
@@ -41,11 +43,11 @@ describe('popoverPosition', () => {
   it('limits a tall panel to the room on the larger side', () => {
     const tall = { width: 200, height: 900 };
     expect(popoverPosition(anchor(40, 100), tall, viewport, false)).toMatchObject({
-      top: 128,
+      edge: 128,
       room: 468,
     });
     expect(popoverPosition(anchor(40, 500), tall, viewport, false)).toMatchObject({
-      top: 4,
+      edge: 496,
       room: 492,
     });
   });
