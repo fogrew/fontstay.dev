@@ -223,7 +223,9 @@ export function parseFontFaces(css: string, scriptPoint?: number): ImportedFace[
       faces[slot] = face;
     } else current.skipped++;
   }
-  return [...faces, ...extra.values()].slice(0, MAX_FACES);
+  const lone = [...extra].filter(([key]) => !slots.has(key)).map(([, face]) => face);
+  const paired = [...extra].filter(([key]) => slots.has(key)).map(([, face]) => face);
+  return [...faces, ...lone, ...paired].slice(0, MAX_FACES);
 }
 
 const DATA_URL =

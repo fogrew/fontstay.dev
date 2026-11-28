@@ -1,6 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import { directImport } from './direct-fetch';
-import { isPrivateHost, mergeFaces, parsePublicUrl, scanCss, scanPage } from './scan';
+import {
+  includesScript,
+  isPrivateHost,
+  mergeFaces,
+  parsePublicUrl,
+  scanCss,
+  scanPage,
+} from './scan';
 
 const FONT = new Uint8Array([0, 1, 0, 0, 1, 2, 3, 4]);
 
@@ -321,6 +328,24 @@ describe('mergeFaces with a locale script', () => {
   it('keeps the script file next to the Latin one', () => {
     expect(urls()).toEqual(['https://a.test/lat.woff2']);
     expect(urls(0x430)).toEqual(['https://a.test/lat.woff2', 'https://a.test/cyr.woff2']);
+  });
+
+  it('leaves a family without a Latin counterpart in place', () => {
+    const lone = rule('U+0400-045F', 'cyr').replace('font-family:A', 'font-family:B');
+    const faces = mergeFaces(scanCss(`${lone}${css}`, 'https://a.test/', 0x430).faces);
+    expect(faces.map((face) => face.family)).toEqual(['B', 'A', 'A']);
+  });
+
+  it('claims the script files only when they are all there', () => {
+    const scan = scanCss(css, 'https://a.test/', 0x430);
+    const faces = mergeFaces(scan.faces);
+    const value = { faces, rules: scan.rules, files: [{}, {}] };
+    expect(includesScript(value, 0x430)).toBe(true);
+    expect(includesScript({ ...value, files: [] }, 0x430)).toBe(false);
+    expect(includesScript({ ...value, files: [{}] }, 0x430)).toBe(false);
+    expect(includesScript({ ...value, faces: faces.map(({ url, ...face }) => face) }, 0x430)).toBe(
+      false,
+    );
   });
 
   it('keeps every Latin file ahead of the script files', () => {

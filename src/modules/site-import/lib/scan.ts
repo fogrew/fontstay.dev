@@ -262,12 +262,18 @@ export function includesScript(
   const split = value.rules?.some(
     ({ unicodeRange = '' }) => !covers(unicodeRange, LATIN_POINTS) && covers(unicodeRange, [point]),
   );
-  const keys = value.faces.map(({ family, weight, style }) => `${family}|${weight}|${style}`);
+  const groups = new Map<string, (string | undefined)[]>();
+  for (const { family, weight, style, url } of value.faces) {
+    const key = `${family}|${weight}|${style}`;
+    groups.set(key, [...(groups.get(key) ?? []), url]);
+  }
+  const pairs = [...groups.values()].filter((urls) => urls.length > 1);
   const urls = new Set(value.faces.flatMap(({ url }) => url ?? []));
   return (
     Boolean(split) &&
-    new Set(keys).size < keys.length &&
-    (value.files.length === 0 || value.files.length >= urls.size)
+    pairs.length > 0 &&
+    pairs.every((pair) => pair.every(Boolean)) &&
+    value.files.length >= urls.size
   );
 }
 
@@ -327,9 +333,12 @@ export function mergeFaces(parts: ScannedCss['faces']): ScannedFace[] {
   const slots = new Map<string, number>();
   const result: ScannedPart[] = [];
   const extra = new Map<string, ScannedFace>();
+  const keyOf = ({ face }: ScannedPart) =>
+    `${face.family.toLowerCase()}|${face.weight}|${face.style}`;
+  const based = new Set(parts.filter((part) => !part.script).map(keyOf));
   for (const part of parts) {
-    const key = `${part.face.family.toLowerCase()}|${part.face.weight}|${part.face.style}`;
-    if (part.script) {
+    const key = keyOf(part);
+    if (part.script && based.has(key)) {
       if (!extra.has(key) && extra.size < MAX_FACES) extra.set(key, part.face);
       continue;
     }
