@@ -1402,7 +1402,7 @@ html[data-transition] .ff-export[data-expanded] .ff-export__fullscreen[open] .ff
 }
 .ff-toolbar .ff-shift {
   display: flex;
-  flex: 0 1 auto;
+  flex: 1 1 0;
   justify-content: flex-end;
   min-inline-size: 0;
   min-block-size: 2.125rem;

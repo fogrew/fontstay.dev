@@ -68,11 +68,15 @@ export function DeviceShift({
   return (
     <div class="ff-shift" role="status">
       {fitting ? (
-        <span class="ff-muted">{t.fit_running()}</span>
+        <span key="pending" class="ff-muted">
+          {t.fit_running()}
+        </span>
       ) : worst === undefined || rating === undefined ? (
-        <span class="ff-muted">{t.article_shift_measuring()}</span>
+        <span key="pending" class="ff-muted">
+          {t.article_shift_measuring()}
+        </span>
       ) : (
-        <span class="ff-shift__change">
+        <span key="result" class="ff-shift__change">
           <span class="ff-shift__label">CLS</span>
           {focusWidth !== undefined && <span class="ff-shift__at ff-muted">{focusWidth}px</span>}
           <strong class="ff-shift__score" data-rating={rating} title={t.article_shift_after()}>
