@@ -2072,6 +2072,7 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
           panel.current = (id as PanelId | undefined) ?? NO_PANEL;
         }}
         nextLabel={(label) => t.dock_next({ label })}
+        backLabel={t.dock_back()}
         items={[
           {
             id: 'inputs',

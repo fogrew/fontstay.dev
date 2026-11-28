@@ -527,6 +527,14 @@
   padding: var(--ff-space-2) var(--ff-space-3);
   border-block-start: 1px solid var(--ff-border);
 }
+.ff-dock__footer .ff-dock__back {
+  min-inline-size: 2.25rem;
+  margin-inline-end: auto;
+  padding-inline: var(--ff-space-2);
+}
+.ff-dock__back:dir(rtl) .ff-icon {
+  transform: scaleX(-1);
+}
 @media (min-width: 64rem) {
   .ff-dock {
     position: sticky;
@@ -545,7 +553,7 @@
     flex-direction: column;
   }
   .ff-dock__column[data-open="true"] {
-    flex: 1 1 auto;
+    flex: 0 1 auto;
     min-block-size: 0;
   }
   .ff-dock__heading {
@@ -559,7 +567,7 @@
   }
   .ff-dock__panel {
     display: flex;
-    flex: 1 1 auto;
+    flex: 0 1 auto;
     flex-direction: column;
     min-block-size: 0;
   }
@@ -567,8 +575,15 @@
     display: none;
   }
   .ff-dock__panel > .ff-shadow {
-    flex: 1 1 auto;
+    display: flex;
+    flex: 0 1 auto;
+    flex-direction: column;
     min-block-size: 0;
+  }
+  .ff-dock__column[data-open="true"]:has(.ff-dock__scroll > *:empty),
+  .ff-dock__column[data-open="true"]:has(.ff-dock__scroll > *:empty) .ff-dock__panel,
+  .ff-dock__column[data-open="true"]:has(.ff-dock__scroll > *:empty) .ff-shadow {
+    flex-grow: 1;
   }
 }
 html[data-transition] .ff-dock__panel[data-id="audience"] {
@@ -835,7 +850,8 @@ html[data-transition] .ff-dock__panel[data-id="export"] {
 }
 @media (min-width: 64rem) {
   .ff-dock__scroll {
-    block-size: 100%;
+    flex: 0 1 auto;
+    min-block-size: 0;
   }
 }
 

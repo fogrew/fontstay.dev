@@ -396,6 +396,7 @@
   "col_tuning": "3. Tinh chỉnh",
   "col_export": "4. Xuất",
   "dock_next": "Tiếp theo: {label}",
+  "dock_back": "Quay lại",
   "tuning_empty": "Hãy thêm một phông chữ để tinh chỉnh các phông chữ dự phòng của nó.",
   "preview_not_installed_note": "Bản xem trước dùng một phông chữ chung; các giá trị và ma trận hỗ trợ vẫn được tính cho phông chữ này.",
   "results_pick_font": "Hãy chọn một phông chữ ở cột đầu tiên để xem nội dung này.",
