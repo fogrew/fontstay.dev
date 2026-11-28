@@ -34,19 +34,33 @@ export function Popover({
     const close = () => {
       if (el.isConnected) el.hidePopover?.();
     };
-    if (CSS.supports('(position-area: block-end) and (anchor-scope: --ff-popover)')) return close;
+    const anchored = CSS.supports('(position-area: block-end) and (anchor-scope: --ff-popover)');
     const place = (event?: Event) => {
       if (event?.type === 'scroll' && el.contains(event.target as Node)) return;
+      const anchorRect = anchor.getBoundingClientRect();
+      const viewport = { width: document.documentElement.clientWidth, height: innerHeight };
+      const panelSize = {
+        width: el.getBoundingClientRect().width,
+        height: el.offsetHeight - el.clientHeight + el.scrollHeight,
+      };
+      const rtl = getComputedStyle(el).direction === 'rtl';
+      const { left, edge, up, room } = popoverPosition(
+        anchorRect,
+        panelSize,
+        viewport,
+        rtl !== (align === 'end'),
+      );
+      if (anchored && panelSize.height <= room) {
+        el.removeAttribute('data-manual-position');
+        el.style.removeProperty('--ff-popover-room');
+        el.style.removeProperty('left');
+        el.style.removeProperty('top');
+        return;
+      }
+      el.setAttribute('data-manual-position', '');
       el.style.left = '0px';
       el.style.top = '0px';
       const origin = el.getBoundingClientRect();
-      const rtl = getComputedStyle(el).direction === 'rtl';
-      const { left, edge, up, room } = popoverPosition(
-        anchor.getBoundingClientRect(),
-        { width: origin.width, height: el.offsetHeight - el.clientHeight + el.scrollHeight },
-        { width: document.documentElement.clientWidth, height: innerHeight },
-        rtl !== (align === 'end'),
-      );
       el.style.setProperty('--ff-popover-room', `${room}px`);
       el.style.left = `${left - origin.left}px`;
       el.style.top = `${(up ? edge - el.offsetHeight : edge) - origin.top}px`;
@@ -65,6 +79,10 @@ export function Popover({
       observer.disconnect();
       visibility.disconnect();
       el.style.visibility = '';
+      el.removeAttribute('data-manual-position');
+      el.style.removeProperty('--ff-popover-room');
+      el.style.removeProperty('left');
+      el.style.removeProperty('top');
       removeEventListener('resize', place);
       removeEventListener('scroll', place, true);
     };
