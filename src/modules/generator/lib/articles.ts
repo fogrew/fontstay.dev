@@ -41,6 +41,9 @@ export interface Article {
 export const ARTICLE_LANGUAGES = [
   ['en', 'English'],
   ['ru', 'Русский'],
+  ['es', 'Español'],
+  ['pt', 'Português'],
+  ['vi', 'Tiếng Việt'],
   ['ar', 'العربية'],
   ['ja', '日本語'],
   ['he', 'עברית'],
@@ -319,6 +322,9 @@ export const isBuiltIn = (id: ArticleId): id is 'en' | 'ru' => id === 'en' || id
 
 export async function loadArticle(id: ArticleId): Promise<Article | undefined> {
   if (isBuiltIn(id)) return BUILT_IN[id];
+  if (id === 'es' || id === 'pt' || id === 'vi') {
+    return (await import('./articles-latin')).LATIN_ARTICLES[id];
+  }
   return (await import('./articles-more')).MORE[id];
 }
 
