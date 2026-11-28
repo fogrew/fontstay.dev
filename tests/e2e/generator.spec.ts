@@ -3691,6 +3691,45 @@ test.describe('the single input field', () => {
     }
   });
 
+  test('without anchor positioning the list tips are not clipped', async ({ page }) => {
+    await page.addInitScript(() => {
+      CSS.supports = () => false;
+    });
+    for (const width of [320, 1280]) {
+      await page.setViewportSize({ width, height: 600 });
+      await open(page);
+      await page.evaluate(() => {
+        for (const sheet of document.styleSheets) {
+          for (let i = sheet.cssRules.length - 1; i >= 0; i--) {
+            if (sheet.cssRules[i]?.cssText.startsWith('@supports (position-area')) {
+              sheet.deleteRule(i);
+            }
+          }
+        }
+      });
+      await page
+        .getByRole('list', { name: 'Matching families' })
+        .getByRole('button', { name: familyOption('Montserrat') })
+        .click();
+      for (const name of ['About ext subsets', 'About the font limit']) {
+        const info = page.getByRole('button', { name });
+        await info.evaluate((el) => el.scrollIntoView({ block: 'end' }));
+        await info.click();
+        const tip = page.locator('.ff-source .ff-popover__panel:not([hidden])');
+        await expect(tip).toBeVisible();
+        const unclipped = () =>
+          tip.evaluate((el) => {
+            const { left, right, top, bottom } = el.getBoundingClientRect();
+            return [left + 8, right - 8].every((x) =>
+              [top + 8, bottom - 8].every((y) => el.contains(document.elementFromPoint(x, y))),
+            );
+          });
+        await expect.poll(unclipped).toBe(true);
+        await page.keyboard.press('Escape');
+      }
+    }
+  });
+
   test('the font limit has a help tip and a stepper', async ({ page }) => {
     await open(page);
     await page

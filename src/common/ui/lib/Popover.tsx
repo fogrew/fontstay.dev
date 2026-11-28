@@ -1,5 +1,6 @@
 import type { ComponentChildren } from 'preact';
 import { useEffect, useId, useLayoutEffect, useRef, useState } from 'preact/hooks';
+import { popoverPosition } from './popover-position';
 
 export interface PopoverProps {
   label: string;
@@ -26,19 +27,37 @@ export function Popover({
   const button = useRef<HTMLButtonElement>(null);
   const panel = useRef<HTMLFieldSetElement>(null);
   useLayoutEffect(() => {
-    if (!open || !panel.current || CSS.supports('position-area', 'block-end')) return;
-    const place = () => {
-      const el = panel.current;
-      if (!el) return;
-      root.current?.removeAttribute('data-flip');
-      const rect = el.getBoundingClientRect();
-      const width = document.documentElement.clientWidth;
-      root.current?.toggleAttribute('data-flip', rect.left < 0 || rect.right > width);
+    const el = panel.current;
+    const anchor = button.current;
+    if (!open || disabled || !el || !anchor) return;
+    if (CSS.supports('(position-area: block-end) and (anchor-scope: --ff-popover)')) return;
+    const place = (event?: Event) => {
+      if (event?.type === 'scroll' && el.contains(event.target as Node)) return;
+      el.style.left = '0px';
+      el.style.top = '0px';
+      const origin = el.getBoundingClientRect();
+      const rtl = getComputedStyle(el).direction === 'rtl';
+      const { left, top, room } = popoverPosition(
+        anchor.getBoundingClientRect(),
+        { width: origin.width, height: el.offsetHeight - el.clientHeight + el.scrollHeight },
+        { width: document.documentElement.clientWidth, height: innerHeight },
+        rtl !== (align === 'end'),
+      );
+      el.style.left = `${left - origin.left}px`;
+      el.style.top = `${top - origin.top}px`;
+      el.style.setProperty('--ff-popover-room', `${room}px`);
     };
     place();
+    const observer = new ResizeObserver(() => place());
+    observer.observe(el);
     addEventListener('resize', place);
-    return () => removeEventListener('resize', place);
-  }, [open]);
+    addEventListener('scroll', place, true);
+    return () => {
+      observer.disconnect();
+      removeEventListener('resize', place);
+      removeEventListener('scroll', place, true);
+    };
+  }, [open, disabled, align]);
   useEffect(() => {
     if (!open) return;
     const close = (event: Event) => {
