@@ -12,6 +12,11 @@ list, search, style and subset UI; a `FontSource` supplies the catalog and the d
   fetched from `cdn.jsdelivr.net/fontsource/fonts/<id>@<npm version>/` with an id, version, subset
   and style built from validated parts.
 
+On a non-English page the picker preselects the script of the locale next to Latin
+(`localeScript` in `@/common/i18n`) and lists families that have it first. CJK scripts are served in
+numbered slices, so they cannot be picked; the Fontsource catalog lists only `latin`. Pasted CSS,
+site import and the bookmarklet keep the `unicode-range` rule of that script next to the Latin one.
+
 Both catalogs carry a license index per family (`licenses` list plus one number per family): Google families get it from the `ofl/`, `apache/` and `ufl/` directories of `github.com/google/fonts`, Fontsource families from the API `license` field.
 
 Catalogs are loaded lazily when a picker is first opened. Downloads check the https host and

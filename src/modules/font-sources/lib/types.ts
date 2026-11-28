@@ -27,6 +27,7 @@ export function searchFamilies(
   query: string,
   category = '',
   limit = 30,
+  preferred = '',
 ): FontFamily[] {
   const needle = query.trim().toLowerCase();
   const result: FontFamily[] = [];
@@ -34,9 +35,17 @@ export function searchFamilies(
     if (category && family.category !== category) continue;
     if (needle && !family.name.toLowerCase().includes(needle)) continue;
     result.push(family);
-    if (result.length >= limit) break;
+    if (!preferred && result.length >= limit) break;
   }
-  return result;
+  if (!preferred) return result;
+  const rank = (family: FontFamily) =>
+    family.name.toLowerCase() === needle ? 0 : family.subsets.includes(preferred) ? 1 : 2;
+  return result.sort((a, b) => rank(a) - rank(b)).slice(0, limit);
+}
+
+export function defaultSubsets(names: readonly string[], preferred = ''): string[] {
+  const base = names.includes('latin') ? 'latin' : (names[0] ?? 'latin');
+  return preferred !== base && names.includes(preferred) ? [base, preferred] : [base];
 }
 
 export function bestMatchIndex(names: readonly string[], query: string): number {

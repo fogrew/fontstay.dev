@@ -1,5 +1,5 @@
 import { useEffect, useId, useLayoutEffect, useMemo, useRef, useState } from 'preact/hooks';
-import { type Locale, messagesFor } from '@/common/i18n';
+import { type Locale, localeScript, localeScriptName, messagesFor } from '@/common/i18n';
 import { Button, Icon, Popover, ScrollShadow, ToggleGroup, transition } from '@/common/ui';
 import { FontSourceError } from '../lib/download';
 import {
@@ -12,6 +12,7 @@ import {
 import {
   bestMatchIndex,
   CJK_SUBSETS,
+  defaultSubsets,
   type FontFamily,
   parseStyle,
   searchFamilies,
@@ -91,6 +92,11 @@ export function useFamilySearch({
   const [navigation, setNavigation] = useState<{ query: string; index: number }>();
   const limitInput = useRef<HTMLInputElement>(null);
   const chosenPanel = useRef<HTMLDivElement>(null);
+  const declined = useRef(false);
+  const script = localeScript(locale);
+  const scriptName = localeScriptName(locale);
+  const split = script !== undefined && CJK_SUBSETS.has(script.subset);
+  const preferred = script?.subset ?? '';
 
   useEffect(() => {
     for (const id of Object.keys(SOURCES) as SourceId[]) {
@@ -120,16 +126,16 @@ export function useFamilySearch({
       const catalog = catalogs[id];
       if (catalog?.state !== 'ready') continue;
       const families = query.trim()
-        ? searchFamilies(catalog.families, query, '', HITS_PER_SOURCE)
+        ? searchFamilies(catalog.families, query, '', HITS_PER_SOURCE, preferred)
         : id === 'google'
-          ? searchFamilies(catalog.families, '', '', DEFAULT_GOOGLE_HITS)
+          ? searchFamilies(catalog.families, '', '', DEFAULT_GOOGLE_HITS, preferred)
           : defaultFontsource(catalog.families);
       for (const family of families) {
         result.push({ source: id, family });
       }
     }
     return result;
-  }, [catalogs, query]);
+  }, [catalogs, query, preferred]);
   const bestIndex = bestMatchIndex(
     hits.map((hit) => hit.family.name),
     query,
@@ -156,7 +162,7 @@ export function useFamilySearch({
     const apply = () => {
       setChosen(hit);
       setStyles(new Set([family.styles.includes('400') ? '400' : (family.styles[0] ?? '400')]));
-      setSubsets(new Set([names.includes('latin') ? 'latin' : (names[0] ?? 'latin')]));
+      setSubsets(new Set(defaultSubsets(names, declined.current ? '' : preferred)));
       setMessage('');
     };
     if (animate) transition(apply);
@@ -228,6 +234,21 @@ export function useFamilySearch({
     }
   };
   const count = styles.size * subsets.size;
+  const changeSubsets = (next: ReadonlySet<string>) => {
+    if (preferred && subsets.has(preferred) !== next.has(preferred)) {
+      declined.current = !next.has(preferred);
+    }
+    setSubsets(next);
+  };
+  const scriptNote = !(script && chosen)
+    ? ''
+    : !chosen.family.subsets.includes(script.subset)
+      ? t.source_script_missing({ script: scriptName })
+      : split
+        ? t.source_script_split({ script: scriptName })
+        : subsets.has(script.subset)
+          ? t.source_script_preselected({ script: scriptName })
+          : '';
 
   const add = async () => {
     if (!chosen || count === 0 || count > slots) return;
@@ -318,13 +339,18 @@ export function useFamilySearch({
                   label={label}
                   items={names.map((name) => ({ key: name, label: name }))}
                   selected={subsets}
-                  onChange={setSubsets}
+                  onChange={changeSubsets}
                 />
               </div>
             );
           })}
         </fieldset>
       </div>
+      {scriptNote && (
+        <p class="ff-source__text ff-muted" role="status">
+          {scriptNote}
+        </p>
+      )}
       <div class="ff-source__add">
         <Button
           variant="primary"
@@ -435,6 +461,14 @@ export function useFamilySearch({
                       onFocus={() => setNavigation({ query, index })}
                     >
                       <span class="ff-source__family">{hit.family.name}</span>{' '}
+                      {preferred && hit.family.subsets.includes(preferred) && (
+                        <span class="ff-source__script" title={scriptName}>
+                          <span aria-hidden="true">{script?.sample}</span>
+                          <span class="ff-sr-only">
+                            {t.source_script_mark({ script: scriptName })}
+                          </span>
+                        </span>
+                      )}
                       <span class="ff-source__license">
                         <bdi>{hit.family.license}</bdi>
                         <Icon name="license" />

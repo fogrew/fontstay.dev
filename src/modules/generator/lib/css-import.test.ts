@@ -230,3 +230,34 @@ describe('parseFaceRules', () => {
     expect(parseFaceRules(css).length).toBeLessThanOrEqual(1024);
   });
 });
+
+describe('parseFontFaces with a locale script', () => {
+  const rule = (range: string, file: string) =>
+    `@font-face{font-family:A;src:url(https://a.test/${file}.woff2);unicode-range:${range}}`;
+  const css = `${rule('U+0400-045F', 'cyr')}${rule('U+0000-00FF', 'lat')}`;
+
+  it('keeps only the Latin rule without a script', () => {
+    expect(parseFontFaces(css).map((face) => [face.script, face.skipped])).toEqual([
+      [undefined, 1],
+    ]);
+  });
+
+  it('also keeps the rule that covers the script', () => {
+    const faces = parseFontFaces(css, 0x430);
+    expect(faces.map((face) => face.script)).toEqual([undefined, true]);
+    expect(faces[1]?.sources[0]?.url).toContain('cyr');
+  });
+
+  it('leaves a family without a Latin counterpart in place', () => {
+    const lone = rule('U+0400-045F', 'x').replace('font-family:A', 'font-family:B');
+    expect(parseFontFaces(`${lone}${css}`, 0x430).map((face) => face.family)).toEqual([
+      'B',
+      'A',
+      'A',
+    ]);
+  });
+
+  it('adds nothing for a rule that covers both', () => {
+    expect(parseFontFaces(rule('U+0000-00FF, U+0400-045F', 'all'), 0x430)).toHaveLength(1);
+  });
+});

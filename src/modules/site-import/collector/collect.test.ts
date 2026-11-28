@@ -254,6 +254,15 @@ describe('fontstayCollect', () => {
     expect(result.faces).toEqual([
       expect.objectContaining({ url: 'https://site.test/latin.woff2' }),
     ]);
+    const { win, doc } = page([
+      face('U+0400-045F, U+0490-0491', 'cyrillic'),
+      face('U+0000-00FF, U+0131', 'latin'),
+    ]);
+    const russian = await fontstayCollect(win, doc, { scriptPoint: 0x430 });
+    expect(russian.faces).toEqual([
+      expect.objectContaining({ url: 'https://site.test/latin.woff2' }),
+      expect.objectContaining({ url: 'https://site.test/cyrillic.woff2' }),
+    ]);
   });
 
   it('stops reading a file that has no content-length once it exceeds the limit', async () => {

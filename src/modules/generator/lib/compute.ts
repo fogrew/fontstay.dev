@@ -17,6 +17,28 @@ export function covers(web: Pick<FontMetrics, 'codePoints'>, text: string): bool
   return letters.length === 0 || present / letters.length >= SAMPLE_COVERAGE;
 }
 
+const LATIN_PROBE = 'abcdefghijklmnopqrstuvwxyz';
+
+export function isScriptPair(
+  a: Pick<FontMetrics, 'codePoints'>,
+  b: Pick<FontMetrics, 'codePoints'>,
+  probe: string,
+): boolean {
+  return covers(a, probe) !== covers(b, probe) && covers(a, LATIN_PROBE) !== covers(b, LATIN_PROBE);
+}
+
+export function uncoveredFamilies(
+  fonts: readonly { fileName: string; metrics: Pick<FontMetrics, 'codePoints' | 'names'> }[],
+  probe: string,
+): string[] {
+  const families = new Map<string, boolean>();
+  for (const { fileName, metrics } of fonts) {
+    const name = metrics.names.family?.trim().slice(0, 200) || fileName;
+    families.set(name, families.get(name) === true || covers(metrics, probe));
+  }
+  return [...families].filter(([, covered]) => !covered).map(([name]) => name);
+}
+
 export function fitLanguage(web: Pick<FontMetrics, 'codePoints'> | undefined, locale: string) {
   return locale === 'ru' && web && covers(web, CYRILLIC_PROBE) ? 'ru' : 'en';
 }
