@@ -36,6 +36,8 @@ import {
   waitForGenerator,
 } from './fixtures';
 
+const familyOption = (name: string) => new RegExp(`^${name} \\S+$`);
+
 const fonts = new URL('../fixtures/fonts/', import.meta.url).pathname.replace(
   /^\/([A-Za-z]:)/,
   '$1',
@@ -504,7 +506,27 @@ test('the loupe shows the comparison only under the lens', async ({ page }) => {
   await expect(loupe.locator('.ff-article-view__ring')).toBeHidden();
 });
 
-test('the x-ray lens follows the pointer in every layout and covers the divider', async ({
+test('comparison views stay unavailable until a web font is added', async ({ page }) => {
+  await page.goto('/en/');
+  await waitForGenerator(page);
+  await closePanels(page);
+  const view = page.getByRole('region', { name: 'Article' });
+  const mode = (name: string) => view.getByRole('button', { name, exact: true });
+  for (const name of ['Slider', 'Overlay', 'Side by side', 'X-ray', 'Top and bottom']) {
+    await expect(mode(name), name).toBeDisabled();
+    await expect(mode(name), name).toHaveAttribute('aria-pressed', 'false');
+  }
+  await expect(view.getByRole('slider', { name: /^Divider/ })).toHaveCount(0);
+  await expect(view.getByRole('application')).toHaveCount(0);
+  await expect(view.locator('.ff-article:not([data-probe])')).toHaveCount(1);
+
+  await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(sourceSans);
+  await expect(view.getByRole('slider', { name: /^Divider/ })).toBeVisible();
+  await expect(mode('Slider')).toHaveAttribute('aria-pressed', 'true');
+  await expect(view.getByRole('application', { name: /^X-ray:/ })).toBeVisible();
+});
+
+test('the x-ray lens follows the pointer in every layout and stays under the divider', async ({
   page,
 }) => {
   await page.setViewportSize({ width: 1500, height: 900 });
@@ -532,6 +554,10 @@ test('the x-ray lens follows the pointer in every layout and covers the divider'
     await expect.poll(radius, layout).toBe(100);
     const pane = await loupe.locator('.ff-article-view__lens-pane').boundingBox();
     expect(pane?.width, layout).toBeGreaterThan(300);
+    if (layout === 'Slider') {
+      await expect(loupe.locator('.ff-article-view__lens')).toHaveCSS('z-index', '3');
+      await expect(loupe.locator('.ff-article-view__divider')).toHaveCSS('z-index', '4');
+    }
     if (layout === 'Side by side') {
       const under = await loupe.locator('[data-pane] > .ff-article').nth(1).boundingBox();
       expect(Math.abs((pane?.y ?? 0) - (under?.y ?? 99))).toBeLessThan(1);
@@ -1637,7 +1663,7 @@ test('a Google Fonts family can be searched and downloaded through the two allow
   await page.getByLabel('Font name, CSS or copied site data').fill('open sans');
   await page
     .getByRole('list', { name: 'Matching families' })
-    .getByRole('button', { name: 'Open Sans', exact: true })
+    .getByRole('button', { name: familyOption('Open Sans') })
     .click();
   await expect(page.getByRole('button', { name: 'latin', exact: true })).toHaveAttribute(
     'aria-pressed',
@@ -1660,7 +1686,7 @@ test('the default family list is long, a second click deselects, the source link
   expect(await list.getByRole('listitem').count()).toBeGreaterThanOrEqual(40);
   await expect(page.getByText('they see your IP address')).toHaveCount(0);
 
-  const option = list.getByRole('button', { name: 'Roboto', exact: true });
+  const option = list.getByRole('button', { name: familyOption('Roboto') });
   await option.click();
   await expect(option).toHaveAttribute('aria-pressed', 'true');
   const link = list.getByRole('link', { name: 'Open Roboto on Google Fonts' });
@@ -1672,7 +1698,7 @@ test('the default family list is long, a second click deselects, the source link
   await expect(option).toHaveAttribute('aria-pressed', 'false');
   await expect(page.locator('.ff-source__chosen')).toHaveCount(0);
 
-  await list.getByRole('button', { name: 'Geist Sans', exact: true }).click();
+  await list.getByRole('button', { name: familyOption('Geist Sans') }).click();
   await expect(list.getByRole('link', { name: 'Open Geist Sans on Fontsource' })).toHaveAttribute(
     'href',
     'https://fontsource.org/fonts/geist-sans',
@@ -1701,7 +1727,7 @@ test('several styles of a catalog family are added with one click', async ({ pag
   await page.getByLabel('Font name, CSS or copied site data').fill('open sans');
   await page
     .getByRole('list', { name: 'Matching families' })
-    .getByRole('button', { name: 'Open Sans', exact: true })
+    .getByRole('button', { name: familyOption('Open Sans') })
     .click();
   await page.getByRole('button', { name: '700', exact: true }).click();
   await page.getByRole('button', { name: '400 Italic', exact: true }).click();
@@ -1741,7 +1767,7 @@ const chooseMontserrat = async (page: Page) => {
   await page.getByLabel('Font name, CSS or copied site data').fill('montserrat');
   await page
     .getByRole('list', { name: 'Matching families' })
-    .getByRole('button', { name: 'Montserrat', exact: true })
+    .getByRole('button', { name: familyOption('Montserrat') })
     .first()
     .click();
 };
@@ -1824,7 +1850,7 @@ test('a share link carries Google Fonts choices and downloads them again', async
   await page.getByLabel('Font name, CSS or copied site data').fill('open sans');
   await page
     .getByRole('list', { name: 'Matching families' })
-    .getByRole('button', { name: 'Open Sans', exact: true })
+    .getByRole('button', { name: familyOption('Open Sans') })
     .click();
   await page.getByRole('button', { name: 'Add to the fonts' }).click();
   await expect(page.getByText('Downloaded Open Sans.')).toBeVisible();
@@ -1861,7 +1887,7 @@ test('a Fontsource family is downloaded from jsDelivr', async ({ page }) => {
   await page.getByLabel('Font name, CSS or copied site data').fill('aileron');
   await page
     .getByRole('list', { name: 'Matching families' })
-    .getByRole('button', { name: 'Aileron', exact: true })
+    .getByRole('button', { name: familyOption('Aileron') })
     .click();
   await page.getByRole('button', { name: 'Add to the fonts' }).click();
   await expect(page.getByText('Downloaded Aileron.')).toBeVisible();
@@ -1917,7 +1943,7 @@ test('a failed Google Fonts download is explained', async ({ page }) => {
   await page.getByLabel('Font name, CSS or copied site data').fill('lora');
   await page
     .getByRole('list', { name: 'Matching families' })
-    .getByRole('button', { name: 'Lora', exact: true })
+    .getByRole('button', { name: familyOption('Lora') })
     .click();
   await page.getByRole('button', { name: 'Add to the fonts' }).click();
   await expect(page.getByText(/Could not download the font/)).toBeVisible();
@@ -2160,6 +2186,7 @@ test('a share link reproduces the open panel and the preview modes with a compac
   await waitForGenerator(other);
   await expect(step(other, 'export')).toHaveAttribute('aria-expanded', 'true');
   await expect(step(other, 'inputs')).toHaveAttribute('aria-expanded', 'false');
+  await other.locator('input[type="file"][accept*="woff2"]').setInputFiles(sourceSans);
   for (const name of ['Side by side', 'Top and bottom']) {
     await expect(pressed(other, name)).toHaveAttribute('aria-pressed', 'true');
   }
@@ -3181,8 +3208,8 @@ test.describe('the single input field', () => {
     const field = await open(page);
     const list = page.getByRole('list', { name: 'Matching families' });
     await expect(list.getByRole('listitem').first()).toBeVisible();
-    await expect(list.getByRole('listitem').first()).toContainText('Open Sans');
-    await expect(list.getByRole('button', { name: 'Geist Sans', exact: true })).toBeVisible();
+    await expect(list.getByRole('listitem').first()).toContainText('Roboto');
+    await expect(list.getByRole('button', { name: familyOption('Geist Sans') })).toBeVisible();
     await expect(
       page.getByRole('status').filter({ hasText: 'catalog fonts available' }),
     ).toContainText('catalog fonts available');
@@ -3199,7 +3226,7 @@ test.describe('the single input field', () => {
     ).toContainText('Highlighted font: Open Sans.');
     await field.press('Tab');
     await expect(field).toHaveValue('Open Sans');
-    await expect(list.getByRole('button', { name: 'Open Sans', exact: true })).toHaveAttribute(
+    await expect(list.getByRole('button', { name: familyOption('Open Sans') })).toHaveAttribute(
       'aria-pressed',
       'true',
     );
@@ -3213,7 +3240,7 @@ test.describe('the single input field', () => {
     await expect(
       page
         .getByRole('list', { name: 'Matching families' })
-        .getByRole('button', { name: 'Lora', exact: true }),
+        .getByRole('button', { name: familyOption('Lora') }),
     ).toHaveAttribute('aria-pressed', 'true');
   });
 
@@ -3314,6 +3341,43 @@ test.describe('the single input field', () => {
     await expect(chosen.getByText('extra letters for the same script')).toBeHidden();
   });
 
+  test('the style panel opens inside the chosen row and keeps its own keys', async ({ page }) => {
+    for (const width of [320, 1280]) {
+      await page.setViewportSize({ width, height: 800 });
+      await open(page);
+      const list = page.getByRole('list', { name: 'Matching families' });
+      const row = list
+        .locator('.ff-source__item')
+        .filter({ has: page.getByRole('button', { name: familyOption('Montserrat') }) });
+      const button = row.getByRole('button', { name: familyOption('Montserrat') });
+      await expect(button).toHaveAccessibleDescription('license OFL-1.1');
+      await button.scrollIntoViewIfNeeded();
+      const pageScroll = await page.evaluate(() => window.scrollY);
+      await button.click();
+      const chosen = row.locator('.ff-source__chosen');
+      await expect(chosen).toBeInViewport();
+      expect(await page.evaluate(() => window.scrollY)).toBe(pageScroll);
+      const clipped = await row.evaluate((item) => {
+        const right = item.closest('.ff-source__scroll')?.getBoundingClientRect().right ?? 0;
+        return [...item.querySelectorAll('button, a, input')].filter(
+          (control) => control.getBoundingClientRect().right > right + 1,
+        ).length;
+      });
+      expect(clipped).toBe(0);
+      await expect(page.locator('.ff-source__chosen')).toHaveCount(1);
+      const add = chosen.getByRole('button', { name: 'Add to the fonts' });
+      await expect(add).toBeVisible();
+      const limit = chosen.getByLabel('Max fonts', { exact: true });
+      const before = Number(await limit.inputValue());
+      await limit.focus();
+      await page.keyboard.press('ArrowUp');
+      await expect(limit).toBeFocused();
+      await expect(limit).toHaveValue(String(before + 1));
+      await button.click();
+      await expect(page.locator('.ff-source__chosen')).toHaveCount(0);
+    }
+  });
+
   test('each list row is one button group with equal segments and no clipped focus ring', async ({
     page,
   }) => {
@@ -3325,8 +3389,9 @@ test.describe('the single input field', () => {
       await expect(rows.first()).toBeVisible();
       const spans = await rows.evaluateAll((items) =>
         items.slice(0, 20).map((item) => {
-          const boxes = [...item.children].map((child) => child.getBoundingClientRect());
-          const row = item.getBoundingClientRect();
+          const group = item.firstElementChild ?? item;
+          const boxes = [...group.children].map((child) => child.getBoundingClientRect());
+          const row = group.getBoundingClientRect();
           return {
             segments: boxes.length,
             tops: boxes.map((box) => Math.round(box.top)),
@@ -3336,7 +3401,7 @@ test.describe('the single input field', () => {
         }),
       );
       for (const span of spans) {
-        expect(span.segments).toBe(3);
+        expect(span.segments).toBe(2);
         expect(new Set(span.tops).size).toBe(1);
         expect(new Set(span.heights).size).toBe(1);
         expect(span.fits).toBe(true);
@@ -3423,14 +3488,14 @@ test.describe('the single input field', () => {
     const row = page
       .getByRole('list', { name: 'Matching families' })
       .getByRole('listitem')
-      .filter({ has: page.getByRole('button', { name: 'Roboto', exact: true }) });
+      .filter({ has: page.getByRole('button', { name: familyOption('Roboto') }) });
     await expect(row).toContainText('OFL-1.1');
     await expect(row.getByText('license OFL-1.1')).toBeAttached();
     await expect(row.getByRole('link', { name: 'Open Roboto on Google Fonts' })).toHaveAttribute(
       'href',
       'https://fonts.google.com/specimen/Roboto',
     );
-    await row.getByRole('button', { name: 'Roboto', exact: true }).hover();
+    await row.getByRole('button', { name: familyOption('Roboto') }).hover();
     await expect(page.locator('.ff-source__tip')).toHaveCount(0);
   });
 
@@ -3462,7 +3527,7 @@ test.describe('the single input field', () => {
     await open(page);
     await page
       .getByRole('list', { name: 'Matching families' })
-      .getByRole('button', { name: 'Montserrat', exact: true })
+      .getByRole('button', { name: familyOption('Montserrat') })
       .click();
     for (const name of ['Upright', 'Italic']) {
       const buttons = page
@@ -3494,7 +3559,7 @@ test.describe('the single input field', () => {
       await open(page);
       await page
         .getByRole('list', { name: 'Matching families' })
-        .getByRole('button', { name: 'Montserrat', exact: true })
+        .getByRole('button', { name: familyOption('Montserrat') })
         .click();
       const info = page.getByRole('button', { name: 'About ext subsets' });
       await info.scrollIntoViewIfNeeded();
@@ -3514,7 +3579,7 @@ test.describe('the single input field', () => {
     await open(page);
     await page
       .getByRole('list', { name: 'Matching families' })
-      .getByRole('button', { name: 'Montserrat', exact: true })
+      .getByRole('button', { name: familyOption('Montserrat') })
       .click();
     const limit = page.getByLabel('Max fonts', { exact: true });
     const before = Number(await limit.inputValue());

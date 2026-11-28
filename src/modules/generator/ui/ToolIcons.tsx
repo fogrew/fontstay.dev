@@ -85,7 +85,12 @@ function Shapes({ name }: { name: ToolIconName }) {
         </>
       );
     case 'panel-start':
-      return <path d="M3 2.5v11M12 3L7 8l5 5" />;
+      return (
+        <>
+          <rect x="1.5" y="2.5" width="13" height="11" rx="1.5" />
+          <path d="M6 2.5v11" />
+        </>
+      );
     case 'panel-end':
       return (
         <>
