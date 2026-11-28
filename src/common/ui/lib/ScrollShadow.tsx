@@ -47,8 +47,8 @@ export function measurePageEdges(
 
 export function PageShadow({ children }: { children: ComponentChildren }) {
   const root = useRef<HTMLDivElement>(null);
-  const top = useRef<HTMLSpanElement>(null);
-  const bottom = useRef<HTMLSpanElement>(null);
+  const top = useRef<HTMLDivElement>(null);
+  const bottom = useRef<HTMLDivElement>(null);
   const [edges, setEdges] = useState({ top: false, bottom: false });
   useEffect(() => {
     const element = root.current;
@@ -89,9 +89,9 @@ export function PageShadow({ children }: { children: ComponentChildren }) {
       data-top={edges.top}
       data-bottom={edges.bottom}
     >
-      <span ref={top} class="ff-shadow__edge" data-edge="top" aria-hidden="true" />
+      <div ref={top} class="ff-shadow__edge" data-edge="top" aria-hidden="true" />
       {children}
-      <span ref={bottom} class="ff-shadow__edge" data-edge="bottom" aria-hidden="true" />
+      <div ref={bottom} class="ff-shadow__edge" data-edge="bottom" aria-hidden="true" />
     </div>
   );
 }

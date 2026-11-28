@@ -789,6 +789,9 @@ html[data-transition] .ff-dock__panel[data-id="export"] {
 .ff-shadow__scroll {
   overflow: auto;
 }
+.ff-select__list .ff-shadow {
+  --ff-shadow-bg: var(--ff-surface);
+}
 .ff-select__list .ff-shadow__scroll {
   box-sizing: border-box;
   max-block-size: calc(var(--ff-list-max) - 2px);
@@ -839,7 +842,6 @@ html[data-transition] .ff-dock__panel[data-id="export"] {
 }
 .ff-shadow--page > .ff-shadow__edge {
   position: sticky;
-  display: block;
   z-index: 4;
 }
 .ff-shadow--page > .ff-shadow__edge[data-edge="top"] {

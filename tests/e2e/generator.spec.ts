@@ -460,6 +460,14 @@ test('the article and the right sidebar show a shadow on the sides with more con
   const article = page.locator('.ff-shadow--page');
   await expect(article).toHaveAttribute('data-bottom', 'true');
   await expect(article).toHaveAttribute('data-top', 'false');
+  const fade = article.locator('> .ff-shadow__edge[data-edge="bottom"]');
+  await expect(fade).toBeVisible();
+  await page.emulateMedia({ forcedColors: 'active' });
+  await expect(fade).toBeHidden();
+  await page.emulateMedia({ forcedColors: 'none' });
+  await page.setViewportSize({ width: 800, height: 700 });
+  await expect(fade).toBeHidden();
+  await page.setViewportSize({ width: 1280, height: 700 });
   await page.evaluate(() => window.scrollTo(0, 600));
   await expect(article).toHaveAttribute('data-top', 'true');
   await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
