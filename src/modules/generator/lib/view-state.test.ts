@@ -1,6 +1,5 @@
 import fc from 'fast-check';
 import { describe, expect, it } from 'vitest';
-import { ARTICLE_IDS } from './articles';
 import { GUIDES } from './guides';
 import { PRESET_IDS } from './layers';
 import {
@@ -17,7 +16,7 @@ import {
   WRAPS,
 } from './view-state';
 
-const base = defaultView('en');
+const base = defaultView();
 
 const layer = fc.record({
   render: fc.constantFrom(...RENDERS),
@@ -27,7 +26,6 @@ const layer = fc.record({
 });
 
 const view = fc.record<PreviewView>({
-  article: fc.constantFrom(...ARTICLE_IDS),
   mode: fc.constantFrom(...PRESET_IDS),
   stacked: fc.boolean(),
   xray: fc.boolean(),
@@ -124,6 +122,11 @@ describe('parseViewDiff', () => {
         extra: 1,
       }),
     ).toEqual({ wrap: 'balance', guides: ['x'], layers: { web: { opacity: 50 } } });
+  });
+
+  it('ignores the sample text chosen in an old link or saved state', () => {
+    expect(parseViewDiff({ article: 'ja', size: 20 })).toEqual({ size: 20 });
+    expect(parseViewDiff({ article: 'ja' })).toEqual({});
   });
 
   it('never throws for arbitrary input', () => {

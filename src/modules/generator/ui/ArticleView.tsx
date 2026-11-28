@@ -15,10 +15,9 @@ import { type Device, DevicePicker, loadDevices } from '@/modules/devices';
 import { type FontTuning, LazyFontFeatures } from '@/modules/font-details';
 import { isProbeWidth, measureShift, shiftWidths, type WidthShift } from '../lib/article-shift';
 import {
-  ARTICLE_IDS,
-  ARTICLE_LANGUAGES,
   type Article,
   type ArticleId,
+  articleFor,
   BUILT_IN,
   isBuiltIn,
   loadArticle,
@@ -382,9 +381,7 @@ export function ArticleView({
     defaultOpen: false,
     desktopOnly: true,
   });
-  const [articleId, setArticleId] = useState<ArticleId>(
-    (ARTICLE_IDS as readonly string[]).includes(locale) ? (locale as ArticleId) : 'en',
-  );
+  const articleId = articleFor(locale);
   const [positions, setPositions] = useState(PRESETS.slider);
   const [xray, setXray] = useState(true);
   const [frameWidth, setFrameWidth] = useState<number>();
@@ -499,13 +496,9 @@ export function ArticleView({
   const [deviceShifts, setDeviceShifts] = useState<ReadonlyMap<number, number>>();
   const probe = useRef<HTMLDivElement>(null);
   const [notInstalled, setNotInstalled] = useState<string[]>([]);
-  const localeArticle: ArticleId = (ARTICLE_IDS as readonly string[]).includes(locale)
-    ? (locale as ArticleId)
-    : 'en';
-  const baseView = defaultView(localeArticle);
+  const baseView = defaultView();
   const viewDiff = diffView(
     {
-      article: articleId,
       mode: preset ?? 'slider',
       stacked,
       xray,
@@ -533,7 +526,6 @@ export function ArticleView({
   useEffect(() => {
     if (!restore) return;
     const next: PreviewView = applyView(baseView, restore);
-    setArticleId(next.article);
     setPositions(PRESETS[next.mode]);
     setStacked(next.stacked);
     setXray(next.xray);
@@ -1221,13 +1213,6 @@ export function ArticleView({
               value={wrap}
               options={WRAPS.map((value) => ({ value, label: wrapLabel(value) }))}
               onChange={(value) => setWrap(value as Wrap)}
-            />
-            <Select
-              compact
-              label={t.article_sample_label()}
-              value={articleId}
-              options={ARTICLE_LANGUAGES.map(([id, label]) => ({ value: id, label }))}
-              onChange={(value) => setArticleId(value as ArticleId)}
             />
           </div>
         </>

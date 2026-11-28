@@ -875,7 +875,7 @@ test('dropdowns and their options show a hover state', async ({ page }) => {
   }).toPass();
 });
 
-test('the text wrapping and sample text controls change the article', async ({ page }) => {
+test('the text wrapping control changes the article', async ({ page }) => {
   await page.goto('/en/');
   await waitForGenerator(page);
   await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(sourceSans);
@@ -886,34 +886,37 @@ test('the text wrapping and sample text controls change the article', async ({ p
   await choose(view.getByLabel('Text wrapping'), 'balance');
   await expect(article).toHaveCSS('text-wrap-mode', 'wrap');
   await expect(article).toHaveCSS('text-wrap-style', 'balance');
-  await choose(view.getByLabel('Sample text'), 'ar');
-  await expect(article).toHaveAttribute('dir', 'rtl');
-  await expect(article).toHaveAttribute('lang', 'ar');
-  await choose(view.getByLabel('Sample text'), 'ja');
-  await expect(article).toHaveAttribute('lang', 'ja');
-  await expect(view.getByRole('heading', { name: /フォントの読み込み/ })).toBeVisible();
 });
 
-test('the article can be shown in many scripts and loads each text on demand', async ({ page }) => {
-  await page.goto('/en/');
-  await waitForGenerator(page);
-  await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(sourceSans);
-  await closePanels(page);
-  const view = page.getByRole('region', { name: 'Article' });
-  const article = view.locator('.ff-article:not([data-probe])').first();
-  await openSettings(view, 'Text and layout');
-  for (const [id, direction] of [
-    ['he', 'rtl'],
-    ['th', 'ltr'],
-    ['zh-Hans', 'ltr'],
-    ['ko', 'ltr'],
-    ['hi', 'ltr'],
+test('the article follows the interface language and loads its text on demand', async ({
+  page,
+}) => {
+  for (const [locale, lang, direction] of [
+    ['ar', 'ar', 'rtl'],
+    ['th', 'th', 'ltr'],
+    ['zh', 'zh-Hans', 'ltr'],
+    ['ja', 'ja', 'ltr'],
+    ['es', 'en', 'ltr'],
   ] as const) {
-    await choose(view.getByLabel('Sample text'), id);
-    await expect(article).toHaveAttribute('lang', id);
+    await page.goto(`/${locale}/`);
+    const article = page.locator('.ff-article-view .ff-article:not([data-probe])').first();
+    await expect(article).toHaveAttribute('lang', lang);
     await expect(article).toHaveAttribute('dir', direction);
     await expect(article.locator('.ff-article__title').last()).not.toBeEmpty();
   }
+});
+
+test('an old link that chose a sample text opens in the interface language', async ({ page }) => {
+  await page.goto('/en/');
+  await waitForGenerator(page);
+  const payload = await encodeLink(page, { v: 1, view: { article: 'ja', size: 24 } });
+  await page.goto(`/en/#s=${payload}`);
+  await page.reload();
+  await waitForGenerator(page);
+  const article = page.locator('.ff-article-view .ff-article:not([data-probe])').first();
+  await expect(article).toHaveCSS('font-size', '24px');
+  await expect(article).toHaveAttribute('lang', 'en');
+  await expect(page.getByRole('alert').filter({ hasText: /link/i })).toHaveCount(0);
 });
 
 test('the CSS stays reachable while the article is large', async ({ page }) => {
@@ -1611,12 +1614,9 @@ test('a font collection is split into separate fonts', async ({ page }) => {
 });
 
 test('no missing-character highlight before a web font is chosen', async ({ page }) => {
-  await page.goto('/en/');
+  await page.goto('/ja/');
   await waitForGenerator(page);
-  await closePanels(page);
-  const view = page.getByRole('region', { name: 'Article' });
-  await openSettings(view, 'Text and layout');
-  await choose(view.getByLabel('Sample text'), 'ja');
+  const view = page.locator('.ff-article-view');
   await expect(view.getByRole('article')).toBeVisible();
   await expect(view.locator('.ff-article__missing')).toHaveCount(0);
 });
@@ -1624,18 +1624,21 @@ test('no missing-character highlight before a web font is chosen', async ({ page
 test('characters missing from the font are highlighted and explained on focus', async ({
   page,
 }) => {
-  await page.goto('/en/');
+  const ja = JSON.parse(readFileSync('messages/ja.json', 'utf8')) as Record<string, string>;
+  await page.goto('/ja/');
   await waitForGenerator(page);
   await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(sourceSans);
-  await closePanels(page);
-  const view = page.getByRole('region', { name: 'Article' });
-  await openSettings(view, 'Text and layout');
-  await choose(view.getByLabel('Sample text'), 'ja');
+  const view = page.locator('.ff-article-view');
   const mark = view.locator('.ff-article:not(.ff-article--ghost) .ff-article__missing').first();
   await expect(mark).toBeVisible();
   await expect(mark).toHaveAttribute(
     'aria-description',
-    /is not supported by the font and is drawn with the .+ fallback/,
+    new RegExp(
+      (ja.article_unsupported ?? '')
+        .split(/\{\w+\}/)
+        .at(-1)
+        ?.trim() || '.',
+    ),
   );
   const overflow = () =>
     page.evaluate(() => ({
@@ -1650,9 +1653,10 @@ test('characters missing from the font are highlighted and explained on focus', 
   await mark.focus();
   await expect(mark).toBeFocused();
   expect(await overflow()).toEqual(before);
-  await openSettings(view, 'Fonts');
-  await choose(view.getByLabel('Missing characters'), 'serif');
-  await expect(mark).toHaveAttribute('aria-description', /Serif/);
+  await page.locator('.ff-toolbar__settings-toggle').click();
+  await openPopover(page.locator('#ff-article-settings'), ja.article_group_fonts ?? '');
+  await choose(view.getByLabel(ja.article_missing_font ?? ''), 'serif');
+  await expect(mark).toHaveAttribute('aria-description', /Serif|セリフ/);
 });
 
 test('the article shows the layout shift measured on this device and ellipsizes without wrapping', async ({

@@ -50,7 +50,7 @@ describe('placeBar', () => {
 });
 
 describe('level overrides in the view diff', () => {
-  const base = defaultView('en');
+  const base = defaultView();
 
   it('round-trips through diff, parse and apply', () => {
     const view = { ...base, levels: { title: { size: 40 }, body: { wrap: 'balance' as const } } };
