@@ -1098,9 +1098,6 @@ html[data-transition] .ff-export[data-expanded] .ff-export__fullscreen[open] .ff
   padding-inline: 0.5rem;
 }
 .ff-toolbar .ff-tool-button {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
   min-block-size: 2rem;
   padding-block: 0;
 }
