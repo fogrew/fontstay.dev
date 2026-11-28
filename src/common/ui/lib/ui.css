@@ -550,6 +550,9 @@
   .ff-dock:not([data-ready]) {
     visibility: hidden;
   }
+  .ff-dock:has(.ff-popover__button[aria-expanded="true"]) {
+    z-index: 40;
+  }
   .ff-dock__column {
     display: flex;
     flex: 0 0 auto;
@@ -702,9 +705,8 @@ html[data-transition] .ff-dock__panel[data-id="export"] {
 }
 .ff-popover__panel {
   margin: 0;
-  position: absolute;
-  inset-block-start: calc(100% + var(--ff-space-1));
-  inset-inline-start: 0;
+  position: fixed;
+  inset: 0 auto auto 0;
   z-index: 40;
   box-sizing: border-box;
   display: grid;
@@ -712,7 +714,7 @@ html[data-transition] .ff-dock__panel[data-id="export"] {
   inline-size: max-content;
   min-inline-size: 16rem;
   max-inline-size: min(36rem, 90vw);
-  max-block-size: calc(100dvh - 6rem);
+  max-block-size: min(100dvh - 6rem, var(--ff-popover-room, 100dvh));
   overflow-y: auto;
   scrollbar-gutter: stable;
   padding: var(--ff-space-3);
@@ -725,19 +727,6 @@ html[data-transition] .ff-dock__panel[data-id="export"] {
   display: none;
 }
 
-.ff-popover[data-align="end"] .ff-popover__panel {
-  inset-inline-start: auto;
-  inset-inline-end: 0;
-}
-
-.ff-popover[data-flip] .ff-popover__panel {
-  inset-inline-start: auto;
-  inset-inline-end: 0;
-}
-.ff-popover[data-align="end"][data-flip] .ff-popover__panel {
-  inset-inline-start: 0;
-  inset-inline-end: auto;
-}
 @supports (position-area: block-end) and (anchor-scope: --ff-popover) {
   @position-try --ff-popover-wide {
     position-area: block-end span-all;
@@ -750,15 +739,11 @@ html[data-transition] .ff-dock__panel[data-id="export"] {
     anchor-name: --ff-popover;
   }
   .ff-popover__panel {
-    position: fixed;
     position-anchor: --ff-popover;
     position-area: block-end span-inline-end;
     position-try-fallbacks: flip-inline, --ff-popover-wide;
     inset: auto;
     margin-block-start: var(--ff-space-1);
-    max-block-size: calc(100dvh - 6rem);
-    overflow-y: auto;
-    scrollbar-gutter: stable;
   }
   .ff-popover[data-align="end"] .ff-popover__panel {
     position-area: block-end span-inline-start;
