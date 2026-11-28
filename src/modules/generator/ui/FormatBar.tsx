@@ -4,6 +4,7 @@ import { type Locale, messagesFor } from '@/common/i18n';
 import { Select, type SelectProps } from '@/common/ui';
 import { placeBar } from '../lib/text-levels';
 import {
+  BODY_SIZE,
   LEVEL_SIZE,
   type LevelStyle,
   LINE_HEIGHT,
@@ -30,7 +31,8 @@ export function FormatBar({
   style,
   wraps,
   font,
-  version,
+  layout,
+  values,
   onLevel,
   onChange,
   onReset,
@@ -46,7 +48,8 @@ export function FormatBar({
   style: LevelStyle;
   wraps: SelectProps['options'];
   font: Pick<SelectProps, 'label' | 'value' | 'options' | 'onChange'> | undefined;
-  version: string;
+  layout: string;
+  values: string;
   onLevel: (level: TextLevel) => void;
   onChange: (change: LevelStyle) => void;
   onReset: () => void;
@@ -55,6 +58,7 @@ export function FormatBar({
   const t = messagesFor(locale);
   const ids = useId();
   const bar = useRef<HTMLDivElement>(null);
+  const dragging = useRef(false);
   const [measured, setMeasured] = useState({ size: 18, lineHeight: 1.5 });
   const [present, setPresent] = useState<readonly TextLevel[]>(TEXT_LEVELS);
   const labels: Record<TextLevel, string> = {
@@ -87,7 +91,7 @@ export function FormatBar({
   const place = () => {
     const element = bar.current;
     const target = anchor();
-    if (!element || !target) return;
+    if (!element || !target || dragging.current) return;
     const selection = document.getSelection();
     const selected =
       selection && !selection.isCollapsed && target.contains(selection.anchorNode)
@@ -128,10 +132,13 @@ export function FormatBar({
       setMeasured({ size: Math.round(size), lineHeight: Math.round(ratio * 20) / 20 });
     }
     setPresent(TEXT_LEVELS.filter((id) => blocksOf(stage.current, id).length > 0));
+  }, [level, block, layout, values]);
+
+  // not re-placed on value changes, so a slider never moves from under the pointer
+  useEffect(() => {
     place();
     const observer = new ResizeObserver(place);
     if (bar.current) observer.observe(bar.current);
-    if (stage.current) observer.observe(stage.current);
     addEventListener('resize', place);
     addEventListener('scroll', place, true);
     window.visualViewport?.addEventListener('resize', place);
@@ -143,7 +150,7 @@ export function FormatBar({
       window.visualViewport?.removeEventListener('resize', place);
       window.visualViewport?.removeEventListener('scroll', place);
     };
-  }, [level, block, version]);
+  }, [level, block, layout]);
 
   useEffect(() => {
     const onPointerDown = (event: Event) => {
@@ -153,13 +160,23 @@ export function FormatBar({
       onClose();
     };
     const onKey = (event: KeyboardEvent) => {
-      if (event.key === 'Escape' && !event.defaultPrevented) close();
+      if (event.key !== 'Escape' || event.defaultPrevented) return;
+      const target = event.target as Node;
+      const own = [bar.current, stage.current, opener.current].some((el) => el?.contains(target));
+      if (own || target === document.body) close();
     };
+    const release = () => {
+      dragging.current = false;
+    };
+    addEventListener('pointerup', release);
+    addEventListener('pointercancel', release);
     document.addEventListener('pointerdown', onPointerDown);
     document.addEventListener('keydown', onKey);
     return () => {
       document.removeEventListener('pointerdown', onPointerDown);
       document.removeEventListener('keydown', onKey);
+      removeEventListener('pointerup', release);
+      removeEventListener('pointercancel', release);
     };
   }, []);
 
@@ -188,6 +205,9 @@ export function FormatBar({
           max={limits.max}
           step={step}
           value={value}
+          onPointerDown={() => {
+            dragging.current = true;
+          }}
           onInput={(event) => onChange({ [key]: event.currentTarget.valueAsNumber })}
         />
       </div>
@@ -210,7 +230,7 @@ export function FormatBar({
         options={present.map((value) => ({ value, label: labels[value] }))}
         onChange={(value) => onLevel(value as TextLevel)}
       />
-      {slider('size', t.preview_size_label(), LEVEL_SIZE, 1, 'px')}
+      {slider('size', t.preview_size_label(), level === 'body' ? BODY_SIZE : LEVEL_SIZE, 1, 'px')}
       {slider('lineHeight', t.preview_line_height_label(), LINE_HEIGHT, 0.05, '')}
       {level !== 'code' && (
         <Select

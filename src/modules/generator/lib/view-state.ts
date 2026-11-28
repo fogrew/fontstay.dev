@@ -29,6 +29,7 @@ export const TEXT_LEVELS = [
 ] as const;
 export type TextLevel = (typeof TEXT_LEVELS)[number];
 export const LEVEL_SIZE = { min: 8, max: 96 };
+export const BODY_SIZE = { min: 12, max: 32 };
 export const LINE_HEIGHT = { min: 1, max: 2.4 };
 
 export interface LevelStyle {
@@ -228,7 +229,7 @@ export function parseViewDiff(raw: unknown): ViewDiff | undefined {
     if (guides.length > 0) view.guides = guides;
   }
   if (typeof raw.boxes === 'boolean') view.boxes = raw.boxes;
-  if (finite(raw.size, 12, 32)) view.size = raw.size;
+  if (finite(raw.size, BODY_SIZE.min, BODY_SIZE.max)) view.size = raw.size;
   if (finite(raw.lineHeight, LINE_HEIGHT.min, LINE_HEIGHT.max)) view.lineHeight = raw.lineHeight;
   const wrap = oneOf(WRAPS, raw.wrap);
   if (wrap) view.wrap = wrap;

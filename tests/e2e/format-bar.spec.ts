@@ -142,3 +142,33 @@ test('offers the font of the level in side by side view', async ({ page }, info)
   await setRange(page, 'Text size', 32);
   await page.screenshot({ path: info.outputPath('format-side.png') });
 });
+
+test('the body size keeps the limits of the Text panel', async ({ page }) => {
+  await open(page);
+  await preview(page, '.ff-article__columns .ff-article__text').click();
+  const slider = bar(page).getByRole('slider', { name: 'Text size' });
+  await expect(slider).toHaveAttribute('min', '12');
+  await expect(slider).toHaveAttribute('max', '32');
+});
+
+test('the bar stays put while a value changes and fits a short viewport', async ({ page }) => {
+  await open(page);
+  await preview(page, '.ff-article__lead').click();
+  const before = await bar(page).boundingBox();
+  const slider = await bar(page).getByRole('slider', { name: 'Text size' }).boundingBox();
+  if (!slider) throw new Error('no slider');
+  await page.mouse.move(slider.x + slider.width / 4, slider.y + slider.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(slider.x + slider.width, slider.y + slider.height / 2, { steps: 5 });
+  expect((await bar(page).boundingBox())?.y).toBe(before?.y);
+  await page.mouse.up();
+
+  await page.setViewportSize({ width: 320, height: 256 });
+  await expect(async () => {
+    const box = await bar(page).boundingBox();
+    expect((box?.y ?? 0) + (box?.height ?? 0)).toBeLessThanOrEqual(256);
+  }).toPass({ timeout: 5000 });
+  const close = bar(page).getByRole('button', { name: 'Close text styles' });
+  await close.click();
+  await expect(bar(page)).toHaveCount(0);
+});

@@ -55,6 +55,7 @@ import type { PreviewItem } from '../lib/preview-item';
 import { levelsCss, setLevelStyle } from '../lib/text-levels';
 import {
   applyView,
+  BODY_SIZE,
   COLORS,
   DEFAULT_LAYERS,
   defaultView,
@@ -1193,8 +1194,8 @@ export function ArticleView({
                 class="ff-article-view__range ff-control"
                 id="ff-article-size"
                 type="range"
-                min={12}
-                max={32}
+                min={BODY_SIZE.min}
+                max={BODY_SIZE.max}
                 value={size}
                 onInput={(event) => setSize(event.currentTarget.valueAsNumber)}
               />
@@ -1701,7 +1702,8 @@ export function ArticleView({
                         onChange: setBodyPick,
                       }
               }
-              version={`${size} ${lineHeight} ${articleId} ${preset} ${stacked} ${levelsSheet}`}
+              layout={`${articleId} ${preset} ${stacked}`}
+              values={`${size} ${lineHeight} ${levelsSheet}`}
               onLevel={(next) => setFormatting({ level: next })}
               onChange={changeLevel}
               onReset={resetLevel}

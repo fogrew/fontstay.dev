@@ -1825,16 +1825,21 @@ html:not([data-sidebar-right="open"]) .ff-article-view__settings {
   gap: var(--ff-space-2);
   align-items: flex-end;
   max-inline-size: min(48rem, calc(100vw - 1rem));
-  max-block-size: calc(100vh - 1rem);
+  max-block-size: calc(100dvh - 1rem);
   margin: 0;
   padding: var(--ff-space-2);
-  overflow: visible;
+  overflow: auto;
   border: 1px solid var(--ff-border);
   border-radius: var(--ff-radius);
   background: var(--ff-surface);
   color: var(--ff-text);
   box-shadow: 0 4px 16px rgb(0 0 0 / 25%);
   font-size: 0.875rem;
+}
+.ff-format-bar::after {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
 }
 .ff-format-bar:popover-open {
   display: flex;
