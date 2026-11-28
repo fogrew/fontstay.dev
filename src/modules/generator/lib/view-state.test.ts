@@ -38,6 +38,20 @@ const view = fc.record<PreviewView>({
   size: fc.integer({ min: 12, max: 32 }),
   lineHeight: fc.double({ min: 1, max: 2.4, noNaN: true }),
   wrap: fc.constantFrom(...WRAPS),
+  levels: fc.record(
+    {
+      title: fc.record(
+        {
+          size: fc.integer({ min: 8, max: 96 }),
+          lineHeight: fc.double({ min: 1, max: 2.4, noNaN: true }),
+          wrap: fc.constantFrom(...WRAPS),
+        },
+        { noNullPrototype: true },
+      ),
+      body: fc.record({ wrap: fc.constantFrom(...WRAPS) }, { noNullPrototype: true }),
+    },
+    { requiredKeys: [], noNullPrototype: true },
+  ),
   substitute: fc.constantFrom(...SUBSTITUTES),
   headingFont: fc.option(fc.string({ minLength: 1, maxLength: 40 }), { nil: undefined }),
   bodyFont: fc.option(fc.string({ minLength: 1, maxLength: 40 }), { nil: undefined }),

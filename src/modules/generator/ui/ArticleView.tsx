@@ -52,6 +52,7 @@ import {
 import { codePointLabel, textRuns } from '../lib/missing';
 import { slugOf } from '../lib/overview';
 import type { PreviewItem } from '../lib/preview-item';
+import { levelsCss, setLevelStyle } from '../lib/text-levels';
 import {
   applyView,
   COLORS,
@@ -63,17 +64,21 @@ import {
   type LayerKind,
   type LayerStyle,
   type LensShows,
+  type LevelStyle,
+  type LevelStyles,
   lensDefault,
   type PreviewView,
   RENDERS,
   type Render,
   SUBSTITUTES,
   type Substitute,
+  type TextLevel,
   type ViewDiff,
   WRAPS,
   type Wrap,
 } from '../lib/view-state';
 import { DeviceShift, ShiftBadge } from './DeviceShift';
+import { FormatBar } from './FormatBar';
 import { IntroGuide } from './IntroGuide';
 import { ToolIcon } from './ToolIcons';
 
@@ -205,27 +210,41 @@ function ArticleBody({
   return (
     <>
       <header class="ff-article__hero">
-        <p class="ff-article__text ff-article__kicker">{body(article.kicker)}</p>
-        <h3 class="ff-article__head ff-heading ff-article__title">{heading(article.title)}</h3>
-        <p class="ff-article__text ff-article__lead">{body(article.lead)}</p>
-        <p class="ff-article__text ff-article__meta">{body(article.meta)}</p>
+        <p class="ff-article__text ff-article__kicker" data-level="kicker">
+          {body(article.kicker)}
+        </p>
+        <h3 class="ff-article__head ff-heading ff-article__title" data-level="title">
+          {heading(article.title)}
+        </h3>
+        <p class="ff-article__text ff-article__lead" data-level="lead">
+          {body(article.lead)}
+        </p>
+        <p class="ff-article__text ff-article__meta" data-level="small">
+          {body(article.meta)}
+        </p>
       </header>
       {article.factors.length > 0 && (
         <ul class="ff-generator__list ff-article__factors">
           {article.factors.map((factor) => (
             <li key={factor.title} class="ff-article__item ff-generator__item ff-article__factor">
               <Icon name={factor.icon} />
-              <h4 class="ff-article__head ff-article__factor-title">{heading(factor.title)}</h4>
-              <p class="ff-article__text">{body(factor.text)}</p>
+              <h4 class="ff-article__head ff-article__factor-title" data-level="subheading">
+                {heading(factor.title)}
+              </h4>
+              <p class="ff-article__text" data-level="body">
+                {body(factor.text)}
+              </p>
             </li>
           ))}
         </ul>
       )}
       <section>
-        <h4 class="ff-article__head ff-article__heading">{heading(article.columnsHeading)}</h4>
+        <h4 class="ff-article__head ff-article__heading" data-level="heading">
+          {heading(article.columnsHeading)}
+        </h4>
         <div class="ff-article__columns">
           {article.columns.map((paragraph, index) => (
-            <p class="ff-article__text" key={index}>
+            <p class="ff-article__text" data-level="body" key={index}>
               <Runs runs={paragraph} coverage={coverage} />
             </p>
           ))}
@@ -233,15 +252,21 @@ function ArticleBody({
       </section>
       <div class="ff-article__split">
         <figure class="ff-article__figure ff-article__quote">
-          <blockquote class="ff-article__blockquote">{body(article.quote.text)}</blockquote>
-          <figcaption class="ff-article__caption">{body(article.quote.cite)}</figcaption>
+          <blockquote class="ff-article__blockquote" data-level="quote">
+            {body(article.quote.text)}
+          </blockquote>
+          <figcaption class="ff-article__caption" data-level="small">
+            {body(article.quote.cite)}
+          </figcaption>
         </figure>
         {article.list.length > 0 && (
           <section>
-            <h4 class="ff-article__head ff-article__heading">{heading(article.listHeading)}</h4>
+            <h4 class="ff-article__head ff-article__heading" data-level="heading">
+              {heading(article.listHeading)}
+            </h4>
             <ol class="ff-article__ordered">
               {article.list.map((item, index) => (
-                <li class="ff-article__item ff-generator__item" key={index}>
+                <li class="ff-article__item ff-generator__item" data-level="body" key={index}>
                   <Runs runs={item} coverage={coverage} />
                 </li>
               ))}
@@ -250,12 +275,19 @@ function ArticleBody({
         )}
         {article.tableRows.length > 0 && (
           <section>
-            <h4 class="ff-article__head ff-article__heading">{heading(article.tableHeading)}</h4>
+            <h4 class="ff-article__head ff-article__heading" data-level="heading">
+              {heading(article.tableHeading)}
+            </h4>
             <table class="ff-article__table">
               <thead>
                 <tr>
                   {article.tableHead.map((cell) => (
-                    <th class="ff-article__cell ff-article__cell--head" key={cell} scope="col">
+                    <th
+                      class="ff-article__cell ff-article__cell--head"
+                      data-level="body"
+                      key={cell}
+                      scope="col"
+                    >
                       {heading(cell)}
                     </th>
                   ))}
@@ -264,10 +296,16 @@ function ArticleBody({
               <tbody>
                 {article.tableRows.map((row) => (
                   <tr key={row[0]}>
-                    <th class="ff-article__cell ff-article__cell--head" scope="row">
+                    <th
+                      class="ff-article__cell ff-article__cell--head"
+                      data-level="body"
+                      scope="row"
+                    >
                       {heading(row[0])}
                     </th>
-                    <td class="ff-article__cell">{body(row[1])}</td>
+                    <td class="ff-article__cell" data-level="body">
+                      {body(row[1])}
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -276,17 +314,29 @@ function ArticleBody({
         )}
       </div>
       <section>
-        <h4 class="ff-article__head ff-article__heading">{heading(article.glyphsHeading)}</h4>
+        <h4 class="ff-article__head ff-article__heading" data-level="heading">
+          {heading(article.glyphsHeading)}
+        </h4>
         <p class="ff-article__text ff-article__glyphs">{body(article.glyphs)}</p>
       </section>
       <ScrollShadow>
-        <pre class="ff-article__code" lang="en" dir="ltr" tabIndex={focusable ? 0 : undefined}>
+        <pre
+          class="ff-article__code"
+          data-level="code"
+          lang="en"
+          dir="ltr"
+          tabIndex={focusable ? 0 : undefined}
+        >
           <code class="ff-article__mono ff-article__code-text">{SAMPLE_CODE}</code>
         </pre>
       </ScrollShadow>
-      <footer class="ff-article__footer">{body(article.footer)}</footer>
+      <footer class="ff-article__footer" data-level="small">
+        {body(article.footer)}
+      </footer>
       <section>
-        <h4 class="ff-article__head ff-article__heading">{t.article_cascade_heading()}</h4>
+        <h4 class="ff-article__head ff-article__heading" data-level="heading">
+          {t.article_cascade_heading()}
+        </h4>
         <ul class="ff-article__cascade">
           {CASCADE_SIZES.map((size) => (
             <li class="ff-article__cascade-row" key={size}>
@@ -350,6 +400,14 @@ export function ArticleView({
   const [size, setSize] = useState(18);
   const [lineHeight, setLineHeight] = useState(1.5);
   const [wrap, setWrap] = useState<Wrap>('wrap');
+  const [levels, setLevels] = useState<LevelStyles>({});
+  const [formatting, setFormatting] = useState<{
+    level: TextLevel;
+    block?: Element | undefined;
+    focus?: boolean;
+  }>();
+  const formatButton = useRef<HTMLButtonElement>(null);
+  const formatBarId = useId();
   const [tunings, setTunings] = useState<Record<number, FontTuning>>({});
   const [substitute, setSubstitute] = useState<Substitute>('sans-serif');
   const [headingPick, setHeadingPick] = useState<string>();
@@ -460,6 +518,7 @@ export function ArticleView({
       size,
       lineHeight,
       wrap,
+      levels,
       substitute,
       headingFont: headingPick,
       bodyFont: bodyPick,
@@ -493,6 +552,7 @@ export function ArticleView({
     setSize(next.size);
     setLineHeight(next.lineHeight);
     setWrap(next.wrap);
+    setLevels(next.levels);
     setSubstitute(next.substitute);
     setHeadingPick(next.headingFont);
     setBodyPick(next.bodyFont);
@@ -525,6 +585,7 @@ export function ArticleView({
   const categoryOf = (family: string | undefined) =>
     items.find((item) => item.family === family)?.fallback.category ?? 'sans-serif';
 
+  const levelsKey = JSON.stringify(levels);
   const localKey = items
     .map((item) => `${item.id}:${item.fallback.localNames.join('|')}`)
     .join(';');
@@ -600,6 +661,17 @@ export function ArticleView({
     };
   }, [fontFaces]);
 
+  const levelsSheet = levelsCss(levels, formatting?.level);
+  useLayoutEffect(() => {
+    if (!levelsSheet) return;
+    const sheet = new CSSStyleSheet();
+    sheet.replaceSync(levelsSheet);
+    document.adoptedStyleSheets = [...document.adoptedStyleSheets, sheet];
+    return () => {
+      document.adoptedStyleSheets = document.adoptedStyleSheets.filter((entry) => entry !== sheet);
+    };
+  }, [levelsSheet]);
+
   const pointsOf = (family: string | undefined): Uint32Array | 'all' => {
     if (family === SYSTEM) return 'all';
     const merged = new Set<number>();
@@ -651,6 +723,7 @@ export function ArticleView({
     size,
     lineHeight,
     wrap,
+    levelsKey,
     articleId,
     headingFamily,
     bodyFamily,
@@ -747,6 +820,7 @@ export function ArticleView({
     size,
     lineHeight,
     wrap,
+    levelsKey,
     articleId,
     headingFamily,
     bodyFamily,
@@ -961,6 +1035,64 @@ export function ArticleView({
       appearance.disconnect();
     };
   }, []);
+
+  const blockOf = (node: EventTarget | Node | null) => {
+    const element = node instanceof Element ? node : (node as Node | null)?.parentElement;
+    const block = element?.closest<HTMLElement>('[data-level]');
+    const stage = frame.current;
+    return block && stage?.contains(block) && !block.closest('[inert]') ? block : undefined;
+  };
+  const formatBlock = (block: HTMLElement | undefined) => {
+    if (block) setFormatting({ level: block.dataset.level as TextLevel, block });
+  };
+  useEffect(() => {
+    let timer: ReturnType<typeof setTimeout>;
+    const onSelection = () => {
+      clearTimeout(timer);
+      timer = setTimeout(() => {
+        const selection = document.getSelection();
+        if (selection && !selection.isCollapsed) formatBlock(blockOf(selection.anchorNode));
+      }, 250);
+    };
+    document.addEventListener('selectionchange', onSelection);
+    return () => {
+      clearTimeout(timer);
+      document.removeEventListener('selectionchange', onSelection);
+    };
+  }, []);
+  const closeFormat = () => setFormatting(undefined);
+  const openFormat = () => {
+    if (formatting) {
+      closeFormat();
+      return;
+    }
+    setFormatting({ level: 'body', focus: true });
+  };
+  const level = formatting?.level;
+  const levelStyle = level ? levels[level] : undefined;
+  const changeLevel = (change: LevelStyle) => {
+    if (!level) return;
+    const { size: nextSize, lineHeight: nextLine, ...rest } = change;
+    if (level === 'body') {
+      if (nextSize !== undefined) setSize(nextSize);
+      if (nextLine !== undefined) setLineHeight(nextLine);
+    }
+    const override = level === 'body' ? rest : change;
+    setLevels((all) =>
+      setLevelStyle(all, level, {
+        ...override,
+        ...('wrap' in override && override.wrap === wrap ? { wrap: undefined } : {}),
+      }),
+    );
+  };
+  const resetLevel = () => {
+    if (!level) return;
+    if (level === 'body') {
+      setSize(baseView.size);
+      setLineHeight(baseView.lineHeight);
+    }
+    setLevels((all) => setLevelStyle(all, level, undefined));
+  };
 
   const presetButton = (value: Preset) => (
     <button
@@ -1417,6 +1549,18 @@ export function ArticleView({
           {xrayContent}
         </Popover>
       </div>
+      <button
+        ref={formatButton}
+        type="button"
+        class="ff-control ff-button ff-button--secondary ff-tool-button"
+        aria-expanded={formatting !== undefined}
+        aria-controls={formatting ? formatBarId : undefined}
+        aria-label={t.format_open()}
+        title={t.format_open()}
+        onClick={openFormat}
+      >
+        <ToolIcon name="format" />
+      </button>
       <DevicePicker
         locale={locale}
         glyph={<ToolIcon name="emulation" />}
@@ -1525,8 +1669,49 @@ export function ArticleView({
               <span class="ff-muted">{t.preview_not_installed_note()}</span>
             </p>
           )}
+          {formatting && (
+            <FormatBar
+              locale={locale}
+              id={formatBarId}
+              level={formatting.level}
+              block={formatting.block}
+              focus={formatting.focus ?? false}
+              stage={frame}
+              opener={formatButton}
+              style={{
+                size: formatting.level === 'body' ? size : levelStyle?.size,
+                lineHeight: formatting.level === 'body' ? lineHeight : levelStyle?.lineHeight,
+                wrap: levelStyle?.wrap ?? wrap,
+              }}
+              wraps={WRAPS.map((value) => ({ value, label: wrapLabel(value) }))}
+              font={
+                empty || formatting.level === 'code'
+                  ? undefined
+                  : ['title', 'heading', 'subheading'].includes(formatting.level)
+                    ? {
+                        label: t.article_heading_font(),
+                        value: headingFamily ?? SYSTEM,
+                        options: familyOptions,
+                        onChange: setHeadingPick,
+                      }
+                    : {
+                        label: t.article_body_font(),
+                        value: bodyFamily ?? SYSTEM,
+                        options: familyOptions,
+                        onChange: setBodyPick,
+                      }
+              }
+              version={`${size} ${lineHeight} ${articleId} ${preset} ${stacked} ${levelsSheet}`}
+              onLevel={(next) => setFormatting({ level: next })}
+              onChange={changeLevel}
+              onReset={resetLevel}
+              onClose={closeFormat}
+            />
+          )}
+          {/* biome-ignore lint/a11y/noStaticElementInteractions lint/a11y/useKeyWithClickEvents: delegated clicks, keyboard users have the toolbar button */}
           <div
             ref={frame}
+            onClick={(event) => formatBlock(blockOf(event.target))}
             class="ff-article-view__frame"
             data-constrained={frameWidth === undefined ? undefined : ''}
             style={frameWidth === undefined ? undefined : { inlineSize: `${frameWidth}px` }}

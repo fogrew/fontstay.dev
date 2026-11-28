@@ -618,31 +618,36 @@ body {
 :root[data-vision="protanopia"] .ff-popover__panel,
 :root[data-vision="protanopia"] .ff-share-dialog,
 :root[data-vision="protanopia"] .ff-export__fullscreen,
-:root[data-vision="protanopia"] .ff-export__tooltip {
+:root[data-vision="protanopia"] .ff-export__tooltip,
+:root[data-vision="protanopia"] .ff-format-bar {
   filter: url("#ff-protanopia");
 }
 :root[data-vision="deuteranopia"] .ff-popover__panel,
 :root[data-vision="deuteranopia"] .ff-share-dialog,
 :root[data-vision="deuteranopia"] .ff-export__fullscreen,
-:root[data-vision="deuteranopia"] .ff-export__tooltip {
+:root[data-vision="deuteranopia"] .ff-export__tooltip,
+:root[data-vision="deuteranopia"] .ff-format-bar {
   filter: url("#ff-deuteranopia");
 }
 :root[data-vision="tritanopia"] .ff-popover__panel,
 :root[data-vision="tritanopia"] .ff-share-dialog,
 :root[data-vision="tritanopia"] .ff-export__fullscreen,
-:root[data-vision="tritanopia"] .ff-export__tooltip {
+:root[data-vision="tritanopia"] .ff-export__tooltip,
+:root[data-vision="tritanopia"] .ff-format-bar {
   filter: url("#ff-tritanopia");
 }
 :root[data-vision="achromatopsia"] .ff-popover__panel,
 :root[data-vision="achromatopsia"] .ff-share-dialog,
 :root[data-vision="achromatopsia"] .ff-export__fullscreen,
-:root[data-vision="achromatopsia"] .ff-export__tooltip {
+:root[data-vision="achromatopsia"] .ff-export__tooltip,
+:root[data-vision="achromatopsia"] .ff-format-bar {
   filter: url("#ff-achromatopsia");
 }
 :root[data-vision="blur"] .ff-popover__panel,
 :root[data-vision="blur"] .ff-share-dialog,
 :root[data-vision="blur"] .ff-export__fullscreen,
-:root[data-vision="blur"] .ff-export__tooltip {
+:root[data-vision="blur"] .ff-export__tooltip,
+:root[data-vision="blur"] .ff-format-bar {
   filter: blur(1.5px);
 }
 @media (forced-colors: active) {
@@ -652,7 +657,8 @@ body {
   :root[data-vision] .ff-popover__panel,
   :root[data-vision] .ff-share-dialog,
   :root[data-vision] .ff-export__fullscreen,
-  :root[data-vision] .ff-export__tooltip {
+  :root[data-vision] .ff-export__tooltip,
+  :root[data-vision] .ff-format-bar {
     filter: none;
   }
 }

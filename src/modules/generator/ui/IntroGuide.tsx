@@ -28,16 +28,20 @@ export function IntroGuide({
       <h3
         id={interactive ? 'ff-intro-title' : undefined}
         class="ff-heading ff-article__head ff-article__title"
+        data-level="title"
       >
         {t.intro_heading()}
       </h3>
-      <p class="ff-intro__text">{t.intro_what()}</p>
+      <p class="ff-intro__text" data-level="body">
+        {t.intro_what()}
+      </p>
       <div class="ff-intro__demo" aria-hidden="true">
         {STAGES.map((stage) => (
           <figure key={stage} class="ff-intro__frame" data-state={stage}>
             <figcaption class="ff-intro__caption">{captions[stage]}</figcaption>
             <p
               class="ff-intro__text"
+              data-level="body"
               style={demoFonts ? { fontFamily: demoFonts[stage] } : undefined}
             >
               {t.intro_demo_text()}
@@ -45,7 +49,9 @@ export function IntroGuide({
           </figure>
         ))}
       </div>
-      <p class="ff-intro__text ff-muted">{t.intro_demo_note()}</p>
+      <p class="ff-intro__text ff-muted" data-level="body">
+        {t.intro_demo_note()}
+      </p>
       <div class="ff-intro__status" role={interactive ? 'status' : undefined}>
         <p
           class="ff-intro__status-text ff-intro__text"

@@ -10,6 +10,7 @@ export type ToolIconName =
   | 'image'
   | 'panel-start'
   | 'panel-end'
+  | 'format'
   | GuideId;
 
 const GUIDE_LINE: Record<GuideId, number> = {
@@ -22,6 +23,8 @@ const GUIDE_LINE: Record<GuideId, number> = {
 
 function Shapes({ name }: { name: ToolIconName }) {
   switch (name) {
+    case 'format':
+      return <path d="M1.5 12.5 5 3.5l3.5 9M2.8 9.5h4.4M10.5 8h4M12.5 8v4.5" />;
     case 'overlay':
       return (
         <>
