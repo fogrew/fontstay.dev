@@ -259,6 +259,21 @@
 .ff-accordion__toggle[aria-expanded="true"]::before {
   content: "▾" / "";
 }
+.ff-accordion__toggle--icon {
+  display: flex;
+  align-items: center;
+  gap: var(--ff-space-2);
+}
+.ff-accordion__toggle--icon::before {
+  order: 1;
+  margin-inline: auto 0;
+}
+.ff-accordion__icon {
+  display: grid;
+  flex: none;
+  place-items: center;
+  inline-size: 1.125rem;
+}
 .ff-accordion__panel {
   position: relative;
   flex: 1 1 auto;

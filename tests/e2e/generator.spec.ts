@@ -303,6 +303,33 @@ test('a background image sits behind the preview text and is validated', async (
   await expect(article).toHaveCSS('background-image', 'none');
 });
 
+test('right sidebar headers carry an icon and the overlay layers panel explains itself', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await page.goto('/en/');
+  await waitForGenerator(page);
+  await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(sourceSans);
+  await closePanels(page);
+  const aside = page.locator('#ff-article-settings');
+  if (!(await aside.isVisible())) await page.locator('.ff-toolbar__settings-toggle').click();
+  const headers = aside.locator('.ff-accordion__toggle');
+  await expect(headers.first()).toBeVisible();
+  await expect(aside.locator('.ff-accordion__toggle .ff-accordion__icon svg')).toHaveCount(
+    await headers.count(),
+  );
+  const layers = aside.getByRole('group', { name: 'Overlay layers' });
+  const note = aside.getByText('switch to the “Overlay” view mode');
+  await expect(note).toBeVisible();
+  await expect(layers).toHaveAccessibleDescription(/switch to the “Overlay” view mode/);
+  await page
+    .getByRole('region', { name: 'Article' })
+    .getByRole('button', { name: 'Overlay', exact: true })
+    .click();
+  await expect(note).toHaveCount(0);
+  await expect(layers).toBeEnabled();
+});
+
 test('the inspect tools draw, fade and compare the web font and the fallback', async ({ page }) => {
   await page.goto('/en/');
   await waitForGenerator(page);

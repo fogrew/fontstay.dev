@@ -7,6 +7,7 @@ export interface AccordionProps {
   items: readonly {
     id: string;
     label: string;
+    icon?: ComponentChildren;
     content: ComponentChildren;
     open?: boolean;
     keep?: boolean;
@@ -155,13 +156,22 @@ export function Accordion({ items, resizeLabel, storageKey, resizable = true }: 
             >
               <h2 class="ff-heading ff-accordion__heading">
                 <button
-                  class="ff-accordion__toggle ff-control"
+                  class={
+                    item.icon
+                      ? 'ff-accordion__toggle ff-accordion__toggle--icon ff-control'
+                      : 'ff-accordion__toggle ff-control'
+                  }
                   type="button"
                   id={`${base}-${item.id}-button`}
                   aria-expanded={open}
                   aria-controls={`${base}-${item.id}-panel`}
                   onClick={() => toggle(item.id)}
                 >
+                  {item.icon && (
+                    <span class="ff-accordion__icon" aria-hidden="true">
+                      {item.icon}
+                    </span>
+                  )}
                   {item.label}
                 </button>
               </h2>

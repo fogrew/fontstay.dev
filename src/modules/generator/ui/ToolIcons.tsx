@@ -7,6 +7,7 @@ export type ToolIconName =
   | 'emulation'
   | 'more'
   | 'boxes'
+  | 'image'
   | 'panel-start'
   | 'panel-end'
   | GuideId;
@@ -96,6 +97,14 @@ function Shapes({ name }: { name: ToolIconName }) {
         <>
           <rect x="1.5" y="2.5" width="13" height="11" rx="1.5" />
           <path d="M10 2.5v11" />
+        </>
+      );
+    case 'image':
+      return (
+        <>
+          <rect x="1.5" y="2.5" width="13" height="11" rx="1.5" />
+          <circle cx="5.5" cy="6" r="1.2" class="ff-tool-icon__fill" />
+          <path d="M2 12l4-3.5 2.5 2 3-3 2.5 2.5" />
         </>
       );
     case 'boxes':
