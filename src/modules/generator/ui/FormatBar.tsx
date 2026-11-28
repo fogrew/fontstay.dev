@@ -163,7 +163,7 @@ export function FormatBar({
       if (event.key !== 'Escape' || event.defaultPrevented) return;
       const target = event.target as Node;
       const own = [bar.current, stage.current, opener.current].some((el) => el?.contains(target));
-      if (own || target === document.body) close();
+      if (own || target.contains(stage.current)) close();
     };
     const release = () => {
       dragging.current = false;

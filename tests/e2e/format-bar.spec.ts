@@ -73,6 +73,14 @@ test('the toolbar button opens it for the keyboard and Escape returns focus', as
   await expect(button).toBeFocused();
 });
 
+test('Escape closes the bar after a click on preview text', async ({ page }) => {
+  await open(page);
+  await preview(page, '.ff-article__lead').click();
+  await expect(bar(page)).toBeVisible();
+  await page.keyboard.press('Escape');
+  await expect(bar(page)).toHaveCount(0);
+});
+
 test('a click outside the preview text closes the bar', async ({ page }) => {
   await open(page);
   await preview(page, '.ff-article__lead').click();
