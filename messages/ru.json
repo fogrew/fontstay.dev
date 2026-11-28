@@ -50,7 +50,7 @@
   "error_disposed": "Чтение остановлено.",
   "fit_heading": "Подбор запасного шрифта",
   "fit_latin_note": "Подбор использует частоты букв выбранного языка. Системы и шрифты берутся из аудитории.",
-  "fit_no_coverage": "В этом шрифте нет глифов выбранного языка текста, подобрать запасной нельзя.",
+  "fit_no_coverage": "В этом шрифте нет глифов для букв образца, подобрать запасной нельзя.",
   "fit_ascent_label": "ascent-override",
   "fit_descent_label": "descent-override",
   "fit_line_gap_label": "line-gap-override",

@@ -50,7 +50,7 @@
   "error_disposed": "Reading was stopped.",
   "fit_heading": "Fallback fit",
   "fit_latin_note": "The fit uses the letter frequencies of the selected language. Systems and fonts come from the audience.",
-  "fit_no_coverage": "This font has no glyphs for the selected text language, so a fallback cannot be fitted.",
+  "fit_no_coverage": "This font has no glyphs for the sample letters, so a fallback cannot be fitted.",
   "fit_ascent_label": "Ascent override",
   "fit_descent_label": "Descent override",
   "fit_line_gap_label": "Line gap override",

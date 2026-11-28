@@ -50,7 +50,7 @@
   "error_disposed": "Đã dừng đọc.",
   "fit_heading": "Điều chỉnh phông chữ dự phòng",
   "fit_latin_note": "Phép điều chỉnh dựa trên tần suất chữ cái của ngôn ngữ đã chọn. Hệ thống và phông chữ được lấy theo đối tượng người dùng.",
-  "fit_no_coverage": "Phông chữ này không có glyph cho ngôn ngữ văn bản đã chọn nên không thể điều chỉnh phông chữ dự phòng.",
+  "fit_no_coverage": "Phông chữ này không có glyph cho các chữ cái mẫu nên không thể điều chỉnh phông chữ dự phòng.",
   "fit_ascent_label": "Ascent override",
   "fit_descent_label": "Descent override",
   "fit_line_gap_label": "Line gap override",

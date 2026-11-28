@@ -1656,7 +1656,7 @@ test('characters missing from the font are highlighted and explained on focus', 
   await page.locator('.ff-toolbar__settings-toggle').click();
   await openPopover(page.locator('#ff-article-settings'), ja.article_group_fonts ?? '');
   await choose(view.getByLabel(ja.article_missing_font ?? ''), 'serif');
-  await expect(mark).toHaveAttribute('aria-description', /Serif|セリフ/);
+  await expect(mark).toHaveAttribute('aria-description', /(?<!サン)セリフ/);
 });
 
 test('the article shows the layout shift measured on this device and ellipsizes without wrapping', async ({

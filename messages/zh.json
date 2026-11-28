@@ -50,7 +50,7 @@
   "error_disposed": "读取已停止。",
   "fit_heading": "回退字体匹配",
   "fit_latin_note": "匹配依据所选语言的字母频率。系统和字体取决于受众。",
-  "fit_no_coverage": "此字体没有所选文本语言的字形，因此无法匹配回退字体。",
+  "fit_no_coverage": "此字体没有示例字母的字形，因此无法匹配回退字体。",
   "fit_ascent_label": "上升值覆盖",
   "fit_descent_label": "下降值覆盖",
   "fit_line_gap_label": "行间隙覆盖",

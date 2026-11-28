@@ -50,7 +50,7 @@
   "error_disposed": "A leitura foi interrompida.",
   "fit_heading": "Ajuste do fallback",
   "fit_latin_note": "O ajuste usa a frequência das letras do idioma selecionado. Os sistemas e as fontes vêm do público.",
-  "fit_no_coverage": "Esta fonte não tem glifos para o idioma de texto selecionado, então não é possível ajustar um fallback.",
+  "fit_no_coverage": "Esta fonte não tem glifos para as letras de amostra, então não é possível ajustar um fallback.",
   "fit_ascent_label": "Ascent override",
   "fit_descent_label": "Descent override",
   "fit_line_gap_label": "Line gap override",
