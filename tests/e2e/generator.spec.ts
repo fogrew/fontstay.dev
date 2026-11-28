@@ -309,9 +309,11 @@ test('right sidebar headers carry an icon and the overlay layers panel explains 
   await page.setViewportSize({ width: 1280, height: 800 });
   await page.goto('/en/');
   await waitForGenerator(page);
+  const aside = page.locator('#ff-article-settings');
+  if (!(await aside.isVisible())) await page.locator('.ff-toolbar__settings-toggle').click();
+  await expect(aside.getByText('Add a font, then switch')).toBeVisible();
   await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(sourceSans);
   await closePanels(page);
-  const aside = page.locator('#ff-article-settings');
   if (!(await aside.isVisible())) await page.locator('.ff-toolbar__settings-toggle').click();
   const headers = aside.locator('.ff-accordion__toggle');
   await expect(headers.first()).toBeVisible();

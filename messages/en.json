@@ -473,6 +473,7 @@
   "audience_tags_group_browsers": "Browsers",
   "article_group_layers": "Overlay layers",
   "layers_unavailable": "Not available in this view mode. To adjust the layers, switch to the “{mode}” view mode.",
+  "layers_unavailable_empty": "Not available yet. Add a font, then switch to the “{mode}” view mode to adjust the layers.",
   "layer_render": "Drawing",
   "layer_render_fill": "Fill",
   "layer_render_outline": "Outline",

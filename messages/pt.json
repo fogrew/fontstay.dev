@@ -473,6 +473,7 @@
   "audience_tags_group_browsers": "Navegadores",
   "article_group_layers": "Camadas sobrepostas",
   "layers_unavailable": "Indisponível neste modo de visualização. Para ajustar as camadas, mude para o modo “{mode}”.",
+  "layers_unavailable_empty": "Ainda indisponível. Adicione uma fonte e mude para o modo “{mode}” para ajustar as camadas.",
   "layer_render": "Desenho",
   "layer_render_fill": "Preenchimento",
   "layer_render_outline": "Contorno",

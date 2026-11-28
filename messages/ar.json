@@ -473,6 +473,7 @@
   "audience_tags_group_browsers": "المتصفحات",
   "article_group_layers": "طبقات التراكب",
   "layers_unavailable": "غير متاح في وضع العرض هذا. لضبط الطبقات، انتقل إلى وضع العرض «{mode}».",
+  "layers_unavailable_empty": "غير متاح بعد. أضف خطًا، ثم انتقل إلى وضع العرض «{mode}» لضبط الطبقات.",
   "layer_render": "الرسم",
   "layer_render_fill": "تعبئة",
   "layer_render_outline": "حدود",

@@ -473,6 +473,7 @@
   "audience_tags_group_browsers": "浏览器",
   "article_group_layers": "叠加图层",
   "layers_unavailable": "当前视图模式下不可用。要调整图层，请切换到“{mode}”视图模式。",
+  "layers_unavailable_empty": "暂不可用。请先添加字体，然后切换到“{mode}”视图模式以调整图层。",
   "layer_render": "绘制方式",
   "layer_render_fill": "填充",
   "layer_render_outline": "轮廓",

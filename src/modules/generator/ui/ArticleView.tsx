@@ -1129,7 +1129,9 @@ export function ArticleView({
           <div class="ff-settings__section">
             {!overlaid && (
               <p class="ff-muted ff-article-view__note" id="ff-layers-note">
-                {t.layers_unavailable({ mode: t.mode_overlay() })}
+                {(empty ? t.layers_unavailable_empty : t.layers_unavailable)({
+                  mode: t.mode_overlay(),
+                })}
               </p>
             )}
             <fieldset

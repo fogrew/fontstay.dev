@@ -273,6 +273,7 @@
   flex: none;
   place-items: center;
   inline-size: 1.125rem;
+  font-size: 1.125rem;
 }
 .ff-accordion__panel {
   position: relative;
@@ -381,6 +382,9 @@
 .ff-icon-button .ff-icon {
   margin: 0;
   vertical-align: baseline;
+}
+.ff-accordion__icon .ff-icon {
+  margin: 0;
 }
 .ff-icon--wide {
   inline-size: 1.8em;
