@@ -248,6 +248,15 @@ describe('parseFontFaces with a locale script', () => {
     expect(faces[1]?.sources[0]?.url).toContain('cyr');
   });
 
+  it('leaves a family without a Latin counterpart in place', () => {
+    const lone = rule('U+0400-045F', 'x').replace('font-family:A', 'font-family:B');
+    expect(parseFontFaces(`${lone}${css}`, 0x430).map((face) => face.family)).toEqual([
+      'B',
+      'A',
+      'A',
+    ]);
+  });
+
   it('adds nothing for a rule that covers both', () => {
     expect(parseFontFaces(rule('U+0000-00FF, U+0400-045F', 'all'), 0x430)).toHaveLength(1);
   });

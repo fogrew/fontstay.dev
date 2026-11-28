@@ -101,7 +101,7 @@ export async function fontstayCollect(win, doc, options = {}) {
     });
   };
 
-  const parts = [];
+  const parts = new Map();
   const faceRules = [];
   const pending = [];
   const queued = new Set();
@@ -112,17 +112,18 @@ export async function fontstayCollect(win, doc, options = {}) {
     pending.push(url);
   };
   const addFace = (face, range) => {
-    if (parts.length >= MAX_PARTS) return;
     const base = covers(range, [0x41, 0x61]);
     const script = !base && options.scriptPoint && covers(range, [options.scriptPoint]);
     const key = `${face.family.toLowerCase()}|${face.weight}|${face.style}`;
-    parts.push({ face, key, base, script });
+    const id = `${key}|${script ? 1 : 0}|${base ? 1 : 0}`;
+    if (!parts.has(id) && parts.size < MAX_PARTS) parts.set(id, { face, key, base, script });
   };
   const mergeParts = () => {
-    const based = new Set(parts.filter((part) => !part.script).map((part) => part.key));
+    const all = [...parts.values()];
+    const based = new Set(all.filter((part) => !part.script).map((part) => part.key));
     const main = new Map();
     const extra = new Map();
-    for (const part of parts) {
+    for (const part of all) {
       if (part.script && based.has(part.key)) {
         if (!extra.has(part.key)) extra.set(part.key, part);
       } else if (!main.has(part.key) || (part.base && !main.get(part.key).base)) {

@@ -171,6 +171,7 @@ export function parseFontFaces(css: string, scriptPoint?: number): ImportedFace[
   const slots = new Map<string, number>();
   const latin = new Set<ImportedFace>();
   const extra = new Map<string, ImportedFace>();
+  const after = new Map<string, number>();
   let rules = 0;
   let position = 0;
   while (rules < MAX_RULES) {
@@ -204,7 +205,10 @@ export function parseFontFaces(css: string, scriptPoint?: number): ImportedFace[
     if (face.script) {
       const kept = extra.get(key);
       if (kept) kept.skipped++;
-      else if (extra.size < MAX_FACES) extra.set(key, face);
+      else if (extra.size < MAX_FACES) {
+        extra.set(key, face);
+        after.set(key, faces.length);
+      }
       continue;
     }
     const slot = slots.get(key);
@@ -223,9 +227,13 @@ export function parseFontFaces(css: string, scriptPoint?: number): ImportedFace[
       faces[slot] = face;
     } else current.skipped++;
   }
-  const lone = [...extra].filter(([key]) => !slots.has(key)).map(([, face]) => face);
-  const paired = [...extra].filter(([key]) => slots.has(key)).map(([, face]) => face);
-  return [...faces, ...lone, ...paired].slice(0, MAX_FACES);
+  const ordered = [...faces];
+  const paired: ImportedFace[] = [];
+  for (const [key, face] of [...extra].reverse()) {
+    if (slots.has(key)) paired.unshift(face);
+    else ordered.splice(after.get(key) ?? 0, 0, face);
+  }
+  return [...ordered, ...paired].slice(0, MAX_FACES);
 }
 
 const DATA_URL =
