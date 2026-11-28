@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'preact/hooks';
-import { type Locale, messagesFor } from '@/common/i18n';
+import { type Locale, localeScriptPoint, messagesFor } from '@/common/i18n';
 import { Button } from '@/common/ui';
 import type { SiteImport } from '@/modules/import-receiver';
 import type { DirectFailure, DirectResult } from '../lib/direct-fetch';
@@ -38,7 +38,10 @@ export function DirectFetch({
     let result: DirectResult;
     try {
       const { directImport } = await import('../lib/direct-fetch');
-      result = await directImport(address, { signal: controller.signal });
+      result = await directImport(address, {
+        signal: controller.signal,
+        scriptPoint: localeScriptPoint(locale),
+      });
     } catch {
       result = { ok: false, reason: 'unreachable' };
     }

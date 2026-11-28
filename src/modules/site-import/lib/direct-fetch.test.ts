@@ -310,3 +310,16 @@ describe('limits and ordering', () => {
     ).toEqual({ ok: false, reason: 'unreachable' });
   });
 });
+
+describe('mergeFaces with a locale script', () => {
+  const rule = (range: string, file: string) =>
+    `@font-face{font-family:A;src:url(/${file}.woff2);unicode-range:${range}}`;
+  const css = `${rule('U+0400-045F', 'cyr')}${rule('U+0000-00FF', 'lat')}`;
+  const urls = (point?: number) =>
+    mergeFaces(scanCss(css, 'https://a.test/', point).faces).map((face) => face.url);
+
+  it('keeps the script file next to the Latin one', () => {
+    expect(urls()).toEqual(['https://a.test/lat.woff2']);
+    expect(urls(0x430)).toEqual(['https://a.test/cyr.woff2', 'https://a.test/lat.woff2']);
+  });
+});

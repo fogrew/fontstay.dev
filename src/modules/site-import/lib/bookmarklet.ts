@@ -1,3 +1,4 @@
+import { localeScriptPoint } from '@/common/i18n';
 import { DATA_TYPE, importPath, PROTOCOL_VERSION, READY_TYPE } from '@/modules/import-receiver';
 import collector from '../collector/collect.js?raw';
 
@@ -13,7 +14,7 @@ const WRAPPER = `
   const target = __TARGET__;
   const token = Array.from(crypto.getRandomValues(new Uint8Array(24)), (byte) => 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'[byte % 62]).join('');
   const child = window.open(target + __PATH__ + '#t=' + token, '_blank');
-  const data = fontstayCollect(window, document);
+  const data = fontstayCollect(window, document, { scriptPoint: __SCRIPT__ });
   if (!child) {
     (async () => {
       const json = data.then((payload) => new Blob([JSON.stringify({ ...payload, files: [], blocks: [] })], { type: 'text/plain' }));
@@ -45,6 +46,7 @@ export interface BookmarkletOptions {
 export function bookmarkletSource(options: BookmarkletOptions): string {
   const wrapper = WRAPPER.replaceAll('__TARGET__', () => JSON.stringify(options.origin))
     .replaceAll('__PATH__', () => JSON.stringify(importPath(options.locale)))
+    .replaceAll('__SCRIPT__', () => String(localeScriptPoint(options.locale) ?? 0))
     .replaceAll('__COPIED__', () => JSON.stringify(options.copied))
     .replaceAll('__FAILED__', () => JSON.stringify(options.failed));
   const body = collector.replace(/^export /m, '');

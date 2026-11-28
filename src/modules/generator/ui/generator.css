@@ -477,6 +477,14 @@
 .ff-source__name--active:not([aria-pressed="true"]) {
   background: var(--ff-state-full);
 }
+.ff-source__script {
+  flex: none;
+  color: var(--ff-muted);
+  font-size: 0.75rem;
+}
+.ff-source__name[aria-pressed="true"] .ff-source__script {
+  color: inherit;
+}
 .ff-source__license,
 .ff-source__link {
   display: inline-flex;

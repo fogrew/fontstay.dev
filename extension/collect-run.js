@@ -84,7 +84,7 @@ async function fontstayCollect(win, doc, options = {}) {
     return best;
   };
 
-  const coversLatin = (range) => {
+  const covers = (range, points) => {
     if (!range) return true;
     return range.split(',').some((part) => {
       const match = /^u\+([0-9a-f?]+)(?:-([0-9a-f]+))?$/i.exec(part.trim());
@@ -96,7 +96,7 @@ async function fontstayCollect(win, doc, options = {}) {
         : match[2]
           ? Number.parseInt(match[2], 16)
           : low;
-      return [0x41, 0x61].some((point) => point >= low && point <= high);
+      return points.some((point) => point >= low && point <= high);
     });
   };
 
@@ -112,18 +112,20 @@ async function fontstayCollect(win, doc, options = {}) {
     queued.add(url);
     pending.push(url);
   };
-  const addFace = (face, covers) => {
-    const key = `${face.family.toLowerCase()}|${face.weight}|${face.style}`;
+  const addFace = (face, range) => {
+    const base = covers(range, [0x41, 0x61]);
+    const script = !base && options.scriptPoint && covers(range, [options.scriptPoint]);
+    const key = `${face.family.toLowerCase()}|${face.weight}|${face.style}|${script ? 1 : 0}`;
     const slot = slots.get(key);
     if (slot === undefined) {
       if (faces.length >= MAX_FACES) return;
       slots.set(key, faces.length);
       faces.push(face);
-      latin.set(face, covers);
-    } else if (covers && !latin.get(faces[slot])) {
+      latin.set(face, base);
+    } else if (base && !latin.get(faces[slot])) {
       latin.delete(faces[slot]);
       faces[slot] = face;
-      latin.set(face, covers);
+      latin.set(face, base);
     }
   };
   const walk = (rules, base) => {
@@ -153,7 +155,7 @@ async function fontstayCollect(win, doc, options = {}) {
               : 'normal',
             ...(url ? { url } : {}),
           },
-          coversLatin(rule.style.getPropertyValue('unicode-range')),
+          rule.style.getPropertyValue('unicode-range'),
         );
       } else if (rule.type === 3) {
         let inner;

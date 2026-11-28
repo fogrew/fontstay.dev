@@ -35,6 +35,9 @@ export function familyPageUrl(source: SourceId, family: FontFamily): string {
 export const sameOrigin = (a: FontOrigin, b: FontOrigin) =>
   a.source === b.source && a.family === b.family && a.style === b.style && a.subset === b.subset;
 
+export const isSubsetSibling = (a: FontOrigin, b: FontOrigin) =>
+  a.source === b.source && a.family === b.family && a.style === b.style && a.subset !== b.subset;
+
 export async function downloadOrigin(origin: FontOrigin): Promise<File> {
   const source = SOURCES[origin.source];
   if (!source) throw new FontSourceError('bad-file');

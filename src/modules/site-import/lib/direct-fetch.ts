@@ -31,6 +31,7 @@ export type DirectResult = { ok: true; value: SiteImport } | { ok: false; reason
 export interface DirectOptions {
   fetcher?: typeof fetch;
   signal?: AbortSignal;
+  scriptPoint?: number | undefined;
 }
 
 class Failure extends Error {
@@ -156,10 +157,12 @@ async function collect(startUrl: string, options: DirectOptions): Promise<SiteIm
 
   const isCss = /text\/css/i.test(page.type) || new URL(page.url).pathname.endsWith('.css');
   if (isCss) {
-    enqueue(take(scanCss(decode(page.bytes), page.url)));
+    enqueue(take(scanCss(decode(page.bytes), page.url, options.scriptPoint)));
   } else {
     const scan = scanPage(decode(page.bytes), page.url);
-    const inlineImports = scan.inline.flatMap((text) => take(scanCss(text, page.url)));
+    const inlineImports = scan.inline.flatMap((text) =>
+      take(scanCss(text, page.url, options.scriptPoint)),
+    );
     enqueue(scan.hrefs);
     enqueue(inlineImports);
   }
@@ -174,7 +177,7 @@ async function collect(startUrl: string, options: DirectOptions): Promise<SiteIm
         return;
       }
       const base = result.value.url;
-      const imports = take(scanCss(decode(result.value.bytes), base));
+      const imports = take(scanCss(decode(result.value.bytes), base, options.scriptPoint));
       if (depth + 1 < IMPORT_DEPTH) enqueue(imports);
     });
   }

@@ -14,6 +14,7 @@ export interface ImportedFace {
   style: string;
   sources: ImportedSource[];
   skipped: number;
+  script?: boolean;
 }
 
 function stripComments(css: string): string {
@@ -104,7 +105,9 @@ const weightKey = (weight: string) => {
 };
 const styleKey = (style: string) => (/italic|oblique/i.test(style) ? 'italic' : 'normal');
 
-function coversLatin(range: string | undefined): boolean {
+const LATIN_POINTS = [0x41, 0x61];
+
+function covers(range: string | undefined, points: readonly number[]): boolean {
   if (!range) return true;
   return range.split(',').some((part) => {
     const match = /^u\+([0-9a-f?]{1,6})(?:-([0-9a-f]{1,6}))?$/i.exec(part.trim());
@@ -117,7 +120,7 @@ function coversLatin(range: string | undefined): boolean {
       : match[2]
         ? Number.parseInt(match[2], 16)
         : low;
-    return [0x41, 0x61].some((point) => point >= low && point <= high);
+    return points.some((point) => point >= low && point <= high);
   });
 }
 
@@ -160,7 +163,7 @@ export function parseFaceRules(css: string): FaceRuleText[] {
   return rules;
 }
 
-export function parseFontFaces(css: string): ImportedFace[] {
+export function parseFontFaces(css: string, scriptPoint?: number): ImportedFace[] {
   if (css.length > MAX_CSS_CHARS) return [];
   const clean = stripComments(css);
   const lower = clean.toLowerCase();
@@ -193,19 +196,21 @@ export function parseFontFaces(css: string): ImportedFace[] {
       sources,
       skipped: 0,
     };
-    const covers = coversLatin(values.get('unicode-range')?.slice(0, 4096));
-    const key = `${family.toLowerCase()}|${weightKey(face.weight)}|${styleKey(face.style)}`;
+    const range = values.get('unicode-range')?.slice(0, 4096);
+    const base = covers(range, LATIN_POINTS);
+    if (!base && scriptPoint !== undefined && covers(range, [scriptPoint])) face.script = true;
+    const key = `${family.toLowerCase()}|${weightKey(face.weight)}|${styleKey(face.style)}|${face.script ?? ''}`;
     const slot = slots.get(key);
     if (slot === undefined) {
       if (faces.length >= MAX_FACES) continue;
       slots.set(key, faces.length);
       faces.push(face);
-      if (covers) latin.add(face);
+      if (base) latin.add(face);
       continue;
     }
     const current = faces[slot];
     if (!current) continue;
-    if (covers && !latin.has(current)) {
+    if (base && !latin.has(current)) {
       face.skipped = current.skipped + 1;
       latin.add(face);
       faces[slot] = face;

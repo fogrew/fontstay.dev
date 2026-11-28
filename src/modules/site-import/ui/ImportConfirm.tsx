@@ -1,6 +1,7 @@
-import { type Locale, messagesFor } from '@/common/i18n';
+import { type Locale, localeScriptName, localeScriptPoint, messagesFor } from '@/common/i18n';
 import { Button } from '@/common/ui';
 import type { SiteImport } from '@/modules/import-receiver';
+import { splitsScript } from '../lib/scan';
 import { SplitWarnings } from './SplitWarnings';
 
 const hostOf = (url: string | undefined) => {
@@ -37,6 +38,11 @@ export function ImportConfirm({
       {value.blocks.length > 0 && (
         <p class="ff-muted ff-site-import__line">
           {t.import_confirm_elements({ count: value.blocks.length })}
+        </p>
+      )}
+      {splitsScript(value.rules ?? [], localeScriptPoint(locale)) && (
+        <p class="ff-muted ff-site-import__line">
+          {t.import_script_included({ script: localeScriptName(locale) })}
         </p>
       )}
       <SplitWarnings locale={locale} rules={value.rules ?? []} />

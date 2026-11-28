@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'preact/hooks';
-import { type Locale, messagesFor } from '@/common/i18n';
+import { type Locale, localeScriptName, localeScriptPoint, messagesFor } from '@/common/i18n';
 import { Button } from '@/common/ui';
 import { type FontOrigin, ServiceLink, useFamilySearch } from '@/modules/font-sources';
 import type { SiteImport } from '@/modules/import-receiver';
@@ -97,14 +97,17 @@ export function FontInput({
     if (kind !== 'css') return undefined;
     if (oversized || text.length > MAX_CSS_CHARS)
       return { entries: [], google: [], rules: [], tooLarge: true };
-    const entries = parseFontFaces(text).map((face) => ({ face, pick: pickSource(face) }));
+    const entries = parseFontFaces(text, localeScriptPoint(locale)).map((face) => ({
+      face,
+      pick: pickSource(face),
+    }));
     return {
       entries,
       google: parseGoogleFontsLinks(text),
       rules: parseFaceRules(text),
       tooLarge: false,
     };
-  }, [kind, text, oversized]);
+  }, [kind, text, oversized, locale]);
 
   useEffect(() => {
     if (kind !== 'import') {
@@ -244,6 +247,7 @@ export function FontInput({
               <li class="ff-generator__item" key={`${face.family}-${index}`}>
                 <span>
                   {`${displayName(face.family)} · ${face.weight} · ${face.style}`}
+                  {face.script && ` · ${localeScriptName(locale)}`}
                   {face.skipped > 0 && (
                     <span class="ff-muted">{` · ${t.cssimport_skipped({ count: face.skipped })}`}</span>
                   )}

@@ -132,8 +132,14 @@ export interface ScannedRule {
   unicodeRange?: string;
 }
 
+export interface ScannedPart {
+  face: ScannedFace;
+  latin: boolean;
+  script?: boolean;
+}
+
 export interface ScannedCss {
-  faces: { face: ScannedFace; latin: boolean }[];
+  faces: ScannedPart[];
   rules: ScannedRule[];
   imports: string[];
 }
@@ -225,7 +231,9 @@ function bestUrl(source: string, base: string): string {
   return best;
 }
 
-function coversLatin(range: string): boolean {
+const LATIN_POINTS = [0x41, 0x61];
+
+function covers(range: string, points: readonly number[]): boolean {
   if (!range) return true;
   return range.split(',').some((part) => {
     const match = /^u\+([0-9a-f?]+)(?:-([0-9a-f]+))?$/i.exec(part.trim());
@@ -238,11 +246,17 @@ function coversLatin(range: string): boolean {
       : match[2]
         ? Number.parseInt(match[2], 16)
         : low;
-    return [0x41, 0x61].some((point) => point >= low && point <= high);
+    return points.some((point) => point >= low && point <= high);
   });
 }
 
-export function scanCss(source: string, base: string): ScannedCss {
+export const splitsScript = (rules: readonly { unicodeRange?: string }[], point?: number) =>
+  point !== undefined &&
+  rules.some(
+    ({ unicodeRange = '' }) => !covers(unicodeRange, LATIN_POINTS) && covers(unicodeRange, [point]),
+  );
+
+export function scanCss(source: string, base: string, scriptPoint?: number): ScannedCss {
   const css = stripComments(source.slice(0, MAX_CSS));
   const lower = asciiLower(css);
   const faces: ScannedCss['faces'] = [];
@@ -283,9 +297,12 @@ export function scanCss(source: string, base: string): ScannedCss {
     const style = /italic|oblique/i.test(values.get('font-style') ?? '') ? 'italic' : 'normal';
     rules.push({ family, weight, style, ...(range ? { unicodeRange: range } : {}) });
     const url = bestUrl(values.get('src') ?? '', base);
+    const latin = covers(range, LATIN_POINTS);
+    const script = !latin && scriptPoint !== undefined && covers(range, [scriptPoint]);
     faces.push({
       face: { family, weight: weightOf(weight), style, ...(url ? { url } : {}) },
-      latin: coversLatin(range),
+      latin,
+      ...(script ? { script } : {}),
     });
   }
   return { faces, rules, imports };
@@ -293,9 +310,9 @@ export function scanCss(source: string, base: string): ScannedCss {
 
 export function mergeFaces(parts: ScannedCss['faces']): ScannedFace[] {
   const slots = new Map<string, number>();
-  const result: { face: ScannedFace; latin: boolean }[] = [];
+  const result: ScannedPart[] = [];
   for (const part of parts) {
-    const key = `${part.face.family.toLowerCase()}|${part.face.weight}|${part.face.style}`;
+    const key = `${part.face.family.toLowerCase()}|${part.face.weight}|${part.face.style}|${part.script ?? ''}`;
     const slot = slots.get(key);
     if (slot === undefined) {
       if (result.length >= MAX_FACES) continue;

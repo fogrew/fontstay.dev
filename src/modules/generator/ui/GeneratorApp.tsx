@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'preact/hooks';
-import { type Locale, messagesFor } from '@/common/i18n';
+import { type Locale, localeScript, localeScriptName, messagesFor } from '@/common/i18n';
 import {
   Accordion,
   Button,
@@ -64,6 +64,7 @@ import {
   downloadOrigin,
   type FontOrigin,
   isHandwritingOrigin,
+  isSubsetSibling,
   parseStyle,
   sameOrigin,
 } from '@/modules/font-sources';
@@ -93,7 +94,13 @@ import {
 } from '@/modules/site-import';
 import type { ShiftReport, ToolHost } from '@/modules/webmcp';
 import { fallbackRatio, measureWebRatio } from '../lib/calibration';
-import { displayName, fitLanguage, isNoCoverage, LOW_COVERAGE } from '../lib/compute';
+import {
+  displayName,
+  fitLanguage,
+  isNoCoverage,
+  LOW_COVERAGE,
+  uncoveredFamilies,
+} from '../lib/compute';
 import { adjustmentOf, buildCss, fallbackFamilyName, type Overrides } from '../lib/css';
 import { faceLabel } from '../lib/face-label';
 import {
@@ -447,6 +454,8 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
     }
     if (failures.length > 0)
       setError((message) => [message, ...failures].filter(Boolean).join(' '));
+    const rank = (font: LoadedFont) => (fitLanguage(font.metrics, locale) === 'en' ? 1 : 0);
+    added.sort((a, b) => rank(a) - rank(b));
     if (added.length > 0) {
       if (persist) {
         for (const item of added)
@@ -612,6 +621,11 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
     fontStyle: style === 'italic' || style === 'bold-italic' ? ('italic' as const) : undefined,
   });
   const language: Language = fitLanguage(selected?.metrics, locale);
+  const script = localeScript(locale);
+  const scriptless = useMemo(
+    () => (script ? uncoveredFamilies(fonts, script.probe) : []),
+    [fonts, script],
+  );
   const [variantsReady, setVariantsReady] = useState(false);
   const [webK, setWebK] = useState<Record<string, number>>({});
   const [webKFailed, setWebKFailed] = useState<Record<string, boolean>>({});
@@ -828,11 +842,19 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
     () => (selected ? compactRanges(selected.metrics.codePoints) : []),
     [selected],
   );
+  const isSplit = ({ origin }: LoadedFont) =>
+    origin !== undefined &&
+    fonts.some((other) => other.origin && isSubsetSibling(origin, other.origin));
   const scriptsOf = (font: LoadedFont, candidate: Candidate, lang: Language, applied: Overrides) =>
     perScript
-      ? scriptFaces(font.metrics, candidate.fit, lang, candidate.adjustment, applied, rangeOn).map(
-          ({ unicodeRange, adjustment }) => ({ unicodeRange, adjustment }),
-        )
+      ? scriptFaces(
+          font.metrics,
+          candidate.fit,
+          lang,
+          candidate.adjustment,
+          applied,
+          rangeOn || isSplit(font),
+        ).map(({ unicodeRange, adjustment }) => ({ unicodeRange, adjustment }))
       : undefined;
   const detectedScripts = useMemo(
     () => (selected ? detectScripts(selected.metrics.codePoints) : []),
@@ -961,7 +983,8 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
       throw failure;
     }
     const ranges = compactRanges(font.metrics.codePoints);
-    const range = rangeOn && ranges.length > 0 ? formatUnicodeRange(ranges) : undefined;
+    const range =
+      (rangeOn || isSplit(font)) && ranges.length > 0 ? formatUnicodeRange(ranges) : undefined;
     const adjust = (candidate: Candidate) =>
       adjustmentOf(
         { ...candidate.adjustment, ...optimized[valueKeyOf(font.id, candidate.id)] },
@@ -2109,6 +2132,14 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
                       void discardPending();
                     }}
                   />
+                )}
+                {scriptless.length > 0 && (
+                  <p class="ff-generator__text ff-error" role="status">
+                    {t.script_not_covered({
+                      fonts: scriptless.map(displayName).join(', '),
+                      script: localeScriptName(locale),
+                    })}
+                  </p>
                 )}
                 {staleLink && (
                   <div class="ff-offer" role="status">
