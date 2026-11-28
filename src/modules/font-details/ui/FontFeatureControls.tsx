@@ -37,7 +37,7 @@ export function FontFeatureControls({
 
   return (
     <fieldset class="ff-details ff-details--features">
-      <legend class="ff-details__subheading">{t.details_controls_heading()}</legend>
+      <legend class="ff-sr-only">{t.details_controls_heading()}</legend>
       {details.features.length > 0 && (
         <ul class="ff-details__checklist">
           {details.features.map((feature, index) => {

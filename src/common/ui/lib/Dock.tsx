@@ -18,8 +18,10 @@ export interface DockProps {
   storageKey: string;
   id?: string;
   defaultOpen?: string;
-  nextLabel: (label: string) => string;
-  backLabel: string;
+  nextLabel?: (label: string) => string;
+  backLabel?: string;
+  controllable?: boolean;
+  lateIds?: readonly string[];
   onChange?: (id: string | undefined) => void;
 }
 
@@ -40,6 +42,8 @@ export function Dock({
   defaultOpen,
   nextLabel,
   backLabel,
+  controllable,
+  lateIds = [],
   onChange,
 }: DockProps) {
   const base = useId();
@@ -55,7 +59,7 @@ export function Dock({
     const saved = loadLayout<string[]>(storageKey, (value) => {
       if (typeof value !== 'object' || value === null) return undefined;
       const { opened } = value as Record<string, unknown>;
-      return Array.isArray(opened) ? parseIds(opened, ids) : undefined;
+      return Array.isArray(opened) ? parseIds(opened, [...ids, ...lateIds]) : undefined;
     });
     const first = saved ? saved[0] : defaultOpen;
     const skip = items.find((item) => item.id === first)?.clientOnly;
@@ -64,6 +68,7 @@ export function Dock({
     setReady(true);
   }, []);
   useEffect(() => {
+    if (!controllable) return;
     const open = (event: Event) => {
       const { detail } = event as CustomEvent<string | DockOpenDetail>;
       const { id, focus, persist } =
@@ -133,7 +138,11 @@ export function Dock({
                 aria-controls={`${base}-${item.id}-panel`}
                 onClick={() => transition(() => setActive(open ? undefined : item.id))}
               >
-                {item.icon}
+                {item.icon && (
+                  <span class="ff-dock__icon" aria-hidden="true">
+                    {item.icon}
+                  </span>
+                )}
                 {item.label}
               </button>
             </h2>
@@ -144,9 +153,9 @@ export function Dock({
               hidden={!open}
             >
               <ScrollShadow class="ff-dock__scroll">{item.content}</ScrollShadow>
-              {(previous || next || item.footer) && (
+              {((previous && backLabel) || (next && nextLabel) || item.footer) && (
                 <div class="ff-dock__footer">
-                  {previous && (
+                  {previous && backLabel && (
                     <button
                       type="button"
                       class="ff-control ff-button ff-button--secondary ff-dock__back"
@@ -158,7 +167,7 @@ export function Dock({
                     </button>
                   )}
                   {item.footer ||
-                    (next && (
+                    (next && nextLabel && (
                       <button
                         type="button"
                         class="ff-control ff-button ff-button--primary"

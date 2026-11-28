@@ -1,6 +1,6 @@
 import AxeBuilder from '@axe-core/playwright';
 import type { Page } from '@playwright/test';
-import { expect, openPopover, openStep, test, waitForGenerator } from './fixtures';
+import { expect, openSettings, openStep, test, waitForGenerator } from './fixtures';
 
 const fonts = new URL('../fixtures/fonts/', import.meta.url).pathname.replace(
   /^\/([A-Za-z]:)/,
@@ -67,7 +67,7 @@ async function openControls(page: Page, file: string) {
   await page.goto('/en/');
   await waitForGenerator(page);
   await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(file);
-  await openPopover(page, 'Settings');
+  await openSettings(page, 'Font features and axes');
   return page.getByRole('group', { name: 'Font features and axes' });
 }
 
@@ -219,7 +219,7 @@ test('removing a font moves focus to the next font toggle', async ({ page }) => 
   await expect(fitToggles).toHaveText(remaining ?? '');
   await fitRemove.press('Enter');
   await expect(
-    page.locator('.ff-dock__column[data-id="inputs"] .ff-dock__heading button'),
+    page.locator('#ff-dock .ff-dock__column[data-id="inputs"] .ff-dock__heading button'),
   ).toBeFocused();
 });
 

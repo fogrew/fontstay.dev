@@ -144,3 +144,26 @@ test('the phone layout stacks the panels without horizontal scroll', async ({ pa
   );
   expect(overflow).toBeLessThanOrEqual(0);
 });
+
+test('the settings sidebar keeps one panel open, joined to its header, across a reload', async ({
+  page,
+}) => {
+  await page.goto('/en/');
+  await waitForGenerator(page);
+  await page.getByRole('button', { name: 'Settings', exact: true }).click();
+  const aside = page.getByRole('complementary', { name: 'Settings' });
+  const text = aside.getByRole('button', { name: 'Text and layout' });
+  await text.click();
+  const panel = aside.locator('.ff-dock__panel:not([hidden])');
+  await expect(panel).toHaveCount(1);
+  const header = await text.boundingBox();
+  const body = await panel.boundingBox();
+  expect(Math.abs((header?.y ?? 0) + (header?.height ?? 0) - (body?.y ?? 99))).toBeLessThan(1);
+  await expect(text).toHaveCSS('border-end-start-radius', '0px');
+  await expect(panel).toHaveCSS('border-start-start-radius', '0px');
+
+  await page.reload();
+  await waitForGenerator(page);
+  await expect(text).toHaveAttribute('aria-expanded', 'true');
+  await expect(panel).toHaveCount(1);
+});

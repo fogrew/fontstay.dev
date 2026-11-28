@@ -50,7 +50,7 @@ export const STEPS = {
 } as const;
 
 const stepButton = (page: Page, step: keyof typeof STEPS) =>
-  page.locator(`.ff-dock__column[data-id="${step}"] .ff-dock__heading button`);
+  page.locator(`#ff-dock .ff-dock__column[data-id="${step}"] .ff-dock__heading button`);
 
 export async function openStep(page: Page, step: keyof typeof STEPS) {
   const button = stepButton(page, step);
@@ -118,6 +118,12 @@ export async function openPopover(scope: Locator | Page, name: string) {
     if ((await button.getAttribute('aria-expanded')) !== 'true') await button.click();
     await expect(button).toHaveAttribute('aria-expanded', 'true', { timeout: 1000 });
   }).toPass();
+}
+
+export async function openSettings(scope: Locator | Page, panel: string) {
+  await openPopover(scope, 'Settings');
+  const page = 'page' in scope ? scope.page() : scope;
+  await openPopover(page.locator('#ff-article-settings'), panel);
 }
 
 export async function fillQuery(page: Page, text: string) {

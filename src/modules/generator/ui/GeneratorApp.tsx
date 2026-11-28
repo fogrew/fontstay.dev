@@ -2066,6 +2066,7 @@ export function GeneratorApp({ locale }: { locale: Locale }) {
       <LiveRegion>{planIssue || planNote}</LiveRegion>
       <Dock
         id="ff-dock"
+        controllable
         storageKey="dock"
         defaultOpen={DEFAULT_PANEL}
         onChange={(id) => {

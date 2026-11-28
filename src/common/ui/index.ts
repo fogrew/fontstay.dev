@@ -20,4 +20,3 @@ export { type Sidebar, Splitter, useSidebar } from './lib/Splitter';
 export { Tabs, type TabsProps } from './lib/Tabs';
 export { ToggleGroup, type ToggleGroupItem, type ToggleGroupProps } from './lib/ToggleGroup';
 export { transition } from './lib/transition';
-export { useDockTop } from './lib/use-dock-top';
