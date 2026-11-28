@@ -2,14 +2,13 @@ import { type ComponentChildren, Fragment } from 'preact';
 import { useEffect, useId, useLayoutEffect, useMemo, useRef, useState } from 'preact/hooks';
 import { type Locale, messagesFor } from '@/common/i18n';
 import {
-  Accordion,
+  Dock,
   Icon,
   PageShadow,
   Popover,
   ScrollShadow,
   Select,
   Splitter,
-  useDockTop,
   useSidebar,
 } from '@/common/ui';
 import { type Device, DevicePicker, loadDevices } from '@/modules/devices';
@@ -383,8 +382,6 @@ export function ArticleView({
     defaultOpen: false,
     desktopOnly: true,
   });
-  const aside = useRef<HTMLElement>(null);
-  useDockTop(aside);
   const [articleId, setArticleId] = useState<ArticleId>(
     (ARTICLE_IDS as readonly string[]).includes(locale) ? (locale as ArticleId) : 'en',
   );
@@ -1920,19 +1917,16 @@ export function ArticleView({
           onClick={settings.toggle}
         />
         <aside
-          ref={aside}
           id="ff-article-settings"
           class="ff-article-view__settings"
           aria-label={t.article_group_settings()}
         >
-          <ScrollShadow class="ff-article-view__settings-scroll">
-            <Accordion
-              storageKey="article-settings"
-              resizable={false}
-              resizeLabel={(above, below) => t.accordion_resize({ above, below })}
-              items={settingsItems}
-            />
-          </ScrollShadow>
+          <Dock
+            storageKey="article-settings"
+            defaultOpen="fonts"
+            lateIds={['features']}
+            items={settingsItems}
+          />
         </aside>
       </div>
     </section>

@@ -1197,11 +1197,6 @@ html[data-transition] .ff-export[data-expanded] .ff-export__fullscreen[open] .ff
 .ff-settings__section .ff-select__label {
   white-space: normal;
 }
-.ff-popover__panel .ff-details__checklist,
-.ff-article-view__settings .ff-details__checklist {
-  max-block-size: none;
-  overflow: visible;
-}
 .ff-settings__toggle {
   box-sizing: border-box;
   display: flex;
@@ -1566,9 +1561,6 @@ html[data-transition] .ff-export[data-expanded] .ff-export__fullscreen[open] .ff
 .ff-article .ff-shadow {
   --ff-shadow-bg: var(--ff-surface-2);
 }
-.ff-article-view__settings > .ff-shadow {
-  --ff-shadow-bg: var(--ff-bg);
-}
 @media (min-width: 40rem) and (min-height: 40rem) {
   .ff-article-view__frame > .ff-shadow--page {
     --ff-page-shadow-top: calc(2.125rem + 2 * var(--ff-space-2));
@@ -1749,12 +1741,6 @@ html[data-transition] .ff-share-dialog[open] {
 .ff-article-view__settings {
   order: -1;
   min-inline-size: 0;
-  border: 1px solid var(--ff-border);
-  border-radius: var(--ff-radius);
-}
-.ff-article-view__settings-scroll {
-  padding: var(--ff-space-2);
-  scroll-padding-block: var(--ff-shadow-size);
 }
 html:not([data-sidebar-right="open"]) .ff-article-view__settings {
   display: none;
@@ -1800,18 +1786,6 @@ html:not([data-sidebar-right="open"]) .ff-article-view__settings {
     position: sticky;
     inset-block-start: var(--ff-space-2);
     align-self: start;
-    display: flex;
-    flex-direction: column;
-    max-block-size: calc(100dvh - var(--ff-dock-top, 3.3125rem) - var(--ff-space-2));
-    overflow: hidden;
-  }
-  .ff-article-view__settings > .ff-shadow {
-    display: flex;
-    flex-direction: column;
-    min-block-size: 0;
-  }
-  .ff-article-view__settings-scroll {
-    min-block-size: 0;
   }
 }
 .ff-article-view .ff-article [data-level] {

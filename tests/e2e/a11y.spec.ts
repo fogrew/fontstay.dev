@@ -119,7 +119,7 @@ test('the dock columns stack and stay inside the viewport at 320 px', async ({ p
   await waitForGenerator(page);
   await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(fontFile);
   const steps = Object.keys(STEPS) as (keyof typeof STEPS)[];
-  const columns = page.locator('.ff-dock__column');
+  const columns = page.locator('#ff-dock .ff-dock__column');
   await expect(columns).toHaveCount(steps.length);
   await closePanels(page);
   const tops = await columns.evaluateAll((nodes) =>
@@ -130,7 +130,7 @@ test('the dock columns stack and stay inside the viewport at 320 px', async ({ p
   for (const step of steps) {
     await closePanels(page);
     await openStep(page, step);
-    const column = page.locator(`.ff-dock__column[data-id="${step}"]`);
+    const column = page.locator(`#ff-dock .ff-dock__column[data-id="${step}"]`);
     const box = await column.boundingBox();
     expect(box?.x, step).toBeGreaterThanOrEqual(0);
     expect((box?.x ?? 0) + (box?.width ?? 0), step).toBeLessThanOrEqual(320);

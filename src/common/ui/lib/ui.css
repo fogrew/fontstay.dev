@@ -259,22 +259,6 @@
 .ff-accordion__toggle[aria-expanded="true"]::before {
   content: "▾" / "";
 }
-.ff-accordion__toggle--icon {
-  display: flex;
-  align-items: center;
-  gap: var(--ff-space-2);
-}
-.ff-accordion__toggle--icon::before {
-  order: 1;
-  margin-inline: auto 0;
-}
-.ff-accordion__icon {
-  display: grid;
-  flex: none;
-  place-items: center;
-  inline-size: 1.125rem;
-  font-size: 1.125rem;
-}
 .ff-accordion__panel {
   position: relative;
   flex: 1 1 auto;
@@ -388,9 +372,6 @@
 .ff-icon-button .ff-icon {
   margin: 0;
   vertical-align: baseline;
-}
-.ff-accordion__icon .ff-icon {
-  margin: 0;
 }
 .ff-icon--wide {
   inline-size: 1.8em;
@@ -518,9 +499,15 @@
   text-align: start;
   cursor: pointer;
 }
-.ff-dock__heading .ff-icon {
+.ff-dock__icon {
+  display: inline-grid;
+  place-items: center;
+  inline-size: 1.125em;
   margin-inline-end: var(--ff-space-2);
-  vertical-align: -0.125em;
+  vertical-align: -0.2em;
+}
+.ff-dock__icon .ff-icon {
+  margin: 0;
 }
 .ff-dock__toggle:hover {
   background: color-mix(in srgb, var(--ff-accent) 10%, var(--ff-surface));
@@ -533,12 +520,16 @@
 .ff-dock__toggle[aria-expanded="true"]::before {
   content: "▾" / "";
 }
+.ff-dock__toggle[aria-expanded="true"] {
+  border-end-start-radius: 0;
+  border-end-end-radius: 0;
+}
 .ff-dock__panel {
   box-sizing: border-box;
-  margin-block-start: var(--ff-space-1);
   padding: 0;
   border: 1px solid var(--ff-border);
-  border-radius: var(--ff-radius);
+  border-block-start: 0;
+  border-radius: 0 0 var(--ff-radius) var(--ff-radius);
   background: var(--ff-surface);
 }
 .ff-dock__panel[hidden] {
@@ -613,6 +604,17 @@
   .ff-dock__column[data-open="true"]:has(.ff-dock__scroll > *:empty) .ff-dock__panel,
   .ff-dock__column[data-open="true"]:has(.ff-dock__scroll > *:empty) .ff-shadow {
     flex-grow: 1;
+  }
+}
+@media (min-width: 64rem) and (max-height: 32rem) {
+  .ff-dock {
+    overflow-y: auto;
+  }
+  .ff-dock__column[data-open="true"] {
+    min-block-size: 10rem;
+  }
+  .ff-dock__toggle:focus-visible {
+    outline-offset: -3px;
   }
 }
 html[data-transition] .ff-dock__panel[data-id="audience"] {

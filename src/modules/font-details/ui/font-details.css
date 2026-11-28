@@ -58,13 +58,8 @@
 .ff-details__checklist {
   display: flex;
   flex-direction: column;
-  max-block-size: 9rem;
   margin: 0;
-  padding: var(--ff-space-1) var(--ff-space-2);
-  overflow-y: auto;
-  scrollbar-gutter: stable;
-  border: 1px solid var(--ff-border);
-  border-radius: var(--ff-radius);
+  padding: 0;
   list-style: none;
   font-size: 0.8125rem;
 }

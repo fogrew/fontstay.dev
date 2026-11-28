@@ -144,3 +144,62 @@ test('the phone layout stacks the panels without horizontal scroll', async ({ pa
   );
   expect(overflow).toBeLessThanOrEqual(0);
 });
+
+test('the settings sidebar keeps one panel open, joined to its header, across a reload', async ({
+  page,
+}) => {
+  await page.goto('/en/');
+  await waitForGenerator(page);
+  await page.getByRole('button', { name: 'Settings', exact: true }).click();
+  const aside = page.getByRole('complementary', { name: 'Settings' });
+  const text = aside.getByRole('button', { name: 'Text and layout' });
+  await text.click();
+  const panel = aside.locator('.ff-dock__panel:not([hidden])');
+  await expect(panel).toHaveCount(1);
+  const header = await text.boundingBox();
+  const body = await panel.boundingBox();
+  expect(Math.abs((header?.y ?? 0) + (header?.height ?? 0) - (body?.y ?? 99))).toBeLessThan(1);
+  await expect(text).toHaveCSS('border-end-start-radius', '0px');
+  await expect(panel).toHaveCSS('border-start-start-radius', '0px');
+
+  await page.reload();
+  await waitForGenerator(page);
+  await expect(text).toHaveAttribute('aria-expanded', 'true');
+  await expect(panel).toHaveCount(1);
+});
+
+const font = new URL(
+  '../fixtures/fonts/SourceSansPro-Regular.woff2',
+  import.meta.url,
+).pathname.replace(/^\/([A-Za-z]:)/, '$1');
+
+test('the font features panel stays chosen across a reload, once its font is back', async ({
+  page,
+}) => {
+  await page.goto('/en/');
+  await waitForGenerator(page);
+  await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(font);
+  await page.getByRole('button', { name: 'Settings', exact: true }).click();
+  const features = page
+    .getByRole('complementary', { name: 'Settings' })
+    .getByRole('button', { name: 'Font features and axes' });
+  await features.click();
+  await expect(features).toHaveAttribute('aria-expanded', 'true');
+
+  await page.reload();
+  await waitForGenerator(page);
+  await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(font);
+  await expect(features).toHaveAttribute('aria-expanded', 'true');
+});
+
+test('a short window keeps the open settings panel usable', async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 340 });
+  await page.goto('/en/');
+  await waitForGenerator(page);
+  await page.getByRole('button', { name: 'Settings', exact: true }).click();
+  const aside = page.getByRole('complementary', { name: 'Settings' });
+  await aside.getByRole('button', { name: 'Background image' }).click();
+  const panel = aside.locator('.ff-dock__panel:not([hidden])');
+  await panel.scrollIntoViewIfNeeded();
+  expect((await panel.boundingBox())?.height ?? 0).toBeGreaterThan(100);
+});

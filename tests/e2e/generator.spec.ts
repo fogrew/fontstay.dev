@@ -28,6 +28,7 @@ import {
   listed,
   openExport,
   openPopover,
+  openSettings,
   openStep,
   openSupport,
   queryField,
@@ -192,7 +193,7 @@ for (const { width, height } of [
     const article = page.locator('.ff-article:not([data-probe])').first();
     await expect(article).toBeVisible();
     await expect
-      .poll(async () => (await page.locator('.ff-dock').boundingBox())?.y ?? 999)
+      .poll(async () => (await page.locator('#ff-dock').boundingBox())?.y ?? 999)
       .toBeLessThan(150);
     await expect
       .poll(async () => (await article.boundingBox())?.width ?? 0)
@@ -250,7 +251,7 @@ test('the article opens on the slider and switches between comparison and single
     /sans-serif/,
   );
 
-  await openPopover(view, 'Settings');
+  await openSettings(view, 'Text and layout');
   await view.getByLabel(/Text size/).fill('24');
   await expect(view.locator('.ff-article:not([data-probe])')).toHaveCSS('font-size', '24px');
   await view.getByLabel(/Line height/).fill('2');
@@ -263,7 +264,7 @@ test('a background image sits behind the preview text and is validated', async (
   await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(sourceSans);
   await closePanels(page);
   const view = page.getByRole('region', { name: 'Article' });
-  await openPopover(view, 'Settings');
+  await openSettings(view, 'Background image');
   const input = view.getByLabel('Choose an image');
   const article = view.locator('.ff-article:not([data-probe])').first();
   await expect(article).toHaveCSS('background-image', 'none');
@@ -311,15 +312,15 @@ test('right sidebar headers carry an icon and the overlay layers panel explains 
   await waitForGenerator(page);
   const aside = page.locator('#ff-article-settings');
   if (!(await aside.isVisible())) await page.locator('.ff-toolbar__settings-toggle').click();
+  await openPopover(aside, 'Overlay layers');
   await expect(aside.getByText('Add a font, then switch')).toBeVisible();
   await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(sourceSans);
   await closePanels(page);
   if (!(await aside.isVisible())) await page.locator('.ff-toolbar__settings-toggle').click();
-  const headers = aside.locator('.ff-accordion__toggle');
+  const headers = aside.locator('.ff-dock__toggle');
   await expect(headers.first()).toBeVisible();
-  await expect(aside.locator('.ff-accordion__toggle .ff-accordion__icon svg')).toHaveCount(
-    await headers.count(),
-  );
+  await expect(aside.locator('.ff-dock__toggle svg')).toHaveCount(await headers.count());
+  await openPopover(aside, 'Overlay layers');
   const layers = aside.getByRole('group', { name: 'Overlay layers' });
   const note = aside.getByText('switch to the “Overlay” view mode');
   await expect(note).toBeVisible();
@@ -341,14 +342,14 @@ test('the inspect tools draw, fade and compare the web font and the fallback', a
   await view.getByRole('button', { name: 'Overlay', exact: true }).click();
   await view.getByRole('button', { name: 'X-ray', exact: true }).click();
   const inspect = view.getByRole('button', { name: /^Settings/ });
-  const openInspect = async () => {
-    if ((await inspect.getAttribute('aria-expanded')) !== 'true') await inspect.click();
+  const openInspect = async (panel: string) => {
+    await openSettings(view, panel);
   };
   const layer = (name: string) => view.getByRole('group', { name, exact: true });
   const ghost = view.locator('.ff-article--ghost');
   await expect(ghost).toHaveAttribute('data-render', 'outline');
 
-  await openInspect();
+  await openInspect('Overlay layers');
   await choose(layer('Adjusted fallback').getByLabel('Drawing'), 'fill');
   await expect(ghost).toHaveAttribute('data-render', 'fill');
   await choose(layer('Adjusted fallback').getByLabel('Drawing'), 'outline');
@@ -359,6 +360,7 @@ test('the inspect tools draw, fade and compare the web font and the fallback', a
   await choose(layer('Adjusted fallback').getByLabel('Colour'), 'red');
   await expect(ghost).toHaveCSS('-webkit-text-stroke-color', /^rgb/);
 
+  await openInspect('Guide lines');
   await view.getByRole('button', { name: 'Glyph boxes' }).click();
   await expect(view.getByRole('button', { name: 'Glyph boxes' })).toHaveAttribute(
     'aria-pressed',
@@ -382,7 +384,7 @@ test('the inspect tools draw, fade and compare the web font and the fallback', a
   const body = view.locator('.ff-article:not([data-probe])').first();
   const guides = () => body.evaluate((node) => node.style.getPropertyValue('--ff-guides'));
   await expect.poll(guides).toBe('');
-  await openInspect();
+  await openInspect('Guide lines');
   await view.getByRole('button', { name: 'Baseline', exact: true }).click();
   await expect.poll(guides).toContain('--ff-guide-baseline');
   expect(await guides()).not.toContain('--ff-guide-cap');
@@ -466,7 +468,7 @@ test('a step panel that scrolls shows an edge shadow only on the side with more 
   await waitForGenerator(page);
   await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(sourceSans);
   await openStep(page, 'tuning');
-  const shadow = page.locator('.ff-dock__panel:not([hidden]) .ff-shadow');
+  const shadow = page.locator('#ff-dock .ff-dock__panel:not([hidden]) .ff-shadow');
   await expect(shadow).toHaveAttribute('data-bottom', 'true');
   await expect(shadow).toHaveAttribute('data-top', 'false');
   await shadow.locator('.ff-shadow__scroll').evaluate((node) => {
@@ -503,17 +505,19 @@ test('the article and the right sidebar show a shadow on the sides with more con
   await expect(article).toHaveAttribute('data-bottom', 'false');
   await page.evaluate(() => window.scrollTo(0, 0));
 
+  await page.setViewportSize({ width: 1280, height: 460 });
   await page.locator('.ff-toolbar__settings-toggle').click();
   const aside = page.locator('#ff-article-settings');
-  const shadow = aside.locator('> .ff-shadow');
-  await expect(shadow).toHaveAttribute('data-bottom', 'true');
-  await expect(shadow).toHaveAttribute('data-top', 'false');
+  await aside.getByRole('button', { name: 'Text and layout' }).click();
+  const shadow = aside.locator('.ff-dock__panel:not([hidden]) > .ff-shadow');
+  await expect(aside.locator('.ff-dock__panel:not([hidden])')).toHaveCount(1);
   await expect
     .poll(async () => {
       const box = await aside.boundingBox();
       return box ? box.y + box.height : Number.POSITIVE_INFINITY;
     })
-    .toBeLessThanOrEqual(700);
+    .toBeLessThanOrEqual(460);
+  await expect(shadow).toHaveAttribute('data-bottom', 'true');
   await shadow.locator('> .ff-shadow__scroll').evaluate((node) => {
     node.scrollTop = node.scrollHeight;
   });
@@ -524,7 +528,7 @@ test('the article and the right sidebar show a shadow on the sides with more con
 test('a dropdown list that scrolls shows an edge shadow on the side with more options', async ({
   page,
 }) => {
-  await page.setViewportSize({ width: 1280, height: 340 });
+  await page.setViewportSize({ width: 1280, height: 348 });
   await page.goto('/en/');
   await waitForGenerator(page);
   await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(sourceSans);
@@ -678,7 +682,7 @@ test('the dock mirrors step and disclosure glyphs in RTL at both breakpoints', a
   await page.evaluate(() => {
     document.documentElement.dir = 'rtl';
   });
-  const buttons = page.locator('.ff-dock__heading button');
+  const buttons = page.locator('#ff-dock .ff-dock__heading button');
   const first = buttons.first();
   const last = buttons.last();
   for (const width of [1500, 800]) {
@@ -848,7 +852,7 @@ test('dropdowns and their options show a hover state', async ({ page }) => {
   await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(sourceSans);
   await closePanels(page);
   const view = page.getByRole('region', { name: 'Article' });
-  await openPopover(view, 'Settings');
+  await openSettings(view, 'Text and layout');
   const trigger = view.getByLabel('Text wrapping');
   const background = (locator: typeof trigger) =>
     locator.evaluate((node) => getComputedStyle(node).backgroundColor);
@@ -878,7 +882,7 @@ test('the text wrapping and sample text controls change the article', async ({ p
   await closePanels(page);
   const view = page.getByRole('region', { name: 'Article' });
   const article = view.locator('.ff-article:not([data-probe])').first();
-  await openPopover(view, 'Settings');
+  await openSettings(view, 'Text and layout');
   await choose(view.getByLabel('Text wrapping'), 'balance');
   await expect(article).toHaveCSS('text-wrap-mode', 'wrap');
   await expect(article).toHaveCSS('text-wrap-style', 'balance');
@@ -897,7 +901,7 @@ test('the article can be shown in many scripts and loads each text on demand', a
   await closePanels(page);
   const view = page.getByRole('region', { name: 'Article' });
   const article = view.locator('.ff-article:not([data-probe])').first();
-  await openPopover(view, 'Settings');
+  await openSettings(view, 'Text and layout');
   for (const [id, direction] of [
     ['he', 'rtl'],
     ['th', 'ltr'],
@@ -1413,7 +1417,7 @@ test('the dock stays pinned to the top while the article scrolls', async ({ page
   await expect(page.locator('.ff-article:not([data-probe])').first()).toBeVisible();
   await page.mouse.wheel(0, 900);
   await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(300);
-  const dock = await page.locator('.ff-dock').boundingBox();
+  const dock = await page.locator('#ff-dock').boundingBox();
   expect(dock?.y).toBeLessThanOrEqual(16);
   await expect(page.getByRole('button', { name: '4. Export', exact: true })).toBeInViewport();
 });
@@ -1611,7 +1615,7 @@ test('no missing-character highlight before a web font is chosen', async ({ page
   await waitForGenerator(page);
   await closePanels(page);
   const view = page.getByRole('region', { name: 'Article' });
-  await openPopover(view, 'Settings');
+  await openSettings(view, 'Text and layout');
   await choose(view.getByLabel('Sample text'), 'ja');
   await expect(view.getByRole('article')).toBeVisible();
   await expect(view.locator('.ff-article__missing')).toHaveCount(0);
@@ -1625,7 +1629,7 @@ test('characters missing from the font are highlighted and explained on focus', 
   await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(sourceSans);
   await closePanels(page);
   const view = page.getByRole('region', { name: 'Article' });
-  await openPopover(view, 'Settings');
+  await openSettings(view, 'Text and layout');
   await choose(view.getByLabel('Sample text'), 'ja');
   const mark = view.locator('.ff-article:not(.ff-article--ghost) .ff-article__missing').first();
   await expect(mark).toBeVisible();
@@ -1646,7 +1650,7 @@ test('characters missing from the font are highlighted and explained on focus', 
   await mark.focus();
   await expect(mark).toBeFocused();
   expect(await overflow()).toEqual(before);
-  await openPopover(view, 'Settings');
+  await openSettings(view, 'Fonts');
   await choose(view.getByLabel('Missing characters'), 'serif');
   await expect(mark).toHaveAttribute('aria-description', /Serif/);
 });
@@ -1662,7 +1666,7 @@ test('the article shows the layout shift measured on this device and ellipsizes 
   await expect(view.getByRole('status').filter({ hasText: /CLS.*\d\.\d{3}/ })).toBeVisible({
     timeout: 20_000,
   });
-  await openPopover(view, 'Settings');
+  await openSettings(view, 'Text and layout');
   await choose(view.getByLabel('Text wrapping'), 'nowrap');
   await expect(view.locator('.ff-article__lead').first()).toHaveCSS('text-overflow', 'ellipsis');
   await expect(view.locator('.ff-article__lead').first()).toHaveCSS('overflow', 'hidden');
@@ -1974,7 +1978,7 @@ test('a share link carries Google Fonts choices and downloads them again', async
   await openStep(other, 'inputs');
   await expect(other.getByText(/This link uses 1 fonts/)).toBeVisible();
   await other.getByRole('button', { name: 'Download the fonts' }).click();
-  await expect(other.locator('.ff-dock__panel:not([hidden])')).toHaveCount(0);
+  await expect(other.locator('#ff-dock .ff-dock__panel:not([hidden])')).toHaveCount(0);
   await openStep(other, 'tuning');
   await expect(other.getByRole('button', { name: /^Remove: Open-Sans-400-latin/ })).toBeVisible();
   await fresh.close();
@@ -2092,7 +2096,7 @@ test('generated CSS expands to the viewport and restores focus and scroll on clo
   await openExport(page);
   const expand = page.getByRole('button', { name: 'Expand generated CSS' });
   await expect(expand).toHaveAttribute('aria-expanded', 'false');
-  const dock = page.locator('.ff-dock__column[data-id="export"]');
+  const dock = page.locator('#ff-dock .ff-dock__column[data-id="export"]');
   const before = await dock.boundingBox();
   await page.emulateMedia({ reducedMotion: 'no-preference' });
   await page.evaluate(() => {
@@ -2276,7 +2280,7 @@ test('a share link reproduces the open panel and the preview modes with a compac
   await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(sourceSans);
   await expect(page.getByRole('button', { name: /^Remove: SourceSansPro-Regular/ })).toBeVisible();
   const step = (target: Page, id: string) =>
-    target.locator(`.ff-dock__column[data-id="${id}"] .ff-dock__heading button`);
+    target.locator(`#ff-dock .ff-dock__column[data-id="${id}"] .ff-dock__heading button`);
   const pressed = (target: Page, name: string) =>
     target.getByRole('button', { name, exact: true }).first();
   await pressed(page, 'Side by side').click();
@@ -2384,7 +2388,7 @@ test('a link made with other font data is flagged and does not restore its picks
   await waitForGenerator(page);
   await expect(page.getByRole('status').filter({ hasText: /font data changed/ })).toBeVisible();
   await expect(
-    page.locator('.ff-dock__column[data-id="inputs"] .ff-dock__heading button'),
+    page.locator('#ff-dock .ff-dock__column[data-id="inputs"] .ff-dock__heading button'),
   ).toHaveAttribute('aria-expanded', 'true');
   const notice = page.getByRole('status').filter({ hasText: /font data changed/ });
   await notice.getByRole('button', { name: 'Dismiss' }).click();
@@ -2412,7 +2416,7 @@ test('a link does not overwrite the saved dock layout', async ({ page }) => {
   await openStep(page, 'audience');
   const payload = await encodeLink(page, { v: 1, panel: 'export' });
   const column = (id: string) =>
-    page.locator(`.ff-dock__column[data-id="${id}"] .ff-dock__heading button`);
+    page.locator(`#ff-dock .ff-dock__column[data-id="${id}"] .ff-dock__heading button`);
   await page.goto('about:blank');
   await page.goto(`/en/#s=${payload}`);
   await waitForGenerator(page);
@@ -2426,7 +2430,7 @@ test('a link does not overwrite the saved dock layout', async ({ page }) => {
 
 test.describe('the first visit', () => {
   const expanded = (page: Page, step: string) =>
-    page.locator(`.ff-dock__column[data-id="${step}"] .ff-dock__heading button`);
+    page.locator(`#ff-dock .ff-dock__column[data-id="${step}"] .ff-dock__heading button`);
 
   const visit = async (browser: Browser, baseURL: string | undefined) => {
     const context = await browser.newContext(baseURL ? { baseURL } : {});
@@ -2445,7 +2449,7 @@ test.describe('the first visit', () => {
     for (const step of ['audience', 'tuning', 'export'] as const) {
       await expect(expanded(page, step)).toHaveAttribute('aria-expanded', 'false');
     }
-    await expect(page.locator('.ff-dock__panel:not([hidden])')).toHaveCount(1);
+    await expect(page.locator('#ff-dock .ff-dock__panel:not([hidden])')).toHaveCount(1);
 
     await openStep(page, 'audience');
     await page.reload();
@@ -2460,7 +2464,7 @@ test.describe('the first visit', () => {
     await closePanels(page);
     await page.reload();
     await waitForGenerator(page);
-    await expect(page.locator('.ff-dock__panel:not([hidden])')).toHaveCount(0);
+    await expect(page.locator('#ff-dock .ff-dock__panel:not([hidden])')).toHaveCount(0);
     await context.close();
   });
 
@@ -2550,7 +2554,7 @@ test('the steps are equal columns and only one is open at a time', async ({ page
   await page.goto('/en/');
   await waitForGenerator(page);
   const widths = await page
-    .locator('.ff-dock__column')
+    .locator('#ff-dock .ff-dock__column')
     .evaluateAll((nodes) => nodes.map((node) => Math.round(node.getBoundingClientRect().width)));
   expect(widths).toHaveLength(4);
   expect(Math.max(...widths) - Math.min(...widths)).toBeLessThanOrEqual(1);
@@ -2562,10 +2566,10 @@ test('the steps are equal columns and only one is open at a time', async ({ page
     'aria-expanded',
     'false',
   );
-  const dock = await page.locator('.ff-dock').boundingBox();
-  const panel = await page.locator('.ff-dock__panel:not([hidden])').boundingBox();
+  const dock = await page.locator('#ff-dock').boundingBox();
+  const panel = await page.locator('#ff-dock .ff-dock__panel:not([hidden])').boundingBox();
   expect(Math.abs((panel?.width ?? 0) - (dock?.width ?? 1))).toBeLessThanOrEqual(1);
-  await expect(page.locator('.ff-dock__panel:not([hidden])')).toHaveCount(1);
+  await expect(page.locator('#ff-dock .ff-dock__panel:not([hidden])')).toHaveCount(1);
 });
 
 test('several fonts share the article and the export and are tuned one by one', async ({
@@ -3014,7 +3018,7 @@ test('an open panel sits right below its own step heading and fits the viewport'
   const next = await page
     .getByRole('button', { name: '3. Fine-tuning', exact: true })
     .boundingBox();
-  const panel = await page.locator('.ff-dock__panel:not([hidden])').boundingBox();
+  const panel = await page.locator('#ff-dock .ff-dock__panel:not([hidden])').boundingBox();
   expect(panel?.y ?? 0).toBeGreaterThan((heading?.y ?? 0) + (heading?.height ?? 0) - 1);
   expect(next?.y ?? 0).toBeGreaterThan((panel?.y ?? 0) + (panel?.height ?? 0) - 1);
   await expect(page.getByRole('button', { name: 'Next: 3. Fine-tuning' })).toBeInViewport();
@@ -3058,12 +3062,12 @@ test('a short step does not stretch its panel over a tall window', async ({ page
   await page.goto('/en/');
   await waitForGenerator(page);
   await openStep(page, 'tuning');
-  const panel = page.locator('.ff-dock__panel:not([hidden])');
+  const panel = page.locator('#ff-dock .ff-dock__panel:not([hidden])');
   await expect
     .poll(() =>
       panel.evaluate((element) => {
-        const scroll = element.querySelector('.ff-dock__scroll');
-        const footer = element.querySelector('.ff-dock__footer');
+        const scroll = element.querySelector('#ff-dock .ff-dock__scroll');
+        const footer = element.querySelector('#ff-dock .ff-dock__footer');
         const content = scroll?.lastElementChild?.getBoundingClientRect().bottom ?? 0;
         return (footer?.getBoundingClientRect().top ?? 0) - content;
       }),
@@ -3077,7 +3081,7 @@ test('a click outside keeps settings open beside the article', async ({ page }) 
   await waitForGenerator(page);
   await openStep(page, 'tuning');
   await page.locator('.ff-header').click({ position: { x: 700, y: 5 } });
-  await expect(page.locator('.ff-dock__panel:not([hidden])')).toHaveCount(1);
+  await expect(page.locator('#ff-dock .ff-dock__panel:not([hidden])')).toHaveCount(1);
 });
 
 test('the layout shift badge is compact', async ({ page }) => {
@@ -3135,7 +3139,7 @@ test('the last step puts download and copy in the dock footer without share, and
   await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
   await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(sourceSans);
   await openStep(page, 'export');
-  const panel = page.locator('.ff-dock__panel:not([hidden])');
+  const panel = page.locator('#ff-dock .ff-dock__panel:not([hidden])');
   const footer = panel.locator('.ff-dock__footer');
   await expect(footer.getByRole('button', { name: /^Download/ })).toBeVisible();
   await expect(footer.getByRole('button', { name: /^Copy code/ })).toBeVisible();
@@ -3170,10 +3174,9 @@ test('the generated code stays left to right and queries stay readable on an Ara
   await page.waitForFunction(() => document.querySelector('astro-island:not([ssr])'));
   await page.locator('input[type="file"][accept*="woff2"]').setInputFiles(sourceSans);
   await openStep(page, 'export');
-  await expect(page.locator('.ff-dock__panel:not([hidden]) .ff-code pre').first()).toHaveAttribute(
-    'dir',
-    'ltr',
-  );
+  await expect(
+    page.locator('#ff-dock .ff-dock__panel:not([hidden]) .ff-code pre').first(),
+  ).toHaveAttribute('dir', 'ltr');
   await openStep(page, 'audience');
   const tag = page.locator('.ff-tags__list .ff-tag', { hasText: '0.5%' }).first();
   await expect(tag).toHaveAttribute('dir', 'auto');
@@ -3253,7 +3256,7 @@ test('the intro guide explains the jump and step tabs retain their icons', async
   await expect(guide).toBeVisible();
   await expect(guide).toContainText('layout shift');
   await expect(page.locator('.ff-intro__steps, .ff-intro__card')).toHaveCount(0);
-  await expect(page.locator('.ff-dock__heading .ff-icon')).toHaveCount(4);
+  await expect(page.locator('#ff-dock .ff-dock__icon .ff-icon')).toHaveCount(4);
   await page.getByRole('button', { name: '2. Audience', exact: true }).click();
   await expect(page.getByLabel('Audience').first()).toBeVisible();
   const heading = page.getByRole('button', { name: '2. Audience', exact: true });
@@ -4207,7 +4210,7 @@ test('desktop settings never overlap the article and survive mobile resizing', a
   await waitForGenerator(page);
   for (const step of ['inputs', 'audience', 'tuning', 'export'] as const) {
     await openStep(page, step);
-    const panel = await page.locator('.ff-dock__panel:not([hidden])').boundingBox();
+    const panel = await page.locator('#ff-dock .ff-dock__panel:not([hidden])').boundingBox();
     const article = await page.locator('.ff-generator__stage').boundingBox();
     expect(panel).not.toBeNull();
     expect(article).not.toBeNull();
@@ -4256,7 +4259,9 @@ test('metric sliders update the visible article with settings open', async ({ pa
     )
     .toContain(`size-adjust: ${value}%`);
   await expect(
-    page.locator('.ff-dock__column[data-id="tuning"] button[aria-expanded="true"]').first(),
+    page
+      .locator('#ff-dock .ff-dock__column[data-id="tuning"] button[aria-expanded="true"]')
+      .first(),
   ).toBeVisible();
   await expect(page.locator('.ff-generator__stage')).toBeInViewport();
   await page.setViewportSize({ width: 375, height: 800 });
